@@ -427,6 +427,16 @@ Triggered when the product feed "bulk edit" functionality is being used
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
 
+### [`gla_campaign_with_cyo_incentive_selected`](../../js/src/pages/create-paid-ads-campaign/index.js#L46)
+Applying a "Choose Your Own" incentive offer when creating a campaign after onboarding.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the incentive offer is applied, e.g. 'create-ads' or 'setup-ads'.
+`level` | `string` | The level of the applied incentive offer, e.g. 'low', 'medium', or 'high'.
+#### Emitters
+- [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L61) with `{ context: 'create-ads', level: 'low' | 'medium' | 'high' }`.
+
 ### [`gla_cancel_button_clicked`](../../js/src/pages/markets/components/add-market-modal/modal-footer.js#L15)
 Event fired when the "Cancel" button in the AddMarketModal is clicked.
 #### Properties

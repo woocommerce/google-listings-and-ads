@@ -52,6 +52,7 @@ export default function AdsCampaign( {
 		context === 'setup-ads' ||
 		context === 'create-ads' ||
 		context === 'edit-ads';
+	const showCyoIncentivePicker = isOnboardingFlow || context === 'create-ads';
 	// only show the billing card during onboarding or setup Ads flow.
 	// For creating/editing a campaign, we assume billing is already set up.
 	const showBillingCard =
@@ -105,7 +106,9 @@ export default function AdsCampaign( {
 				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 			</BudgetSection>
 
-			{ isOnboardingFlow && <CyoIncentivePicker context={ context } /> }
+			{ showCyoIncentivePicker && (
+				<CyoIncentivePicker context={ context } />
+			) }
 
 			<EuRegulationsSection context={ context } />
 
