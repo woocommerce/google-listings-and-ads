@@ -10,15 +10,25 @@ import { useState } from '@wordpress/element';
  */
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
+import { GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT } from '../../constants';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import NoticeDetail from '../../notice-detail';
 import CreateNewLink from '../create-new-link';
 import CreateNewRefreshNotice from '../create-new-refresh-notice';
 
 /**
+ * Clicking "Check again" to look for a Google Business Profile again after none was found.
+ *
+ * @event gla_google_business_profile_check_again_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+ */
+
+/**
  * Renders the zero-locations notice: explains no Google Business Profile was found for the
  * connected Google account, and offers a "Check again" refetch plus a create-new-account link. Once
  * that link is clicked, the refresh reminder shows below the notice.
+ *
+ * @fires gla_google_business_profile_check_again_button_click with `{ context: 'settings-business-profile' }`.
  *
  * @return {JSX.Element} The notice, and the refresh reminder once the link is clicked.
  */
@@ -65,6 +75,10 @@ export default function NoBusinessProfileAccountNotice() {
 				actions={ [
 					<AppButton
 						key="check-again"
+						eventName="gla_google_business_profile_check_again_button_click"
+						eventProps={ {
+							context: GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
+						} }
 						onClick={ handleCheckAgainClick }
 						disabled={ isRefreshing }
 						loading={ isRefreshing }

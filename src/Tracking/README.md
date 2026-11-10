@@ -854,6 +854,15 @@ Clicking on the button to disconnect the Google Business Profile account.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L164) When the user confirms the disconnection of the Google Business Profile account.
 
+### [`gla_google_business_profile_check_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/no-locations-card/no-business-profile-account-notice.js#L19)
+Clicking "Check again" to look for a Google Business Profile again after none was found.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/no-locations-card/no-business-profile-account-notice.js#L35) with `{ context: 'settings-business-profile' }`.
+
 ### [`gla_google_business_profile_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L23)
 Clicking the button to grant the Google Business Profile scope.
 #### Properties
@@ -863,23 +872,59 @@ Clicking the button to grant the Google Business Profile scope.
 #### Emitters
 - [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L39)
 
-### [`gla_google_business_profile_create_account_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L17)
+### [`gla_google_business_profile_connection_try_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/connection-error-notice.js#L16)
+Clicking "Try again" after connecting a Google Business Profile location failed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/connection-error-notice.js#L33) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_create_account_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L15)
 Clicking the link to create a new Google Business Profile account off-site.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L62) with `{ context: 'settings-business-profile' }`.
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L53) with `{ context: 'settings-business-profile' }`.
 
-### [`gla_google_business_profile_create_location_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L24)
+### [`gla_google_business_profile_create_location_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L22)
 Clicking the link to create a new Google Business Profile location off-site.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L62) with `{ context: 'settings-business-profile' }`.
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L53) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_location_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/single-location-card/index.js#L16)
+Clicking "Connect" to connect the one Google Business Profile location found.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/single-location-card/index.js#L32) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_location_save_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/multiple-locations-card/connect-location-form.js#L19)
+Clicking "Save" to connect the Google Business Profile location picked from several found.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/multiple-locations-card/connect-location-form.js#L36) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_locations_try_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/locations-error-card/locations-error-notice.js#L15)
+Clicking "Try again" after the Google Business Profile locations couldn't be loaded.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/locations-error-card/locations-error-notice.js#L30) with `{ context: 'settings-business-profile' }`.
 
 ### [`gla_google_business_profile_post_link_click`](../../js/src/components/business-profile-share-control/index.js#L25)
 Clicking the "View on Google Business Profile" link to a post shared to Google Business Profile.
@@ -1222,7 +1267,7 @@ When the "Improve Assets" button is clicked.
 #### Emitters
 - [`PriceInputFooter`](../../js/src/pages/price-benchmark/change-price-modal/price-input-footer.js#L52)
 
-### [`gla_price_benchmarks_shown`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L179)
+### [`gla_price_benchmarks_shown`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L180)
 
 #### Properties
 | name | type | description |
@@ -1230,7 +1275,7 @@ When the "Improve Assets" button is clicked.
 `context` | `string` | The context of the event.
 `suggestions` | `number` | The number of suggestions shown.
 #### Emitters
-- [`PriceBenchmarkSuggestions`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L199) with `{ context: 'price-benchmark-suggestions' }` and the suggestions count.
+- [`PriceBenchmarkSuggestions`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L200) with `{ context: 'price-benchmark-suggestions' }` and the suggestions count.
 
 ### [`gla_raise_budget_recommendation_badge_campaigns`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L57)
 When there are campaigns with budget recommendations in the table.

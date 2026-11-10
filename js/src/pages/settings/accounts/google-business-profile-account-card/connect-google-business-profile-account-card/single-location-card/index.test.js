@@ -12,6 +12,7 @@ import SingleLocationCard from './index';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleBusinessProfileLocations from '../../hooks/useGoogleBusinessProfileLocations';
 import useConnectGoogleBusinessProfileLocation from '../../hooks/useConnectGoogleBusinessProfileLocation';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
@@ -22,6 +23,9 @@ jest.mock( '../../hooks/useGoogleBusinessProfileLocations', () =>
 jest.mock( '../../hooks/useConnectGoogleBusinessProfileLocation', () =>
 	jest.fn().mockName( 'useConnectGoogleBusinessProfileLocation' )
 );
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
 
 const location = {
 	id: '1111',
@@ -33,6 +37,7 @@ describe( 'SingleLocationCard', () => {
 	let connectLocation;
 
 	beforeEach( () => {
+		jest.clearAllMocks();
 		connectLocation = jest.fn().mockName( 'connectLocation' );
 		useGoogleAccount.mockReturnValue( { google: undefined } );
 		useGoogleBusinessProfileLocations.mockReturnValue( {
@@ -59,7 +64,7 @@ describe( 'SingleLocationCard', () => {
 		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'connects the location when Connect is clicked', async () => {
+	it( 'connects the location and records the event when Connect is clicked', async () => {
 		const user = userEvent.setup();
 		render( <SingleLocationCard /> );
 
@@ -67,6 +72,10 @@ describe( 'SingleLocationCard', () => {
 
 		expect( connectLocation ).toHaveBeenCalledTimes( 1 );
 		expect( connectLocation ).toHaveBeenCalledWith( '1111' );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_location_connect_button_click',
+			{ context: 'settings-business-profile' }
+		);
 	} );
 
 	it( 'disables Connect while the connect request is in flight', () => {
