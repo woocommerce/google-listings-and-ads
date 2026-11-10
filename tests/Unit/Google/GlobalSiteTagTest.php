@@ -95,10 +95,10 @@ class GlobalSiteTagTest extends UnitTest {
 	}
 
 	public function test_is_needed_stays_true_when_the_native_ads_tag_is_disabled_by_filter() {
-		// Regression test for GOOWOO-1194: is_needed() used to also apply this filter, so a
-		// connected Tag Manager container's whole GlobalSiteTag service -- not just the native
-		// Ads tag -- never registered at all. The filter now only suppresses the Ads tag itself,
-		// inside should_fire_native_ads_tag() (see the tests below).
+		// Regression test: is_needed() used to also apply this filter, so a connected Tag
+		// Manager container's whole GlobalSiteTag service -- not just the native Ads tag -- never
+		// registered at all. The filter now only suppresses the Ads tag itself, inside
+		// should_fire_native_ads_tag() (see the tests below).
 		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
 
 		$this->assertTrue( GlobalSiteTag::is_needed() );
@@ -849,12 +849,12 @@ class GlobalSiteTagTest extends UnitTest {
 	}
 
 	public function test_register_still_runs_for_a_connected_container_when_the_native_ads_tag_is_disabled_by_filter() {
-		// Regression test for GOOWOO-1194: woocommerce_gla_disable_gtag_tracking used to suppress
-		// the whole GlobalSiteTag service via is_needed(), not just the native Ads tag it's
-		// documented to control -- so a connected Tag Manager container never got its consent
-		// defaults, its dataLayer ecommerce events, or the gla-wp-consent-api script that sends WP
-		// Consent API choices to Google, and visitors who accepted cookies stayed "denied" in GTM
-		// for the whole visit.
+		// Regression test: woocommerce_gla_disable_gtag_tracking used to suppress the whole
+		// GlobalSiteTag service via is_needed(), not just the native Ads tag it's documented to
+		// control -- so a connected Tag Manager container never got its consent defaults, its
+		// dataLayer ecommerce events, or the gla-wp-consent-api script that sends WP Consent API
+		// choices to Google, and visitors who accepted cookies stayed "denied" in GTM for the
+		// whole visit.
 		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
 
 		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
