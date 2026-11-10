@@ -37,7 +37,7 @@ const GoogleAdsTagIndicator = ( { enabled } ) => {
 				iconSize={ 24 }
 			>
 				{ __(
-					"Your Google Tag Manager container already has a tag that tracks Google Ads events. To avoid tracking the same events twice, Google for WooCommerce doesn't add its own Google Ads tag.",
+					"Google for WooCommerce isn't adding its own Google Ads tag. This happens when your Google Tag Manager container already tracks Google Ads events, or when custom code on your site turns the tag off.",
 					'google-listings-and-ads'
 				) }
 			</HelpPopover>
