@@ -1391,6 +1391,81 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_creates_product_data_source_with_shopping_ads_only_when_free_listings_is_rejected() {
+		// An account that can't use free listings rejects the FREE_LISTINGS destination (reported
+		// by Google under its internal name ORGANIC_EXPERIENCES) and creates nothing. Retrying
+		// with the online destination it does accept keeps product sync working.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+
+		$requested = [];
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function ( $path, $body ) use ( &$requested ) {
+					$requested[] = $body['primaryProductDataSource']['destinations'] ?? null;
+					if ( 1 === count( $requested ) ) {
+						throw $this->invalid_destinations_exception();
+					}
+					return [ 'name' => 'accounts/12345/dataSources/720' ];
+				}
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/720',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame(
+			[
+				[
+					'destination' => 'SHOPPING_ADS',
+					'state'       => 'ENABLED',
+				],
+			],
+			$requested[1]
+		);
+	}
+
+	public function test_creates_product_data_source_without_destinations_when_every_explicit_list_is_rejected() {
+		// The last resort matches the plugin's behavior before explicit destinations were sent:
+		// let Google apply the account's own destinations rather than fail product sync outright.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+
+		$requested = [];
+		$this->client->expects( $this->exactly( 3 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function ( $path, $body ) use ( &$requested ) {
+					$requested[] = $body['primaryProductDataSource'];
+					if ( count( $requested ) < 3 ) {
+						throw $this->invalid_destinations_exception();
+					}
+					return [ 'name' => 'accounts/12345/dataSources/730' ];
+				}
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/730',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+		$this->assertArrayNotHasKey( 'destinations', $requested[2] );
+	}
+
+	public function test_does_not_retry_product_data_source_creation_for_other_errors() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willThrowException(
+				new MerchantApiException( 400, [ 'error' => [ 'message' => '[displayName] Invalid display name.' ] ], 'post' )
+			);
+
+		$this->expectException( MerchantApiException::class );
+
+		$this->service->ensure_data_source_for( 'en', 'US' );
+	}
+
 	public function test_creates_new_promotion_data_source_without_destinations_field() {
 		// PromotionDataSource has no destinations field in the Merchant API; sending one would be
 		// an invalid request, so promotion creation must never include it.
@@ -1459,6 +1534,20 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->assertSame(
 			'accounts/12345/dataSources/300',
 			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	/**
+	 * The rejection Google returns when a data source requests a destination the account can't
+	 * use, as reported by merchants (GOOWOO-1199).
+	 *
+	 * @return MerchantApiException
+	 */
+	private function invalid_destinations_exception(): MerchantApiException {
+		return new MerchantApiException(
+			400,
+			[ 'error' => [ 'message' => '[primaryProductDataSource.destinations] Destinations of the data source are invalid: ORGANIC_EXPERIENCES.' ] ],
+			'post'
 		);
 	}
 }
