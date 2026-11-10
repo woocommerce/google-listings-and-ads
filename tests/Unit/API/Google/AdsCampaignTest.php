@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignLabel;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -898,6 +899,74 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
 		$this->assertEquals( 'unconverted', $this->campaign->get_campaign_convert_status() );
+	}
+
+	/**
+	 * Create a campaign and report whether the created campaign carries a shopping setting.
+	 *
+	 * @param array $extra_campaign_data Extra campaign data, such as the advertising source.
+	 *
+	 * @return bool
+	 */
+	protected function create_campaign_and_check_for_shopping_setting( array $extra_campaign_data ): bool {
+		$campaign_data = [
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US' ],
+			'eu_political_advertising_confirmation' => false,
+		] + $extra_campaign_data;
+
+		$this->wc->method( 'get_base_country' )->willReturn( self::BASE_COUNTRY );
+
+		$has_shopping_setting = null;
+
+		$campaign_result = $this->createMock( MutateCampaignResult::class );
+		$campaign_result->method( 'getResourceName' )->willReturn(
+			ResourceNames::forCampaign( $this->ads_id, self::TEST_CAMPAIGN_ID )
+		);
+		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+			[ ( new MutateOperationResponse() )->setCampaignResult( $campaign_result ) ]
+		);
+
+		$this->service_client->expects( $this->once() )
+			->method( 'mutate' )
+			->willReturnCallback(
+				function ( MutateGoogleAdsRequest $request ) use ( &$has_shopping_setting, $response ) {
+					foreach ( $request->getMutateOperations() as $operation ) {
+						if ( 'campaign_operation' === $operation->getOperation() ) {
+							$has_shopping_setting = $operation->getCampaignOperation()->getCreate()->hasShoppingSetting();
+						}
+					}
+
+					return $response;
+				}
+			);
+
+		$this->campaign->create_campaign( $campaign_data );
+
+		return $has_shopping_setting;
+	}
+
+	public function test_create_campaign_with_page_advertising_source_skips_shopping_setting_when_merchant_center_connected() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+
+		$this->assertFalse(
+			$this->create_campaign_and_check_for_shopping_setting( [ 'advertising_source' => AdvertisingSource::PAGE ] )
+		);
+	}
+
+	public function test_create_campaign_with_product_advertising_source_keeps_shopping_setting_when_merchant_center_connected() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+
+		$this->assertTrue(
+			$this->create_campaign_and_check_for_shopping_setting( [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
+		);
+	}
+
+	public function test_create_campaign_without_advertising_source_keeps_shopping_setting_when_merchant_center_connected() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+
+		$this->assertTrue( $this->create_campaign_and_check_for_shopping_setting( [] ) );
 	}
 
 	public function test_create_campaign_with_label() {

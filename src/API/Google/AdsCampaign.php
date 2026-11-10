@@ -312,7 +312,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$budget_operations = [ $this->budget->create_operation( $params['name'], $params['amount'] ) ];
 
 			// Create campaign operations.
-			$campaign_operations = [ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'] ) ];
+			$campaign_operations = [ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'], $params['advertising_source'] ?? AdvertisingSource::PRODUCT ) ];
 
 			// Create asset group operations.
 			$ad_asset_group = $this->container->get( AdsAssetGroup::class );
@@ -740,10 +740,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param string      $campaign_name
 	 * @param string|null $country
 	 * @param bool        $is_eu_political
+	 * @param string      $advertising_source Whether the campaign uses the product feed (`product`) or promotes a page (`page`).
 	 *
 	 * @return MutateOperation
 	 */
-	protected function create_operation( string $campaign_name, ?string $country, bool $is_eu_political ): MutateOperation {
+	protected function create_operation( string $campaign_name, ?string $country, bool $is_eu_political, string $advertising_source = AdvertisingSource::PRODUCT ): MutateOperation {
 		$merchant_id   = $this->options->get_merchant_id();
 		$campaign_data = [
 			'resource_name'                     => $this->temporary_resource_name(),
@@ -763,8 +764,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
 		];
 
-		// Only include shopping_setting if Merchant Center account is connected.
-		if ( $merchant_id > 0 && $country !== null ) {
+		// Only include shopping_setting for a product campaign with a connected Merchant Center account.
+		if ( AdvertisingSource::PRODUCT === $advertising_source && $merchant_id > 0 && $country !== null ) {
 			$campaign_data['shopping_setting'] = new ShoppingSetting(
 				[
 					'merchant_id' => $merchant_id,
