@@ -258,6 +258,846 @@
 			"impressions": 512,
 			"ctr": 0.041016,
 			"position": 25.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-001/" ],
+			"clicks": 50,
+			"impressions": 1501,
+			"ctr": 0.033311,
+			"position": 10.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-002/" ],
+			"clicks": 50,
+			"impressions": 1502,
+			"ctr": 0.033289,
+			"position": 11.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-003/" ],
+			"clicks": 50,
+			"impressions": 1503,
+			"ctr": 0.033267,
+			"position": 12.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-004/" ],
+			"clicks": 49,
+			"impressions": 1474,
+			"ctr": 0.033243,
+			"position": 12.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-005/" ],
+			"clicks": 49,
+			"impressions": 1475,
+			"ctr": 0.03322,
+			"position": 13.5
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-006/" ],
+			"clicks": 49,
+			"impressions": 1476,
+			"ctr": 0.033198,
+			"position": 14.2
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-007/" ],
+			"clicks": 48,
+			"impressions": 1447,
+			"ctr": 0.033172,
+			"position": 14.9
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-008/" ],
+			"clicks": 48,
+			"impressions": 1448,
+			"ctr": 0.033149,
+			"position": 15.6
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-009/" ],
+			"clicks": 48,
+			"impressions": 1449,
+			"ctr": 0.033126,
+			"position": 16.3
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-010/" ],
+			"clicks": 47,
+			"impressions": 1420,
+			"ctr": 0.033099,
+			"position": 17.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-011/" ],
+			"clicks": 47,
+			"impressions": 1421,
+			"ctr": 0.033075,
+			"position": 17.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-012/" ],
+			"clicks": 47,
+			"impressions": 1422,
+			"ctr": 0.033052,
+			"position": 18.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-013/" ],
+			"clicks": 46,
+			"impressions": 1393,
+			"ctr": 0.033022,
+			"position": 19.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-014/" ],
+			"clicks": 46,
+			"impressions": 1394,
+			"ctr": 0.032999,
+			"position": 19.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-015/" ],
+			"clicks": 46,
+			"impressions": 1395,
+			"ctr": 0.032975,
+			"position": 10.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-016/" ],
+			"clicks": 45,
+			"impressions": 1366,
+			"ctr": 0.032943,
+			"position": 10.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-017/" ],
+			"clicks": 45,
+			"impressions": 1367,
+			"ctr": 0.032919,
+			"position": 11.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-018/" ],
+			"clicks": 45,
+			"impressions": 1368,
+			"ctr": 0.032895,
+			"position": 12.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-019/" ],
+			"clicks": 44,
+			"impressions": 1339,
+			"ctr": 0.03286,
+			"position": 12.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-020/" ],
+			"clicks": 44,
+			"impressions": 1340,
+			"ctr": 0.032836,
+			"position": 13.5
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-021/" ],
+			"clicks": 44,
+			"impressions": 1341,
+			"ctr": 0.032811,
+			"position": 14.2
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-022/" ],
+			"clicks": 43,
+			"impressions": 1312,
+			"ctr": 0.032774,
+			"position": 14.9
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-023/" ],
+			"clicks": 43,
+			"impressions": 1313,
+			"ctr": 0.032749,
+			"position": 15.6
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-024/" ],
+			"clicks": 43,
+			"impressions": 1314,
+			"ctr": 0.032725,
+			"position": 16.3
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-025/" ],
+			"clicks": 42,
+			"impressions": 1285,
+			"ctr": 0.032685,
+			"position": 17.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-026/" ],
+			"clicks": 42,
+			"impressions": 1286,
+			"ctr": 0.032659,
+			"position": 17.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-027/" ],
+			"clicks": 42,
+			"impressions": 1287,
+			"ctr": 0.032634,
+			"position": 18.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-028/" ],
+			"clicks": 41,
+			"impressions": 1258,
+			"ctr": 0.032591,
+			"position": 19.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-029/" ],
+			"clicks": 41,
+			"impressions": 1259,
+			"ctr": 0.032566,
+			"position": 19.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-030/" ],
+			"clicks": 41,
+			"impressions": 1260,
+			"ctr": 0.03254,
+			"position": 10.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-031/" ],
+			"clicks": 40,
+			"impressions": 1231,
+			"ctr": 0.032494,
+			"position": 10.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-032/" ],
+			"clicks": 40,
+			"impressions": 1232,
+			"ctr": 0.032468,
+			"position": 11.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-033/" ],
+			"clicks": 40,
+			"impressions": 1233,
+			"ctr": 0.032441,
+			"position": 12.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-034/" ],
+			"clicks": 39,
+			"impressions": 1204,
+			"ctr": 0.032392,
+			"position": 12.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-035/" ],
+			"clicks": 39,
+			"impressions": 1205,
+			"ctr": 0.032365,
+			"position": 13.5
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-036/" ],
+			"clicks": 39,
+			"impressions": 1206,
+			"ctr": 0.032338,
+			"position": 14.2
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-037/" ],
+			"clicks": 38,
+			"impressions": 1177,
+			"ctr": 0.032285,
+			"position": 14.9
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-038/" ],
+			"clicks": 38,
+			"impressions": 1178,
+			"ctr": 0.032258,
+			"position": 15.6
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-039/" ],
+			"clicks": 38,
+			"impressions": 1179,
+			"ctr": 0.032231,
+			"position": 16.3
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-040/" ],
+			"clicks": 37,
+			"impressions": 1150,
+			"ctr": 0.032174,
+			"position": 17.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-041/" ],
+			"clicks": 37,
+			"impressions": 1151,
+			"ctr": 0.032146,
+			"position": 17.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-042/" ],
+			"clicks": 37,
+			"impressions": 1152,
+			"ctr": 0.032118,
+			"position": 18.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-043/" ],
+			"clicks": 36,
+			"impressions": 1123,
+			"ctr": 0.032057,
+			"position": 19.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-044/" ],
+			"clicks": 36,
+			"impressions": 1124,
+			"ctr": 0.032028,
+			"position": 19.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-045/" ],
+			"clicks": 36,
+			"impressions": 1125,
+			"ctr": 0.032,
+			"position": 10.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-046/" ],
+			"clicks": 35,
+			"impressions": 1096,
+			"ctr": 0.031934,
+			"position": 10.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-047/" ],
+			"clicks": 35,
+			"impressions": 1097,
+			"ctr": 0.031905,
+			"position": 11.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-048/" ],
+			"clicks": 35,
+			"impressions": 1098,
+			"ctr": 0.031876,
+			"position": 12.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-049/" ],
+			"clicks": 34,
+			"impressions": 1069,
+			"ctr": 0.031805,
+			"position": 12.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-050/" ],
+			"clicks": 34,
+			"impressions": 1070,
+			"ctr": 0.031776,
+			"position": 13.5
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-051/" ],
+			"clicks": 34,
+			"impressions": 1071,
+			"ctr": 0.031746,
+			"position": 14.2
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-052/" ],
+			"clicks": 33,
+			"impressions": 1042,
+			"ctr": 0.03167,
+			"position": 14.9
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-053/" ],
+			"clicks": 33,
+			"impressions": 1043,
+			"ctr": 0.03164,
+			"position": 15.6
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-054/" ],
+			"clicks": 33,
+			"impressions": 1044,
+			"ctr": 0.031609,
+			"position": 16.3
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-055/" ],
+			"clicks": 32,
+			"impressions": 1015,
+			"ctr": 0.031527,
+			"position": 17.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-056/" ],
+			"clicks": 32,
+			"impressions": 1016,
+			"ctr": 0.031496,
+			"position": 17.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-057/" ],
+			"clicks": 32,
+			"impressions": 1017,
+			"ctr": 0.031465,
+			"position": 18.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-058/" ],
+			"clicks": 31,
+			"impressions": 988,
+			"ctr": 0.031377,
+			"position": 19.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-059/" ],
+			"clicks": 31,
+			"impressions": 989,
+			"ctr": 0.031345,
+			"position": 19.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-060/" ],
+			"clicks": 31,
+			"impressions": 990,
+			"ctr": 0.031313,
+			"position": 10.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-061/" ],
+			"clicks": 30,
+			"impressions": 961,
+			"ctr": 0.031217,
+			"position": 10.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-062/" ],
+			"clicks": 30,
+			"impressions": 962,
+			"ctr": 0.031185,
+			"position": 11.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-063/" ],
+			"clicks": 30,
+			"impressions": 963,
+			"ctr": 0.031153,
+			"position": 12.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-064/" ],
+			"clicks": 29,
+			"impressions": 934,
+			"ctr": 0.031049,
+			"position": 12.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-065/" ],
+			"clicks": 29,
+			"impressions": 935,
+			"ctr": 0.031016,
+			"position": 13.5
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-066/" ],
+			"clicks": 29,
+			"impressions": 936,
+			"ctr": 0.030983,
+			"position": 14.2
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-067/" ],
+			"clicks": 28,
+			"impressions": 907,
+			"ctr": 0.030871,
+			"position": 14.9
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-068/" ],
+			"clicks": 28,
+			"impressions": 908,
+			"ctr": 0.030837,
+			"position": 15.6
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-069/" ],
+			"clicks": 28,
+			"impressions": 909,
+			"ctr": 0.030803,
+			"position": 16.3
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-070/" ],
+			"clicks": 27,
+			"impressions": 880,
+			"ctr": 0.030682,
+			"position": 17.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-071/" ],
+			"clicks": 27,
+			"impressions": 881,
+			"ctr": 0.030647,
+			"position": 17.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-072/" ],
+			"clicks": 27,
+			"impressions": 882,
+			"ctr": 0.030612,
+			"position": 18.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-073/" ],
+			"clicks": 26,
+			"impressions": 853,
+			"ctr": 0.030481,
+			"position": 19.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-074/" ],
+			"clicks": 26,
+			"impressions": 854,
+			"ctr": 0.030445,
+			"position": 19.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-075/" ],
+			"clicks": 26,
+			"impressions": 855,
+			"ctr": 0.030409,
+			"position": 10.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-076/" ],
+			"clicks": 25,
+			"impressions": 826,
+			"ctr": 0.030266,
+			"position": 10.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-077/" ],
+			"clicks": 25,
+			"impressions": 827,
+			"ctr": 0.03023,
+			"position": 11.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-078/" ],
+			"clicks": 25,
+			"impressions": 828,
+			"ctr": 0.030193,
+			"position": 12.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-079/" ],
+			"clicks": 24,
+			"impressions": 799,
+			"ctr": 0.030038,
+			"position": 12.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-080/" ],
+			"clicks": 24,
+			"impressions": 800,
+			"ctr": 0.03,
+			"position": 13.5
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-081/" ],
+			"clicks": 24,
+			"impressions": 801,
+			"ctr": 0.029963,
+			"position": 14.2
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-082/" ],
+			"clicks": 23,
+			"impressions": 772,
+			"ctr": 0.029793,
+			"position": 14.9
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-083/" ],
+			"clicks": 23,
+			"impressions": 773,
+			"ctr": 0.029754,
+			"position": 15.6
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-084/" ],
+			"clicks": 23,
+			"impressions": 774,
+			"ctr": 0.029716,
+			"position": 16.3
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-085/" ],
+			"clicks": 22,
+			"impressions": 745,
+			"ctr": 0.02953,
+			"position": 17.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-086/" ],
+			"clicks": 22,
+			"impressions": 746,
+			"ctr": 0.029491,
+			"position": 17.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-087/" ],
+			"clicks": 22,
+			"impressions": 747,
+			"ctr": 0.029451,
+			"position": 18.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-088/" ],
+			"clicks": 21,
+			"impressions": 718,
+			"ctr": 0.029248,
+			"position": 19.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-089/" ],
+			"clicks": 21,
+			"impressions": 719,
+			"ctr": 0.029207,
+			"position": 19.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-090/" ],
+			"clicks": 21,
+			"impressions": 720,
+			"ctr": 0.029167,
+			"position": 10.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-091/" ],
+			"clicks": 20,
+			"impressions": 691,
+			"ctr": 0.028944,
+			"position": 10.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-092/" ],
+			"clicks": 20,
+			"impressions": 692,
+			"ctr": 0.028902,
+			"position": 11.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-093/" ],
+			"clicks": 20,
+			"impressions": 693,
+			"ctr": 0.02886,
+			"position": 12.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-094/" ],
+			"clicks": 19,
+			"impressions": 664,
+			"ctr": 0.028614,
+			"position": 12.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-095/" ],
+			"clicks": 19,
+			"impressions": 665,
+			"ctr": 0.028571,
+			"position": 13.5
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-096/" ],
+			"clicks": 19,
+			"impressions": 666,
+			"ctr": 0.028529,
+			"position": 14.2
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-097/" ],
+			"clicks": 18,
+			"impressions": 637,
+			"ctr": 0.028257,
+			"position": 14.9
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-098/" ],
+			"clicks": 18,
+			"impressions": 638,
+			"ctr": 0.028213,
+			"position": 15.6
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-099/" ],
+			"clicks": 18,
+			"impressions": 639,
+			"ctr": 0.028169,
+			"position": 16.3
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-100/" ],
+			"clicks": 17,
+			"impressions": 610,
+			"ctr": 0.027869,
+			"position": 17.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-101/" ],
+			"clicks": 17,
+			"impressions": 611,
+			"ctr": 0.027823,
+			"position": 17.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-102/" ],
+			"clicks": 17,
+			"impressions": 612,
+			"ctr": 0.027778,
+			"position": 18.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-103/" ],
+			"clicks": 16,
+			"impressions": 583,
+			"ctr": 0.027444,
+			"position": 19.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-104/" ],
+			"clicks": 16,
+			"impressions": 584,
+			"ctr": 0.027397,
+			"position": 19.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-105/" ],
+			"clicks": 16,
+			"impressions": 585,
+			"ctr": 0.02735,
+			"position": 10.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-106/" ],
+			"clicks": 15,
+			"impressions": 556,
+			"ctr": 0.026978,
+			"position": 10.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-107/" ],
+			"clicks": 15,
+			"impressions": 557,
+			"ctr": 0.02693,
+			"position": 11.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-108/" ],
+			"clicks": 15,
+			"impressions": 558,
+			"ctr": 0.026882,
+			"position": 12.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-109/" ],
+			"clicks": 14,
+			"impressions": 529,
+			"ctr": 0.026465,
+			"position": 12.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-110/" ],
+			"clicks": 14,
+			"impressions": 530,
+			"ctr": 0.026415,
+			"position": 13.5
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-111/" ],
+			"clicks": 14,
+			"impressions": 531,
+			"ctr": 0.026365,
+			"position": 14.2
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-112/" ],
+			"clicks": 13,
+			"impressions": 502,
+			"ctr": 0.025896,
+			"position": 14.9
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-113/" ],
+			"clicks": 13,
+			"impressions": 503,
+			"ctr": 0.025845,
+			"position": 15.6
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-114/" ],
+			"clicks": 13,
+			"impressions": 504,
+			"ctr": 0.025794,
+			"position": 16.3
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-115/" ],
+			"clicks": 12,
+			"impressions": 475,
+			"ctr": 0.025263,
+			"position": 17.0
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-116/" ],
+			"clicks": 12,
+			"impressions": 476,
+			"ctr": 0.02521,
+			"position": 17.7
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-117/" ],
+			"clicks": 12,
+			"impressions": 477,
+			"ctr": 0.025157,
+			"position": 18.4
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-118/" ],
+			"clicks": 11,
+			"impressions": 448,
+			"ctr": 0.024554,
+			"position": 19.1
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-119/" ],
+			"clicks": 11,
+			"impressions": 449,
+			"ctr": 0.024499,
+			"position": 19.8
+		},
+		{
+			"keys": [ "https://example.com/product/test-product-120/" ],
+			"clicks": 11,
+			"impressions": 450,
+			"ctr": 0.024444,
+			"position": 10.0
 		}
 	],
 	"responseAggregationType": "byPage"
