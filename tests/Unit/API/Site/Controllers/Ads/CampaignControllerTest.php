@@ -310,7 +310,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 					// Confirm name matches the datetime format.
 					$this->assertStringMatchesFormat( 'Campaign %d-%d-%d %d:%d:%d', $name, 'Name does not match' );
-					$this->assertEquals( $data, $campaign_data );
+					$this->assertEquals( $data, $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] );
 
 					return array_diff_key( $expected, [ 'start_date' => null ] );
 				}
@@ -532,6 +532,16 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 500, $response->get_status() );
 	}
 
+	protected function get_created_campaign_response( array $campaign_data ): array {
+		return [
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'country'                               => self::BASE_COUNTRY,
+			'eu_political_advertising_confirmation' => false,
+		] + $campaign_data;
+	}
+
 	protected function get_new_campaign_data(): array {
 		return [
 			'name'               => 'New Campaign',
@@ -553,7 +563,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
 			->with( $campaign_data + [ 'advertising_source' => $expected_source ] )
-			->willReturn( [ 'id' => self::TEST_CAMPAIGN_ID ] + $campaign_data );
+			->willReturn( $this->get_created_campaign_response( $campaign_data ) );
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
@@ -573,7 +583,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
 			->with( $campaign_data )
-			->willReturn( [ 'id' => self::TEST_CAMPAIGN_ID ] + $campaign_data );
+			->willReturn( $this->get_created_campaign_response( $campaign_data ) );
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
