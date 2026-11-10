@@ -8,6 +8,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * What a campaign advertises: the Merchant Center product feed or a page on the store.
  *
+ * @since 3.11.0
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
 final class AdvertisingSource {

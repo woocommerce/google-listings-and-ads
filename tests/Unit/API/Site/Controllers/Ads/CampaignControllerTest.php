@@ -613,6 +613,14 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			->with( self::TEST_CAMPAIGN_ID, [ 'amount' => 30 ] )
 			->willReturn( self::TEST_CAMPAIGN_ID );
 
+		$this->expect_track_event(
+			'edited_campaign',
+			[
+				'id'     => self::TEST_CAMPAIGN_ID,
+				'amount' => 30,
+			]
+		);
+
 		$response = $this->do_request(
 			self::ROUTE_CAMPAIGN,
 			'POST',
