@@ -98,7 +98,8 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 	 */
 	protected function get_incentives_callback(): callable {
 		return function ( Request $request ) {
-			$incentives = $this->ads_incentives->fetch_incentives();
+			$incentives                          = $this->ads_incentives->fetch_incentives();
+			$incentives['has_applied_incentive'] = $this->ads_incentives->has_applied_incentive();
 
 			return $this->prepare_item_for_response( $incentives, $request );
 		};
@@ -118,6 +119,13 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 				// Clear any stale flags from a previous failed attempt.
 				$this->options->delete( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR );
 				$this->options->delete( OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE );
+				$this->ads_incentives->clear_applied_incentive_cache();
+
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Applied the Ads credit offer (incentive ID: %s).', $incentive_id ),
+					__METHOD__
+				);
 
 				return new Response( $result );
 			} catch ( ExceptionWithResponseData $e ) {
@@ -240,6 +248,11 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 						],
 					],
 				],
+			],
+			'has_applied_incentive' => [
+				'type'        => 'boolean',
+				'description' => __( 'Whether an offer was already applied to the connected Google Ads account.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
 			],
 		];
 	}

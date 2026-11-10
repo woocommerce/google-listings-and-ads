@@ -273,6 +273,14 @@ class AdsIncentivesTest extends UnitTest {
 		$this->assertFalse( $this->ads_incentives->has_applied_incentive() );
 	}
 
+	public function test_clear_applied_incentive_cache() {
+		$this->transients->expects( $this->once() )
+			->method( 'delete' )
+			->with( TransientsInterface::ADS_APPLIED_INCENTIVE );
+
+		$this->ads_incentives->clear_applied_incentive_cache();
+	}
+
 	public function test_apply_incentive_returns_coupon_code_and_creation_time() {
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 		$this->options->expects( $this->never() )->method( 'update' );

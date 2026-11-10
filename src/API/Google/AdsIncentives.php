@@ -115,6 +115,15 @@ class AdsIncentives implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Clear the cached applied offer check, so the next check asks Google again.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function clear_applied_incentive_cache(): void {
+		$this->transients->delete( TransientsInterface::ADS_APPLIED_INCENTIVE );
+	}
+
+	/**
 	 * Fetch available incentive offers from the Google Ads API.
 	 *
 	 * Country and language are derived from the store's base country and the WP locale.

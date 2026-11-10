@@ -141,7 +141,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertSame( $incentives, $response->get_data() );
+		$this->assertSame( $incentives + [ 'has_applied_incentive' => false ], $response->get_data() );
 	}
 
 	public function test_get_incentives_success_usd() {
@@ -213,7 +213,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertSame( $incentives, $response->get_data() );
+		$this->assertSame( $incentives + [ 'has_applied_incentive' => false ], $response->get_data() );
 	}
 
 	public function test_get_incentives_empty_response() {
@@ -224,7 +224,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertSame( self::EMPTY_RESPONSE, $response->get_data() );
+		$this->assertSame( self::EMPTY_RESPONSE + [ 'has_applied_incentive' => false ], $response->get_data() );
 	}
 
 	public function test_get_incentives_no_incentive_type() {
@@ -245,6 +245,32 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		$this->assertEmpty( $response->get_data()['incentives'] );
 	}
 
+	public function test_get_incentives_with_an_applied_incentive_keeps_the_offers() {
+		$incentives = [
+			'type'                  => 'CYO_INCENTIVE',
+			'termsAndConditionsUrl' => 'https://ads.google.com/intl/en_uk/home/terms-and-conditions/incentives/?bc=UK',
+			'incentives'            => [
+				[
+					'id'                    => '2378556534',
+					'type'                  => 'ACQUISITION',
+					'offer'                 => 'low',
+					'termsAndConditionsUrl' => 'https://ads.google.com/intl/en_uk/home/terms-and-conditions/incentives/?bc=UK&bid=nickel',
+					'requirement'           => [],
+				],
+			],
+		];
+
+		$this->ads_incentives->method( 'fetch_incentives' )->willReturn( $incentives );
+		$this->ads_incentives->expects( $this->once() )
+			->method( 'has_applied_incentive' )
+			->willReturn( true );
+
+		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertSame( $incentives + [ 'has_applied_incentive' => true ], $response->get_data() );
+	}
+
 	public function test_apply_incentive_success() {
 		$this->ads_incentives->expects( $this->once() )
 			->method( 'apply_incentive' )
@@ -256,6 +282,17 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
+		$this->ads_incentives->expects( $this->once() )
+			->method( 'clear_applied_incentive_cache' );
+
+		$debug_messages = [];
+		add_action(
+			'woocommerce_gla_debug_message',
+			function ( $message ) use ( &$debug_messages ) {
+				$debug_messages[] = $message;
+			}
+		);
+
 		$response = $this->do_request(
 			self::ROUTE_INCENTIVES,
 			'POST',
@@ -265,6 +302,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertSame( 'abc123', $response->get_data()['coupon_code'] );
 		$this->assertSame( '2026-03-15 15:33:21', $response->get_data()['creation_time'] );
+		$this->assertSame( [ 'Applied the Ads credit offer (incentive ID: 2378556534).' ], $debug_messages );
 	}
 
 	public function test_apply_incentive_api_exception() {
@@ -311,6 +349,9 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		$this->ads_incentives->expects( $this->once() )
 			->method( 'apply_incentive' )
 			->willThrowException( new RuntimeException( 'Unexpected API failure' ) );
+
+		$this->ads_incentives->expects( $this->never() )
+			->method( 'clear_applied_incentive_cache' );
 
 		// Failure path: error flag must be raised.
 		$this->options->expects( $this->once() )
