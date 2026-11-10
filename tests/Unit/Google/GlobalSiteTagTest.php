@@ -431,7 +431,15 @@ class GlobalSiteTagTest extends UnitTest {
 		);
 		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
 
-		$this->tag->register();
+		// register_assets() constructs real, built JS assets that aren't available in this test
+		// environment -- see the other register_assets()-mocking tests above for the same reason.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection, $this->tag_manager_settings ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
 
 		// Simulate the filter being added later in the same request, e.g. from a theme hook that
 		// runs after plugins_loaded -- register() already made its decision and must not re-read
@@ -457,10 +465,7 @@ class GlobalSiteTagTest extends UnitTest {
 		);
 	}
 
-	public function test_ads_conversion_configured_localization_uses_the_decision_register_made_even_if_the_filter_changes_afterward() {
-		// Firing the real wp_footer action also runs WordPress core's own unrelated callbacks on it.
-		$this->setExpectedDeprecated( 'the_block_template_skip_link' );
-
+	public function test_register_assets_receives_the_same_native_ads_tag_decision_register_computed() {
 		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
 			[
 				'conversion_id'    => self::TEST_CONVERSION_ID,
@@ -468,28 +473,18 @@ class GlobalSiteTagTest extends UnitTest {
 			]
 		);
 
-		$gtag_events_asset = null;
-		$this->assets_handler->method( 'register' )->willReturnCallback(
-			function ( $asset ) use ( &$gtag_events_asset ) {
-				if ( 'gla-gtag-events' === $asset->get_handle() ) {
-					$gtag_events_asset = $asset;
-				}
-			}
-		);
+		// tag_manager_connection is connected by default (see setUp()) with no conflict, so the
+		// native Ads tag is enabled -- register_assets() must receive that same true, not derive
+		// its own fresh answer later from inside its wp_footer closure.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection, $this->tag_manager_settings ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
 
-		$this->tag->register();
+		$tag->expects( $this->once() )->method( 'register_assets' )->with( true );
 
-		// Simulate the filter being added later in the same request, e.g. from a theme hook that
-		// runs after plugins_loaded -- register() already made its decision and wp_footer must not
-		// re-read this when it localizes data for the gtag events script.
-		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
-		do_action( 'wp_footer' );
-		remove_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
-
-		$localizations_property = new ReflectionProperty( $gtag_events_asset, 'localizations' );
-		$localizations_property->setAccessible( true );
-
-		$this->assertTrue( $localizations_property->getValue( $gtag_events_asset )['glaGtagData']['ads_conversion_configured'] );
+		$tag->register();
 	}
 
 	public function test_purchase_event_reports_names_and_categories_as_plain_text() {
