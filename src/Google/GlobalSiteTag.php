@@ -212,11 +212,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		}
 
 		/**
-		 * Filters whether the Google Ads tag and event snippets are disabled.
-		 *
-		 * A connected Google Tag Manager container is not affected by this: it still gets the
-		 * `window.dataLayer`/`gtag()` shim, the default consent state, and the dataLayer ecommerce
-		 * events (`view_item`, `add_to_cart`, `purchase`) that aren't specific to the native Ads tag.
+		 * Filters whether the Google Ads tag and event snippets are disabled. Doesn't affect a
+		 * connected Tag Manager container's own shim, consent state, or ecommerce events.
 		 *
 		 * @param bool $disable True to disable the Google Ads tag and event snippets. Default false.
 		 */
@@ -754,11 +751,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * @return bool True — real gating happens inside register(), not at the Conditional level: a
-	 *              connected Tag Manager container alone is reason enough to register, and
-	 *              `woocommerce_gla_disable_gtag_tracking` only suppresses the native Ads tag
-	 *              specifically (see {@see self::should_fire_native_ads_tag()}), not the whole
-	 *              service. A merchant's connection data also isn't cheaply checkable statically.
+	 * @return bool True — gating happens inside register(), not here. See
+	 *              {@see self::should_fire_native_ads_tag()} for the Ads-tag-specific filter.
 	 */
 	public static function is_needed(): bool {
 		return true;

@@ -95,10 +95,7 @@ class GlobalSiteTagTest extends UnitTest {
 	}
 
 	public function test_is_needed_stays_true_when_the_native_ads_tag_is_disabled_by_filter() {
-		// Regression test: is_needed() used to also apply this filter, so a connected Tag
-		// Manager container's whole GlobalSiteTag service -- not just the native Ads tag -- never
-		// registered at all. The filter now only suppresses the Ads tag itself, inside
-		// should_fire_native_ads_tag() (see the tests below).
+		// is_needed() no longer applies this filter -- see should_fire_native_ads_tag() below.
 		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
 
 		$this->assertTrue( GlobalSiteTag::is_needed() );
@@ -849,12 +846,8 @@ class GlobalSiteTagTest extends UnitTest {
 	}
 
 	public function test_register_still_runs_for_a_connected_container_when_the_native_ads_tag_is_disabled_by_filter() {
-		// Regression test: woocommerce_gla_disable_gtag_tracking used to suppress the whole
-		// GlobalSiteTag service via is_needed(), not just the native Ads tag it's documented to
-		// control -- so a connected Tag Manager container never got its consent defaults, its
-		// dataLayer ecommerce events, or the gla-wp-consent-api script that sends WP Consent API
-		// choices to Google, and visitors who accepted cookies stayed "denied" in GTM for the
-		// whole visit.
+		// The filter used to also block GlobalSiteTag from registering when a Tag Manager
+		// container was connected. It should only suppress the native Ads tag now.
 		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
 
 		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
@@ -871,10 +864,8 @@ class GlobalSiteTagTest extends UnitTest {
 			->getMock();
 		$tag->set_options_object( $this->options );
 
-		// register_assets() is where gla-wp-consent-api (the WP Consent API bridge script) gets
-		// enqueued -- asserting it's still called proves the filter no longer stops the whole
-		// service from running, the same way the other Tag-Manager-only regression tests above
-		// prove their own hooks still wire up.
+		// register_assets() enqueues gla-wp-consent-api; asserting it's called proves the whole
+		// service still registers, not just the Ads tag.
 		$tag->expects( $this->once() )->method( 'register_assets' );
 
 		$tag->register();

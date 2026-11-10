@@ -46,10 +46,8 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 			return;
 		}
 
-		// GlobalSiteTag publishes the window.dataLayer/gtag() shim and the default consent state
-		// before this runs -- it's always registered whenever a container is connected, which a
-		// live snippet already implies (see Settings::is_snippet_active()), independent of whether
-		// the native Ads tag itself is enabled.
+		// GlobalSiteTag always registers whenever a container is connected, so it has already
+		// published the dataLayer/gtag() shim and consent defaults before this runs.
 		add_action(
 			'wp_head',
 			function () use ( $container_public_id ) {
