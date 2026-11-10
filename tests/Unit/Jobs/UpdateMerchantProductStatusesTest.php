@@ -172,6 +172,10 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 					}
 				);
 
+		$this->merchant_statuses->expects( $this->exactly( 3 ) )
+			->method( 'record_feed_issue_page' )
+			->withConsecutive( [ null, 'ABC=' ], [ 'ABC=', 'DEF=' ], [ 'DEF=', null ] );
+
 		$this->merchant_statuses->expects( $this->exactly( 1 ) )
 			->method( 'handle_complete_mc_statuses_fetching' );
 

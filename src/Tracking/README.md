@@ -15,6 +15,11 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
     -   Google Ads account connected ID
     -   Number of markets whose first language or currency differs from the store default
     -   Google Business Profile location connection status
+    -   Feed issue counts from the last completed Merchant Center status check (counts only, no product data): blocking account issues, products disapproved in at least one market, products with error-level issues, products failing pre-sync validation, and total synced products. A variable product counts once, and can count as both failing pre-sync validation and synced when only some of its variations fail. The counts are empty when Merchant Center is not connected or no status check has completed.
+
+Feed issue summaries are published only after all pages of a status check have been tracked. A check resumed partway through an upgrade keeps the previous summary (or reports unknown counts if none exists). Tracking state is stored separately from the legacy product statistics so older versions can finish an in-progress check after a rollback. Failed count queries or exceptions preserve the previous summary and emit a debug message.
+
+Issue counts use the stored source: `mc` for Merchant Center and `pre-sync` for validation. Custom issues added through `woocommerce_gla_custom_merchant_issues` should explicitly set `source` to `filter`; a row that omits it inherits the table's `mc` default and is included in the Merchant Center counts. Existing hook-provided sources are preserved.
 
 <!-- TODO: add more tracking information -->
 
@@ -235,7 +240,7 @@ Clicking on the button to create a new Google Ads account, after agreeing to the
 #### Emitters
 - [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L36) When agreed by clicking "Create account".
 
-### [`gla_ads_account_disconnect_button_click`](../../js/src/components/google-ads-account-card/disconnect-account.js#L16)
+### [`gla_ads_account_disconnect_button_click`](../../js/src/components/google-ads-account-card/disconnect-account.js#L17)
 Clicking on the button to disconnect the Google Ads account.
 #### Properties
 | name | type | description |
@@ -243,7 +248,7 @@ Clicking on the button to disconnect the Google Ads account.
 `context` | `string` | Indicates the place where the button is located.
 `step` | `string` | Indicates the step in the onboarding process.
 #### Emitters
-- [`DisconnectAccount`](../../js/src/components/google-ads-account-card/disconnect-account.js#L32) When the user clicks on the button to disconnect the Google Ads account.
+- [`DisconnectAccount`](../../js/src/components/google-ads-account-card/disconnect-account.js#L33) When the user clicks on the button to disconnect the Google Ads account.
 
 ### [`gla_ads_budget_metrics_received`](../../js/src/data/controls.js#L46)
 Received the data of budget metrics.
@@ -573,7 +578,7 @@ When a documentation link is clicked.
 #### Emitters
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
 - [`BenefitsCard`](../../js/src/pages/get-started/benefits-card/index.js#L22) with `{ context: 'get-started', link_id: 'benefits-card-credit-terms', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }` when the user clicks on the "Terms and conditions" link in the notice.
-- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L32) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
+- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L33) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
 - [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L25) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 - [`ConnectGoogleComboAccountCard`](../../js/src/components/google-combo-account-card/connect-google-combo-account-card.js#L41)
 	- with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
@@ -592,7 +597,7 @@ When a documentation link is clicked.
 	- with `{ context: 'edit-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
 - [`FaqLink`](../../js/src/pages/price-benchmark/faq-link.js#L20) with `{ context: 'price-benchmark-suggestions', link_id: 'price-benchmark-suggestions-faq' }` and the URL.
 - [`Faqs`](../../js/src/components/paid-ads/asset-group/faqs.js#L22) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
-- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L448)
+- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L447)
 	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
 	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#google-merchant-center-requirements' }`.
@@ -647,7 +652,7 @@ Triggered when edit links are clicked from product feed table.
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65)
 
-### [`gla_edit_product_issue_click`](../../js/src/pages/product-feed/issues-table-card/index.js#L44)
+### [`gla_edit_product_issue_click`](../../js/src/pages/product-feed/issues-table-card/index.js#L43)
 Triggered when edit links are clicked from Issues to resolve table.
 #### Properties
 | name | type | description |
@@ -706,7 +711,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'campaign-management', id: 'what-will-my-ads-look-like', action: 'expand' | 'collapse' }`.
 	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-service-ads', action: 'expand' | 'collapse' }`.
 	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
-- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L448)
+- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L447)
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'expand' }`.
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
 	- with `{ context: 'get-started', id: 'what-if-i-already-have-free-listings', action: 'expand' }`.
@@ -1277,7 +1282,7 @@ When the "Improve Assets" button is clicked.
 #### Emitters
 - [`PriceBenchmarkSuggestions`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L200) with `{ context: 'price-benchmark-suggestions' }` and the suggestions count.
 
-### [`gla_raise_budget_recommendation_badge_campaigns`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L57)
+### [`gla_raise_budget_recommendation_badge_campaigns`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L66)
 When there are campaigns with budget recommendations in the table.
 #### Properties
 | name | type | description |
@@ -1285,7 +1290,7 @@ When there are campaigns with budget recommendations in the table.
 `context` | `string` | The context in which the banner was dismissed. Set to 'programs-table-card'.
 `campaign_ids` | `Array<number>` | The IDs of the campaigns with budget recommendations.
 #### Emitters
-- [`AllProgramsTableCard`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L73) when there are campaigns with budget recommendations in the table.
+- [`AllProgramsTableCard`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L82) when there are campaigns with budget recommendations in the table.
 
 ### [`gla_raise_budget_recommendation_banner_shown`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L24)
 When the banner is shown.
