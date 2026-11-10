@@ -134,4 +134,24 @@ describe( 'SetupPaidAds in onboarding', () => {
 			);
 		}
 	);
+
+	it( 'applies the offer only once when the merchant submits again', async () => {
+		render( <SetupPaidAds /> );
+		const submitButton = screen.getByRole( 'button', { name: 'Submit' } );
+
+		await userEvent.click( submitButton );
+		await waitFor( () =>
+			expect( getProductFeedUrl ).toHaveBeenCalledTimes( 1 )
+		);
+		await userEvent.click( submitButton );
+		await waitFor( () =>
+			expect( getProductFeedUrl ).toHaveBeenCalledTimes( 2 )
+		);
+
+		expect( applyIncentive ).toHaveBeenCalledTimes( 1 );
+		expect( getProductFeedUrl ).toHaveBeenLastCalledWith( {
+			guide: 'submission-success',
+			incentive: 'applied',
+		} );
+	} );
 } );

@@ -38,20 +38,42 @@ jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
 
-// Replaces the form with a button that submits the given values, so the test drives `handleSubmit` directly.
+jest.mock( '~/components/adaptive-form', () => ( {
+	useAdaptiveFormContext: jest.fn().mockReturnValue( {
+		isDirty: false,
+		adapter: { isSubmitted: false },
+	} ),
+} ) );
+jest.mock( '~/hooks/useNavigateAwayPromptEffect', () => jest.fn() );
+jest.mock( '~/components/paid-ads/budget-incentive-prompt', () =>
+	require( '@wordpress/element' ).forwardRef( () => null )
+);
+// Renders only the "Create campaign" button, with the form context it would receive.
+jest.mock(
+	'~/components/paid-ads/ads-campaign',
+	() => ( props ) =>
+		props.continueButton( {
+			isValidForm: true,
+			values: { dailyBudget: 50 },
+		} )
+);
+// Replaces the form with its children and a button that submits the given values, so the test drives `handleSubmit` directly.
 jest.mock( '~/components/paid-ads/campaign-assets-form', () => ( props ) => (
-	<button
-		onClick={ () =>
-			props.onSubmit( {
-				level: 'recommended',
-				dailyBudget: 50,
-				hasConfirmedEuPoliticalContent: false,
-				incentiveOffer: 'medium',
-			} )
-		}
-	>
-		Submit
-	</button>
+	<>
+		{ props.children }
+		<button
+			onClick={ () =>
+				props.onSubmit( {
+					level: 'recommended',
+					dailyBudget: 50,
+					hasConfirmedEuPoliticalContent: false,
+					incentiveOffer: 'medium',
+				} )
+			}
+		>
+			Submit
+		</button>
+	</>
 ) );
 
 describe( 'SetupPaidAds', () => {
@@ -83,7 +105,9 @@ describe( 'SetupPaidAds', () => {
 
 	const submit = async () => {
 		render( <SetupPaidAds /> );
-		await userEvent.click( screen.getByRole( 'button' ) );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Submit' } )
+		);
 		await waitFor( () => expect( handleSetupComplete ).toHaveBeenCalled() );
 	};
 
@@ -117,5 +141,18 @@ describe( 'SetupPaidAds', () => {
 			'gla_campaign_with_cyo_incentive_selected',
 			expect.anything()
 		);
+	} );
+
+	it( 'disables the "Create campaign" button while the offer is being applied', () => {
+		useApplyCYOIncentive.mockReturnValue( {
+			applyIncentive,
+			loading: true,
+		} );
+
+		render( <SetupPaidAds /> );
+
+		expect(
+			screen.getByRole( 'button', { name: /Create campaign/ } )
+		).toBeDisabled();
 	} );
 } );
