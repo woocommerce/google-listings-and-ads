@@ -24,7 +24,7 @@ const useApplyCYOIncentive = () => {
 	 * no matching offer is found, billing is not approved, or an offer was
 	 * already applied. A successful apply refetches the incentives, so the
 	 * offer picker hides.
-	 * Errors from the API are swallowed so onboarding is never blocked.
+	 * Errors from the API are swallowed so onboarding and campaign creation are never blocked.
 	 * Returns `true` if applied, `false` otherwise.
 	 */
 	const applyIncentive = useCallback(
