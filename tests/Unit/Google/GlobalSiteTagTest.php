@@ -94,10 +94,11 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertTrue( GlobalSiteTag::is_needed() );
 	}
 
-	public function test_is_needed_returns_false_when_disabled_by_filter() {
+	public function test_is_needed_stays_true_when_the_native_ads_tag_is_disabled_by_filter() {
+		// is_needed() no longer applies this filter -- see should_fire_native_ads_tag() below.
 		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
 
-		$this->assertFalse( GlobalSiteTag::is_needed() );
+		$this->assertTrue( GlobalSiteTag::is_needed() );
 	}
 
 	public function test_should_fire_native_ads_tag_true_when_configured_and_no_conflict() {
@@ -116,6 +117,14 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( null, null, false ) );
 		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( self::TEST_CONVERSION_ID, null, false ) );
 		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( null, self::TEST_CONVERSION_LABEL, false ) );
+	}
+
+	public function test_should_fire_native_ads_tag_false_when_disabled_by_filter() {
+		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$this->assertFalse(
+			GlobalSiteTag::should_fire_native_ads_tag( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, false )
+		);
 	}
 
 	public function test_purchase_event_not_order_received_page() {
@@ -253,7 +262,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $this->tag );
+		$method->invoke( $this->tag, true );
 	}
 
 	public function test_view_item_event_snippet_does_not_push_to_data_layer_when_tag_manager_not_connected() {
@@ -288,7 +297,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$method = new ReflectionMethod( $tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $tag );
+		$method->invoke( $tag, true );
 	}
 
 	public function test_view_item_event_snippet_not_a_product_page() {
@@ -298,7 +307,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $this->tag );
+		$method->invoke( $this->tag, true );
 	}
 
 	public function test_add_product_data_includes_category() {
@@ -381,7 +390,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $this->tag );
+		$method->invoke( $this->tag, true );
 
 		[ $ads_script, $data_layer_script ] = $scripts->getArrayCopy();
 
@@ -402,12 +411,80 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $this->tag );
+		$method->invoke( $this->tag, false );
 
 		$data_layer_script = $scripts->getArrayCopy()[0];
 
 		$this->assertStringContainsString( 'item_category: "Say \\"hi\\" \\u003C\\/script\\u003E\\u003Cscript\\u003Ealert(1)"', $data_layer_script );
 		$this->assertStringNotContainsString( '<', $data_layer_script );
+	}
+
+	public function test_view_item_event_snippet_uses_the_decision_register_made_even_if_the_filter_changes_afterward() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
+
+		// register_assets() constructs real, built JS assets that aren't available in this test
+		// environment -- see the other register_assets()-mocking tests above for the same reason.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection, $this->tag_manager_settings ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		// Simulate the filter being added later in the same request, e.g. from a theme hook that
+		// runs after plugins_loaded -- register() already made its decision and must not re-read
+		// this when the hooks it registered actually fire.
+		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$printed_ads_event = false;
+		$this->wp->method( 'wp_print_inline_script_tag' )->willReturnCallback(
+			function ( string $script ) use ( &$printed_ads_event ) {
+				if ( str_starts_with( $script, 'gtag("event", "view_item"' ) ) {
+					$printed_ads_event = true;
+				}
+			}
+		);
+
+		do_action( 'woocommerce_after_single_product' );
+
+		remove_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$this->assertTrue(
+			$printed_ads_event,
+			'The Ads view_item event should still fire using register()\'s own decision, not a filter value that changed afterward.'
+		);
+	}
+
+	public function test_register_assets_receives_the_same_native_ads_tag_decision_register_computed() {
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+
+		// tag_manager_connection is connected by default (see setUp()) with no conflict, so the
+		// native Ads tag is enabled -- register_assets() must receive that same true, not derive
+		// its own fresh answer later from inside its wp_footer closure.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection, $this->tag_manager_settings ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->expects( $this->once() )->method( 'register_assets' )->with( true );
+
+		$tag->register();
 	}
 
 	public function test_purchase_event_reports_names_and_categories_as_plain_text() {
@@ -834,6 +911,44 @@ class GlobalSiteTagTest extends UnitTest {
 		$output = ob_get_clean();
 
 		$this->assertStringContainsString( 'googletagmanager.com/gtag/js', $output );
+	}
+
+	public function test_register_still_runs_for_a_connected_container_when_the_native_ads_tag_is_disabled_by_filter() {
+		// The filter used to also block GlobalSiteTag from registering when a Tag Manager
+		// container was connected. It should only suppress the native Ads tag now.
+		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+
+		// tag_manager_connection is connected by default (see setUp()).
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection, $this->tag_manager_settings ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		// register_assets() enqueues gla-wp-consent-api; asserting it's called proves the whole
+		// service still registers, not just the Ads tag.
+		$tag->expects( $this->once() )->method( 'register_assets' );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		remove_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$this->assertStringContainsString( 'window.dataLayer = window.dataLayer || []', $output );
+		$this->assertStringContainsString( "gtag( 'consent', 'default'", $output );
+
+		// The native Ads tag itself is still suppressed -- only its own gtag.js loader is gone.
+		$this->assertStringNotContainsString( 'googletagmanager.com/gtag/js', $output );
 	}
 
 	public function test_register_does_nothing_when_neither_tag_manager_nor_ads_is_active() {
