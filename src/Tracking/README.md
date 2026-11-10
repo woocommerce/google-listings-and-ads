@@ -436,6 +436,7 @@ Applying a "Choose Your Own" incentive offer when creating a campaign after onbo
 `level` | `string` | The level of the applied incentive offer, e.g. 'low', 'medium', or 'high'.
 #### Emitters
 - [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L61) with `{ context: 'create-ads', level: 'low' | 'medium' | 'high' }`.
+- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L52) with `{ context: 'setup-ads', level: 'low' | 'medium' | 'high' }`
 
 ### [`gla_cancel_button_clicked`](../../js/src/pages/markets/components/add-market-modal/modal-footer.js#L15)
 Event fired when the "Cancel" button in the AddMarketModal is clicked.
