@@ -18,6 +18,9 @@ defined( 'ABSPATH' ) || exit;
  */
 final class SyncOutcome {
 
+	/** @var string A send to Google has been scheduled but hasn't run yet. */
+	public const QUEUED = 'queued';
+
 	/** @var string Google accepted the post. */
 	public const SUCCESS = 'success';
 
@@ -52,6 +55,7 @@ final class SyncOutcome {
 
 	/** @var string[] Every outcome. */
 	public const ALL = [
+		self::QUEUED,
 		self::SUCCESS,
 		self::SENT_PENDING_VERIFICATION,
 		self::SENT_LOCATION_RESTRICTED,

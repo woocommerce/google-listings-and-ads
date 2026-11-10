@@ -62,6 +62,15 @@ class SyncOutcomeTest extends UnitTest {
 		$this->assertContains( SyncOutcome::SENT_LOCATION_RESTRICTED, SyncOutcome::ALL );
 	}
 
+	/**
+	 * A queued post hasn't had an attempt yet, so retrying it would schedule a duplicate send
+	 * while the first one is still in flight.
+	 */
+	public function test_queued_is_not_a_retryable_failure() {
+		$this->assertNotContains( SyncOutcome::QUEUED, SyncOutcome::FAILURES );
+		$this->assertContains( SyncOutcome::QUEUED, SyncOutcome::ALL );
+	}
+
 	public function test_a_restricted_state_is_a_success_when_has_voice_of_merchant_is_not_explicitly_false() {
 		$state = [
 			'hasVoiceOfMerchant'     => true,
