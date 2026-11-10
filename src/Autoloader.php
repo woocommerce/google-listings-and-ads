@@ -39,6 +39,8 @@ class Autoloader {
 			return false;
 		}
 
+		require_once dirname( __DIR__ ) . '/src/Compatibility/GoogleAdsApiCompatibility.php';
+
 		return $autoloader_result;
 	}
 
