@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -26,20 +25,15 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 	/** @var Settings */
 	protected $settings;
 
-	/** @var GoogleGtagJs */
-	protected $gtag_js;
-
 	/**
 	 * TagManagerSiteTag constructor.
 	 *
-	 * @param Connection   $connection
-	 * @param Settings     $settings
-	 * @param GoogleGtagJs $gtag_js
+	 * @param Connection $connection
+	 * @param Settings   $settings
 	 */
-	public function __construct( Connection $connection, Settings $settings, GoogleGtagJs $gtag_js ) {
+	public function __construct( Connection $connection, Settings $settings ) {
 		$this->connection = $connection;
 		$this->settings   = $settings;
-		$this->gtag_js    = $gtag_js;
 	}
 
 	/**
@@ -52,18 +46,10 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 			return;
 		}
 
-		// The container's consent defaults are normally published by the Ads tag, which isn't registered when
-		// it's disabled, so publish them here instead. They must be in place before the container loads.
-		if ( ! GlobalSiteTag::is_needed() ) {
-			add_action(
-				'wp_head',
-				function () {
-					$this->display_consent_defaults();
-				},
-				999998
-			);
-		}
-
+		// GlobalSiteTag publishes the window.dataLayer/gtag() shim and the default consent state
+		// before this runs -- it's always registered whenever a container is connected, which a
+		// live snippet already implies (see Settings::is_snippet_active()), independent of whether
+		// the native Ads tag itself is enabled.
 		add_action(
 			'wp_head',
 			function () use ( $container_public_id ) {
@@ -93,31 +79,6 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 		$data = $this->connection->get_connection_data();
 
 		return ! empty( $data['container_id'] ) && empty( $data['container_public_id'] );
-	}
-
-	/**
-	 * Display the `window.dataLayer`/`gtag()` shim and the default consent state.
-	 */
-	protected function display_consent_defaults() {
-		// WooCommerce Google Analytics for WooCommerce publishes its own defaults when it's adding the framework.
-		if ( $this->gtag_js->is_adding_framework() ) {
-			return;
-		}
-
-		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
-		?>
-
-		<script>
-			window.dataLayer = window.dataLayer || [];
-			function gtag() { dataLayer.push(arguments); }
-			<?php
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo ConsentModeSnippet::get_config();
-			?>
-		</script>
-
-		<?php
-		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 
 	/**

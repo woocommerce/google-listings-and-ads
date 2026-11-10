@@ -94,10 +94,14 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertTrue( GlobalSiteTag::is_needed() );
 	}
 
-	public function test_is_needed_returns_false_when_disabled_by_filter() {
+	public function test_is_needed_stays_true_when_the_native_ads_tag_is_disabled_by_filter() {
+		// Regression test for GOOWOO-1194: is_needed() used to also apply this filter, so a
+		// connected Tag Manager container's whole GlobalSiteTag service -- not just the native
+		// Ads tag -- never registered at all. The filter now only suppresses the Ads tag itself,
+		// inside should_fire_native_ads_tag() (see the tests below).
 		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
 
-		$this->assertFalse( GlobalSiteTag::is_needed() );
+		$this->assertTrue( GlobalSiteTag::is_needed() );
 	}
 
 	public function test_should_fire_native_ads_tag_true_when_configured_and_no_conflict() {
@@ -116,6 +120,14 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( null, null, false ) );
 		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( self::TEST_CONVERSION_ID, null, false ) );
 		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( null, self::TEST_CONVERSION_LABEL, false ) );
+	}
+
+	public function test_should_fire_native_ads_tag_false_when_disabled_by_filter() {
+		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$this->assertFalse(
+			GlobalSiteTag::should_fire_native_ads_tag( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, false )
+		);
 	}
 
 	public function test_purchase_event_not_order_received_page() {
@@ -834,6 +846,50 @@ class GlobalSiteTagTest extends UnitTest {
 		$output = ob_get_clean();
 
 		$this->assertStringContainsString( 'googletagmanager.com/gtag/js', $output );
+	}
+
+	public function test_register_still_runs_for_a_connected_container_when_the_native_ads_tag_is_disabled_by_filter() {
+		// Regression test for GOOWOO-1194: woocommerce_gla_disable_gtag_tracking used to suppress
+		// the whole GlobalSiteTag service via is_needed(), not just the native Ads tag it's
+		// documented to control -- so a connected Tag Manager container never got its consent
+		// defaults, its dataLayer ecommerce events, or the gla-wp-consent-api script that sends WP
+		// Consent API choices to Google, and visitors who accepted cookies stayed "denied" in GTM
+		// for the whole visit.
+		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+
+		// tag_manager_connection is connected by default (see setUp()).
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection, $this->tag_manager_settings ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		// register_assets() is where gla-wp-consent-api (the WP Consent API bridge script) gets
+		// enqueued -- asserting it's still called proves the filter no longer stops the whole
+		// service from running, the same way the other Tag-Manager-only regression tests above
+		// prove their own hooks still wire up.
+		$tag->expects( $this->once() )->method( 'register_assets' );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		remove_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$this->assertStringContainsString( 'window.dataLayer = window.dataLayer || []', $output );
+		$this->assertStringContainsString( "gtag( 'consent', 'default'", $output );
+
+		// The native Ads tag itself is still suppressed -- only its own gtag.js loader is gone.
+		$this->assertStringNotContainsString( 'googletagmanager.com/gtag/js', $output );
 	}
 
 	public function test_register_does_nothing_when_neither_tag_manager_nor_ads_is_active() {
