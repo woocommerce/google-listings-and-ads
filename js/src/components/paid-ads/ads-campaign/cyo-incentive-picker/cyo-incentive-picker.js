@@ -45,11 +45,15 @@ import './cyo-incentive-picker.scss';
  *
  * @param {Object} props React props.
  * @param {string} props.context The context in which this component is used, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'. This is used for tracking purposes and may also be used to conditionally render content within the component.
- * @return {JSX.Element|null} The rendered component, or null if the incentives are still being resolved or if there are no incentives available.
+ * @return {JSX.Element|null} The rendered component, or null if the incentives are still being resolved, there are no incentives available, or an offer was already applied.
  */
 const CyoIncentivePicker = ( { context } ) => {
 	const { getInputProps } = useAdaptiveFormContext();
-	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
+	const {
+		data: incentives,
+		hasAppliedIncentive,
+		hasFinishedResolution,
+	} = useCYOIncentives();
 	const { formatAmount } = useAdsCurrency();
 	const {
 		value: selectedIncentiveOffer,
@@ -58,7 +62,10 @@ const CyoIncentivePicker = ( { context } ) => {
 		...restInputProps
 	} = getInputProps( 'incentiveOffer' );
 
-	const shouldDisplay = hasFinishedResolution && incentives?.length > 0;
+	const shouldDisplay =
+		hasFinishedResolution &&
+		! hasAppliedIncentive &&
+		incentives?.length > 0;
 	const hasTrackedShownRef = useRef( false );
 
 	useEffect( () => {

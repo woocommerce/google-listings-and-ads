@@ -100,6 +100,7 @@ describe( 'CyoIncentivePicker Component', () => {
 
 		useCYOIncentives.mockReturnValue( {
 			data: INCENTIVES_DATA,
+			hasAppliedIncentive: false,
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -108,6 +109,22 @@ describe( 'CyoIncentivePicker Component', () => {
 		renderComponent();
 		const titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).toBeInTheDocument();
+	} );
+
+	it( 'should not render or track if an offer was already applied', () => {
+		useCYOIncentives.mockReturnValue( {
+			data: INCENTIVES_DATA,
+			hasAppliedIncentive: true,
+			hasFinishedResolution: true,
+		} );
+
+		renderComponent();
+		const titleElement = screen.queryByText( 'Ads credit offer' );
+		expect( titleElement ).not.toBeInTheDocument();
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			expect.anything()
+		);
 	} );
 
 	it( 'should not render if incentives are not available', () => {

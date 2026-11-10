@@ -8,18 +8,22 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import { API_NAMESPACE } from '~/data/constants';
+import { useAppDispatch } from '~/data';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus';
 import useCYOIncentives from './useCYOIncentives';
 
 const useApplyCYOIncentive = () => {
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const { data: incentives } = useCYOIncentives();
+	const { data: incentives, hasAppliedIncentive } = useCYOIncentives();
+	const { invalidateResolution } = useAppDispatch();
 	const [ loading, setLoading ] = useState( false );
 
 	/**
 	 * Attempts to apply the incentive for the given offer. Skips silently if
-	 * no matching offer is found or billing is not approved.
+	 * no matching offer is found, billing is not approved, or an offer was
+	 * already applied. A successful apply refetches the incentives, so the
+	 * offer picker hides.
 	 * Errors from the API are swallowed so onboarding is never blocked.
 	 * Returns `true` if applied, `false` otherwise.
 	 */
@@ -32,7 +36,11 @@ const useApplyCYOIncentive = () => {
 				( incentive ) => incentive.offer === incentiveOffer
 			)?.id;
 
-			if ( ! incentiveId || ! isBillingCompleted ) {
+			if (
+				! incentiveId ||
+				! isBillingCompleted ||
+				hasAppliedIncentive
+			) {
 				return false;
 			}
 
@@ -45,6 +53,8 @@ const useApplyCYOIncentive = () => {
 					data: { id: incentiveId },
 				} );
 
+				invalidateResolution( 'getCYOIncentives', [] );
+
 				return true;
 			} catch {
 				return false;
@@ -52,7 +62,7 @@ const useApplyCYOIncentive = () => {
 				setLoading( false );
 			}
 		},
-		[ billingStatus, incentives ]
+		[ billingStatus, incentives, hasAppliedIncentive, invalidateResolution ]
 	);
 
 	return { applyIncentive, loading };

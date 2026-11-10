@@ -12,16 +12,23 @@ import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus
 import useCYOIncentives from './useCYOIncentives';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { API_NAMESPACE } from '~/data/constants';
+import { useAppDispatch } from '~/data';
 
 jest.mock( '@wordpress/api-fetch' );
 jest.mock( './useGoogleAdsAccountBillingStatus' );
 jest.mock( './useCYOIncentives' );
+jest.mock( '~/data', () => ( {
+	useAppDispatch: jest.fn(),
+} ) );
 
 describe( 'useApplyCYOIncentive', () => {
+	const invalidateResolution = jest.fn();
+
 	beforeEach( () => {
 		jest.clearAllMocks();
 		apiFetch.mockResolvedValue( {} );
 		useCYOIncentives.mockReturnValue( { data: [] } );
+		useAppDispatch.mockReturnValue( { invalidateResolution } );
 	} );
 
 	it( 'exposes result with loading state', async () => {
@@ -118,6 +125,36 @@ describe( 'useApplyCYOIncentive', () => {
 			expect( apiFetch ).not.toHaveBeenCalled();
 		} );
 
+		it( 'returns false when an offer was already applied', async () => {
+			useCYOIncentives.mockReturnValue( {
+				data: [ { offer: 'incentive-123', id: 'incentive-123' } ],
+				hasAppliedIncentive: true,
+			} );
+
+			const { result } = renderHook( () => useApplyCYOIncentive() );
+
+			const returnValue = await act( () =>
+				result.current.applyIncentive( 'incentive-123' )
+			);
+
+			expect( returnValue ).toBe( false );
+			expect( apiFetch ).not.toHaveBeenCalled();
+		} );
+
+		it( 'invalidates the incentives resolution and returns true on success', async () => {
+			const { result } = renderHook( () => useApplyCYOIncentive() );
+
+			const returnValue = await act( () =>
+				result.current.applyIncentive( 'incentive-123' )
+			);
+
+			expect( returnValue ).toBe( true );
+			expect( invalidateResolution ).toHaveBeenCalledWith(
+				'getCYOIncentives',
+				[]
+			);
+		} );
+
 		it( 'swallows API errors and returns false', async () => {
 			apiFetch.mockRejectedValue( new Error( 'API error' ) );
 
@@ -128,6 +165,7 @@ describe( 'useApplyCYOIncentive', () => {
 			);
 
 			expect( returnValue ).toBe( false );
+			expect( invalidateResolution ).not.toHaveBeenCalled();
 		} );
 	} );
 } );

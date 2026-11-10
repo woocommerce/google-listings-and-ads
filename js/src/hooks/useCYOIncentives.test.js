@@ -100,6 +100,7 @@ describe( 'useCYOIncentives', () => {
 		expect( getCYOIncentives ).not.toHaveBeenCalled();
 		expect( result.current ).toEqual( {
 			data: null,
+			hasAppliedIncentive: false,
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -113,6 +114,7 @@ describe( 'useCYOIncentives', () => {
 		const hasFinishedResolution = jest.fn().mockReturnValue( true );
 		const select = jest.fn().mockReturnValue( {
 			getCYOIncentives,
+			hasAppliedCYOIncentive: jest.fn().mockReturnValue( false ),
 			hasFinishedResolution,
 		} );
 
@@ -129,6 +131,29 @@ describe( 'useCYOIncentives', () => {
 
 		expect( result.current ).toEqual( {
 			data: MOCKED_INCENTIVES,
+			hasAppliedIncentive: false,
+			hasFinishedResolution: true,
+		} );
+	} );
+
+	it( 'exposes whether an offer was already applied', () => {
+		useGoogleAdsAccountBillingStatus.mockReturnValue( {
+			billingStatus: { status: GOOGLE_ADS_BILLING_STATUS.APPROVED },
+		} );
+
+		const select = jest.fn().mockReturnValue( {
+			getCYOIncentives: jest.fn().mockReturnValue( MOCKED_INCENTIVES ),
+			hasAppliedCYOIncentive: jest.fn().mockReturnValue( true ),
+			hasFinishedResolution: jest.fn().mockReturnValue( true ),
+		} );
+
+		useSelect.mockImplementation( ( cb ) => cb( select ) );
+
+		const { result } = renderHook( () => useCYOIncentives() );
+
+		expect( result.current ).toEqual( {
+			data: MOCKED_INCENTIVES,
+			hasAppliedIncentive: true,
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -153,6 +178,7 @@ describe( 'useCYOIncentives', () => {
 		expect( getCYOIncentives ).not.toHaveBeenCalled();
 		expect( result.current ).toEqual( {
 			data: null,
+			hasAppliedIncentive: false,
 			hasFinishedResolution: false,
 		} );
 	} );
@@ -166,6 +192,7 @@ describe( 'useCYOIncentives', () => {
 		const hasFinishedResolution = jest.fn().mockReturnValue( false );
 		const select = jest.fn().mockReturnValue( {
 			getCYOIncentives,
+			hasAppliedCYOIncentive: jest.fn().mockReturnValue( false ),
 			hasFinishedResolution,
 		} );
 
@@ -175,6 +202,7 @@ describe( 'useCYOIncentives', () => {
 
 		expect( result.current ).toEqual( {
 			data: null,
+			hasAppliedIncentive: false,
 			hasFinishedResolution: false,
 		} );
 	} );

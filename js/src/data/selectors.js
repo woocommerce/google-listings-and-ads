@@ -498,6 +498,17 @@ export const getCYOIncentives = ( state ) => {
 };
 
 /**
+ * Retrieves whether an offer was already applied to the connected Google Ads account.
+ * It's returned by the same request as `getCYOIncentives`, so it's only available once that resolves.
+ *
+ * @param {Object} state The state
+ * @return {boolean} Whether an offer was already applied.
+ */
+export const hasAppliedCYOIncentive = ( state ) => {
+	return state.ads.cyo_incentives?.has_applied_incentive ?? false;
+};
+
+/**
  * Return the GTIN Migration status.
  *
  * @param {Object} state The state
