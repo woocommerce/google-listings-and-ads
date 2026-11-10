@@ -22,6 +22,8 @@ interface TransientsInterface {
 	public const MC_IS_SUBACCOUNT           = 'mc_is_subaccount';
 	public const MC_STATUSES                = 'mc_statuses';
 	public const SMALL_IMAGE_PRODUCT_COUNT  = 'small_image_product_count';
+	public const TOP_PRODUCT_PAGES          = 'top_product_pages';
+	public const TOP_STORE_PAGES            = 'top_store_pages';
 	public const URL_MATCHES                = 'url_matches';
 
 	public const VALID_OPTIONS = [
@@ -37,6 +39,8 @@ interface TransientsInterface {
 		self::MC_IS_SUBACCOUNT           => true,
 		self::MC_STATUSES                => true,
 		self::SMALL_IMAGE_PRODUCT_COUNT  => true,
+		self::TOP_PRODUCT_PAGES          => true,
+		self::TOP_STORE_PAGES            => true,
 		self::URL_MATCHES                => true,
 	];
 

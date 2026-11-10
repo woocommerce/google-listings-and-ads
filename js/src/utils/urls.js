@@ -145,8 +145,8 @@ export const getShippingUrl = () => {
 	return getNewPath( null, pagePaths.shipping, null );
 };
 
-export const getReportsUrl = () => {
-	return getNewPath( null, reportsPath, null );
+export const getReportsUrl = ( query = null ) => {
+	return getNewPath( query, reportsPath, null );
 };
 
 export const getEditStoreAddressUrl = () => {
@@ -247,18 +247,18 @@ export const getSearchConsolePropertyUrl = ( siteUrl ) => {
 
 /**
  * Builds the outbound link to the Performance > Search results report for a property in Google
- * Search Console itself — the report backing this plugin's own "View Organic Search report"
- * action.
+ * Search Console itself — the deeper link out of this plugin's own Organic search report.
  *
  * @param {string} [siteUrl] The property's raw Sites API identifier. `undefined` when not yet known.
  * @param {Object} [options] Optional report scoping.
  * @param {string} [options.breakdown] Dimension to break the report down by, e.g. `'query'`.
  * @param {number} [options.days] Number of days the report covers.
+ * @param {string} [options.pageContains] Only include pages whose URL contains this text.
  * @return {string|null} The Google Search Console Performance report URL for that property, or `null` when `siteUrl` isn't set.
  */
 export const getSearchConsolePerformanceReportUrl = (
 	siteUrl,
-	{ breakdown, days } = {}
+	{ breakdown, days, pageContains } = {}
 ) => {
 	if ( ! siteUrl ) {
 		return null;
@@ -274,6 +274,10 @@ export const getSearchConsolePerformanceReportUrl = (
 
 	if ( days ) {
 		url += `&num_of_days=${ days }`;
+	}
+
+	if ( pageContains ) {
+		url += `&page=*${ encodeURIComponent( pageContains ) }`;
 	}
 
 	return url;

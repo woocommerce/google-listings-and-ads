@@ -51,12 +51,7 @@ const ConnectedGoogleSearchConsoleAccountCard = ( {
 					</AccountCardTextDetail>
 				) : null
 			}
-			indicator={
-				<ConnectedIndicator
-					account={ account }
-					onDisconnect={ onDisconnect }
-				/>
-			}
+			indicator={ <ConnectedIndicator onDisconnect={ onDisconnect } /> }
 		>
 			{ account.just_resolved && <ConnectedSuccessNotice /> }
 		</AccountCard>

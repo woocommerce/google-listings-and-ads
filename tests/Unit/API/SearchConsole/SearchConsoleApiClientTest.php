@@ -80,6 +80,20 @@ class SearchConsoleApiClientTest extends UnitTest {
 		$this->assertSame( '', $request->getHeaderLine( 'Content-Type' ) );
 	}
 
+	public function test_post_sends_json_encoded_body_and_returns_decoded_response() {
+		$this->mock->append( new Response( 200, [], wp_json_encode( [ 'rows' => [] ] ) ) );
+
+		$result = $this->client->post( 'sites/x/searchAnalytics/query', [ 'rowLimit' => 10 ] );
+
+		$this->assertSame( [ 'rows' => [] ], $result );
+
+		$request = $this->history[0]['request'];
+		$this->assertSame( 'POST', $request->getMethod() );
+		$this->assertSame( self::BASE_URL . 'sites/x/searchAnalytics/query', (string) $request->getUri() );
+		$this->assertSame( 'application/json', $request->getHeaderLine( 'Content-Type' ) );
+		$this->assertSame( [ 'rowLimit' => 10 ], json_decode( (string) $request->getBody(), true ) );
+	}
+
 	public function test_delete_returns_decoded_array_on_success() {
 		$this->mock->append( new Response( 200, [], '{}' ) );
 

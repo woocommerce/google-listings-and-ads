@@ -201,6 +201,10 @@ describe( 'useNotificationsSystemMap', () => {
 
 	it( 'defines the Search Console notification content and Accounts CTA', () => {
 		const { result } = renderHook( () => useNotificationsSystemMap() );
+		expect( Object.keys( result.current ) ).toContain(
+			'search-console-not-connected'
+		);
+
 		const config = result.current[ 'search-console-not-connected' ];
 
 		expect( config.title ).toBe(

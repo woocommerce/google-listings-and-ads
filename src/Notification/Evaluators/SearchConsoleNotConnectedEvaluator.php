@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -47,9 +46,7 @@ class SearchConsoleNotConnectedEvaluator implements NotificationEvaluatorInterfa
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		$connection_data = $this->connection->get_connection_data();
-
-		return Connection::STATE_CONNECTED !== ( $connection_data['state'] ?? null );
+		return ! $this->connection->is_connected_from_stored_data();
 	}
 
 	/**
@@ -67,6 +64,6 @@ class SearchConsoleNotConnectedEvaluator implements NotificationEvaluatorInterfa
 	 * @return int|null
 	 */
 	public function get_snooze_duration(): ?int {
-		return NotificationSnoozeDurations::SEARCH_CONSOLE_NOT_CONNECTED;
+		return null;
 	}
 }
