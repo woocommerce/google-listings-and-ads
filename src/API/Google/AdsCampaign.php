@@ -849,6 +849,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			];
 		}
 
+		// Read the Merchant Center ID stored on the campaign, not the plugin's current connection, so a later disconnect does not change the answer.
+		$data['advertising_source'] = $shopping && $shopping->getMerchantId() > 0 ? AdvertisingSource::PRODUCT : AdvertisingSource::PAGE;
+
 		return $data;
 	}
 
