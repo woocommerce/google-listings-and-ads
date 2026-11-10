@@ -85,6 +85,10 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	 */
 	public function process_items( array $items ) {
 		try {
+			// The status service is shared, so drop the previous page's products
+			// before anything here can fail and trigger the failure handler.
+			$this->merchant_statuses->reset_page_state();
+
 			$page_token      = $items['next_page_token'] ?? null;
 			$next_page_token = $page_token;
 

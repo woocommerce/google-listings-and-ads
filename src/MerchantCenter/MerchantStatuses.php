@@ -907,6 +907,22 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
+	 * Forget the products of the previously processed status page.
+	 *
+	 * This service is shared, and the queue runner can process several status
+	 * pages in one request. If a page fails before it processes any product,
+	 * handle_failed_mc_statuses_fetching() would otherwise delete the issue rows
+	 * of the previous page, which the retry never rewrites. Call it at the start
+	 * of every page.
+	 *
+	 * @since x.x.x
+	 */
+	public function reset_page_state(): void {
+		$this->product_data_lookup          = [];
+		$this->page_disapproved_product_ids = [];
+	}
+
+	/**
 	 * Process product status statistics.
 	 *
 	 * @param array $product_view_statuses Product View statuses.

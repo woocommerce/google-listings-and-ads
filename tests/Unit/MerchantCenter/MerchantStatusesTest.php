@@ -1211,6 +1211,106 @@ class MerchantStatusesTest extends UnitTest {
 		$this->assertNull( $stored( OptionsInterface::FEED_ISSUE_TRACKING ) );
 	}
 
+	public function test_failed_page_keeps_earlier_page_issue_rows_on_a_shared_instance() {
+		$product_a = WC_Helper_Product::create_simple_product();
+		$product_b = WC_Helper_Product::create_simple_product();
+		$stored    = $this->use_product_status_fakes( [ $product_a, $product_b ] );
+		$issues    = $this->use_issue_store_fakes();
+
+		$mapi = $this->createMock( MapiProductsService::class );
+		$call = 0;
+		$mapi->method( 'list_page' )->willReturnCallback(
+			function () use ( &$call, $product_a, $product_b ) {
+				++$call;
+				if ( 1 === $call ) {
+					return [
+						'products'        => [ $this->get_mapi_offer_with_issue( $product_a->get_id() ) ],
+						'next_page_token' => 'page-2',
+					];
+				}
+				if ( 2 === $call ) {
+					throw new Exception( 'Temporary API failure' );
+				}
+				return [
+					'products'        => [ $this->get_mapi_offer_with_issue( $product_b->get_id() ) ],
+					'next_page_token' => null,
+				];
+			}
+		);
+
+		// One shared service for every attempt, as when the queue runner claims
+		// several batches in the same request.
+		$job = $this->get_status_job( $mapi );
+
+		$job->process_items( [] );
+		$this->assertSame( [ $product_a->get_id() ], $issues() );
+
+		try {
+			$job->process_items( [ 'next_page_token' => 'page-2' ] );
+			$this->fail( 'The second attempt must fail.' );
+		} catch ( JobException $e ) {
+			$this->assertStringContainsString( 'Temporary API failure', $e->getMessage() );
+		}
+		$this->assertSame( [ $product_a->get_id() ], $issues(), 'A failed page must not delete the rows of an earlier page.' );
+
+		$job->process_items( [ 'next_page_token' => 'page-2' ] );
+
+		$this->assertSame( [ $product_a->get_id(), $product_b->get_id() ], $issues() );
+		$this->assertSame( 2, $stored( OptionsInterface::FEED_ISSUE_SUMMARY )['error_issue_product_count'] );
+	}
+
+	public function test_failed_page_removes_its_own_issue_rows_on_a_shared_instance() {
+		$product_a = WC_Helper_Product::create_simple_product();
+		$product_b = WC_Helper_Product::create_simple_product();
+		$stored    = $this->use_product_status_fakes( [ $product_a, $product_b ] );
+
+		// The first write of page 2's rows lands and then fails, as when a later
+		// chunk of a multi-chunk write throws after an earlier chunk was stored.
+		$failed           = false;
+		$fail_after_write = function ( array $rows ) use ( $product_b, &$failed ) {
+			if ( ! $failed && in_array( $product_b->get_id(), array_column( $rows, 'product_id' ), true ) ) {
+				$failed = true;
+				return true;
+			}
+			return false;
+		};
+
+		$issues = $this->use_issue_store_fakes( $fail_after_write );
+
+		$mapi = $this->createMock( MapiProductsService::class );
+		$mapi->method( 'list_page' )->willReturnCallback(
+			function ( $token ) use ( $product_a, $product_b ) {
+				if ( null === $token ) {
+					return [
+						'products'        => [ $this->get_mapi_offer_with_issue( $product_a->get_id() ) ],
+						'next_page_token' => 'page-2',
+					];
+				}
+				return [
+					'products'        => [ $this->get_mapi_offer_with_issue( $product_b->get_id() ) ],
+					'next_page_token' => null,
+				];
+			}
+		);
+
+		$job = $this->get_status_job( $mapi );
+
+		$job->process_items( [] );
+
+		try {
+			$job->process_items( [ 'next_page_token' => 'page-2' ] );
+			$this->fail( 'The second attempt must fail.' );
+		} catch ( JobException $e ) {
+			$this->assertStringContainsString( 'Write failed after storing rows', $e->getMessage() );
+		}
+		$this->assertSame( [ $product_a->get_id() ], $issues(), 'A failed page must delete its own rows and keep earlier ones.' );
+
+		$job->process_items( [ 'next_page_token' => 'page-2' ] );
+
+		$this->assertSame( [ $product_a->get_id(), $product_b->get_id() ], $issues() );
+		$this->assertSame( 2, $stored( OptionsInterface::FEED_ISSUE_SUMMARY )['error_issue_product_count'] );
+	}
+
 	/**
 	 * @dataProvider incomplete_feed_check_provider
 	 * @param bool $has_stale_tracking Whether tracking from a different check remains after a rollback.
@@ -2249,6 +2349,126 @@ class MerchantStatusesTest extends UnitTest {
 		return function ( $key = OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA ) use ( &$stored ) {
 			return $stored[ $key ] ?? null;
 		};
+	}
+
+	/**
+	 * A disapproved Merchant API offer in ES that carries one merchant-actionable issue.
+	 *
+	 * @param int $wc_product_id
+	 *
+	 * @return Product
+	 */
+	protected function get_mapi_offer_with_issue( int $wc_product_id ): Product {
+		return Product::from_array(
+			[
+				'name'          => 'accounts/123/products/' . $this->get_mapi_id( $wc_product_id ),
+				'productStatus' => [
+					'destinationStatuses' => [
+						[
+							'reportingContext'     => 'SHOPPING_ADS',
+							'disapprovedCountries' => [ 'ES' ],
+						],
+					],
+					'itemLevelIssues'     => [
+						[
+							'code'                => 'issue_code',
+							'description'         => 'issue_description',
+							'detail'              => 'issue_detail',
+							'documentation'       => 'https://example.com',
+							'resolution'          => 'merchant_action',
+							'severity'            => 'DISAPPROVED',
+							'applicableCountries' => [ 'ES' ],
+						],
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Back the issue table and query mocks with an in-memory store of Merchant Center product issue rows.
+	 *
+	 * @param callable|null $fail_after_write Receives each written batch of rows; returning true
+	 *                                        stores the batch and then throws, like a partial write.
+	 *
+	 * @return callable Returns the sorted IDs of the products that have stored rows.
+	 */
+	protected function use_issue_store_fakes( ?callable $fail_after_write = null ): callable {
+		$rows = [];
+
+		$this->product_helper->method( 'get_synced_google_product_ids' )->willReturnCallback(
+			function ( $wc_product ) {
+				return [ 'ES' => $this->get_mapi_id( $wc_product->get_id() ) ];
+			}
+		);
+
+		// No rows from earlier pages to fold in: each product's issue lives on one page.
+		$this->merchant_issue_query->method( 'get_results' )->willReturn( [] );
+		$this->merchant_issue_query->method( 'update_or_insert' )->willReturnCallback(
+			function ( array $issues ) use ( &$rows, $fail_after_write ) {
+				$mc_issues = array_filter(
+					$issues,
+					function ( $issue ) {
+						return 'mc' === ( $issue['source'] ?? '' );
+					}
+				);
+				foreach ( $mc_issues as $issue ) {
+					$rows[ $issue['product_id'] ][] = $issue['severity'];
+				}
+				if ( $fail_after_write && $fail_after_write( $mc_issues ) ) {
+					throw new Exception( 'Write failed after storing rows' );
+				}
+				return true;
+			}
+		);
+
+		$this->merchant_issue_table->method( 'delete_specific_product_issues' )->willReturnCallback(
+			function ( array $product_ids, string $source = 'mc' ) use ( &$rows ) {
+				if ( 'mc' === $source ) {
+					$rows = array_diff_key( $rows, array_flip( $product_ids ) );
+				}
+			}
+		);
+
+		$this->merchant_issue_table->method( 'count_account_issues' )->willReturn( 0 );
+		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturnCallback(
+			function ( string $source, array $excluded_severities = [] ) use ( &$rows ) {
+				if ( 'mc' !== $source ) {
+					return 0;
+				}
+				$count = 0;
+				foreach ( $rows as $severities ) {
+					if ( array_diff( $severities, $excluded_severities ) ) {
+						++$count;
+					}
+				}
+				return $count;
+			}
+		);
+		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturn( 2 );
+
+		return function () use ( &$rows ) {
+			$ids = array_keys( $rows );
+			sort( $ids );
+			return $ids;
+		};
+	}
+
+	/**
+	 * Build a status job around the shared service under test.
+	 *
+	 * @param MapiProductsService $mapi
+	 *
+	 * @return UpdateMerchantProductStatuses
+	 */
+	protected function get_status_job( MapiProductsService $mapi ): UpdateMerchantProductStatuses {
+		return new UpdateMerchantProductStatuses(
+			$this->createMock( ActionSchedulerInterface::class ),
+			$this->createMock( ActionSchedulerJobMonitor::class ),
+			$this->merchant_center_service,
+			$mapi,
+			$this->merchant_statuses
+		);
 	}
 
 	protected function get_mapi_id( $wc_product_id ): string {
