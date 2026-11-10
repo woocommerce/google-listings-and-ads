@@ -664,14 +664,14 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		// participation at creation time, which can produce a local-only source (see
 		// is_local_only_product_source()). Requesting online destinations prevents that, but an
 		// account that can't use one of them rejects the request, so narrower lists are tried next.
-		$attempts = self::PRODUCT_DESTINATION_FALLBACKS;
-		$last     = count( $attempts ) - 1;
+		$fallbacks    = self::PRODUCT_DESTINATION_FALLBACKS;
+		$destinations = array_shift( $fallbacks );
 
-		foreach ( $attempts as $index => $destinations ) {
+		foreach ( $fallbacks as $next ) {
 			try {
 				return $this->post_data_source( $type, $content_language, $match_value, $destinations );
 			} catch ( MerchantApiException $exception ) {
-				if ( $index === $last || ! self::is_invalid_destinations_failure( $exception ) ) {
+				if ( ! self::is_invalid_destinations_failure( $exception ) ) {
 					throw $exception;
 				}
 
@@ -682,15 +682,17 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 						implode( ', ', $destinations ),
 						$content_language,
 						$match_value,
-						null === $attempts[ $index + 1 ] ? 'no destinations' : '[' . implode( ', ', $attempts[ $index + 1 ] ) . ']',
+						null === $next ? 'no destinations' : '[' . implode( ', ', $next ) . ']',
 						$exception->getMessage()
 					),
 					__METHOD__
 				);
+
+				$destinations = $next;
 			}
 		}
 
-		return '';
+		return $this->post_data_source( $type, $content_language, $match_value, $destinations );
 	}
 
 	/**
