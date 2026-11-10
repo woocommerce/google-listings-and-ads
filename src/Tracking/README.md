@@ -900,14 +900,22 @@ Clicking the link to create a new Google Business Profile location off-site.
 - [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L53) with `{ context: 'settings-business-profile' }`.
 
 ### [`gla_google_business_profile_location_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/single-location-card/index.js#L16)
-Clicking "Connect" or "Save" to connect a Google Business Profile location.
+Clicking "Connect" to connect the one Google Business Profile location found.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/multiple-locations-card/connect-location-form.js#L29) with `{ context: 'settings-business-profile' }`.
 - [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/single-location-card/index.js#L32) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_location_save_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/multiple-locations-card/connect-location-form.js#L19)
+Clicking "Save" to connect the Google Business Profile location picked from several found.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/multiple-locations-card/connect-location-form.js#L36) with `{ context: 'settings-business-profile' }`.
 
 ### [`gla_google_business_profile_locations_try_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/locations-error-card/locations-error-notice.js#L15)
 Clicking "Try again" after the Google Business Profile locations couldn't be loaded.

@@ -14,7 +14,7 @@ import ConnectAccountCard from '../connect-account-card';
 import SingleBusinessProfileLocationNotice from './single-business-profile-location-notice';
 
 /**
- * Clicking "Connect" or "Save" to connect a Google Business Profile location.
+ * Clicking "Connect" to connect the one Google Business Profile location found.
  *
  * @event gla_google_business_profile_location_connect_button_click
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.

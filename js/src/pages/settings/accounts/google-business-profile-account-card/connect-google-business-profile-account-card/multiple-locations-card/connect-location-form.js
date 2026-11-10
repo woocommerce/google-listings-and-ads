@@ -17,12 +17,19 @@ import CreateNewLink from '../create-new-link';
 import CreateNewRefreshNotice from '../create-new-refresh-notice';
 
 /**
+ * Clicking "Save" to connect the Google Business Profile location picked from several found.
+ *
+ * @event gla_google_business_profile_location_save_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+ */
+
+/**
  * Renders the form shown when multiple Google Business Profile locations were found: a notice, a
  * picker to choose which to connect, a "Save" button connecting the picked location, plus a
  * create-new-location link, with the refresh reminder below the notice once that link is clicked.
  * The picked location is this form's own state.
  *
- * @fires gla_google_business_profile_location_connect_button_click with `{ context: 'settings-business-profile' }`.
+ * @fires gla_google_business_profile_location_save_button_click with `{ context: 'settings-business-profile' }`.
  *
  * @return {JSX.Element} The form.
  */
@@ -62,7 +69,7 @@ export default function ConnectLocationForm() {
 			/>
 			<Flex justify="start" gap={ 4 }>
 				<AppButton
-					eventName="gla_google_business_profile_location_connect_button_click"
+					eventName="gla_google_business_profile_location_save_button_click"
 					eventProps={ {
 						context: GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
 					} }

@@ -71,7 +71,7 @@ describe( 'ConnectLocationForm', () => {
 		expect( connectLocation ).toHaveBeenCalledTimes( 1 );
 		expect( connectLocation ).toHaveBeenCalledWith( '2222' );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
-			'gla_google_business_profile_location_connect_button_click',
+			'gla_google_business_profile_location_save_button_click',
 			{ context: 'settings-business-profile' }
 		);
 	} );
