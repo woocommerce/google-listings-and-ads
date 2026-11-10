@@ -303,6 +303,78 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_create_campaign_with_name_at_length_limit() {
+		$campaign_data = [
+			'name'               => str_repeat( 'a', 50 ),
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$expected = [
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'country'                               => self::BASE_COUNTRY,
+			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => null,
+		] + $campaign_data;
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data )
+			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_with_name_over_length_limit() {
+		$campaign_data = [
+			'name'               => str_repeat( 'a', 51 ),
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$this->ads_campaign->expects( $this->never() )->method( 'create_campaign' );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): name', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_create_campaign_with_empty_name_uses_generated_name() {
+		$campaign_data = [
+			'name'               => '',
+			'amount'             => 30,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->willReturnCallback(
+				function ( array $data ) {
+					$this->assertStringMatchesFormat( 'Campaign %d-%d-%d %d:%d:%d', $data['name'] );
+
+					return [
+						'id'                 => self::TEST_CAMPAIGN_ID,
+						'status'             => 'enabled',
+						'name'               => $data['name'],
+						'amount'             => 30,
+						'country'            => self::BASE_COUNTRY,
+						'targeted_locations' => [ 'US' ],
+					];
+				}
+			);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_create_campaign_invalid_country_code() {
 		$campaign_data = [
 			'amount'             => 20,
@@ -542,6 +614,54 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_campaign_name() {
+		$campaign_data = [
+			'name' => str_repeat( 'a', 50 ),
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, $campaign_data )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', $campaign_data );
+
+		$this->assertEquals( 'success', $response->get_data()['status'] );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_campaign_name_over_length_limit() {
+		$this->ads_campaign->expects( $this->never() )->method( 'edit_campaign' );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => str_repeat( 'a', 51 ) ] );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): name', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * @param string $name Blank campaign name.
+	 *
+	 * @dataProvider provide_blank_campaign_names
+	 */
+	public function test_edit_campaign_blank_name( string $name ) {
+		$this->ads_campaign->expects( $this->never() )->method( 'edit_campaign' );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => $name ] );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): name', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function provide_blank_campaign_names(): array {
+		return [
+			'empty'       => [ '' ],
+			'only spaces' => [ '   ' ],
+		];
 	}
 
 	public function test_edit_campaign_country() {

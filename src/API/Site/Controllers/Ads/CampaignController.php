@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166Aware
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
 use Exception;
+use WP_Error;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -378,6 +379,23 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 			}
 		);
 
+		// Create falls back to a generated name, but an update must not blank the name.
+		$fields['name']['validate_callback'] = function ( $value, $request, $param ) {
+			$result = rest_validate_request_arg( $value, $request, $param );
+			if ( true !== $result ) {
+				return $result;
+			}
+
+			if ( '' === trim( $value ) ) {
+				return new WP_Error(
+					'rest_invalid_param',
+					__( 'Campaign name cannot be empty.', 'google-listings-and-ads' )
+				);
+			}
+
+			return true;
+		};
+
 		return $fields;
 	}
 
@@ -422,6 +440,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'type'              => 'string',
 				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
+				'maxLength'         => 50,
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 			],
