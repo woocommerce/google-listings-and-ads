@@ -47,7 +47,8 @@ class TopStorePagesServiceTest extends UnitTest {
 		$this->search_analytics = $this->createMock( SearchAnalyticsService::class );
 		$this->transients       = $this->createMock( TransientsInterface::class );
 
-		$this->service = new TopStorePagesService( $this->search_analytics, new PagePostResolver(), $this->transients );
+		global $wpdb;
+		$this->service = new TopStorePagesService( $this->search_analytics, new PagePostResolver( $wpdb ), $this->transients );
 	}
 
 	public function tearDown(): void {

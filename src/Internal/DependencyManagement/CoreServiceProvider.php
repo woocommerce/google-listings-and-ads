@@ -316,7 +316,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share( SearchAnalyticsService::class, SearchConsoleApiClient::class );
 		$this->share( VerificationService::class, SiteVerification::class );
 		$this->share_with_tags( SearchConsoleConnection::class, SitesService::class, VerificationService::class );
-		$this->share( PagePostResolver::class );
+		$this->share( PagePostResolver::class, wpdb::class );
 		$this->share( PageProductResolver::class, PagePostResolver::class, ProductHelper::class );
 		$this->share( TopProductPagesService::class, SearchAnalyticsService::class, PageProductResolver::class, ProductHelper::class, TransientsInterface::class );
 		$this->share( TopStorePagesService::class, SearchAnalyticsService::class, PagePostResolver::class, TransientsInterface::class );
