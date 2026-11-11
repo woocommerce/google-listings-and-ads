@@ -45,7 +45,7 @@ const ChannelVisibilitySettings = () => {
 	// PHP treats a product without a saved visibility as `sync-and-show`.
 	const [ channelVisibilityValue, setChannelVisibilityValue ] = useState(
 		productIsVisible
-			? channelVisibility ?? CHANNEL_VISIBILITY_SYNC_AND_SHOW
+			? ( channelVisibility ?? CHANNEL_VISIBILITY_SYNC_AND_SHOW )
 			: CHANNEL_VISIBILITY_DONT_SYNC_AND_SHOW
 	);
 

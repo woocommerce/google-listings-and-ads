@@ -76,10 +76,10 @@ const ProgramsReport = () => {
 		const available = hasFieldInResults
 			? performanceMetrics.filter( ( { key } ) =>
 					totals.hasOwnProperty( key )
-			  )
+				)
 			: performanceMetrics.filter( ( { key } ) =>
 					fields.includes( key )
-			  );
+				);
 
 		const expected = hasFieldInResults
 			? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )

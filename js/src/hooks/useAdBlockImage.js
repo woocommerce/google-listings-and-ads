@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { detectAnyAdblocker } from 'just-detect-adblock';
+import justDetectAdblock from 'just-detect-adblock';
 import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 
 /**
@@ -93,7 +93,7 @@ const useAdBlockImage = () => {
 
 		const detectAdblock = async () => {
 			try {
-				const detected = await detectAnyAdblocker();
+				const detected = await justDetectAdblock.detectAnyAdblocker();
 
 				if ( detected ) {
 					setIsDetected( true );

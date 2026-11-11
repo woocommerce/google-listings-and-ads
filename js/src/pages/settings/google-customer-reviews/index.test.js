@@ -24,6 +24,10 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn(),
 } ) );
 
+jest.mock( '@wordpress/preferences', () => ( {
+	store: 'core/preferences',
+} ) );
+
 jest.mock( '@wordpress/components', () => ( {
 	ToggleControl: ( { label, checked, onChange, disabled, help } ) => (
 		<div>

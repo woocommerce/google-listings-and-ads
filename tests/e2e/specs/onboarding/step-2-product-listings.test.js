@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { test, expect } from '@playwright/test';
+
+/**
  * Internal dependencies
  */
 import ProductListingsPage from '../../utils/pages/onboarding/step-2-product-listings';
@@ -8,11 +13,6 @@ import {
 	selectCountryFromSearchBox,
 } from '../../utils/page';
 import { clearServiceBasedMerchant } from '../../utils/api';
-
-/**
- * External dependencies
- */
-const { test, expect } = require( '@playwright/test' );
 
 test.use( { storageState: process.env.ADMINSTATE } );
 

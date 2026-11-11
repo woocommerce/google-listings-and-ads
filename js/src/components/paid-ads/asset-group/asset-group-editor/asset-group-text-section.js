@@ -73,7 +73,7 @@ const AssetGroupTextSection = ( {
 					</p>
 					<ul>
 						<li>
-							{ __( '3x Headlines ', 'google-listings-and-ads' ) }
+							{ __( '3x Headlines', 'google-listings-and-ads' ) }
 						</li>
 						<li>
 							{ __(

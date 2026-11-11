@@ -24,6 +24,10 @@ import {
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
  */
 
+// A stable empty array for selectors to return when there is no data, so that
+// `useSelect` doesn't see a new value on every call and re-render needlessly.
+const EMPTY_ARRAY = Object.freeze( [] );
+
 /**
  * Select the general state.
  *
@@ -601,11 +605,11 @@ export const getGenAIMediaAssets = ( state, url, assetType ) => {
 	const mediaAssets = state.gen_ai_assets?.[ url ]?.media;
 
 	if ( ! url || ! mediaAssets ) {
-		return [];
+		return EMPTY_ARRAY;
 	}
 
 	if ( assetType ) {
-		return mediaAssets[ assetType ] ?? [];
+		return mediaAssets[ assetType ] ?? EMPTY_ARRAY;
 	}
 
 	return mediaAssets;
@@ -623,11 +627,11 @@ export const getGenAITextAssets = ( state, url, assetType ) => {
 	const textAssets = state.gen_ai_assets?.[ url ]?.text;
 
 	if ( ! url || ! textAssets ) {
-		return [];
+		return EMPTY_ARRAY;
 	}
 
 	if ( assetType ) {
-		return textAssets[ assetType ] ?? [];
+		return textAssets[ assetType ] ?? EMPTY_ARRAY;
 	}
 
 	return textAssets;
@@ -658,6 +662,8 @@ export const getMarket = ( state, id ) => {
  * @typedef {Object} MCLanguage
  * @property {string} code BCP 47 language code (e.g. `"en"`).
  * @property {string} label Human-readable language name (e.g. `"English"`).
+ * @property {boolean} supported Whether Google Merchant Center supports the language.
+ * @property {string|null} content_language Merchant Center content language the code resolves to (e.g. `"pt"` for `"pt-pt"`), or null when unsupported.
  */
 
 /**

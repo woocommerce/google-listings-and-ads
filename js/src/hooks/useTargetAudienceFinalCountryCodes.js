@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
+import { useCallback, useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -34,53 +35,59 @@ const useTargetAudienceFinalCountryCodes = () => {
 	const { data: supportedCountries, hasFinishedResolution: countriesLoaded } =
 		useMCCountries();
 
-	function mapSelect( select ) {
+	const { targetAudience, targetAudienceLoaded } = useSelect( ( select ) => {
 		const { getTargetAudience, hasFinishedResolution } =
 			select( STORE_KEY );
-		const storedTargetAudience = getTargetAudience();
-		const targetAudienceLoaded =
-			hasFinishedResolution( 'getTargetAudience' );
-
-		/**
-		 * Flag to indicate that the data has been loaded.
-		 *
-		 * @type {boolean}
-		 */
-		const loaded = countriesLoaded && targetAudienceLoaded;
-
-		const allCountries =
-			supportedCountries && Object.keys( supportedCountries );
-
-		/**
-		 * Resolves countries from given targetAudience.
-		 * If `targetAudience.location` is set to `'all'` returns the country codes of all currently supported countries.
-		 *
-		 * @param {Object} targetAudience Target audience object to resolve.
-		 * @param {string} targetAudience.location
-		 * @param {string} targetAudience.countries
-		 *
-		 * @return {Array<CountryCode>} `targetAudience.countries` or all supported country codes.
-		 */
-		function getFinalCountries( targetAudience ) {
-			return targetAudience?.location === 'all'
-				? allCountries
-				: targetAudience?.countries;
-		}
-
-		/**
-		 * Final list of country codes.
-		 */
-		const data = getFinalCountries( storedTargetAudience );
 
 		return {
-			loaded,
-			data,
-			targetAudience: storedTargetAudience,
-			getFinalCountries,
+			targetAudience: getTargetAudience(),
+			targetAudienceLoaded: hasFinishedResolution( 'getTargetAudience' ),
 		};
-	}
+	}, [] );
 
-	return useSelect( mapSelect, [ supportedCountries, countriesLoaded ] );
+	/**
+	 * Resolves countries from given targetAudience.
+	 * If `targetAudience.location` is set to `'all'` returns the country codes of all currently supported countries.
+	 *
+	 * @param {Object} audience Target audience object to resolve.
+	 * @param {string} audience.location
+	 * @param {string} audience.countries
+	 *
+	 * @return {Array<CountryCode>} `audience.countries` or all supported country codes.
+	 */
+	const getFinalCountries = useCallback(
+		( audience ) => {
+			return audience?.location === 'all'
+				? supportedCountries && Object.keys( supportedCountries )
+				: audience?.countries;
+		},
+		[ supportedCountries ]
+	);
+
+	// The values are derived outside `useSelect`, as they'd otherwise be new
+	// instances on every call and trigger needless re-renders.
+	return useMemo(
+		() => ( {
+			/**
+			 * Flag to indicate that the data has been loaded.
+			 *
+			 * @type {boolean}
+			 */
+			loaded: countriesLoaded && targetAudienceLoaded,
+			/**
+			 * Final list of country codes.
+			 */
+			data: getFinalCountries( targetAudience ),
+			targetAudience,
+			getFinalCountries,
+		} ),
+		[
+			countriesLoaded,
+			targetAudienceLoaded,
+			targetAudience,
+			getFinalCountries,
+		]
+	);
 };
 
 export default useTargetAudienceFinalCountryCodes;

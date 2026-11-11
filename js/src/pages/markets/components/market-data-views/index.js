@@ -3,11 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useMemo } from '@wordpress/element';
-import { Icon, edit, trash } from '@wordpress/icons';
+import { Icon, pencil, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
+import AppDataViews from '~/components/app-data-views';
 import useMarketDataViewsConfig from '../../hooks/useMarketDataViewsConfig';
 import EditMarketModal from '../edit-market-modal';
 import DeleteMarketModal from '../delete-market-modal';
@@ -28,7 +29,7 @@ const DEFAULT_VIEW = {
  * and the per-row actions.
  */
 const MarketDataViews = () => {
-	const { DataViews, filterSortAndPaginate } = window.wp.dataviews;
+	const { filterSortAndPaginate } = window.wp.dataviews;
 	const { fields, data, hasFinishedResolution } = useMarketDataViewsConfig();
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 	const [ editingMarket, setEditingMarket ] = useState( null );
@@ -57,7 +58,7 @@ const MarketDataViews = () => {
 			{
 				id: 'edit',
 				label: __( 'Edit', 'google-listings-and-ads' ),
-				icon: <Icon icon={ edit } width={ 24 } height={ 24 } />,
+				icon: <Icon icon={ pencil } width={ 24 } height={ 24 } />,
 				isPrimary: true,
 				callback: ( [ market ] ) => setEditingMarket( market ),
 			},
@@ -75,7 +76,7 @@ const MarketDataViews = () => {
 
 	return (
 		<>
-			<DataViews
+			<AppDataViews
 				getItemId={ ( item ) => item.id }
 				fields={ fields }
 				actions={ ACTIONS }
