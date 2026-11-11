@@ -505,7 +505,7 @@ export const getCYOIncentives = ( state ) => {
  * @return {boolean} Whether an offer was already applied.
  */
 export const hasAppliedCYOIncentive = ( state ) => {
-	return state.ads.cyo_incentives?.has_applied_incentive ?? false;
+	return state.ads.cyo_incentives.has_applied_incentive ?? false;
 };
 
 /**
