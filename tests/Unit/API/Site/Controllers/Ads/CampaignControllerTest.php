@@ -381,6 +381,32 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_create_campaign_keeps_name_zero() {
+		$campaign_data = [
+			'name'               => '0',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data )
+			->willReturn(
+				[
+					'id'                 => self::TEST_CAMPAIGN_ID,
+					'status'             => 'enabled',
+					'name'               => '0',
+					'amount'             => 20,
+					'country'            => self::BASE_COUNTRY,
+					'targeted_locations' => [ 'US' ],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_create_campaign_invalid_country_code() {
 		$campaign_data = [
 			'amount'             => 20,
@@ -647,6 +673,18 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'Invalid parameter(s): name', $response->get_data()['message'] );
 		$this->assertEquals( 'name must be at most 50 characters long.', $response->get_data()['data']['params']['name'] );
 		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_edit_campaign_name_zero() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, [ 'name' => '0' ] )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => '0' ] );
+
+		$this->assertEquals( 'success', $response->get_data()['status'] );
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	/**

@@ -409,7 +409,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$operations      = [];
 			$campaign_fields = [];
 
-			if ( ! empty( $params['name'] ) ) {
+			if ( isset( $params['name'] ) && '' !== $params['name'] ) {
 				$campaign_fields['name'] = $params['name'];
 			}
 
