@@ -85,7 +85,9 @@ class SitesService {
 	 * @throws SearchConsoleApiException On a non-2xx Sites API response.
 	 */
 	public function create_site( ?string $site_url = null ): array {
-		$site_url = $site_url ?? $this->get_site_url();
+		// The Sites API lists URL-prefix properties with a trailing slash, and the home URL has none.
+		// Store the same form the API lists, so the property can be found again among its sites.
+		$site_url = trailingslashit( $site_url ?? $this->get_site_url() );
 
 		$this->client->put( 'sites/' . rawurlencode( $site_url ) );
 

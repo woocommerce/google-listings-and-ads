@@ -96,6 +96,27 @@ class SitesServiceTest extends UnitTest {
 		remove_filter( 'woocommerce_gla_site_url', $override_url );
 	}
 
+	public function test_create_site_adds_the_trailing_slash_the_sites_api_lists_properties_with() {
+		$override_url = function () {
+			return 'https://example.com';
+		};
+		add_filter( 'woocommerce_gla_site_url', $override_url );
+
+		$this->client->expects( $this->once() )
+			->method( 'put' )
+			->with( 'sites/' . rawurlencode( 'https://example.com/' ) );
+
+		$this->assertEquals(
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+			],
+			$this->service->create_site()
+		);
+
+		remove_filter( 'woocommerce_gla_site_url', $override_url );
+	}
+
 	public function test_get_property_type_detects_domain_property() {
 		$this->assertEquals( SitesService::PROPERTY_TYPE_DOMAIN, $this->service->get_property_type( 'sc-domain:example.com' ) );
 	}
