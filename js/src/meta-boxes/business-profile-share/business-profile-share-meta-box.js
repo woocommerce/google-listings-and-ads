@@ -7,6 +7,7 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
+import useBusinessProfileSyncStatus from '~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus';
 import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from './constants';
 import getLiveClassicPostContent from './getLiveClassicPostContent';
 
@@ -16,6 +17,8 @@ import getLiveClassicPostContent from './getLiveClassicPostContent';
  * @property {string} summary The text sent to Google.
  * @property {boolean} isShared Whether the post has already been shared to Google.
  * @property {string} searchUrl The post's link on Google, once Google provides one.
+ * @property {string} restPath The post's REST route, e.g. `/wp/v2/posts/123`.
+ * @property {import('~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus').SyncOutcome|null} syncOutcome The post's last sync outcome.
  */
 
 /**
@@ -38,6 +41,15 @@ export default function BusinessProfileShareMetaBox( {
 } ) {
 	const [ isShareEnabled, setShareEnabled ] = useState( post.isShareEnabled );
 	const [ summary, setSummary ] = useState( post.summary );
+	const { syncOutcome, isShared, searchUrl, isChecking } =
+		useBusinessProfileSyncStatus( {
+			restPath: post.restPath,
+			syncOutcome: post.syncOutcome,
+			shareStatus: {
+				is_shared: post.isShared,
+				search_url: post.searchUrl,
+			},
+		} );
 
 	return (
 		<>
@@ -49,8 +61,10 @@ export default function BusinessProfileShareMetaBox( {
 				summary={ summary }
 				onSummaryChange={ setSummary }
 				getLivePostContent={ getLiveClassicPostContent }
-				searchUrl={ post.searchUrl }
-				isShared={ post.isShared }
+				searchUrl={ searchUrl }
+				isShared={ isShared }
+				syncOutcome={ syncOutcome }
+				isCheckingSync={ isChecking }
 			/>
 			<input
 				type="hidden"
