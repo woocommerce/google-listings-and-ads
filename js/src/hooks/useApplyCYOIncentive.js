@@ -16,14 +16,14 @@ import useCYOIncentives from './useCYOIncentives';
 const useApplyCYOIncentive = () => {
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { data: incentives, hasAppliedIncentive } = useCYOIncentives();
-	const { invalidateResolution } = useAppDispatch();
+	const { receiveCYOIncentiveApplied } = useAppDispatch();
 	const [ loading, setLoading ] = useState( false );
 
 	/**
 	 * Attempts to apply the incentive for the given offer. Skips silently if
 	 * no matching offer is found, billing is not approved, or an offer was
-	 * already applied. A successful apply refetches the incentives, so the
-	 * offer picker hides.
+	 * already applied. A successful apply marks the offer as applied in the store,
+	 * so the offer picker hides and later calls return `false`.
 	 * Errors from the API are swallowed so onboarding and campaign creation are never blocked.
 	 * Returns `true` if applied, `false` otherwise.
 	 */
@@ -53,7 +53,7 @@ const useApplyCYOIncentive = () => {
 					data: { id: incentiveId },
 				} );
 
-				invalidateResolution( 'getCYOIncentives', [] );
+				receiveCYOIncentiveApplied();
 
 				return true;
 			} catch {
@@ -62,7 +62,12 @@ const useApplyCYOIncentive = () => {
 				setLoading( false );
 			}
 		},
-		[ billingStatus, incentives, hasAppliedIncentive, invalidateResolution ]
+		[
+			billingStatus,
+			incentives,
+			hasAppliedIncentive,
+			receiveCYOIncentiveApplied,
+		]
 	);
 
 	return { applyIncentive, loading };

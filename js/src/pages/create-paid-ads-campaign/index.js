@@ -63,7 +63,6 @@ const CreatePaidAdsCampaign = () => {
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const [ step, setStep ] = useState( STEP.CAMPAIGN );
 	const createdCampaignIdRef = useRef( null );
-	const hasAppliedIncentiveRef = useRef( false );
 	const {
 		createAdsCampaign,
 		createAdsWithAssetsCampaign,
@@ -104,21 +103,15 @@ const CreatePaidAdsCampaign = () => {
 				incentiveOffer,
 			} = values;
 
-			// Apply the offer once, even if a later step fails and the merchant submits again.
-			// A failed apply doesn't block creating the campaign.
-			if ( ! hasAppliedIncentiveRef.current ) {
-				hasAppliedIncentiveRef.current =
-					await applyIncentive( incentiveOffer );
+			// A failed apply doesn't block creating the campaign. Once an offer is applied,
+			// a later submit gets `false`, so it isn't applied twice.
+			const hasAppliedIncentive = await applyIncentive( incentiveOffer );
 
-				if ( hasAppliedIncentiveRef.current ) {
-					recordGlaEvent(
-						'gla_campaign_with_cyo_incentive_selected',
-						{
-							context: eventContext,
-							level: incentiveOffer,
-						}
-					);
-				}
+			if ( hasAppliedIncentive ) {
+				recordGlaEvent( 'gla_campaign_with_cyo_incentive_selected', {
+					context: eventContext,
+					level: incentiveOffer,
+				} );
 			}
 
 			if ( hasGoogleMCConnection ) {
@@ -163,7 +156,7 @@ const CreatePaidAdsCampaign = () => {
 
 			createNotice(
 				'success',
-				hasAppliedIncentiveRef.current
+				hasAppliedIncentive
 					? __(
 							'You’ve successfully created a campaign! The selected Ads credit offer was successfully applied to your account.',
 							'google-listings-and-ads'

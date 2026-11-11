@@ -146,7 +146,8 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 		redirectToDashboard();
 	};
 
-	// Keep the result once the offer applied, since a later attempt on the same account returns false.
+	// The offer is applied on the "Create your campaign" step, but the redirect happens after a later step.
+	// Keep the result once the offer applied, since going back and continuing again returns false.
 	const trackAppliedIncentive = ( hasAppliedIncentive ) => {
 		if ( hasAppliedIncentive ) {
 			hasAppliedIncentiveRef.current = true;

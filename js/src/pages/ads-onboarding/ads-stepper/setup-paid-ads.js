@@ -51,7 +51,6 @@ function HookNavigateAwayPrompt() {
  */
 const SetupPaidAds = () => {
 	const budgetPromptRef = useRef();
-	const hasAppliedIncentiveRef = useRef( false );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const { applyIncentive, loading: incentiveLoading } =
@@ -110,18 +109,15 @@ const SetupPaidAds = () => {
 			} )
 		);
 
-		// Apply the offer once, even if creating the campaign fails and the merchant submits again.
-		// A failed apply doesn't block creating the campaign.
-		if ( ! hasAppliedIncentiveRef.current ) {
-			hasAppliedIncentiveRef.current =
-				await applyIncentive( incentiveOffer );
+		// A failed apply doesn't block creating the campaign. Once an offer is applied,
+		// a later submit gets `false`, so it isn't applied twice.
+		const hasAppliedIncentive = await applyIncentive( incentiveOffer );
 
-			if ( hasAppliedIncentiveRef.current ) {
-				recordGlaEvent( 'gla_campaign_with_cyo_incentive_selected', {
-					context: 'setup-ads',
-					level: incentiveOffer,
-				} );
-			}
+		if ( hasAppliedIncentive ) {
+			recordGlaEvent( 'gla_campaign_with_cyo_incentive_selected', {
+				context: 'setup-ads',
+				level: incentiveOffer,
+			} );
 		}
 
 		handleSetupComplete(
@@ -133,8 +129,7 @@ const SetupPaidAds = () => {
 				const nextPath = getNewPath(
 					{
 						guide: 'campaign-creation-success',
-						...( hasAppliedIncentiveRef.current &&
-							INCENTIVE_APPLIED_QUERY ),
+						...( hasAppliedIncentive && INCENTIVE_APPLIED_QUERY ),
 					},
 					'/google/dashboard'
 				);

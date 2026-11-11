@@ -135,7 +135,10 @@ describe( 'SetupPaidAds in onboarding', () => {
 		}
 	);
 
-	it( 'applies the offer only once when the merchant submits again', async () => {
+	it( 'uses the result of each submit for the redirect', async () => {
+		// Once an offer is applied, `applyIncentive` returns false on a later attempt.
+		applyIncentive.mockResolvedValueOnce( true ).mockResolvedValue( false );
+
 		render( <SetupPaidAds /> );
 		const submitButton = screen.getByRole( 'button', { name: 'Submit' } );
 
@@ -148,10 +151,12 @@ describe( 'SetupPaidAds in onboarding', () => {
 			expect( getProductFeedUrl ).toHaveBeenCalledTimes( 2 )
 		);
 
-		expect( applyIncentive ).toHaveBeenCalledTimes( 1 );
-		expect( getProductFeedUrl ).toHaveBeenLastCalledWith( {
+		expect( getProductFeedUrl ).toHaveBeenNthCalledWith( 1, {
 			guide: 'submission-success',
 			incentive: 'applied',
+		} );
+		expect( getProductFeedUrl ).toHaveBeenNthCalledWith( 2, {
+			guide: 'submission-success',
 		} );
 	} );
 } );

@@ -1435,6 +1435,18 @@ export function receiveCYOIncentives( cyoIncentives ) {
 	};
 }
 
+/**
+ * Marks an Ads credit offer as applied to the connected Google Ads account,
+ * so the offer picker hides without fetching the incentives again.
+ *
+ * @return {{type: string}} Redux action with type `TYPES.RECEIVE_CYO_INCENTIVE_APPLIED`.
+ */
+export function receiveCYOIncentiveApplied() {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVE_APPLIED,
+	};
+}
+
 export function* receiveGenAIMediaAssets( url, data, assetType ) {
 	if ( ! data?.items ) {
 		return {

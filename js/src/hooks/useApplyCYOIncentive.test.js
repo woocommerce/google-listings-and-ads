@@ -22,13 +22,13 @@ jest.mock( '~/data', () => ( {
 } ) );
 
 describe( 'useApplyCYOIncentive', () => {
-	const invalidateResolution = jest.fn();
+	const receiveCYOIncentiveApplied = jest.fn();
 
 	beforeEach( () => {
 		jest.clearAllMocks();
 		apiFetch.mockResolvedValue( {} );
 		useCYOIncentives.mockReturnValue( { data: [] } );
-		useAppDispatch.mockReturnValue( { invalidateResolution } );
+		useAppDispatch.mockReturnValue( { receiveCYOIncentiveApplied } );
 	} );
 
 	it( 'exposes result with loading state', async () => {
@@ -141,7 +141,7 @@ describe( 'useApplyCYOIncentive', () => {
 			expect( apiFetch ).not.toHaveBeenCalled();
 		} );
 
-		it( 'invalidates the incentives resolution and returns true on success', async () => {
+		it( 'marks the offer as applied in the store and returns true on success', async () => {
 			const { result } = renderHook( () => useApplyCYOIncentive() );
 
 			const returnValue = await act( () =>
@@ -149,10 +149,7 @@ describe( 'useApplyCYOIncentive', () => {
 			);
 
 			expect( returnValue ).toBe( true );
-			expect( invalidateResolution ).toHaveBeenCalledWith(
-				'getCYOIncentives',
-				[]
-			);
+			expect( receiveCYOIncentiveApplied ).toHaveBeenCalledTimes( 1 );
 		} );
 
 		it( 'swallows API errors and returns false', async () => {
@@ -165,7 +162,7 @@ describe( 'useApplyCYOIncentive', () => {
 			);
 
 			expect( returnValue ).toBe( false );
-			expect( invalidateResolution ).not.toHaveBeenCalled();
+			expect( receiveCYOIncentiveApplied ).not.toHaveBeenCalled();
 		} );
 	} );
 } );

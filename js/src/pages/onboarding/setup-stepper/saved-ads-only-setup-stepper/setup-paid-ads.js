@@ -56,7 +56,6 @@ import AppSpinner from '~/components/app-spinner';
  */
 export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const budgetPromptRef = useRef();
-	const hasAppliedIncentiveRef = useRef( false );
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
@@ -69,16 +68,12 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	// Apply the offer once, even if the merchant comes back to this step and continues again.
-	// A failed apply doesn't block the setup.
+	// A failed apply doesn't block the setup. Once an offer is applied, a later attempt
+	// gets `false`, so it isn't applied twice.
 	const applySelectedIncentive = async ( incentiveOffer ) => {
-		if ( hasAppliedIncentiveRef.current ) {
-			return;
-		}
+		const hasAppliedIncentive = await applyIncentive( incentiveOffer );
 
-		hasAppliedIncentiveRef.current = await applyIncentive( incentiveOffer );
-
-		if ( hasAppliedIncentiveRef.current ) {
+		if ( hasAppliedIncentive ) {
 			recordGlaEvent(
 				'gla_ads_only_onboarding_with_cyo_incentive_selected',
 				{
@@ -87,14 +82,17 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				}
 			);
 		}
+
+		return hasAppliedIncentive;
 	};
 
 	const skipCreatePaidAds = async ( incentiveOffer ) => {
 		setCompleting( ACTION_SKIP );
 
-		await applySelectedIncentive( incentiveOffer );
+		const hasAppliedIncentive =
+			await applySelectedIncentive( incentiveOffer );
 
-		onSkip( { hasAppliedIncentive: hasAppliedIncentiveRef.current } );
+		onSkip( { hasAppliedIncentive } );
 	};
 
 	const createSkipButton = ( formContext ) => {
@@ -166,7 +164,8 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 		setCompleting( ACTION_CONTINUE );
 
-		await applySelectedIncentive( incentiveOffer );
+		const hasAppliedIncentive =
+			await applySelectedIncentive( incentiveOffer );
 
 		recordGlaEvent(
 			'gla_ads_only_onboarding_with_paid_ads_continue_button_click',
@@ -180,7 +179,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		onSubmit( {
 			dailyBudget,
 			hasConfirmedEuPoliticalContent,
-			hasAppliedIncentive: hasAppliedIncentiveRef.current,
+			hasAppliedIncentive,
 		} );
 	};
 

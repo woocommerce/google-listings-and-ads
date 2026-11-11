@@ -117,19 +117,4 @@ describe( 'SetupPaidAds in ads-only onboarding', () => {
 			);
 		}
 	);
-
-	it( 'applies the offer only once when the merchant continues again', async () => {
-		render( <SetupPaidAds onSubmit={ onSubmit } onSkip={ onSkip } /> );
-		const submitButton = screen.getByRole( 'button', { name: 'Submit' } );
-
-		await userEvent.click( submitButton );
-		await waitFor( () => expect( onSubmit ).toHaveBeenCalledTimes( 1 ) );
-		await userEvent.click( submitButton );
-		await waitFor( () => expect( onSubmit ).toHaveBeenCalledTimes( 2 ) );
-
-		expect( applyIncentive ).toHaveBeenCalledTimes( 1 );
-		expect( onSubmit ).toHaveBeenLastCalledWith(
-			expect.objectContaining( { hasAppliedIncentive: true } )
-		);
-	} );
 } );
