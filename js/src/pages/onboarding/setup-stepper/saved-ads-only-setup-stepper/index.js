@@ -148,21 +148,21 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 
 	// The offer is applied on the "Create your campaign" step, but the redirect happens after a later step.
 	// Keep the result once the offer applied, since going back and continuing again returns false.
-	const trackAppliedIncentive = ( hasAppliedIncentive ) => {
+	const rememberAppliedIncentive = ( hasAppliedIncentive ) => {
 		if ( hasAppliedIncentive ) {
 			hasAppliedIncentiveRef.current = true;
 		}
 	};
 
 	const handleSetupPaidAdsSubmit = ( values ) => {
-		trackAppliedIncentive( values.hasAppliedIncentive );
+		rememberAppliedIncentive( values.hasAppliedIncentive );
 		setPaidAdValues( values );
 		setStep( ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign );
 	};
 
 	const handleSetupPaidAdsSkipped = async ( skipValues ) => {
 		// Skipping the "Create your campaign" step calls this without values.
-		trackAppliedIncentive( skipValues?.hasAppliedIncentive );
+		rememberAppliedIncentive( skipValues?.hasAppliedIncentive );
 
 		await completeAdsSetup();
 		await completeOnboarding();
