@@ -57,6 +57,14 @@ class SendLocalPostTest extends UnitTest {
 		$this->location_service   = $this->createMock( LocationService::class );
 		$this->location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
 
+		// Not shared by default -- the one test needing otherwise overrides this itself.
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+
 		$this->job = new SendLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service, $this->location_service );
 	}
 
@@ -85,12 +93,6 @@ class SendLocalPostTest extends UnitTest {
 	public function test_a_qualifying_post_is_sent_and_stores_success() {
 		$post = $this->create_shared_post();
 
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->expects( $this->once() )->method( 'create' )->with( $post );
 
 		$this->job->process_items( [ $post->ID ] );
@@ -118,27 +120,27 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_a_post_already_sent_by_another_path_is_skipped_without_recording_a_failure() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
+
+		// A second method()->willReturn() on the same mock method doesn't override the one
+		// already set in setUp() -- PHPUnit keeps whichever was configured first -- so this needs
+		// its own mock, stubbed as already-shared from the start, rather than re-stubbing the
+		// shared one.
+		$local_post_service = $this->createMock( LocalPostService::class );
+		$local_post_service->method( 'get_share_status' )->willReturn(
 			[
 				'is_shared'  => true,
 				'search_url' => 'https://g.page/r/abc',
 			]
 		);
+		$local_post_service->expects( $this->never() )->method( 'create' );
+		$local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
 
-		$this->local_post_service->expects( $this->never() )->method( 'create' );
-		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
-
-		$this->job->process_items( [ $post->ID ] );
+		$job = new SendLocalPost( $this->action_scheduler, $this->monitor, $local_post_service, $this->location_service );
+		$job->process_items( [ $post->ID ] );
 	}
 
 	public function test_a_post_whose_location_is_no_longer_connected_is_skipped_without_recording_a_failure() {
-		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
+		$post                   = $this->create_shared_post();
 		$this->location_service = $this->createMock( LocationService::class );
 		$this->location_service->method( 'get_selected_location' )->willReturn( null );
 		$this->job = new SendLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service, $this->location_service );
@@ -156,12 +158,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_stores_success_when_google_accepts_the_post_without_returning_its_id() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->method( 'create' )->willThrowException(
 			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502 )
 		);
@@ -178,12 +174,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_stores_pending_verification_when_google_accepts_a_post_for_an_unverified_location_without_returning_its_id() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->method( 'create' )->willThrowException(
 			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502, false, SyncOutcome::SENT_PENDING_VERIFICATION )
 		);
@@ -196,12 +186,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_keeps_the_omitted_image_flag_when_google_accepts_the_post_without_returning_its_id() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->method( 'create' )->willThrowException(
 			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502, true )
 		);
@@ -214,12 +198,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_reports_a_create_sync_success_when_google_accepts_the_post_without_returning_its_id() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->method( 'create' )->willThrowException(
 			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502 )
 		);
@@ -232,12 +210,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_stores_the_classified_outcome_and_googles_message_when_the_send_fails() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->method( 'create' )->willThrowException(
 			new BusinessProfileApiException(
 				400,
@@ -261,12 +233,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_reports_a_create_sync_success_once_google_accepts_the_post() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 
 		$this->expect_do_action_once( 'woocommerce_gla_business_profile_sync_success', [ [ 'type' => 'create' ] ] );
 		$this->expect_do_action_never( 'woocommerce_gla_business_profile_sync_failure' );
@@ -276,12 +242,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_reports_a_create_sync_failure_with_googles_error_status() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->method( 'create' )->willThrowException(
 			new BusinessProfileApiException(
 				400,
@@ -317,12 +277,6 @@ class SendLocalPostTest extends UnitTest {
 	 */
 	public function test_reports_a_sync_failure_with_an_empty_reason_when_google_gave_no_error( callable $create_failure ) {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->method( 'create' )->willThrowException( $create_failure() );
 
 		$this->expect_do_action_once(
@@ -363,12 +317,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_does_not_propagate_an_exception_from_the_create_call_and_reports_it() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->method( 'create' )->willThrowException( new Exception( 'Network error.' ) );
 
 		$before = did_action( 'woocommerce_gla_exception' );
@@ -380,12 +328,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_does_not_propagate_an_error_from_the_create_call_and_reports_it_by_message() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->method( 'create' )->willThrowException( new Error( 'Call to a member function on null.' ) );
 		$this->local_post_service->expects( $this->once() )
 			->method( 'set_sync_outcome' )
@@ -402,12 +344,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_a_throwing_sync_failure_listener_does_not_break_processing_or_skip_the_failure_report() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 		$this->local_post_service->method( 'create' )->willThrowException(
 			new BusinessProfileApiException( 503, [], __METHOD__ )
 		);
@@ -436,12 +372,6 @@ class SendLocalPostTest extends UnitTest {
 
 	public function test_a_throwing_sync_success_listener_does_not_break_processing_or_store_a_failure() {
 		$post = $this->create_shared_post();
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
 
 		add_action(
 			'woocommerce_gla_business_profile_sync_success',
