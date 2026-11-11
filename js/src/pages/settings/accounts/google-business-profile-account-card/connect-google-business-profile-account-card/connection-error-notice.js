@@ -11,7 +11,9 @@ import { GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT } from '../constants';
 import { useAppDispatch } from '~/data';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import NoticeDetail from '../notice-detail';
-import { CONNECTION_ERROR_SLOTS } from '../hooks/useConnectGoogleBusinessProfileLocation';
+import useConnectGoogleBusinessProfileLocation, {
+	CONNECTION_ERROR_SLOTS,
+} from '../hooks/useConnectGoogleBusinessProfileLocation';
 
 /**
  * Clicking "Try again" after connecting a Google Business Profile location failed.
@@ -22,7 +24,10 @@ import { CONNECTION_ERROR_SLOTS } from '../hooks/useConnectGoogleBusinessProfile
 
 /**
  * Renders the connection-error notice shown in the `AccountCard` error area when connecting a
- * Google Business Profile location failed. "Try again" clears the error slot itself.
+ * Google Business Profile location failed. "Try again" retries only the status refresh when the
+ * connect request itself already succeeded and only confirming it failed -- repeating the connect
+ * request in that case gets rejected by the backend, since the location is already connected.
+ * Otherwise it just clears the error slot, falling back to the location picker for a fresh attempt.
  *
  * `null` when the store has no error for the connection error slot.
  *
@@ -33,14 +38,23 @@ import { CONNECTION_ERROR_SLOTS } from '../hooks/useConnectGoogleBusinessProfile
 export default function ConnectionErrorNotice() {
 	const [ detailedError ] = useDetailedErrorBySlots( CONNECTION_ERROR_SLOTS );
 	const { clearDetailedErrorBySlots } = useAppDispatch();
+	const { isConnecting, retryStatusRefresh } =
+		useConnectGoogleBusinessProfileLocation();
 
 	if ( ! detailedError ) {
 		return null;
 	}
 
 	const apiMessage = detailedError.error?.message;
+	const refreshFailedAfterConnecting =
+		detailedError.error?.refreshFailedAfterConnecting;
 
 	const handleTryAgainClick = () => {
+		if ( refreshFailedAfterConnecting ) {
+			retryStatusRefresh();
+			return;
+		}
+
 		clearDetailedErrorBySlots( CONNECTION_ERROR_SLOTS );
 	};
 
@@ -68,6 +82,7 @@ export default function ConnectionErrorNotice() {
 						context: GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
 					} }
 					onClick={ handleTryAgainClick }
+					loading={ refreshFailedAfterConnecting && isConnecting }
 					isSecondary
 				>
 					{ __( 'Try again', 'google-listings-and-ads' ) }

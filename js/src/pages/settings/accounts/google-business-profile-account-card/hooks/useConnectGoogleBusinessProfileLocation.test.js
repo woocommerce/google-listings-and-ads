@@ -108,8 +108,64 @@ describe( 'useConnectGoogleBusinessProfileLocation', () => {
 		expect( fetchGoogleBusinessProfileAccount ).not.toHaveBeenCalled();
 		expect( receiveDetailedError ).toHaveBeenCalledWith(
 			ERROR_SLOTS.GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT,
-			{}
+			{ refreshFailedAfterConnecting: false }
 		);
 		expect( result.current.isConnecting ).toBe( false );
+	} );
+
+	it( 'marks the error as a refresh-only failure when the connect request already succeeded', async () => {
+		fetchGoogleBusinessProfileAccount.mockRejectedValue(
+			new Error( 'Network error' )
+		);
+		const { result } = renderHook( () =>
+			useConnectGoogleBusinessProfileLocation()
+		);
+
+		await act( async () => {
+			await result.current.connectLocation( '2222' );
+		} );
+
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+		expect( receiveDetailedError ).toHaveBeenCalledWith(
+			ERROR_SLOTS.GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT,
+			{ refreshFailedAfterConnecting: true }
+		);
+		expect( result.current.isConnecting ).toBe( false );
+	} );
+
+	it( 'retryStatusRefresh refreshes without repeating the connect request', async () => {
+		const { result } = renderHook( () =>
+			useConnectGoogleBusinessProfileLocation()
+		);
+
+		await act( async () => {
+			await result.current.retryStatusRefresh();
+		} );
+
+		expect( fetchConnect ).not.toHaveBeenCalled();
+		expect( fetchGoogleBusinessProfileAccount ).toHaveBeenCalledTimes( 1 );
+		expect( clearDetailedErrorBySlots ).toHaveBeenCalledWith(
+			CONNECTION_ERROR_SLOTS
+		);
+		expect( result.current.isConnecting ).toBe( false );
+	} );
+
+	it( 'retryStatusRefresh records another refresh-only failure when it fails again', async () => {
+		fetchGoogleBusinessProfileAccount.mockRejectedValue(
+			new Error( 'Network error' )
+		);
+		const { result } = renderHook( () =>
+			useConnectGoogleBusinessProfileLocation()
+		);
+
+		await act( async () => {
+			await result.current.retryStatusRefresh();
+		} );
+
+		expect( fetchConnect ).not.toHaveBeenCalled();
+		expect( receiveDetailedError ).toHaveBeenCalledWith(
+			ERROR_SLOTS.GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT,
+			{ refreshFailedAfterConnecting: true }
+		);
 	} );
 } );
