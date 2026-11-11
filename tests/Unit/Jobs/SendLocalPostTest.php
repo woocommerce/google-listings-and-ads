@@ -98,6 +98,17 @@ class SendLocalPostTest extends UnitTest {
 		$this->job->process_items( [ $post->ID ] );
 	}
 
+	public function test_handle_process_items_action_calls_through_and_detaches_the_timeout_monitor() {
+		$post = $this->create_shared_post();
+
+		$this->monitor->expects( $this->once() )->method( 'validate_failure_rate' );
+		$this->monitor->expects( $this->once() )->method( 'attach_timeout_monitor' );
+		$this->monitor->expects( $this->once() )->method( 'detach_timeout_monitor' );
+		$this->local_post_service->expects( $this->once() )->method( 'create' )->with( $post );
+
+		$this->job->handle_process_items_action( [ $post->ID ] );
+	}
+
 	public function test_a_post_whose_sharing_toggle_is_now_off_is_skipped_without_recording_a_failure() {
 		$post = $this->create_shared_post();
 		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );

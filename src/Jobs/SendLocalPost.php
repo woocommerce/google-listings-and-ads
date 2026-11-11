@@ -140,7 +140,14 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 			// there's no stored result, so the share status stays "not shared": success with no
 			// link is a valid state here, not one to correct.
 			$this->local_post_service->set_sync_outcome( $post->ID, $exception->get_outcome(), '', $exception->is_image_omitted() );
-			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+
+			try {
+				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+			} catch ( Throwable $error ) {
+				// A throwing listener here must not escape and reschedule the whole batch --
+				// replaying this post would resend it to Google and create a duplicate.
+				$this->report_listener_error( 'woocommerce_gla_exception', $error );
+			}
 		} catch ( Throwable $failure ) {
 			$this->record_failure( $post, $failure );
 			return;
