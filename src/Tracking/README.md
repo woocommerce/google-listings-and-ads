@@ -868,14 +868,14 @@ Clicking "Check again" to look for a Google Business Profile again after none wa
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/no-locations-card/no-business-profile-account-notice.js#L35) with `{ context: 'settings-business-profile' }`.
 
-### [`gla_google_business_profile_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L23)
+### [`gla_google_business_profile_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L26)
 Clicking the button to grant the Google Business Profile scope.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L39)
+- [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L86)
 
 ### [`gla_google_business_profile_connection_try_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/connection-error-notice.js#L16)
 Clicking "Try again" after connecting a Google Business Profile location failed.
