@@ -146,6 +146,9 @@
  *   only on that one transitioning call and absent on every call after, once `property` is
  *   already stored. Not present when the merchant had to explicitly choose or create a property
  *   themselves via `POST search-console/properties` — only on backend-driven auto-resolution.
+ * @property {boolean} [needs_verification] Whether action is needed only because the connected
+ *   account isn't a verified owner of the selected property yet, which still exists. Only present,
+ *   as `true`, when `status` is `'action-needed'`.
  */
 
 /**

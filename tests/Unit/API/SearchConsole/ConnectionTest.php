@@ -1024,6 +1024,7 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertEquals( Connection::STATE_ACTION_NEEDED, $response['status'] );
 		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_UNVERIFIED, $stored['verified'] );
+		$this->assertArrayNotHasKey( 'needs_verification', $response, 'A deleted property needs replacing, not verifying.' );
 	}
 
 	public function test_get_connection_status_flips_to_action_needed_when_account_loses_owner_access_but_property_still_listed() {
@@ -1082,6 +1083,7 @@ class ConnectionTest extends UnitTest {
 		$response = $this->connection->get_connection_status();
 
 		$this->assertEquals( Connection::STATE_ACTION_NEEDED, $response['status'] );
+		$this->assertTrue( $response['needs_verification'] );
 	}
 
 	public function test_get_connection_status_keeps_a_connected_property_when_sites_api_merely_omits_owner_permission() {
@@ -1523,6 +1525,93 @@ class ConnectionTest extends UnitTest {
 			did_action( 'woocommerce_gla_search_console_connected' ),
 			'An unverified auto-created property is not a connection yet.'
 		);
+		$this->assertTrue( $response['needs_verification'] );
+	}
+
+	public function test_select_property_omits_needs_verification_once_the_property_is_verified() {
+		$stored = self::default_connection_data();
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$created = [
+			'siteUrl'         => 'https://example.com/',
+			'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+		];
+		$this->sites_service->method( 'create_site' )->willReturn( $created );
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		$this->verification_service->method( 'resolve_verification' )->with( $created )
+			->willReturn( SiteVerification::VERIFICATION_STATUS_VERIFIED );
+
+		$response = $this->connection->select_property();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertArrayNotHasKey( 'needs_verification', $response );
+	}
+
+	public function test_verify_property_throws_when_no_property_has_been_selected() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->verification_service->expects( $this->never() )->method( 'verify' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'No Search Console property has been selected yet.' );
+
+		$this->connection->verify_property();
+	}
+
+	public function test_verify_property_triggers_verification_and_persists_verified_status() {
+		$stored = self::default_connection_data(
+			[
+				'property' => 'https://example.com/',
+				'state'    => Connection::STATE_ACTION_NEEDED,
+			]
+		);
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$this->verification_service->expects( $this->once() )
+			->method( 'verify' )
+			->with( 'https://example.com/' );
+
+		$response = $this->connection->verify_property();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $response['site_url'] );
+		$this->assertArrayNotHasKey( 'needs_verification', $response );
+		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $stored['verified'] );
+		$this->assertEquals( Connection::STATE_CONNECTED, $stored['state'] );
+	}
+
+	public function test_verify_property_propagates_exception_from_verification_service() {
+		$stored = self::default_connection_data( [ 'property' => 'https://example.com/' ] );
+		$this->options->method( 'get' )->willReturn( $stored );
+
+		$this->verification_service->method( 'verify' )
+			->willThrowException( new Exception( 'Unable to retrieve site verification token' ) );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Unable to retrieve site verification token' );
+
+		$this->connection->verify_property();
 	}
 
 	/**

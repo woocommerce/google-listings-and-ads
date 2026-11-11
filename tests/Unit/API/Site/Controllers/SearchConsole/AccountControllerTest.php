@@ -32,6 +32,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_CONNECTION     = '/wc/gla/search-console/connection';
 	protected const ROUTE_SETUP_COMPLETE = '/wc/gla/search-console/setup/complete';
 	protected const ROUTE_PROPERTIES     = '/wc/gla/search-console/properties';
+	protected const ROUTE_VERIFY         = '/wc/gla/search-console/verify';
 
 	public function setUp(): void {
 		parent::setUp();
@@ -262,6 +263,28 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$data = $response->get_data();
 		$this->assertArrayNotHasKey( 'site_url', $data );
 		$this->assertArrayNotHasKey( 'just_resolved', $data );
+		$this->assertArrayNotHasKey( 'needs_verification', $data );
+	}
+
+	public function test_connection_includes_needs_verification_when_present() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_connection_status' )
+			->willReturn(
+				[
+					'status'             => Connection::STATE_ACTION_NEEDED,
+					'needs_verification' => true,
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertEquals(
+			[
+				'status'             => Connection::STATE_ACTION_NEEDED,
+				'needs_verification' => true,
+			],
+			$response->get_data()
+		);
 	}
 
 	public function test_setup_complete() {
@@ -384,6 +407,28 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_PROPERTIES, 'POST', [ 'site_url' => 'https://example.com/gone/' ] );
 
 		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_verify() {
+		$this->connection->expects( $this->once() )
+			->method( 'verify_property' )
+			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
+
+		$response = $this->do_request( self::ROUTE_VERIFY, 'POST' );
+
+		$this->assertEquals( [ 'status' => Connection::STATE_CONNECTED ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_verify_with_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'verify_property' )
+			->willThrowException( new Exception( 'No Search Console property has been selected yet.', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_VERIFY, 'POST' );
+
+		$this->assertEquals( [ 'message' => 'No Search Console property has been selected yet.' ], $response->get_data() );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 }

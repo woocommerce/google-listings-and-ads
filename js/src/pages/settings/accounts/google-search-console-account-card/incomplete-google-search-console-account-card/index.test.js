@@ -450,6 +450,33 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		);
 	} );
 
+	it( 'offers to verify the site, not a different property, when the connected account does not own the property yet', () => {
+		mockProperties( [
+			{
+				siteUrl: 'https://example.com/',
+				usable: true,
+				exact_match: true,
+			},
+		] );
+		mockAccount( { status: ACTION_NEEDED, needs_verification: true } );
+
+		render( <IncompleteGoogleSearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByText( 'Verify your site with Google' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Verify site' } )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Your Search Console property needs attention' )
+		).not.toBeInTheDocument();
+		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Create new property' } )
+		).not.toBeInTheDocument();
+	} );
+
 	it( 'offers the selector alongside the create action for the action-needed status when other properties are available', async () => {
 		const user = userEvent.setup();
 

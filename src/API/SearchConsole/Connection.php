@@ -87,6 +87,15 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	protected $verification_service;
 
 	/**
+	 * Whether the stored property still exists at Google, but the connecting account isn't a
+	 * verified owner of it yet. Worked out while resolving or re-checking the property during the
+	 * current request, and only reported on that request's response.
+	 *
+	 * @var bool
+	 */
+	protected $property_needs_verification = false;
+
+	/**
 	 * Connection constructor.
 	 *
 	 * @param SitesService        $sites_service
@@ -452,6 +461,32 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	}
 
 	/**
+	 * Verify the selected property through the site verification META-tag flow: request a
+	 * verification tag from Google, add it to the site, and ask Google to verify the site.
+	 *
+	 * Unlike {@see self::select_property()}, which only reuses an existing site verification, this
+	 * starts a new one, so a store whose site was never verified through Merchant Center can
+	 * still finish connecting.
+	 *
+	 * @return array
+	 * @throws Exception When no property has been selected yet, or verification fails.
+	 */
+	public function verify_property(): array {
+		$connection_data = $this->get_connection_data();
+
+		if ( empty( $connection_data['property'] ) ) {
+			throw new Exception( __( 'No Search Console property has been selected yet.', 'google-listings-and-ads' ), 400 );
+		}
+
+		$this->verification_service->verify( $connection_data['property'] );
+
+		$this->property_needs_verification = false;
+		$this->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED ] );
+
+		return $this->build_status_payload( $this->resolve_local_state() );
+	}
+
+	/**
 	 * Match, auto-select, or auto-create a property and resolve its verification
 	 * status, persisting the outcome onto the stored connection data.
 	 *
@@ -522,6 +557,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			}
 
 			if ( $this->verification_service->is_owner_verified( $match ) ) {
+				$this->property_needs_verification = false;
 				$this->update_connection_data(
 					[
 						'property_type' => $this->sites_service->get_property_type( $match['siteUrl'] ),
@@ -538,10 +574,13 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 				return;
 			}
 
+			$is_site_verified                  = $this->verification_service->is_verified();
+			$this->property_needs_verification = ! $is_site_verified;
+
 			$this->update_connection_data(
 				[
 					'property_type' => $this->sites_service->get_property_type( $match['siteUrl'] ),
-					'verified'      => $this->verification_service->is_verified()
+					'verified'      => $is_site_verified
 						? SiteVerification::VERIFICATION_STATUS_VERIFIED
 						: SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
 				]
@@ -553,6 +592,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		// The stored property no longer appears at all — deleted, or the connecting
 		// account's access to it has been revoked entirely (e.g. downgraded to a
 		// restricted permission level, which get_matches() excludes outright).
+		$this->property_needs_verification = false;
 		$this->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_UNVERIFIED ] );
 	}
 
@@ -563,11 +603,17 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * @param array $resolved A `siteEntry`-shaped resource (`siteUrl`, `permissionLevel`).
 	 */
 	private function persist_resolved_property( array $resolved ): void {
+		$verified = $this->verification_service->resolve_verification( $resolved );
+
+		// The property was just found or created at Google, so an unverified result means the
+		// connecting account doesn't own it yet.
+		$this->property_needs_verification = SiteVerification::VERIFICATION_STATUS_VERIFIED !== $verified;
+
 		$this->update_connection_data(
 			[
 				'property'      => $resolved['siteUrl'],
 				'property_type' => $this->sites_service->get_property_type( $resolved['siteUrl'] ),
-				'verified'      => $this->verification_service->resolve_verification( $resolved ),
+				'verified'      => $verified,
 			]
 		);
 	}
@@ -641,6 +687,10 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * value) once the connection is fully connected, so the frontend can link
 	 * out to the property in Search Console itself without needing a separate call.
 	 *
+	 * Adds `needs_verification` when action is needed only because the connecting account isn't
+	 * a verified owner of a property that still exists, so the frontend can offer to verify the
+	 * site instead of asking for a different property.
+	 *
 	 * @param string $state One of the self::STATE_* constants.
 	 *
 	 * @return array
@@ -650,6 +700,10 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 
 		if ( self::STATE_CONNECTED === $state ) {
 			$payload['site_url'] = $this->get_connection_data()['property'];
+		}
+
+		if ( self::STATE_ACTION_NEEDED === $state && $this->property_needs_verification ) {
+			$payload['needs_verification'] = true;
 		}
 
 		return $payload;
