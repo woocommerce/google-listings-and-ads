@@ -63,6 +63,7 @@ const CreatePaidAdsCampaign = () => {
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const [ step, setStep ] = useState( STEP.CAMPAIGN );
 	const createdCampaignIdRef = useRef( null );
+	const hasAppliedIncentiveRef = useRef( false );
 	const {
 		createAdsCampaign,
 		createAdsWithAssetsCampaign,
@@ -103,11 +104,12 @@ const CreatePaidAdsCampaign = () => {
 				incentiveOffer,
 			} = values;
 
-			// A failed apply doesn't block creating the campaign. Once an offer is applied,
-			// a later submit gets `false`, so it isn't applied twice.
+			// A failed apply doesn't block creating the campaign. Once an offer is applied, a later submit
+			// gets `false`, so keep the result for the notice in case creating the campaign is retried.
 			const hasAppliedIncentive = await applyIncentive( incentiveOffer );
 
 			if ( hasAppliedIncentive ) {
+				hasAppliedIncentiveRef.current = true;
 				recordGlaEvent( 'gla_campaign_with_cyo_incentive_selected', {
 					context: eventContext,
 					level: incentiveOffer,
@@ -156,7 +158,7 @@ const CreatePaidAdsCampaign = () => {
 
 			createNotice(
 				'success',
-				hasAppliedIncentive
+				hasAppliedIncentiveRef.current
 					? __(
 							'Campaign created. Your Ads credit offer is applied to your Google Ads account.',
 							'google-listings-and-ads'

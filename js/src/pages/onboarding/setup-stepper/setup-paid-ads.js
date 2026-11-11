@@ -65,6 +65,7 @@ import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNoticeEffect
  */
 export default function SetupPaidAds() {
 	const budgetPromptRef = useRef();
+	const hasAppliedIncentiveRef = useRef( false );
 	const adminUrl = useAdminUrl();
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
@@ -82,10 +83,7 @@ export default function SetupPaidAds() {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const finishOnboardingSetup = async (
-		hasAppliedIncentive,
-		onBeforeFinish = noop
-	) => {
+	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {
 			await syncSettings();
 			await onBeforeFinish();
@@ -111,32 +109,30 @@ export default function SetupPaidAds() {
 		// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
 		const query = {
 			guide: GUIDE_NAMES.SUBMISSION_SUCCESS,
-			...( hasAppliedIncentive && INCENTIVE_APPLIED_QUERY ),
+			...( hasAppliedIncentiveRef.current && INCENTIVE_APPLIED_QUERY ),
 		};
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	// A failed apply doesn't block finishing the setup. Once an offer is applied,
-	// a later attempt gets `false`, so it isn't applied twice.
+	// A failed apply doesn't block finishing the setup. Once an offer is applied, a later attempt
+	// gets `false`, so keep the result for the redirect in case finishing the setup is retried.
 	const applySelectedIncentive = async ( incentiveOffer ) => {
 		const hasAppliedIncentive = await applyIncentive( incentiveOffer );
 
 		if ( hasAppliedIncentive ) {
+			hasAppliedIncentiveRef.current = true;
 			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
 				context: CONTEXT_EXTENSION_ONBOARDING,
 				level: incentiveOffer,
 			} );
 		}
-
-		return hasAppliedIncentive;
 	};
 
 	const skipCreatePaidAds = async ( incentiveOffer ) => {
 		setCompleting( ACTION_SKIP );
 
-		const hasAppliedIncentive =
-			await applySelectedIncentive( incentiveOffer );
-		await finishOnboardingSetup( hasAppliedIncentive );
+		await applySelectedIncentive( incentiveOffer );
+		await finishOnboardingSetup();
 	};
 
 	const createSkipButton = ( formContext ) => {
@@ -203,8 +199,7 @@ export default function SetupPaidAds() {
 
 		setCompleting( ACTION_COMPLETE );
 
-		const hasAppliedIncentive =
-			await applySelectedIncentive( incentiveOffer );
+		await applySelectedIncentive( incentiveOffer );
 
 		const onBeforeFinish = handleSetupComplete.bind(
 			null,
@@ -224,7 +219,7 @@ export default function SetupPaidAds() {
 			} )
 		);
 
-		await finishOnboardingSetup( hasAppliedIncentive, onBeforeFinish );
+		await finishOnboardingSetup( onBeforeFinish );
 	};
 
 	return (

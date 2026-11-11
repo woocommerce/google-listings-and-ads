@@ -12,6 +12,8 @@ import SetupPaidAds from './setup-paid-ads';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 import { getProductFeedUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
+import { useAppDispatch } from '~/data';
+import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
 
 // A hash URL keeps jsdom from attempting a real navigation when the redirect sets `window.location.href`.
 jest.mock( '~/utils/urls', () => ( {
@@ -135,28 +137,30 @@ describe( 'SetupPaidAds in onboarding', () => {
 		}
 	);
 
-	it( 'uses the result of each submit for the redirect', async () => {
+	it( 'keeps the query arg when finishing the setup is retried after a failure', async () => {
 		// Once an offer is applied, `applyIncentive` returns false on a later attempt.
 		applyIncentive.mockResolvedValueOnce( true ).mockResolvedValue( false );
+		const { syncSettings } = useAppDispatch();
+		syncSettings.mockRejectedValueOnce( {
+			code: EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+		} );
 
 		render( <SetupPaidAds /> );
 		const submitButton = screen.getByRole( 'button', { name: 'Submit' } );
 
 		await userEvent.click( submitButton );
 		await waitFor( () =>
-			expect( getProductFeedUrl ).toHaveBeenCalledTimes( 1 )
+			expect( syncSettings ).toHaveBeenCalledTimes( 1 )
 		);
-		await userEvent.click( submitButton );
-		await waitFor( () =>
-			expect( getProductFeedUrl ).toHaveBeenCalledTimes( 2 )
-		);
+		expect( getProductFeedUrl ).not.toHaveBeenCalled();
 
-		expect( getProductFeedUrl ).toHaveBeenNthCalledWith( 1, {
+		await userEvent.click( submitButton );
+		await waitFor( () => expect( getProductFeedUrl ).toHaveBeenCalled() );
+
+		expect( applyIncentive ).toHaveBeenCalledTimes( 2 );
+		expect( getProductFeedUrl ).toHaveBeenCalledWith( {
 			guide: 'submission-success',
 			incentive: 'applied',
-		} );
-		expect( getProductFeedUrl ).toHaveBeenNthCalledWith( 2, {
-			guide: 'submission-success',
 		} );
 	} );
 } );

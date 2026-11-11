@@ -141,4 +141,28 @@ describe( 'CreatePaidAdsCampaign', () => {
 			expect.anything()
 		);
 	} );
+
+	it( 'mentions the offer in the success notice when creating the campaign is retried after a failure', async () => {
+		// Once an offer is applied, `applyIncentive` returns false on a later attempt.
+		applyIncentive.mockResolvedValueOnce( true ).mockResolvedValue( false );
+		createAdsCampaign.mockRejectedValueOnce( new Error( 'Failed' ) );
+
+		render( <CreatePaidAdsCampaign /> );
+		const submitButton = screen.getByRole( 'button' );
+
+		await userEvent.click( submitButton );
+		await waitFor( () =>
+			expect( createAdsCampaign ).toHaveBeenCalledTimes( 1 )
+		);
+		expect( createNotice ).not.toHaveBeenCalled();
+
+		await userEvent.click( submitButton );
+		await waitFor( () => expect( push ).toHaveBeenCalled() );
+
+		expect( applyIncentive ).toHaveBeenCalledTimes( 2 );
+		expect( createNotice ).toHaveBeenCalledWith(
+			'success',
+			CAMPAIGN_WITH_OFFER_NOTICE
+		);
+	} );
 } );

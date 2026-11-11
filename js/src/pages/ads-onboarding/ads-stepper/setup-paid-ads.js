@@ -52,6 +52,7 @@ function HookNavigateAwayPrompt() {
  */
 const SetupPaidAds = () => {
 	const budgetPromptRef = useRef();
+	const hasAppliedIncentiveRef = useRef( false );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const { applyIncentive, loading: incentiveLoading } =
@@ -110,11 +111,12 @@ const SetupPaidAds = () => {
 			} )
 		);
 
-		// A failed apply doesn't block creating the campaign. Once an offer is applied,
-		// a later submit gets `false`, so it isn't applied twice.
+		// A failed apply doesn't block creating the campaign. Once an offer is applied, a later submit
+		// gets `false`, so keep the result for the redirect in case completing the setup is retried.
 		const hasAppliedIncentive = await applyIncentive( incentiveOffer );
 
 		if ( hasAppliedIncentive ) {
+			hasAppliedIncentiveRef.current = true;
 			recordGlaEvent( 'gla_campaign_with_cyo_incentive_selected', {
 				context: CONTEXT,
 				level: incentiveOffer,
@@ -130,7 +132,8 @@ const SetupPaidAds = () => {
 				const nextPath = getNewPath(
 					{
 						guide: 'campaign-creation-success',
-						...( hasAppliedIncentive && INCENTIVE_APPLIED_QUERY ),
+						...( hasAppliedIncentiveRef.current &&
+							INCENTIVE_APPLIED_QUERY ),
 					},
 					'/google/dashboard'
 				);

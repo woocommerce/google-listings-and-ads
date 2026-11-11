@@ -143,6 +143,30 @@ describe( 'SetupPaidAds', () => {
 		);
 	} );
 
+	it( 'keeps the query arg when completing the setup is retried after a failure', async () => {
+		// Once an offer is applied, `applyIncentive` returns false on a later attempt.
+		applyIncentive.mockResolvedValueOnce( true ).mockResolvedValue( false );
+		handleSetupComplete.mockRejectedValueOnce( new Error( 'Failed' ) );
+
+		render( <SetupPaidAds /> );
+		const submitButton = screen.getByRole( 'button', { name: 'Submit' } );
+
+		await userEvent.click( submitButton );
+		await waitFor( () =>
+			expect( handleSetupComplete ).toHaveBeenCalledTimes( 1 )
+		);
+		expect( getNewPath ).not.toHaveBeenCalled();
+
+		await userEvent.click( submitButton );
+		await waitFor( () => expect( getNewPath ).toHaveBeenCalled() );
+
+		expect( applyIncentive ).toHaveBeenCalledTimes( 2 );
+		expect( getNewPath ).toHaveBeenCalledWith(
+			{ guide: 'campaign-creation-success', incentive: 'applied' },
+			'/google/dashboard'
+		);
+	} );
+
 	it( 'disables the "Create campaign" button while the offer is being applied', () => {
 		useApplyCYOIncentive.mockReturnValue( {
 			applyIncentive,
