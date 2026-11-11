@@ -230,8 +230,7 @@ class PostShareControl implements Service, Registerable {
 	}
 
 	/**
-	 * Get a post's last sync outcome with the message to show for it, in the same shape as the
-	 * post's `gla_gbp_sync_outcome` REST field.
+	 * Get a post's last sync outcome, plus the message and severity `SyncNotice` gives it.
 	 *
 	 * @param int $post_id
 	 *

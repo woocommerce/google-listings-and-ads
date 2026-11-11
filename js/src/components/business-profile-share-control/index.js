@@ -34,8 +34,8 @@ import './index.scss';
  * Renders the controls for sharing a post to Google Business Profile, independent of the editor
  * hosting them: the "Share on my Business Profile" toggle, the status of the post's last send to
  * Google, a link to the post on Google once it has one, and — while sharing is on — the field
- * holding the text sent to Google with its "Generate from post" action. On a post already shared, the toggle explains that changes made here aren't
- * sent to Google.
+ * holding the text sent to Google with its "Generate from post" action. On a post already shared,
+ * the toggle explains that changes made here aren't sent to Google.
  *
  * @param {Object} props Component props.
  * @param {string} props.context The editor hosting the controls, sent with tracking events. Possible values: 'business-profile-share-panel', 'business-profile-share-meta-box'.

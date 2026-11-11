@@ -38,6 +38,8 @@ export default function SyncStatus( { syncOutcome, isChecking } ) {
 		return null;
 	}
 
+	// reason: a message can arrive without a severity from a backend that doesn't send one yet,
+	// so it falls back to the stronger style rather than none.
 	return (
 		<Notice
 			status={ syncOutcome.display_status ?? 'error' }
