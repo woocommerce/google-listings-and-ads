@@ -85,6 +85,7 @@ class DisconnectController extends BaseController {
 			// so it should survive an MC-only disconnect or a Google account switch.
 			if ( empty( $errors ) ) {
 				$this->service_based_merchant_state->reset_supported_products_confirmation();
+				$this->service_based_merchant_state->clear_switch_to_physical_products();
 			}
 
 			return new Response(

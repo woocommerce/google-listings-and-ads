@@ -61,6 +61,7 @@ class ServiceBasedMerchantHooks implements Service, Registerable {
 		}
 
 		if ( $product && $product->needs_shipping() ) {
+			$this->service_based_merchant_state->record_switch_to_physical_products();
 			$this->service_based_merchant_state->reset_service_based_merchant_status();
 		}
 	}
