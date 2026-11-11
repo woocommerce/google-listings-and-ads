@@ -11,11 +11,15 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostSer
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostSyncNotice;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncNotice;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
+use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SendLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -27,20 +31,19 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use ReflectionProperty;
 use Throwable;
 use WP_REST_Request;
 use WP_REST_Response;
-use WP_Screen;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class SyncReliabilityFlowTest
  *
- * Publishes a shared post through the real publish trigger, post service, location service and
- * notice, with only Google's HTTP responses mocked, and reads what the merchant would see: the
- * block editor's save response and the Classic Editor's notice.
+ * Publishes a shared post through the real publish trigger, post service, and location service,
+ * with only Google's HTTP responses mocked, then runs the real background job exactly as
+ * ActionScheduler would, and reads what the merchant would see through the REST-exposed sync
+ * outcome.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile
  */
@@ -65,14 +68,17 @@ class SyncReliabilityFlowTest extends UnitTest {
 	/** @var PostPublishTrigger */
 	protected $trigger;
 
-	/** @var PostSyncNotice */
-	protected $notice;
+	/** @var LocationService */
+	protected $location_service;
 
 	/** @var LocalPostService */
 	protected $local_post_service;
 
 	/** @var LocalPostImageService|MockObject */
 	protected $image_service;
+
+	/** @var MockObject|JobRepository $job_repository */
+	protected $job_repository;
 
 	public function setUp(): void {
 		parent::setUp();
@@ -97,12 +103,12 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$verifications = new VerificationsApiClient( $this->http_client( 'verification_responses' ), 'https://wcs.test/google/google-gbp-verifications/v1' );
 		$posts         = new BusinessProfileApiClient( $this->http_client( 'create_responses' ), 'https://wcs.test/google/google-gbp/v4' );
 
-		$location_service = new LocationService(
+		$this->location_service = new LocationService(
 			$this->createMock( AccountManagementApiClient::class ),
 			$this->createMock( BusinessInformationApiClient::class ),
 			$verifications
 		);
-		$location_service->set_options_object( $options );
+		$this->location_service->set_options_object( $options );
 
 		$wp = $this->createMock( WP::class );
 		$wp->method( 'get_locale' )->willReturn( 'en_US' );
@@ -112,26 +118,24 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->image_service = $this->createMock( LocalPostImageService::class );
 		$this->image_service->method( 'get_image_url' )->willReturn( '' );
 
-		$this->local_post_service = new LocalPostService( $posts, $wp, $iso_utility, $this->image_service, $location_service, $this->createMock( WPML::class ) );
+		$this->local_post_service = new LocalPostService( $posts, $wp, $iso_utility, $this->image_service, $this->location_service, $this->createMock( WPML::class ) );
 		$this->local_post_service->set_options_object( $options );
 
-		$this->trigger = new PostPublishTrigger( $this->local_post_service, $location_service );
-		$this->notice  = new PostSyncNotice( $this->local_post_service, $this->trigger );
+		$this->job_repository = $this->createMock( JobRepository::class );
+		$this->job_repository->method( 'get' )->with( SendLocalPost::class )->willReturn( $this->send_local_post_job() );
 
-		// Only these instances send and keep notices, not the ones the plugin registered at boot.
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service, $this->job_repository );
+
+		// Only this instance sends, not the one the plugin registered at boot.
 		remove_all_actions( 'wp_after_insert_post' );
 		$this->trigger->register();
-		$this->notice->register();
 
 		rest_get_server();
 		$this->local_post_service->register_rest_fields();
-		$this->notice->register_rest_fields();
 	}
 
 	public function tearDown(): void {
 		unset(
-			$GLOBALS['post'],
-			$GLOBALS['wp_rest_additional_fields']['post'][ PostSyncNotice::FIELD_NAME ],
 			$GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ],
 			$GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]
 		);
@@ -145,15 +149,18 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = $this->created_post();
 		$post_id                        = $this->create_shared_draft();
 
-		$data = $this->publish_over_rest( $post_id );
+		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
 		$this->assertSame( 'publish', get_post_status( $post_id ) );
+		$this->assertSame( SyncOutcome::SENT_PENDING_VERIFICATION, $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]['outcome'] );
 		$this->assertSame(
 			[
-				'status'  => 'warning',
+				'status'  => SyncNotice::STATUS_WARNING,
 				'message' => self::PENDING_MESSAGE,
 			],
-			$data[ PostSyncNotice::FIELD_NAME ]
+			SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] )
 		);
 		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
 		$this->assertSame(
@@ -165,40 +172,21 @@ class SyncReliabilityFlowTest extends UnitTest {
 		);
 	}
 
-	public function test_classic_editor_publish_to_an_unverified_location_shows_the_pending_warning_once() {
-		$this->verification_responses[] = $this->json( 200, $this->proxy_mock( 'accounts/locations/voice-of-merchant/unverified' ) );
-		$this->create_responses[]       = $this->created_post();
-		$post_id                        = $this->create_shared_draft();
-
-		wp_update_post(
-			[
-				'ID'          => $post_id,
-				'post_status' => 'publish',
-			]
-		);
-
-		$this->open_edit_screen( $post_id );
-
-		$this->expectOutputString( '<div class="notice notice-warning is-dismissible"><p>' . esc_html( self::PENDING_MESSAGE ) . '</p></div>' );
-		$this->notice->render_notice();
-		$this->notice->render_notice();
-	}
-
 	public function test_saving_a_post_pending_verification_again_does_not_send_it_again() {
 		$this->verification_responses[] = $this->json( 200, $this->proxy_mock( 'accounts/locations/voice-of-merchant/unverified' ) );
 		$this->create_responses[]       = $this->created_post();
 		$post_id                        = $this->create_shared_draft();
 		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
 
 		$this->assertSame( SyncOutcome::SENT_PENDING_VERIFICATION, $this->local_post_service->get_sync_outcome( $post_id )['outcome'] );
 
 		$this->start_new_request();
 		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
 		$request->set_body_params( [ 'title' => 'Edited title' ] );
-		$data = rest_do_request( $request )->get_data();
+		rest_do_request( $request );
 
 		$this->assertCount( 1, array_filter( $this->sent, [ $this, 'is_create' ] ) );
-		$this->assertNull( $data[ PostSyncNotice::FIELD_NAME ] );
 	}
 
 	/**
@@ -211,20 +199,22 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = $this->created_post();
 		$post_id                        = $this->create_shared_draft();
 
-		$data = $this->publish_over_rest( $post_id );
+		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
 		$this->assertSame( 'publish', get_post_status( $post_id ) );
 		$this->assertSame(
 			[
-				'status'  => 'warning',
+				'status'  => SyncNotice::STATUS_WARNING,
 				'message' => self::RESTRICTED_LOCATION_MESSAGE,
 			],
-			$data[ PostSyncNotice::FIELD_NAME ]
+			SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] )
 		);
 		// Unlike a send-time account restriction, Google did accept this post -- it's the
 		// location, not the post, that's the problem, so the post really is shared.
 		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
-		$this->assertSame( SyncOutcome::SENT_LOCATION_RESTRICTED, $this->local_post_service->get_sync_outcome( $post_id )['outcome'] );
+		$this->assertSame( SyncOutcome::SENT_LOCATION_RESTRICTED, $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]['outcome'] );
 	}
 
 	/**
@@ -243,16 +233,16 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = $this->created_post();
 		$post_id                        = $this->create_shared_draft();
 		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
 
 		$this->assertSame( SyncOutcome::SENT_LOCATION_RESTRICTED, $this->local_post_service->get_sync_outcome( $post_id )['outcome'] );
 
 		$this->start_new_request();
 		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
 		$request->set_body_params( [ 'title' => 'Edited title' ] );
-		$data = rest_do_request( $request )->get_data();
+		rest_do_request( $request );
 
 		$this->assertCount( 1, array_filter( $this->sent, [ $this, 'is_create' ] ) );
-		$this->assertNull( $data[ PostSyncNotice::FIELD_NAME ] );
 	}
 
 	/**
@@ -264,6 +254,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = $this->json( 200, [ 'searchUrl' => 'https://g.page/r/abc' ] );
 		$post_id                        = $this->create_shared_draft();
 		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
 
 		$this->assertSame( SyncOutcome::SENT_LOCATION_RESTRICTED, $this->local_post_service->get_sync_outcome( $post_id )['outcome'] );
 		$this->assertFalse( $this->local_post_service->get_share_status( $post_id )['is_shared'] );
@@ -281,9 +272,11 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = $this->created_post();
 		$post_id                        = $this->create_shared_draft();
 
-		$data = $this->publish_over_rest( $post_id );
+		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
-		$this->assertNull( $data[ PostSyncNotice::FIELD_NAME ] );
+		$this->assertNull( SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] ) );
 		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
 	}
 
@@ -292,10 +285,12 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = $this->created_post();
 		$post_id                        = $this->create_shared_draft();
 
-		$data = $this->publish_over_rest( $post_id );
+		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
 		$this->assertSame( 'publish', get_post_status( $post_id ) );
-		$this->assertNull( $data[ PostSyncNotice::FIELD_NAME ] );
+		$this->assertNull( SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] ) );
 		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
 	}
 
@@ -304,15 +299,17 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = $this->json( 400, $this->proxy_mock( 'local-posts/errors/account-restricted' ) );
 		$post_id                        = $this->create_shared_draft();
 
-		$data = $this->publish_over_rest( $post_id );
+		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
 		$this->assertSame( 'publish', get_post_status( $post_id ) );
 		$this->assertSame(
 			[
-				'status'  => 'error',
+				'status'  => SyncNotice::STATUS_ERROR,
 				'message' => self::RESTRICTION_MESSAGE,
 			],
-			$data[ PostSyncNotice::FIELD_NAME ]
+			SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] )
 		);
 		$this->assertSame(
 			[
@@ -337,10 +334,12 @@ class SyncReliabilityFlowTest extends UnitTest {
 		);
 		$post_id                        = $this->create_shared_draft();
 
-		$data = $this->publish_over_rest( $post_id );
+		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
 		$this->assertSame( 'publish', get_post_status( $post_id ) );
-		$this->assertSame( self::REJECTION_MESSAGE, $data[ PostSyncNotice::FIELD_NAME ]['message'] );
+		$this->assertSame( self::REJECTION_MESSAGE, SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] )['message'] );
 		$this->assertFalse( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
 		$this->assertSame( '', $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['search_url'] );
 	}
@@ -350,23 +349,21 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = 'connect';
 		$post_id                        = $this->create_shared_draft();
 		$before                         = get_post( $post_id );
-		$scheduled_before               = $this->scheduled_hooks();
 
 		$response = $this->publish_over_rest_response( $post_id );
-		$data     = $response->get_data();
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertSame( 'publish', get_post_status( $post_id ) );
 		$this->assertSame( $before->post_title, get_post( $post_id )->post_title );
 		$this->assertSame( $before->post_content, get_post( $post_id )->post_content );
-		// WordPress itself schedules its pings on publish; nothing else may be added.
-		$this->assertSame( [ 'do_pings' ], array_values( array_diff( $this->scheduled_hooks(), $scheduled_before ) ), 'A failed send schedules no background retry.' );
 		$this->assertSame(
 			[
-				'status'  => 'error',
+				'status'  => SyncNotice::STATUS_ERROR,
 				'message' => self::UNREACHABLE_MESSAGE,
 			],
-			$data[ PostSyncNotice::FIELD_NAME ]
+			SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] )
 		);
 		$this->assertFalse( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
 		$this->assertCount( 1, array_filter( $this->sent, [ $this, 'is_create' ] ) );
@@ -377,6 +374,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = 'connect';
 		$post_id                        = $this->create_shared_draft();
 		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
 
 		$this->assertTrue( (bool) get_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true ) );
 
@@ -386,11 +384,13 @@ class SyncReliabilityFlowTest extends UnitTest {
 
 		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
 		$request->set_body_params( [ 'title' => 'Edited title' ] );
-		$data = rest_do_request( $request )->get_data();
+		rest_do_request( $request );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
 		$this->assertCount( 2, array_filter( $this->sent, [ $this, 'is_create' ] ) );
 		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
-		$this->assertNull( $data[ PostSyncNotice::FIELD_NAME ] );
+		$this->assertNull( SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] ) );
 	}
 
 	public function test_a_lost_google_grant_keeps_the_post_published_and_asks_the_merchant_to_reconnect() {
@@ -398,15 +398,17 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = AccountReconnect::google_disconnected();
 		$post_id                        = $this->create_shared_draft();
 
-		$data = $this->publish_over_rest( $post_id );
+		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
 		$this->assertSame( 'publish', get_post_status( $post_id ) );
 		$this->assertSame(
 			[
-				'status'  => 'error',
+				'status'  => SyncNotice::STATUS_ERROR,
 				'message' => self::RECONNECT_MESSAGE,
 			],
-			$data[ PostSyncNotice::FIELD_NAME ]
+			SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] )
 		);
 		$this->assertSame( SyncOutcome::ACCOUNT_DISCONNECTED, $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]['outcome'] );
 		$this->assertFalse( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
@@ -417,6 +419,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = AccountReconnect::google_disconnected();
 		$post_id                        = $this->create_shared_draft();
 		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
 
 		$this->start_new_request();
 		$this->verification_responses[] = $this->json( 200, $this->proxy_mock( 'accounts/locations/voice-of-merchant/eligible' ) );
@@ -424,11 +427,13 @@ class SyncReliabilityFlowTest extends UnitTest {
 
 		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
 		$request->set_body_params( [ 'title' => 'Edited title' ] );
-		$data = rest_do_request( $request )->get_data();
+		rest_do_request( $request );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
 		$this->assertCount( 2, array_filter( $this->sent, [ $this, 'is_create' ] ) );
 		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
-		$this->assertNull( $data[ PostSyncNotice::FIELD_NAME ] );
+		$this->assertNull( SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] ) );
 	}
 
 	public function test_a_lost_jetpack_connection_still_says_google_could_not_be_reached() {
@@ -436,15 +441,17 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->create_responses[]       = AccountReconnect::jetpack_disconnected();
 		$post_id                        = $this->create_shared_draft();
 
-		$data = $this->publish_over_rest( $post_id );
+		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
 
 		$this->assertSame( 'publish', get_post_status( $post_id ) );
 		$this->assertSame(
 			[
-				'status'  => 'error',
+				'status'  => SyncNotice::STATUS_ERROR,
 				'message' => self::UNREACHABLE_MESSAGE,
 			],
-			$data[ PostSyncNotice::FIELD_NAME ]
+			SyncNotice::for_outcome( $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] )
 		);
 	}
 
@@ -455,19 +462,6 @@ class SyncReliabilityFlowTest extends UnitTest {
 	 */
 	public function is_create( string $sent ): bool {
 		return 'POST accounts/111/locations/222/localPosts' === $sent;
-	}
-
-	/**
-	 * @return string[] Names of the hooks scheduled in WP-Cron.
-	 */
-	protected function scheduled_hooks(): array {
-		$hooks = [];
-
-		foreach ( (array) _get_cron_array() as $events ) {
-			$hooks = array_merge( $hooks, array_keys( (array) $events ) );
-		}
-
-		return array_unique( $hooks );
 	}
 
 	/**
@@ -499,25 +493,42 @@ class SyncReliabilityFlowTest extends UnitTest {
 	}
 
 	/**
+	 * Build a real `SendLocalPost` job wired to this test's own real services, with only
+	 * ActionScheduler itself mocked -- this test isn't exercising ActionScheduler, only what the
+	 * job does once it runs.
+	 *
+	 * @return SendLocalPost
+	 */
+	protected function send_local_post_job(): SendLocalPost {
+		$action_scheduler = $this->createMock( ActionSchedulerInterface::class );
+		$action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
+
+		return new SendLocalPost(
+			$action_scheduler,
+			$this->createMock( ActionSchedulerJobMonitor::class ),
+			$this->local_post_service,
+			$this->location_service
+		);
+	}
+
+	/**
+	 * Run the job exactly as ActionScheduler would once it processes the action `schedule()`
+	 * enqueued -- scheduling itself is a plain DB write in this test environment, nothing runs it
+	 * automatically.
+	 *
+	 * @param int $post_id
+	 */
+	protected function run_scheduled_job( int $post_id ): void {
+		$this->send_local_post_job()->process_items( [ $post_id ] );
+	}
+
+	/**
 	 * Start a new request, as a later save would, so the per-request send guard doesn't apply.
 	 */
 	protected function start_new_request(): void {
 		remove_all_actions( 'wp_after_insert_post' );
-		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->get_location_service() );
-		$this->notice  = new PostSyncNotice( $this->local_post_service, $this->trigger );
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service, $this->job_repository );
 		$this->trigger->register();
-		$this->notice->register();
-		$this->notice->register_rest_fields();
-	}
-
-	/**
-	 * @return LocationService
-	 */
-	protected function get_location_service(): LocationService {
-		$property = new ReflectionProperty( PostPublishTrigger::class, 'location_service' );
-		$property->setAccessible( true );
-
-		return $property->getValue( $this->trigger );
 	}
 
 	/**
@@ -552,14 +563,18 @@ class SyncReliabilityFlowTest extends UnitTest {
 	}
 
 	/**
+	 * Read a post's current edit-context REST fields, as the editor would on a fresh load --
+	 * used after running the job, since publishing itself only shows `queued`.
+	 *
 	 * @param int $post_id
+	 *
+	 * @return array
 	 */
-	protected function open_edit_screen( int $post_id ): void {
-		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	protected function get_edit_context_data( int $post_id ): array {
+		$request = new WP_REST_Request( 'GET', "/wp/v2/posts/{$post_id}" );
+		$request->set_param( 'context', 'edit' );
 
-		$screen = WP_Screen::get( 'post' );
-		$screen->is_block_editor( false );
-		set_current_screen( $screen );
+		return rest_do_request( $request )->get_data();
 	}
 
 	/**

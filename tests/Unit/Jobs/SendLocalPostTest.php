@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SendLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\WPHookTrait;
+use Error;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -175,6 +176,60 @@ class SendLocalPostTest extends UnitTest {
 		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 
+	public function test_stores_pending_verification_when_google_accepts_a_post_for_an_unverified_location_without_returning_its_id() {
+		$post = $this->create_shared_post();
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502, false, SyncOutcome::SENT_PENDING_VERIFICATION )
+		);
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::SENT_PENDING_VERIFICATION, '', false );
+
+		$this->job->process_items( [ $post->ID ] );
+	}
+
+	public function test_keeps_the_omitted_image_flag_when_google_accepts_the_post_without_returning_its_id() {
+		$post = $this->create_shared_post();
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502, true )
+		);
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::SUCCESS, '', true );
+
+		$this->job->process_items( [ $post->ID ] );
+	}
+
+	public function test_reports_a_create_sync_success_when_google_accepts_the_post_without_returning_its_id() {
+		$post = $this->create_shared_post();
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502 )
+		);
+
+		$this->expect_do_action_once( 'woocommerce_gla_business_profile_sync_success', [ [ 'type' => 'create' ] ] );
+		$this->expect_do_action_never( 'woocommerce_gla_business_profile_sync_failure' );
+
+		$this->job->process_items( [ $post->ID ] );
+	}
+
 	public function test_stores_the_classified_outcome_and_googles_message_when_the_send_fails() {
 		$post = $this->create_shared_post();
 		$this->local_post_service->method( 'get_share_status' )->willReturn(
@@ -253,6 +308,130 @@ class SendLocalPostTest extends UnitTest {
 		$this->expect_do_action_never( 'woocommerce_gla_business_profile_sync_success' );
 
 		$this->job->process_items( [ $post->ID ] );
+	}
+
+	/**
+	 * @dataProvider data_provider_failures_without_a_google_error
+	 *
+	 * @param callable $create_failure
+	 */
+	public function test_reports_a_sync_failure_with_an_empty_reason_when_google_gave_no_error( callable $create_failure ) {
+		$post = $this->create_shared_post();
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$this->local_post_service->method( 'create' )->willThrowException( $create_failure() );
+
+		$this->expect_do_action_once(
+			'woocommerce_gla_business_profile_sync_failure',
+			[
+				[
+					'type'   => 'create',
+					'reason' => '',
+				],
+			]
+		);
+
+		$this->job->process_items( [ $post->ID ] );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_failures_without_a_google_error(): array {
+		return [
+			'network failure' => [
+				function () {
+					return new BusinessProfileApiException( 503, [], __METHOD__ );
+				},
+			],
+			'proxy error'     => [
+				function () {
+					return new BusinessProfileApiException( 404, [ 'message' => 'Not found' ], __METHOD__ );
+				},
+			],
+			'PHP error'       => [
+				function () {
+					return new Error( 'Call to a member function on null.' );
+				},
+			],
+		];
+	}
+
+	public function test_does_not_propagate_an_exception_from_the_create_call_and_reports_it() {
+		$post = $this->create_shared_post();
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$this->local_post_service->method( 'create' )->willThrowException( new Exception( 'Network error.' ) );
+
+		$before = did_action( 'woocommerce_gla_exception' );
+
+		$this->job->process_items( [ $post->ID ] );
+
+		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_does_not_propagate_an_error_from_the_create_call_and_reports_it_by_message() {
+		$post = $this->create_shared_post();
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$this->local_post_service->method( 'create' )->willThrowException( new Error( 'Call to a member function on null.' ) );
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::REQUEST_FAILURE, '' );
+
+		$exceptions_before = did_action( 'woocommerce_gla_exception' );
+		$errors_before     = did_action( 'woocommerce_gla_error' );
+
+		$this->job->process_items( [ $post->ID ] );
+
+		$this->assertSame( $exceptions_before, did_action( 'woocommerce_gla_exception' ) );
+		$this->assertSame( $errors_before + 1, did_action( 'woocommerce_gla_error' ) );
+	}
+
+	public function test_a_throwing_sync_failure_listener_does_not_break_processing_or_skip_the_failure_report() {
+		$post = $this->create_shared_post();
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new BusinessProfileApiException( 503, [], __METHOD__ )
+		);
+
+		add_action(
+			'woocommerce_gla_business_profile_sync_failure',
+			function () {
+				throw new Exception( 'Listener failed.' );
+			}
+		);
+
+		$logged = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( string $message ) use ( &$logged ) {
+				$logged[] = $message;
+			}
+		);
+		$exceptions_before = did_action( 'woocommerce_gla_exception' );
+
+		$this->job->process_items( [ $post->ID ] );
+
+		$this->assertSame( [ 'A woocommerce_gla_business_profile_sync_failure callback threw: Listener failed.' ], $logged );
+		$this->assertSame( $exceptions_before + 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 
 	public function test_a_throwing_sync_success_listener_does_not_break_processing_or_store_a_failure() {

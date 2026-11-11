@@ -5,8 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Exception;
-use Throwable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SendLocalPost;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -14,17 +14,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class PostPublishTrigger
  *
- * Sends a post to Google Business Profile once it's published -- manually or via WordPress's own
- * scheduler -- at most once per publish action. Saving the post again retries a send that failed,
- * or makes the first send for a published post that was never sent, such as when sharing was
- * switched on after publishing.
+ * Schedules a post to be sent to Google Business Profile once it's published -- manually or via
+ * WordPress's own scheduler -- at most once per publish action. Saving the post again retries a
+ * send that failed, or makes the first send for a published post that was never sent, such as
+ * when sharing was switched on after publishing.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
 class PostPublishTrigger implements Service, Registerable {
-
-	/** @var string Tracked send type for a `localPosts.create` request. */
-	private const SYNC_TYPE_CREATE = 'create';
 
 	/** @var LocalPostService */
 	private $local_post_service;
@@ -32,7 +29,10 @@ class PostPublishTrigger implements Service, Registerable {
 	/** @var LocationService */
 	private $location_service;
 
-	/** @var array<int,bool> Post IDs already sent to Google during the current request. */
+	/** @var JobRepository */
+	private $job_repository;
+
+	/** @var array<int,bool> Post IDs already scheduled to send during the current request. */
 	private $sent_in_request = [];
 
 	/**
@@ -40,10 +40,12 @@ class PostPublishTrigger implements Service, Registerable {
 	 *
 	 * @param LocalPostService $local_post_service
 	 * @param LocationService  $location_service
+	 * @param JobRepository    $job_repository
 	 */
-	public function __construct( LocalPostService $local_post_service, LocationService $location_service ) {
+	public function __construct( LocalPostService $local_post_service, LocationService $location_service, JobRepository $job_repository ) {
 		$this->local_post_service = $local_post_service;
 		$this->location_service   = $location_service;
+		$this->job_repository     = $job_repository;
 	}
 
 	/**
@@ -56,7 +58,7 @@ class PostPublishTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Whether a post was sent to Google during the current request.
+	 * Whether a post was scheduled to send to Google during the current request.
 	 *
 	 * @param int $post_id
 	 *
@@ -105,14 +107,15 @@ class PostPublishTrigger implements Service, Registerable {
 
 		$last = $this->local_post_service->get_sync_outcome( $post->ID );
 
-		// A send Google accepted without a post ID still records an outcome, so it isn't resent.
+		// A queued send, or one Google accepted without a post ID, still records an outcome, so
+		// neither is resent.
 		return null === $last || in_array( $last['outcome'], SyncOutcome::FAILURES, true );
 	}
 
 	/**
-	 * Send the post to Google Business Profile, when a location is connected, it's a supported
-	 * post type with sharing switched on, it isn't already shared, and it hasn't already been
-	 * sent during this request.
+	 * Schedule the post to be sent to Google Business Profile, when a location is connected, it's
+	 * a supported post type with sharing switched on, it isn't already shared, and it hasn't
+	 * already been scheduled during this request.
 	 *
 	 * @param WP_Post $post
 	 */
@@ -138,115 +141,7 @@ class PostPublishTrigger implements Service, Registerable {
 		}
 		$this->sent_in_request[ $post->ID ] = true;
 
-		try {
-			// TODO: move this to a background job -- a synchronous call here delays the editor's
-			// Publish response, and holds up the WP-Cron run for a scheduled post.
-			$this->local_post_service->create( $post );
-		} catch ( MissingLocalPostIdException $exception ) {
-			// Google accepted the post, so a retry would only create a duplicate. With no post ID
-			// there's no stored result, so the share status stays "not shared": success with no
-			// link is a valid state here, not one to correct.
-			$this->local_post_service->set_sync_outcome( $post->ID, $exception->get_outcome(), '', $exception->is_image_omitted() );
-			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
-		} catch ( Throwable $failure ) {
-			// Catch every failure, not only exceptions, so the post's own publish is never broken by Google.
-			$this->record_failure( $post, $failure );
-			return;
-		}
-
-		// Outside the try, so a failing callback can't turn an accepted post into a failed one.
-		$this->report_sync_success();
-	}
-
-	/**
-	 * Store a failed send's outcome for the editor, and report the failure.
-	 *
-	 * @param WP_Post   $post
-	 * @param Throwable $failure
-	 */
-	private function record_failure( WP_Post $post, Throwable $failure ): void {
-		$result = SyncOutcome::for_failure( $failure );
-		$this->local_post_service->set_sync_outcome( $post->ID, $result['outcome'], $result['message'] );
-
-		$this->report_sync_failure( $failure );
-
-		// Callbacks on the exception action may expect an Exception, so report an Error by message.
-		if ( $failure instanceof Exception ) {
-			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
-		} else {
-			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
-		}
-	}
-
-	/**
-	 * Report that Google accepted a post.
-	 */
-	private function report_sync_success(): void {
-		try {
-			/**
-			 * Fires when Google Business Profile accepts a post.
-			 *
-			 * @param array $properties {
-			 *     @type string $type The kind of send: `create` when the post is sent to Google for the first time.
-			 * }
-			 */
-			do_action( 'woocommerce_gla_business_profile_sync_success', [ 'type' => self::SYNC_TYPE_CREATE ] );
-		} catch ( Throwable $error ) {
-			$this->report_listener_error( 'woocommerce_gla_business_profile_sync_success', $error );
-		}
-	}
-
-	/**
-	 * Report that sending a post to Google failed.
-	 *
-	 * @param Throwable $failure
-	 */
-	private function report_sync_failure( Throwable $failure ): void {
-		try {
-			/**
-			 * Fires when sending a post to Google Business Profile fails.
-			 *
-			 * @param array $properties {
-			 *     @type string $type   The kind of send: `create` when the post is sent to Google for the first time.
-			 *     @type string $reason Google's error status, such as `INVALID_ARGUMENT`. Empty when Google gave none.
-			 * }
-			 */
-			do_action(
-				'woocommerce_gla_business_profile_sync_failure',
-				[
-					'type'   => self::SYNC_TYPE_CREATE,
-					'reason' => self::get_google_error_status( $failure ),
-				]
-			);
-		} catch ( Throwable $error ) {
-			$this->report_listener_error( 'woocommerce_gla_business_profile_sync_failure', $error );
-		}
-	}
-
-	/**
-	 * Report a sync hook callback that threw, so it can't break the post's own save.
-	 *
-	 * @param string    $hook  The hook whose callback threw.
-	 * @param Throwable $error
-	 */
-	private function report_listener_error( string $hook, Throwable $error ): void {
-		do_action( 'woocommerce_gla_error', sprintf( 'A %s callback threw: %s', $hook, $error->getMessage() ), __METHOD__ );
-	}
-
-	/**
-	 * Get Google's error status from a failed send, such as `INVALID_ARGUMENT`.
-	 *
-	 * @param Throwable $failure
-	 *
-	 * @return string Empty when the failure carries no error from Google, such as a network failure.
-	 */
-	private static function get_google_error_status( Throwable $failure ): string {
-		if ( ! $failure instanceof BusinessProfileApiException ) {
-			return '';
-		}
-
-		$status = $failure->get_response_body()['error']['status'] ?? '';
-
-		return is_string( $status ) ? $status : '';
+		$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::QUEUED );
+		$this->job_repository->get( SendLocalPost::class )->schedule( [ [ $post->ID ] ] );
 	}
 }
