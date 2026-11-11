@@ -297,6 +297,17 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Clear a post's stored sync outcome, so it reads as never attempted. Used when a queued send
+	 * is skipped because the post no longer qualifies -- a stale "queued" record would otherwise
+	 * block every future save from retrying it.
+	 *
+	 * @param int $post_id
+	 */
+	public function clear_sync_outcome( int $post_id ): void {
+		delete_post_meta( $post_id, self::SYNC_OUTCOME_META_KEY );
+	}
+
+	/**
 	 * Build and send a `localPosts.create` request for a WordPress post, and store the
 	 * result and a success outcome keyed to that post. The outcome is pending verification
 	 * when the connected location was unverified at send time.

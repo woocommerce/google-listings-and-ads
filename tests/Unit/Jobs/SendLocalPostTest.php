@@ -109,22 +109,24 @@ class SendLocalPostTest extends UnitTest {
 		$this->job->handle_process_items_action( [ $post->ID ] );
 	}
 
-	public function test_a_post_whose_sharing_toggle_is_now_off_is_skipped_without_recording_a_failure() {
+	public function test_a_post_whose_sharing_toggle_is_now_off_is_skipped_and_its_queued_outcome_is_cleared() {
 		$post = $this->create_shared_post();
 		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
 
 		$this->local_post_service->expects( $this->never() )->method( 'create' );
 		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
+		$this->local_post_service->expects( $this->once() )->method( 'clear_sync_outcome' )->with( $post->ID );
 
 		$this->job->process_items( [ $post->ID ] );
 	}
 
-	public function test_a_trashed_post_is_skipped_without_recording_a_failure() {
+	public function test_a_trashed_post_is_skipped_and_its_queued_outcome_is_cleared() {
 		$post = $this->create_shared_post();
 		wp_trash_post( $post->ID );
 
 		$this->local_post_service->expects( $this->never() )->method( 'create' );
 		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
+		$this->local_post_service->expects( $this->once() )->method( 'clear_sync_outcome' )->with( $post->ID );
 
 		$this->job->process_items( [ $post->ID ] );
 	}
@@ -145,24 +147,28 @@ class SendLocalPostTest extends UnitTest {
 		);
 		$local_post_service->expects( $this->never() )->method( 'create' );
 		$local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
+		// The prior send already stored its own accurate outcome -- this skip must not clear it.
+		$local_post_service->expects( $this->never() )->method( 'clear_sync_outcome' );
 
 		$job = new SendLocalPost( $this->action_scheduler, $this->monitor, $local_post_service, $this->location_service );
 		$job->process_items( [ $post->ID ] );
 	}
 
-	public function test_a_post_whose_location_is_no_longer_connected_is_skipped_without_recording_a_failure() {
+	public function test_a_post_whose_location_is_no_longer_connected_is_skipped_and_its_queued_outcome_is_cleared() {
 		$post                   = $this->create_shared_post();
 		$this->location_service = $this->createMock( LocationService::class );
 		$this->location_service->method( 'get_selected_location' )->willReturn( null );
 		$this->job = new SendLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service, $this->location_service );
 
 		$this->local_post_service->expects( $this->never() )->method( 'create' );
+		$this->local_post_service->expects( $this->once() )->method( 'clear_sync_outcome' )->with( $post->ID );
 
 		$this->job->process_items( [ $post->ID ] );
 	}
 
-	public function test_a_deleted_post_is_skipped_without_recording_a_failure() {
+	public function test_a_deleted_post_is_skipped_and_its_queued_outcome_is_cleared() {
 		$this->local_post_service->expects( $this->never() )->method( 'create' );
+		$this->local_post_service->expects( $this->once() )->method( 'clear_sync_outcome' )->with( 999999 );
 
 		$this->job->process_items( [ 999999 ] );
 	}

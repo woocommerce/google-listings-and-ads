@@ -91,7 +91,15 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 		foreach ( $post_ids as $post_id ) {
 			$post = get_post( $post_id );
 
+			if ( null !== $post && $this->local_post_service->get_share_status( $post_id )['is_shared'] ) {
+				// Already sent via another path -- that send already stored its own outcome.
+				continue;
+			}
+
 			if ( ! $this->still_qualifies( $post ) ) {
+				// The queued outcome no longer reflects reality -- clear it, rather than leaving
+				// a stale "queued" record that would block every future save from retrying.
+				$this->local_post_service->clear_sync_outcome( $post_id );
 				continue;
 			}
 
@@ -101,7 +109,7 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 
 	/**
 	 * Whether a post is still a genuine candidate to send -- published, a supported post type,
-	 * sharing still switched on, and not already shared.
+	 * sharing still switched on, and a location still connected.
 	 *
 	 * @param WP_Post|null $post
 	 *
@@ -117,10 +125,6 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 		}
 
 		if ( ! (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true ) ) {
-			return false;
-		}
-
-		if ( $this->local_post_service->get_share_status( $post->ID )['is_shared'] ) {
 			return false;
 		}
 

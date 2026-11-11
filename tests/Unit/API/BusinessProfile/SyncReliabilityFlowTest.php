@@ -189,6 +189,36 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->assertCount( 1, array_filter( $this->sent, [ $this, 'is_create' ] ) );
 	}
 
+	public function test_toggling_sharing_off_before_the_job_runs_clears_the_queued_outcome_so_a_later_resave_can_send_it() {
+		$post_id = $this->create_shared_draft();
+		$this->publish_over_rest( $post_id );
+
+		$this->assertSame( SyncOutcome::QUEUED, $this->local_post_service->get_sync_outcome( $post_id )['outcome'] );
+
+		// The merchant unchecks sharing before the background job runs.
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, false );
+		$this->run_scheduled_job( $post_id );
+
+		$this->assertEmpty( array_filter( $this->sent, [ $this, 'is_create' ] ) );
+		$this->assertNull( $this->local_post_service->get_sync_outcome( $post_id ) );
+
+		// Re-enabling sharing and saving again must still be able to send it, not get stuck
+		// forever behind a stale "queued" record the resend guard would otherwise never clear.
+		$this->verification_responses[] = $this->json( 200, $this->proxy_mock( 'accounts/locations/voice-of-merchant/eligible' ) );
+		$this->create_responses[]       = $this->created_post();
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+
+		$this->start_new_request();
+		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$request->set_body_params( [ 'title' => 'Edited title' ] );
+		rest_do_request( $request );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
+
+		$this->assertCount( 1, array_filter( $this->sent, [ $this, 'is_create' ] ) );
+		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
+	}
+
 	/**
 	 * @dataProvider data_provider_restricted_location_fixtures
 	 *

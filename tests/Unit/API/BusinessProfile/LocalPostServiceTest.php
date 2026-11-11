@@ -1180,6 +1180,23 @@ class LocalPostServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_clear_sync_outcome_makes_a_post_read_as_never_sent() {
+		$post = $this->factory()->post->create_and_get();
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::QUEUED );
+
+		$this->service->clear_sync_outcome( $post->ID );
+
+		$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
+	}
+
+	public function test_clear_sync_outcome_on_a_post_with_no_stored_outcome_is_a_no_op() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->service->clear_sync_outcome( $post->ID );
+
+		$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
+	}
+
 	public function test_set_sync_outcome_throws_on_an_unknown_outcome() {
 		$post = $this->factory()->post->create_and_get();
 
