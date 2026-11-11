@@ -121,7 +121,6 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 				// Clear any stale flags from a previous failed attempt.
 				$this->options->delete( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR );
 				$this->options->delete( OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE );
-				$this->ads_incentives->clear_applied_incentive_cache();
 
 				do_action(
 					'woocommerce_gla_debug_message',

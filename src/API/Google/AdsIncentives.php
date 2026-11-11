@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Exception;
@@ -52,7 +53,7 @@ class AdsIncentives implements OptionsAwareInterface {
 	protected $transients;
 
 	/**
-	 * How long to cache the applied offer check. An offer the merchant applies directly in
+	 * How long to cache a "not applied" result. An offer the merchant applies directly in
 	 * Google Ads shows up as applied within this time.
 	 */
 	protected const APPLIED_INCENTIVE_CACHE_DURATION = 15 * MINUTE_IN_SECONDS;
@@ -74,8 +75,12 @@ class AdsIncentives implements OptionsAwareInterface {
 	 * Whether an offer was already applied to the connected Google Ads account.
 	 *
 	 * The incentives API keeps returning offers after the merchant applies one, so this asks for the
-	 * applied incentives instead. A failed query counts as applied, so the offer picker hides,
-	 * and isn't cached, so a short Google outage doesn't hide the offer for the whole cache time.
+	 * applied incentives instead. An offer can't be unapplied, so an applied result is stored in an
+	 * option and Google isn't asked again. A "not applied" result is cached for a short time, so an
+	 * offer applied directly in Google Ads is still picked up.
+	 *
+	 * A failed query counts as applied, so the offer picker hides, and isn't cached, so a short
+	 * Google outage doesn't hide the offer for the whole cache time.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -87,9 +92,12 @@ class AdsIncentives implements OptionsAwareInterface {
 			return false;
 		}
 
-		$cached = $this->transients->get( TransientsInterface::ADS_APPLIED_INCENTIVE );
-		if ( null !== $cached ) {
-			return 'yes' === $cached;
+		if ( $this->options->get( OptionsInterface::ADS_INCENTIVE_APPLIED ) ) {
+			return true;
+		}
+
+		if ( 'no' === $this->transients->get( TransientsInterface::ADS_APPLIED_INCENTIVE ) ) {
+			return false;
 		}
 
 		try {
@@ -106,21 +114,23 @@ class AdsIncentives implements OptionsAwareInterface {
 			return true;
 		}
 
-		$this->transients->set(
-			TransientsInterface::ADS_APPLIED_INCENTIVE,
-			$has_applied ? 'yes' : 'no',
-			self::APPLIED_INCENTIVE_CACHE_DURATION
-		);
+		if ( $has_applied ) {
+			$this->mark_incentive_applied();
+		} else {
+			$this->transients->set( TransientsInterface::ADS_APPLIED_INCENTIVE, 'no', self::APPLIED_INCENTIVE_CACHE_DURATION );
+		}
 
 		return $has_applied;
 	}
 
 	/**
-	 * Clear the cached applied offer check, so the next check asks Google again.
+	 * Store that an offer was applied to the connected Google Ads account, and clear any cached
+	 * "not applied" result.
 	 *
 	 * @since n.e.x.t
 	 */
-	public function clear_applied_incentive_cache(): void {
+	protected function mark_incentive_applied(): void {
+		$this->options->update( OptionsInterface::ADS_INCENTIVE_APPLIED, true );
 		$this->transients->delete( TransientsInterface::ADS_APPLIED_INCENTIVE );
 	}
 
@@ -262,6 +272,8 @@ class AdsIncentives implements OptionsAwareInterface {
 			);
 
 			$response = $this->client->getIncentiveServiceClient()->applyIncentive( $request );
+
+			$this->mark_incentive_applied();
 
 			return [
 				'coupon_code'   => $response->getCouponCode(),

@@ -283,9 +283,6 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$this->ads_incentives->expects( $this->once() )
-			->method( 'clear_applied_incentive_cache' );
-
 		$debug_messages = [];
 		add_action(
 			'woocommerce_gla_debug_message',
@@ -350,9 +347,6 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		$this->ads_incentives->expects( $this->once() )
 			->method( 'apply_incentive' )
 			->willThrowException( new RuntimeException( 'Unexpected API failure' ) );
-
-		$this->ads_incentives->expects( $this->never() )
-			->method( 'clear_applied_incentive_cache' );
 
 		// Failure path: error flag must be raised.
 		$this->options->expects( $this->once() )

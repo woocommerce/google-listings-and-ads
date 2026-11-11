@@ -19,6 +19,7 @@ interface OptionsInterface {
 	public const ADS_BILLING_URL                           = 'ads_billing_url';
 	public const ADS_HAS_UNCLAIMED_INCENTIVE               = 'ads_has_unclaimed_incentive';
 	public const ADS_ID                                    = 'ads_id';
+	public const ADS_INCENTIVE_APPLIED                     = 'ads_incentive_applied';
 	public const ADS_INCENTIVE_APPLY_ERROR                 = 'ads_incentive_apply_error';
 	public const ADS_CONVERSION_ACTION                     = 'ads_conversion_action';
 	public const ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    = 'ads_eu_political_declarations_complete';
@@ -73,6 +74,7 @@ interface OptionsInterface {
 		self::ADS_BILLING_URL                           => true,
 		self::ADS_HAS_UNCLAIMED_INCENTIVE               => true,
 		self::ADS_ID                                    => true,
+		self::ADS_INCENTIVE_APPLIED                     => true,
 		self::ADS_INCENTIVE_APPLY_ERROR                 => true,
 		self::ADS_CONVERSION_ACTION                     => true,
 		self::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    => true,
