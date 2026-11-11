@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostIma
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncNotice;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -304,6 +306,8 @@ class PostShareControlTest extends UnitTest {
 				'summary'        => 'My text',
 				'isShared'       => true,
 				'searchUrl'      => 'https://local.google.com/place?id=1&use=posts',
+				'restPath'       => "/wp/v2/posts/{$post_id}",
+				'syncOutcome'    => null,
 			],
 			$business_profile_data['businessProfilePost']
 		);
@@ -334,6 +338,67 @@ class PostShareControlTest extends UnitTest {
 		$this->assertFalse( $data['businessProfilePost']['isShareEnabled'] );
 		$this->assertFalse( $data['businessProfilePost']['isShared'] );
 		$this->assertSame( '', $data['businessProfilePost']['searchUrl'] );
+		$this->assertNull( $data['businessProfilePost']['syncOutcome'] );
+	}
+
+	public function test_passes_a_queued_send_to_the_meta_box_script_without_a_message() {
+		$this->mock_connected_location();
+		$post_id = $this->factory()->post->create();
+		$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::QUEUED );
+		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$data = $this->get_meta_box_post_data();
+
+		$this->assertSame(
+			[
+				'outcome'         => SyncOutcome::QUEUED,
+				'message'         => '',
+				'image_omitted'   => false,
+				'display_message' => null,
+				'display_status'  => null,
+			],
+			$data['syncOutcome']
+		);
+	}
+
+	public function test_passes_a_failed_send_to_the_meta_box_script_with_its_message_and_severity() {
+		$this->mock_connected_location();
+		$post_id = $this->factory()->post->create();
+		$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::CONTENT_REJECTION, 'Rejected.' );
+		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$data   = $this->get_meta_box_post_data();
+		$notice = SyncNotice::for_outcome( [ 'outcome' => SyncOutcome::CONTENT_REJECTION ] );
+
+		$this->assertSame( SyncOutcome::CONTENT_REJECTION, $data['syncOutcome']['outcome'] );
+		$this->assertSame( $notice['message'], $data['syncOutcome']['display_message'] );
+		$this->assertSame( SyncNotice::STATUS_ERROR, $data['syncOutcome']['display_status'] );
+	}
+
+	public function test_passes_a_warning_send_to_the_meta_box_script_with_a_warning_severity() {
+		$this->mock_connected_location();
+		$post_id = $this->factory()->post->create();
+		$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::SENT_PENDING_VERIFICATION );
+		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$data = $this->get_meta_box_post_data();
+
+		$this->assertSame( SyncNotice::STATUS_WARNING, $data['syncOutcome']['display_status'] );
+	}
+
+	/**
+	 * Enqueue the Classic Editor meta box's assets for the global post, and read the post data
+	 * passed to its script.
+	 *
+	 * @return array
+	 */
+	protected function get_meta_box_post_data(): array {
+		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service, $this->options );
+		$control->register();
+		$this->set_classic_editor_screen( 'post' );
+		do_action( 'admin_enqueue_scripts' );
+
+		return $this->get_inline_script_data( 'gla-business-profile-share-meta-box', 'glaBusinessProfileData' )['businessProfilePost'];
 	}
 
 	public function test_does_not_enqueue_assets_outside_the_post_editor() {

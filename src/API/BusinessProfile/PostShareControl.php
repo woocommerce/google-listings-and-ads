@@ -208,8 +208,9 @@ class PostShareControl implements Service, Registerable {
 
 	/**
 	 * Get the state of a post the Classic Editor meta box needs: its saved share choice and text,
-	 * and its share status. "Generate from post" reads the editor's live content directly in JS, so
-	 * this never needs the post's title or excerpt.
+	 * its share status, its last sync outcome, and the REST route the meta box checks while a send
+	 * is queued. "Generate from post" reads the editor's live content directly in JS, so this never
+	 * needs the post's title or excerpt.
 	 *
 	 * @param WP_Post $post The post being edited.
 	 *
@@ -223,6 +224,32 @@ class PostShareControl implements Service, Registerable {
 			'summary'        => (string) get_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, true ),
 			'isShared'       => $share_status['is_shared'],
 			'searchUrl'      => $share_status['search_url'],
+			'restPath'       => rest_get_route_for_post( $post ),
+			'syncOutcome'    => $this->get_sync_outcome_data( $post->ID ),
+		];
+	}
+
+	/**
+	 * Get a post's last sync outcome with the message to show for it, in the same shape as the
+	 * post's `gla_gbp_sync_outcome` REST field.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return array|null Shaped `{ outcome, message, image_omitted, display_message, display_status }`,
+	 *                    or null when the post has never been sent.
+	 */
+	protected function get_sync_outcome_data( int $post_id ): ?array {
+		$sync_outcome = $this->local_post_service->get_sync_outcome( $post_id );
+
+		if ( null === $sync_outcome ) {
+			return null;
+		}
+
+		$notice = SyncNotice::for_outcome( $sync_outcome );
+
+		return $sync_outcome + [
+			'display_message' => $notice['message'] ?? null,
+			'display_status'  => $notice['status'] ?? null,
 		];
 	}
 
