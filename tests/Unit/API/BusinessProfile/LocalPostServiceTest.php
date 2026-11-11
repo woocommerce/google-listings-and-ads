@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostIma
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncNotice;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -1218,12 +1219,35 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'outcome'       => SyncOutcome::ACCOUNT_RESTRICTION,
-				'message'       => 'The profile is suspended.',
-				'image_omitted' => false,
+				'outcome'         => SyncOutcome::ACCOUNT_RESTRICTION,
+				'message'         => 'The profile is suspended.',
+				'image_omitted'   => false,
+				'display_message' => SyncNotice::for_outcome( [ 'outcome' => SyncOutcome::ACCOUNT_RESTRICTION ] )['message'],
 			],
 			$response->get_data()[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]
 		);
+	}
+
+	public function test_sync_outcome_field_display_message_is_null_for_a_queued_outcome() {
+		$this->login_as_administrator();
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::QUEUED );
+		$this->service->register_rest_fields();
+
+		$value = $this->get_sync_outcome_field_value( $post->ID );
+
+		$this->assertNull( $value['display_message'] );
+	}
+
+	public function test_sync_outcome_field_display_message_is_null_for_a_plain_success() {
+		$this->login_as_administrator();
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS );
+		$this->service->register_rest_fields();
+
+		$value = $this->get_sync_outcome_field_value( $post->ID );
+
+		$this->assertNull( $value['display_message'] );
 	}
 
 	public function test_sync_outcome_field_is_absent_from_a_default_context_post_response() {
@@ -1274,6 +1298,12 @@ class LocalPostServiceTest extends UnitTest {
 		$callback = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ]['get_callback'];
 
 		return $callback( [ 'id' => $post_id ], LocalPostService::SHARE_STATUS_FIELD_NAME, new WP_REST_Request(), 'post' );
+	}
+
+	private function get_sync_outcome_field_value( int $post_id ) {
+		$callback = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]['get_callback'];
+
+		return $callback( [ 'id' => $post_id ], LocalPostService::SYNC_OUTCOME_FIELD_NAME, new WP_REST_Request(), 'post' );
 	}
 
 	/**

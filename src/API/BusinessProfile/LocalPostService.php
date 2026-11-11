@@ -198,20 +198,29 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 						return null;
 					}
 
-					return $this->get_sync_outcome( (int) $post['id'] );
+					$outcome = $this->get_sync_outcome( (int) $post['id'] );
+
+					if ( null === $outcome ) {
+						return null;
+					}
+
+					$outcome['display_message'] = SyncNotice::for_outcome( $outcome )['message'] ?? null;
+
+					return $outcome;
 				},
 				'schema'       => [
-					'description' => __( 'The outcome of the last attempt to share this post to Google Business Profile, with the message Google returned, if any.', 'google-listings-and-ads' ),
+					'description' => __( 'The outcome of the last attempt to share this post to Google Business Profile, with the message Google returned, if any, and a ready-to-display message for a non-success outcome.', 'google-listings-and-ads' ),
 					'type'        => [ 'object', 'null' ],
 					'context'     => [ 'edit' ],
 					'readonly'    => true,
 					'properties'  => [
-						'outcome'       => [
+						'outcome'         => [
 							'type' => 'string',
 							'enum' => SyncOutcome::ALL,
 						],
-						'message'       => [ 'type' => 'string' ],
-						'image_omitted' => [ 'type' => 'boolean' ],
+						'message'         => [ 'type' => 'string' ],
+						'image_omitted'   => [ 'type' => 'boolean' ],
+						'display_message' => [ 'type' => [ 'string', 'null' ] ],
 					],
 				],
 			]
