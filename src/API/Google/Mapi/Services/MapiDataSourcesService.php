@@ -64,11 +64,12 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * Destination lists tried in order when creating a product data source. Google rejects the
 	 * whole request when the account can't use one of the requested destinations (e.g. an account
 	 * without free listings gets "Destinations of the data source are invalid: ORGANIC_EXPERIENCES"),
-	 * so each rejection falls back to a narrower list. The last entry (null) omits destinations
-	 * entirely, letting Google apply the account's own destinations as it did before explicit
-	 * destinations were requested.
+	 * so each rejection falls back to a narrower list. There is deliberately no final attempt
+	 * without destinations: that is what produced local-only sources (see
+	 * is_local_only_product_source()), and an account rejecting even SHOPPING_ADS would likely get
+	 * one, which channel-mismatch recovery can't repair.
 	 */
-	private const PRODUCT_DESTINATION_FALLBACKS = [ self::ONLINE_PRODUCT_DESTINATIONS, [ 'SHOPPING_ADS' ], null ];
+	private const PRODUCT_DESTINATION_FALLBACKS = [ self::ONLINE_PRODUCT_DESTINATIONS, [ 'SHOPPING_ADS' ] ];
 
 	/** Destinations that only serve local (not online) product listings. */
 	private const LOCAL_PRODUCT_DESTINATIONS = [ 'LOCAL_INVENTORY_ADS', 'FREE_LOCAL_LISTINGS' ];
@@ -515,16 +516,19 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether a failure is a rejection of the requested destinations: a 400 whose message names
-	 * the destinations field, e.g. "[primaryProductDataSource.destinations] Destinations of the
-	 * data source are invalid: ORGANIC_EXPERIENCES." for an account that can't use free listings.
+	 * Whether a failure is a rejection of the requested destinations: a 400 whose message starts
+	 * with the destinations field path, e.g. "[primaryProductDataSource.destinations] Destinations
+	 * of the data source are invalid: ORGANIC_EXPERIENCES." for an account that can't use free
+	 * listings. Matching the field path keeps other 400s that merely mention destinations from
+	 * triggering a retry.
 	 *
 	 * @param MerchantApiException $failure
 	 *
 	 * @return bool
 	 */
 	private static function is_invalid_destinations_failure( MerchantApiException $failure ): bool {
-		return 400 === $failure->get_http_status() && false !== stripos( $failure->getMessage(), 'destinations' );
+		return 400 === $failure->get_http_status()
+			&& false !== stripos( $failure->getMessage(), '[primaryProductDataSource.destinations]' );
 	}
 
 	/**
@@ -678,11 +682,11 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 				do_action(
 					'woocommerce_gla_error',
 					sprintf(
-						'Data source destinations [%s] were rejected for %s|%s, retrying with %s: %s',
+						'Data source destinations [%s] were rejected for %s|%s, retrying with [%s]: %s',
 						implode( ', ', $destinations ),
 						$content_language,
 						$match_value,
-						null === $next ? 'no destinations' : '[' . implode( ', ', $next ) . ']',
+						implode( ', ', $next ),
 						$exception->getMessage()
 					),
 					__METHOD__
@@ -692,7 +696,25 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 			}
 		}
 
-		return $this->post_data_source( $type, $content_language, $match_value, $destinations );
+		try {
+			return $this->post_data_source( $type, $content_language, $match_value, $destinations );
+		} catch ( MerchantApiException $exception ) {
+			if ( self::is_invalid_destinations_failure( $exception ) ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf(
+						'Google rejected every online destination for data source %s|%s, so products cannot sync until the Merchant Center account can use [%s]: %s',
+						$content_language,
+						$match_value,
+						implode( ', ', $destinations ),
+						$exception->getMessage()
+					),
+					__METHOD__
+				);
+			}
+
+			throw $exception;
+		}
 	}
 
 	/**

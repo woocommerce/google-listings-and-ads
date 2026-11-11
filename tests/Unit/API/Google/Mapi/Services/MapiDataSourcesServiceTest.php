@@ -1411,10 +1411,18 @@ class MapiDataSourcesServiceTest extends UnitTest {
 				}
 			);
 
+		$logged   = [];
+		$callback = static function ( $message ) use ( &$logged ) {
+			$logged[] = $message;
+		};
+		add_action( 'woocommerce_gla_error', $callback );
+
 		$this->assertSame(
 			'accounts/12345/dataSources/720',
 			$this->service->ensure_data_source_for( 'en', 'US' )
 		);
+
+		remove_action( 'woocommerce_gla_error', $callback );
 		$this->assertSame(
 			[
 				[
@@ -1424,32 +1432,61 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			],
 			$requested[1]
 		);
+		$this->assertCount( 1, $logged );
+		$this->assertStringContainsString( 'retrying with [SHOPPING_ADS]', $logged[0] );
 	}
 
-	public function test_creates_product_data_source_without_destinations_when_every_explicit_list_is_rejected() {
-		// The last resort matches the plugin's behavior before explicit destinations were sent:
-		// let Google apply the account's own destinations rather than fail product sync outright.
+	public function test_throws_without_a_no_destinations_attempt_when_every_online_destination_is_rejected() {
+		// A create without destinations is what produced local-only sources, and an account that
+		// rejects even SHOPPING_ADS would likely get one, so the error surfaces instead.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willThrowException( $this->invalid_destinations_exception() );
+
+		$logged   = [];
+		$callback = static function ( $message ) use ( &$logged ) {
+			$logged[] = $message;
+		};
+		add_action( 'woocommerce_gla_error', $callback );
+
+		try {
+			$this->service->ensure_data_source_for( 'en', 'US' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( 400, $exception->get_http_status() );
+		} finally {
+			remove_action( 'woocommerce_gla_error', $callback );
+		}
+
+		$this->assertCount( 2, $logged );
+		$this->assertStringContainsString( 'rejected every online destination', $logged[1] );
+	}
+
+	public function test_rethrows_a_different_error_from_the_fallback_create_without_retrying_again() {
 		$this->options->method( 'get' )->willReturn( [] );
 		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
 
-		$requested = [];
-		$this->client->expects( $this->exactly( 3 ) )
+		$call = 0;
+		$this->client->expects( $this->exactly( 2 ) )
 			->method( 'post' )
 			->willReturnCallback(
-				function ( $path, $body ) use ( &$requested ) {
-					$requested[] = $body['primaryProductDataSource'];
-					if ( count( $requested ) < 3 ) {
+				function () use ( &$call ) {
+					++$call;
+					if ( 1 === $call ) {
 						throw $this->invalid_destinations_exception();
 					}
-					return [ 'name' => 'accounts/12345/dataSources/730' ];
+					throw new MerchantApiException( 500, [], 'post' );
 				}
 			);
 
-		$this->assertSame(
-			'accounts/12345/dataSources/730',
-			$this->service->ensure_data_source_for( 'en', 'US' )
-		);
-		$this->assertArrayNotHasKey( 'destinations', $requested[2] );
+		try {
+			$this->service->ensure_data_source_for( 'en', 'US' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( 500, $exception->get_http_status() );
+		}
 	}
 
 	public function test_does_not_retry_product_data_source_creation_for_other_errors() {
@@ -1464,6 +1501,58 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->expectException( MerchantApiException::class );
 
 		$this->service->ensure_data_source_for( 'en', 'US' );
+	}
+
+	public function test_does_not_retry_for_a_400_that_mentions_destinations_outside_the_destinations_field() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willThrowException(
+				new MerchantApiException( 400, [ 'error' => [ 'message' => '[primaryProductDataSource.feedLabel] Feed label is not valid for the requested destinations.' ] ], 'post' )
+			);
+
+		$this->expectException( MerchantApiException::class );
+
+		$this->service->ensure_data_source_for( 'en', 'US' );
+	}
+
+	public function test_recreate_data_source_for_falls_back_to_shopping_ads_when_free_listings_is_rejected() {
+		$stored = [];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+
+		$requested = [];
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function ( $path, $body ) use ( &$requested ) {
+					$requested[] = array_column( $body['primaryProductDataSource']['destinations'], 'destination' );
+					if ( 1 === count( $requested ) ) {
+						throw $this->invalid_destinations_exception();
+					}
+					return [ 'name' => 'accounts/12345/dataSources/740' ];
+				}
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/740',
+			$this->service->recreate_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame( [ [ 'SHOPPING_ADS', 'FREE_LISTINGS' ], [ 'SHOPPING_ADS' ] ], $requested );
+		$this->assertSame(
+			[ 'product|en|US' => 'accounts/12345/dataSources/740' ],
+			$stored[ OptionsInterface::MAPI_DATA_SOURCES ]
+		);
 	}
 
 	public function test_creates_new_promotion_data_source_without_destinations_field() {
@@ -1539,7 +1628,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 
 	/**
 	 * The rejection Google returns when a data source requests a destination the account can't
-	 * use, as reported by merchants (GOOWOO-1199).
+	 * use, as reported by merchants.
 	 *
 	 * @return MerchantApiException
 	 */
