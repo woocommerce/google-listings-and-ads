@@ -217,7 +217,7 @@ class AdsIncentivesTest extends UnitTest {
 		$this->transients->expects( $this->never() )->method( 'set' );
 		$this->transients->expects( $this->once() )
 			->method( 'delete' )
-			->with( TransientsInterface::ADS_APPLIED_INCENTIVE );
+			->with( TransientsInterface::ADS_INCENTIVE_APPLIED_CHECK );
 
 		$this->assertTrue( $this->ads_incentives->has_applied_incentive() );
 	}
@@ -241,7 +241,7 @@ class AdsIncentivesTest extends UnitTest {
 		$this->options->expects( $this->never() )->method( 'update' );
 		$this->transients->expects( $this->once() )
 			->method( 'set' )
-			->with( TransientsInterface::ADS_APPLIED_INCENTIVE, 'no', 15 * MINUTE_IN_SECONDS );
+			->with( TransientsInterface::ADS_INCENTIVE_APPLIED_CHECK, 'no', 15 * MINUTE_IN_SECONDS );
 
 		$this->assertFalse( $this->ads_incentives->has_applied_incentive() );
 	}
@@ -267,7 +267,7 @@ class AdsIncentivesTest extends UnitTest {
 	public function test_has_applied_incentive_uses_the_cached_not_applied_result() {
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 		$this->transients->method( 'get' )
-			->with( TransientsInterface::ADS_APPLIED_INCENTIVE )
+			->with( TransientsInterface::ADS_INCENTIVE_APPLIED_CHECK )
 			->willReturn( 'no' );
 
 		$this->service_client->expects( $this->never() )->method( 'search' );
@@ -291,7 +291,7 @@ class AdsIncentivesTest extends UnitTest {
 			->with( OptionsInterface::ADS_INCENTIVE_APPLIED, true );
 		$this->transients->expects( $this->once() )
 			->method( 'delete' )
-			->with( TransientsInterface::ADS_APPLIED_INCENTIVE );
+			->with( TransientsInterface::ADS_INCENTIVE_APPLIED_CHECK );
 
 		$api_response = $this->createMock( ApplyIncentiveResponse::class );
 		$api_response->method( 'getCouponCode' )->willReturn( 'abc123' );

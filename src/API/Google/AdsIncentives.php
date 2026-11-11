@@ -96,7 +96,7 @@ class AdsIncentives implements OptionsAwareInterface {
 			return true;
 		}
 
-		if ( 'no' === $this->transients->get( TransientsInterface::ADS_APPLIED_INCENTIVE ) ) {
+		if ( 'no' === $this->transients->get( TransientsInterface::ADS_INCENTIVE_APPLIED_CHECK ) ) {
 			return false;
 		}
 
@@ -117,7 +117,7 @@ class AdsIncentives implements OptionsAwareInterface {
 		if ( $has_applied ) {
 			$this->mark_incentive_applied();
 		} else {
-			$this->transients->set( TransientsInterface::ADS_APPLIED_INCENTIVE, 'no', self::APPLIED_INCENTIVE_CACHE_DURATION );
+			$this->transients->set( TransientsInterface::ADS_INCENTIVE_APPLIED_CHECK, 'no', self::APPLIED_INCENTIVE_CACHE_DURATION );
 		}
 
 		return $has_applied;
@@ -131,7 +131,7 @@ class AdsIncentives implements OptionsAwareInterface {
 	 */
 	protected function mark_incentive_applied(): void {
 		$this->options->update( OptionsInterface::ADS_INCENTIVE_APPLIED, true );
-		$this->transients->delete( TransientsInterface::ADS_APPLIED_INCENTIVE );
+		$this->transients->delete( TransientsInterface::ADS_INCENTIVE_APPLIED_CHECK );
 	}
 
 	/**

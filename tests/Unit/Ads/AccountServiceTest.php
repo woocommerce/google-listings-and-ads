@@ -802,7 +802,7 @@ class AccountServiceTest extends UnitTest {
 			->method( 'delete' )
 			->withConsecutive(
 				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
-				[ TransientsInterface::ADS_APPLIED_INCENTIVE ],
+				[ TransientsInterface::ADS_INCENTIVE_APPLIED_CHECK ],
 			);
 
 		$this->account->disconnect();
