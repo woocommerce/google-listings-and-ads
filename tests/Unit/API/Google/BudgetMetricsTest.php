@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -255,5 +256,75 @@ class BudgetMetricsTest extends UnitTest {
 		);
 
 		$this->assertEquals( self::TEST_METRICS, $this->metrics->get_metrics( 12, [ 'US' ] ) );
+	}
+
+	/**
+	 * Run the request and return it, so a test can inspect what was sent to Google Ads.
+	 *
+	 * @param string|null $advertising_source The advertising source to pass, or null to omit it.
+	 */
+	protected function capture_request( ?string $advertising_source ) {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+
+		$captured_request = null;
+		$this->recommendation_service->method( 'generateRecommendations' )
+			->willReturnCallback(
+				function ( $request ) use ( &$captured_request ) {
+					$captured_request = $request;
+					$response         = $this->createMock( GenerateRecommendationsResponse::class );
+					$response->method( 'getRecommendations' )->willReturn( [] );
+					return $response;
+				}
+			);
+
+		if ( null === $advertising_source ) {
+			$this->metrics->get_metrics( 12, [ 'US' ] );
+		} else {
+			$this->metrics->get_metrics( 12, [ 'US' ], $advertising_source );
+		}
+
+		$this->assertNotNull( $captured_request );
+		return $captured_request;
+	}
+
+	public function test_get_metrics_omits_merchant_center_account_for_page() {
+		$request = $this->capture_request( AdvertisingSource::PAGE );
+
+		$this->assertEquals( 0, $request->getMerchantCenterAccountId() );
+	}
+
+	public function test_get_metrics_includes_merchant_center_account_for_product() {
+		$request = $this->capture_request( AdvertisingSource::PRODUCT );
+
+		$this->assertEquals( self::TEST_MC_ID, $request->getMerchantCenterAccountId() );
+	}
+
+	public function test_get_metrics_includes_merchant_center_account_without_advertising_source() {
+		$request = $this->capture_request( null );
+
+		$this->assertEquals( self::TEST_MC_ID, $request->getMerchantCenterAccountId() );
+	}
+
+	public function test_get_metrics_cache_key_for_page_is_kept_apart_from_product() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$cached = [
+			'us-12-new'      => self::TEST_METRICS,
+			'us-12-new-page' => [
+				'cost'              => 1,
+				'conversions'       => 2,
+				'conversions_value' => 3,
+			],
+		];
+
+		$this->transients->method( 'get' )
+			->with( TransientsInterface::ADS_BUDGET_METRICS )
+			->willReturn( $cached );
+
+		$this->assertEquals( $cached['us-12-new-page'], $this->metrics->get_metrics( 12, [ 'US' ], AdvertisingSource::PAGE ) );
+		$this->assertEquals( $cached['us-12-new'], $this->metrics->get_metrics( 12, [ 'US' ], AdvertisingSource::PRODUCT ) );
+		$this->assertEquals( $cached['us-12-new'], $this->metrics->get_metrics( 12, [ 'US' ] ) );
 	}
 }

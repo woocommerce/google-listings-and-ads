@@ -62,13 +62,16 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	 * Fetch budget recommendations (with metrics) from Google Ads API.
 	 * This function will only return a single recommendation in the list, with the first country code.
 	 *
-	 * @param array $country_codes List of countries to include.
+	 * @param array  $country_codes       List of countries to include.
+	 * @param string $advertising_source  What the campaign advertises, one of the `AdvertisingSource` values.
+	 *                                    A page campaign is requested without the Merchant Center account.
 	 *
 	 * @return array|null List of recommendations (including metrics).
 	 */
-	public function get_recommendations( array $country_codes ): ?array {
+	public function get_recommendations( array $country_codes, string $advertising_source = AdvertisingSource::PRODUCT ): ?array {
 		$is_new_customer = 0 === $this->merchant_metrics->get_campaign_count();
-		$cache_key       = strtolower( join( '-', $country_codes ) ) . ( $is_new_customer ? '-new' : '-existing' );
+		$is_page         = AdvertisingSource::PAGE === $advertising_source;
+		$cache_key       = strtolower( join( '-', $country_codes ) ) . ( $is_new_customer ? '-new' : '-existing' ) . ( $is_page ? '-page' : '' );
 		$transient       = $this->transients->get( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS );
 
 		// Check if we have the budget recommendations cached in the transient.
@@ -100,8 +103,8 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 			],
 		];
 
-		// Only include merchant_center_account_id if Merchant Center account is connected.
-		if ( $merchant_id > 0 ) {
+		// Only include merchant_center_account_id if Merchant Center account is connected and the campaign uses the product feed.
+		if ( $merchant_id > 0 && ! $is_page ) {
 			$request_data['merchant_center_account_id'] = $merchant_id;
 		}
 

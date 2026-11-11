@@ -47,4 +47,16 @@ final class AdvertisingSource {
 	public static function get_default( int $merchant_id ): string {
 		return $merchant_id > 0 ? self::PRODUCT : self::PAGE;
 	}
+
+	/**
+	 * Get the advertising source a request asked for, or the default when it didn't choose one.
+	 *
+	 * @param string|null $requested   The advertising source sent with the request, if any.
+	 * @param int         $merchant_id The connected Merchant Center ID, or 0 when none is connected.
+	 *
+	 * @return string
+	 */
+	public static function resolve( ?string $requested, int $merchant_id ): string {
+		return $requested ?? self::get_default( $merchant_id );
+	}
 }

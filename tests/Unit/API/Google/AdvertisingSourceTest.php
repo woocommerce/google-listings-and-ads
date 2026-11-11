@@ -26,4 +26,14 @@ class AdvertisingSourceTest extends UnitTest {
 	public function test_get_default_is_page_when_merchant_center_is_not_connected() {
 		$this->assertSame( AdvertisingSource::PAGE, AdvertisingSource::get_default( 0 ) );
 	}
+
+	public function test_resolve_keeps_the_requested_source() {
+		$this->assertSame( AdvertisingSource::PAGE, AdvertisingSource::resolve( AdvertisingSource::PAGE, 1234 ) );
+		$this->assertSame( AdvertisingSource::PRODUCT, AdvertisingSource::resolve( AdvertisingSource::PRODUCT, 0 ) );
+	}
+
+	public function test_resolve_falls_back_to_the_default_when_nothing_is_requested() {
+		$this->assertSame( AdvertisingSource::PRODUCT, AdvertisingSource::resolve( null, 1234 ) );
+		$this->assertSame( AdvertisingSource::PAGE, AdvertisingSource::resolve( null, 0 ) );
+	}
 }

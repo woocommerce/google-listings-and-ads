@@ -3,12 +3,14 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -37,6 +39,12 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 	/** @var MockObject|ISO3166DataProvider $iso_provider */
 	protected $iso_provider;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var int $merchant_id */
+	protected $merchant_id = 1234567890;
 
 	/** @var BudgetRecommendationController $controller */
 	protected $controller;
@@ -92,7 +100,15 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		$this->container->addShared( BudgetRecommendations::class, $this->budget_recommendations );
 		$this->container->addShared( BudgetMetrics::class, $this->budget_metrics );
 
+		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options->method( 'get_merchant_id' )->willReturnCallback(
+			function () {
+				return $this->merchant_id;
+			}
+		);
+
 		$this->controller = new BudgetRecommendationController( $this->server, $this->ads );
+		$this->controller->set_options_object( $this->options );
 		$this->controller->register();
 		$this->controller->set_container( $this->container );
 		$this->controller->set_iso3166_provider( $this->iso_provider );
@@ -419,5 +435,102 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 		$this->assertEquals( 404, $response->get_status() );
+	}
+
+	public function test_get_budget_recommendation_with_invalid_advertising_source() {
+		$params = [
+			'country_codes'      => [ 'GB' ],
+			'advertising_source' => 'shopping',
+		];
+
+		$this->budget_recommendations->expects( $this->never() )->method( 'get_recommendations' );
+
+		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $params );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertStringContainsString( 'advertising_source', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_get_budget_recommendation_defaults_to_product_with_merchant_center() {
+		$this->merchant_id = 1234567890;
+
+		$this->ads->method( 'get_ads_currency' )->willReturn( 'GBP' );
+		$this->budget_recommendation_query->method( 'get_results' )->willReturn( null );
+
+		$this->budget_recommendations->expects( $this->once() )
+			->method( 'get_recommendations' )
+			->with( [ 'GB' ], AdvertisingSource::PRODUCT )
+			->willReturn( self::RECOMMENDATION_DATA );
+
+		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', [ 'country_codes' => [ 'GB' ] ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_budget_recommendation_defaults_to_page_without_merchant_center() {
+		$this->merchant_id = 0;
+
+		$this->ads->method( 'get_ads_currency' )->willReturn( 'GBP' );
+		$this->budget_recommendation_query->method( 'get_results' )->willReturn( null );
+
+		$this->budget_recommendations->expects( $this->once() )
+			->method( 'get_recommendations' )
+			->with( [ 'GB' ], AdvertisingSource::PAGE )
+			->willReturn( self::RECOMMENDATION_DATA );
+
+		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', [ 'country_codes' => [ 'GB' ] ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_budget_recommendation_passes_page_with_merchant_center() {
+		$this->merchant_id = 1234567890;
+
+		$this->ads->method( 'get_ads_currency' )->willReturn( 'GBP' );
+		$this->budget_recommendation_query->method( 'get_results' )->willReturn( null );
+
+		$this->budget_recommendations->expects( $this->once() )
+			->method( 'get_recommendations' )
+			->with( [ 'GB' ], AdvertisingSource::PAGE )
+			->willReturn( self::RECOMMENDATION_DATA );
+
+		$params = [
+			'country_codes'      => [ 'GB' ],
+			'advertising_source' => AdvertisingSource::PAGE,
+		];
+
+		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $params );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_budget_recommendation_fallback_metrics_use_the_same_advertising_source() {
+		$this->ads->method( 'get_ads_currency' )->willReturn( 'GBP' );
+
+		$this->budget_recommendations->method( 'get_recommendations' )->willReturn( self::RECOMMENDATION_DATA );
+		$this->budget_recommendation_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'daily_budget' => '15',
+					'country'      => 'GB',
+				],
+			]
+		);
+
+		$this->budget_metrics->expects( $this->once() )
+			->method( 'get_metrics' )
+			->with( 15.0, [ 'GB' ], AdvertisingSource::PAGE )
+			->willReturn( [ 'cost' => 105 ] );
+
+		$params = [
+			'country_codes'      => [ 'GB' ],
+			'advertising_source' => AdvertisingSource::PAGE,
+		];
+
+		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $params );
+
+		$this->assertEquals( 'fallback-database', $response->get_data()['source'] );
+		$this->assertEquals( 200, $response->get_status() );
 	}
 }

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -252,5 +253,71 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->generate_recommendations_mock( $recommendations );
 
 		$this->assertEquals( $recommendations, $this->recommendations->get_recommendations( [ 'US' ] ) );
+	}
+
+	/**
+	 * Run the request and return it, so a test can inspect what was sent to Google Ads.
+	 *
+	 * @param string|null $advertising_source The advertising source to pass, or null to omit it.
+	 */
+	protected function capture_request( ?string $advertising_source ) {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+
+		$captured_request = null;
+		$this->recommendation_service->method( 'generateRecommendations' )
+			->willReturnCallback(
+				function ( $request ) use ( &$captured_request ) {
+					$captured_request = $request;
+					$response         = $this->createMock( GenerateRecommendationsResponse::class );
+					$response->method( 'getRecommendations' )->willReturn( [] );
+					return $response;
+				}
+			);
+
+		if ( null === $advertising_source ) {
+			$this->recommendations->get_recommendations( [ 'US' ] );
+		} else {
+			$this->recommendations->get_recommendations( [ 'US' ], $advertising_source );
+		}
+
+		$this->assertNotNull( $captured_request );
+		return $captured_request;
+	}
+
+	public function test_get_recommendations_omits_merchant_center_account_for_page() {
+		$request = $this->capture_request( AdvertisingSource::PAGE );
+
+		$this->assertEquals( 0, $request->getMerchantCenterAccountId() );
+	}
+
+	public function test_get_recommendations_includes_merchant_center_account_for_product() {
+		$request = $this->capture_request( AdvertisingSource::PRODUCT );
+
+		$this->assertEquals( self::TEST_MC_ID, $request->getMerchantCenterAccountId() );
+	}
+
+	public function test_get_recommendations_includes_merchant_center_account_without_advertising_source() {
+		$request = $this->capture_request( null );
+
+		$this->assertEquals( self::TEST_MC_ID, $request->getMerchantCenterAccountId() );
+	}
+
+	public function test_get_recommendations_cache_key_for_page_is_kept_apart_from_product() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$cached = [
+			'us-new'      => self::TEST_RECOMMENDATION,
+			'us-new-page' => [ 'daily_budget' => 20 ],
+		];
+
+		$this->transients->method( 'get' )
+			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
+			->willReturn( $cached );
+
+		$this->assertEquals( $cached['us-new-page'], $this->recommendations->get_recommendations( [ 'US' ], AdvertisingSource::PAGE ) );
+		$this->assertEquals( $cached['us-new'], $this->recommendations->get_recommendations( [ 'US' ], AdvertisingSource::PRODUCT ) );
+		$this->assertEquals( $cached['us-new'], $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 }
