@@ -346,9 +346,14 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
-	public function test_create_campaign_with_empty_name_uses_generated_name() {
+	/**
+	 * @param string $name Blank campaign name.
+	 *
+	 * @dataProvider provide_blank_campaign_names
+	 */
+	public function test_create_campaign_with_blank_name_uses_generated_name( string $name ) {
 		$campaign_data = [
-			'name'               => '',
+			'name'               => $name,
 			'amount'             => 30,
 			'targeted_locations' => [ 'US' ],
 		];

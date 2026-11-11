@@ -157,8 +157,12 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 			try {
 				$fields = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
 
+				if ( isset( $fields['name'] ) ) {
+					$fields['name'] = trim( $fields['name'] );
+				}
+
 				// Set the default value of campaign name.
-				if ( empty( $fields['name'] ) ) {
+				if ( '' === ( $fields['name'] ?? '' ) ) {
 					$current_date_time = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
 					$fields['name']    = sprintf(
 					/* translators: %s: current date time. */
