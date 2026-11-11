@@ -58,17 +58,6 @@ class PostPublishTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Whether a post was scheduled to send to Google during the current request.
-	 *
-	 * @param int $post_id
-	 *
-	 * @return bool
-	 */
-	public function was_sent_in_request( int $post_id ): bool {
-		return isset( $this->sent_in_request[ $post_id ] );
-	}
-
-	/**
 	 * Filter to a post that has genuinely just become published, or an already-published post
 	 * saved again that has never been sent or whose last send failed.
 	 *
