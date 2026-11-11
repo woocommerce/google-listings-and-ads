@@ -327,4 +327,56 @@ class BudgetMetricsTest extends UnitTest {
 		$this->assertEquals( $cached['us-12-new'], $this->metrics->get_metrics( 12, [ 'US' ], AdvertisingSource::PRODUCT ) );
 		$this->assertEquals( $cached['us-12-new'], $this->metrics->get_metrics( 12, [ 'US' ] ) );
 	}
+
+	/**
+	 * Run a request with the given cached entries and return what was saved to the budget transient.
+	 *
+	 * @param string $advertising_source The advertising source to request.
+	 * @param array  $cached             Entries already in the budget transient.
+	 */
+	protected function get_saved_budget_transient( string $advertising_source, array $cached ): ?array {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+		$this->generate_recommendations_mock(
+			[
+				[
+					'daily_budget' => 12,
+					'metrics'      => self::TEST_METRICS,
+				],
+			]
+		);
+
+		$this->transients->method( 'get' )->willReturnCallback(
+			function ( string $name ) use ( $cached ) {
+				return TransientsInterface::ADS_BUDGET_METRICS === $name ? $cached : null;
+			}
+		);
+
+		$saved = null;
+		$this->transients->method( 'set' )->willReturnCallback(
+			function ( string $name, $value ) use ( &$saved ) {
+				if ( TransientsInterface::ADS_BUDGET_METRICS === $name ) {
+					$saved = $value;
+				}
+				return true;
+			}
+		);
+
+		$this->metrics->get_metrics( 12, [ 'US' ], $advertising_source );
+
+		return $saved;
+	}
+
+	public function test_get_metrics_saves_page_results_under_a_key_with_a_page_suffix_and_keeps_other_entries() {
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PAGE, [ 'us-12-new' => [ 'cost' => 1 ] ] );
+
+		$this->assertSame( [ 'us-12-new', 'us-12-new-page' ], array_keys( $saved ) );
+	}
+
+	public function test_get_metrics_saves_product_results_under_the_key_without_a_suffix() {
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, [] );
+
+		$this->assertSame( [ 'us-12-new' ], array_keys( $saved ) );
+	}
 }

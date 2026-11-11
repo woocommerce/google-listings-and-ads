@@ -62,9 +62,8 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	 * Fetch budget recommendations (with metrics) from Google Ads API.
 	 * This function will only return a single recommendation in the list, with the first country code.
 	 *
-	 * @param array  $country_codes       List of countries to include.
-	 * @param string $advertising_source  What the campaign advertises, one of the `AdvertisingSource` values.
-	 *                                    A page campaign is requested without the Merchant Center account.
+	 * @param array  $country_codes      List of countries to include.
+	 * @param string $advertising_source One of the `AdvertisingSource` values.
 	 *
 	 * @return array|null List of recommendations (including metrics).
 	 */
@@ -121,7 +120,13 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 
 				// Parse all the returned recommendations and assign to the first country.
 				$recommendations = $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
-				$this->transients->set( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS, [ $cache_key => $recommendations ], HOUR_IN_SECONDS * 12 );
+
+				// Merge with previously cached recommendations.
+				if ( ! is_array( $transient ) ) {
+					$transient = [];
+				}
+				$transient[ $cache_key ] = $recommendations;
+				$this->transients->set( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS, $transient, HOUR_IN_SECONDS * 12 );
 				return $recommendations;
 			}
 		} catch ( ApiException $e ) {

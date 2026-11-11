@@ -61,10 +61,9 @@ class BudgetMetrics implements OptionsAwareInterface, TransientsAwareInterface {
 	/**
 	 * Fetch budget metrics from Google Ads API.
 	 *
-	 * @param float  $budget              Budget to fetch metrics for.
-	 * @param array  $country_codes       List of countries to include.
-	 * @param string $advertising_source  What the campaign advertises, one of the `AdvertisingSource` values.
-	 *                                    A page campaign is requested without the Merchant Center account.
+	 * @param float  $budget             Budget to fetch metrics for.
+	 * @param array  $country_codes      List of countries to include.
+	 * @param string $advertising_source One of the `AdvertisingSource` values.
 	 *
 	 * @return array|null List of metrics.
 	 */

@@ -320,4 +320,49 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->assertEquals( $cached['us-new'], $this->recommendations->get_recommendations( [ 'US' ], AdvertisingSource::PRODUCT ) );
 		$this->assertEquals( $cached['us-new'], $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
+
+	/**
+	 * Run a request with the given cached entries and return what was saved to the budget transient.
+	 *
+	 * @param string $advertising_source The advertising source to request.
+	 * @param array  $cached             Entries already in the budget transient.
+	 */
+	protected function get_saved_budget_transient( string $advertising_source, array $cached ): ?array {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+		$this->generate_recommendations_mock( [ self::TEST_RECOMMENDATION ] );
+
+		$this->transients->method( 'get' )->willReturnCallback(
+			function ( string $name ) use ( $cached ) {
+				return TransientsInterface::ADS_BUDGET_RECOMMENDATIONS === $name ? $cached : null;
+			}
+		);
+
+		$saved = null;
+		$this->transients->method( 'set' )->willReturnCallback(
+			function ( string $name, $value ) use ( &$saved ) {
+				if ( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS === $name ) {
+					$saved = $value;
+				}
+				return true;
+			}
+		);
+
+		$this->recommendations->get_recommendations( [ 'US' ], $advertising_source );
+
+		return $saved;
+	}
+
+	public function test_get_recommendations_saves_page_results_under_a_key_with_a_page_suffix_and_keeps_other_entries() {
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PAGE, [ 'us-existing' => [ 'daily_budget' => 20 ] ] );
+
+		$this->assertSame( [ 'us-existing', 'us-new-page' ], array_keys( $saved ) );
+	}
+
+	public function test_get_recommendations_saves_product_results_under_the_key_without_a_suffix() {
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, [] );
+
+		$this->assertSame( [ 'us-new' ], array_keys( $saved ) );
+	}
 }
