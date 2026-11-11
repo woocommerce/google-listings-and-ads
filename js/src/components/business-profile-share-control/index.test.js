@@ -207,6 +207,41 @@ describe( 'BusinessProfileShareControl', () => {
 		);
 	} );
 
+	it( 'shows the send status above the link', () => {
+		renderControl( {
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+			syncOutcome: {
+				outcome: 'sent-pending-verification',
+				display_message: 'Your profile is unverified.',
+				display_status: 'warning',
+			},
+		} );
+
+		const message = screen.getByText( 'Your profile is unverified.', {
+			selector: '.components-notice__content',
+		} );
+		const link = screen.getByRole( 'link' );
+
+		const elements = Array.from( document.querySelectorAll( '*' ) );
+
+		expect( elements.indexOf( message ) ).toBeLessThan(
+			elements.indexOf( link )
+		);
+	} );
+
+	it( 'says a queued post is on its way while it is checked on', () => {
+		renderControl( {
+			isShareEnabled: true,
+			syncOutcome: { outcome: 'queued' },
+			isCheckingSync: true,
+		} );
+
+		expect(
+			screen.getByText( 'Sending to Google Business Profile…' )
+		).toBeInTheDocument();
+	} );
+
 	it( 'shows no link until Google provides one', () => {
 		renderControl( { isShared: true, searchUrl: '' } );
 
