@@ -15,7 +15,7 @@ import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNotice';
+import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNoticeEffect';
 import SetupAccounts from './setup-accounts';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AssetGroup from '~/components/paid-ads/asset-group';

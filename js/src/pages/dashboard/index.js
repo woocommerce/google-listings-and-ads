@@ -32,7 +32,7 @@ import YouTubeShoppingTour from '~/components/tours/youtube-shopping-tour';
 import SubmissionSuccessGuide from '~/pages/product-feed/submission-success-guide';
 import EuPoliticalDeclaration from '~/components/eu-political-declaration';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
-import useIncentiveAppliedNotice from '~/hooks/useIncentiveAppliedNotice';
+import useIncentiveAppliedNoticeEffect from '~/hooks/useIncentiveAppliedNoticeEffect';
 import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
 import './index.scss';
 
@@ -42,7 +42,7 @@ import './index.scss';
 const Dashboard = () => {
 	const [ isCESPromptOpen, setCESPromptOpen ] = useState( false );
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
-	useIncentiveAppliedNotice();
+	useIncentiveAppliedNoticeEffect();
 
 	const handleCampaignCreationSuccessGuideClose = useCallback(
 		( e, specifiedAction ) => {

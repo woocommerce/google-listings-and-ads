@@ -22,7 +22,7 @@ export const INCENTIVE_APPLIED_QUERY = { incentive: 'applied' };
  *
  * Waits until any guide modal on the page is closed, so the notice isn't hidden behind it.
  */
-export default function useIncentiveAppliedNotice() {
+export default function useIncentiveAppliedNoticeEffect() {
 	const { createNotice } = useDispatchCoreNotices();
 	const query = getQuery();
 	const shouldShow =

@@ -7,7 +7,7 @@ import { getHistory, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import useIncentiveAppliedNotice from './useIncentiveAppliedNotice';
+import useIncentiveAppliedNoticeEffect from './useIncentiveAppliedNoticeEffect';
 import useDispatchCoreNotices from './useDispatchCoreNotices';
 
 jest.mock( '@woocommerce/navigation', () => ( {
@@ -22,7 +22,7 @@ jest.mock( './useDispatchCoreNotices' );
 const NOTICE =
 	'The selected Ads credit offer was successfully applied to your account.';
 
-describe( 'useIncentiveAppliedNotice', () => {
+describe( 'useIncentiveAppliedNoticeEffect', () => {
 	let createNotice;
 	let replace;
 
@@ -42,7 +42,7 @@ describe( 'useIncentiveAppliedNotice', () => {
 			incentive: 'applied',
 		} );
 
-		renderHook( () => useIncentiveAppliedNotice() );
+		renderHook( () => useIncentiveAppliedNoticeEffect() );
 
 		expect( createNotice ).toHaveBeenCalledWith( 'success', NOTICE );
 		expect( replace ).toHaveBeenCalledWith(
@@ -53,7 +53,7 @@ describe( 'useIncentiveAppliedNotice', () => {
 	it( 'does nothing when the query arg is absent', () => {
 		getQuery.mockReturnValue( { path: '/google/dashboard' } );
 
-		renderHook( () => useIncentiveAppliedNotice() );
+		renderHook( () => useIncentiveAppliedNoticeEffect() );
 
 		expect( createNotice ).not.toHaveBeenCalled();
 		expect( replace ).not.toHaveBeenCalled();
@@ -66,7 +66,9 @@ describe( 'useIncentiveAppliedNotice', () => {
 			incentive: 'applied',
 		} );
 
-		const { rerender } = renderHook( () => useIncentiveAppliedNotice() );
+		const { rerender } = renderHook( () =>
+			useIncentiveAppliedNoticeEffect()
+		);
 
 		expect( createNotice ).not.toHaveBeenCalled();
 

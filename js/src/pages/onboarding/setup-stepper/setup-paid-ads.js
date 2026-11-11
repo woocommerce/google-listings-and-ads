@@ -36,7 +36,7 @@ import clientSession from './clientSession';
 import AppSpinner from '~/components/app-spinner';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
-import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNotice';
+import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNoticeEffect';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.

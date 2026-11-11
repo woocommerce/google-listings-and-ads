@@ -24,7 +24,7 @@ import AppSpinner from '~/components/app-spinner';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
-import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNotice';
+import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNoticeEffect';
 
 const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 
