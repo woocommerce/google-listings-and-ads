@@ -98,8 +98,10 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 	 */
 	protected function get_incentives_callback(): callable {
 		return function ( Request $request ) {
-			$incentives                          = $this->ads_incentives->fetch_incentives();
-			$incentives['has_applied_incentive'] = $this->ads_incentives->has_applied_incentive();
+			$incentives = $this->ads_incentives->fetch_incentives();
+
+			// Without offers the picker doesn't show, so skip asking Google whether one was applied.
+			$incentives['has_applied_incentive'] = ! empty( $incentives['incentives'] ) && $this->ads_incentives->has_applied_incentive();
 
 			return $this->prepare_item_for_response( $incentives, $request );
 		};

@@ -220,6 +220,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		$this->ads_incentives->expects( $this->once() )
 			->method( 'fetch_incentives' )
 			->willReturn( self::EMPTY_RESPONSE );
+		$this->ads_incentives->expects( $this->never() )->method( 'has_applied_incentive' );
 
 		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
 
