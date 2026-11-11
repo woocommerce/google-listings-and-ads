@@ -27,6 +27,7 @@ import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNoticeEffect';
 
 const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
+const CONTEXT = 'setup-ads';
 
 function HookNavigateAwayPrompt() {
 	const { isDirty, adapter } = useAdaptiveFormContext();
@@ -115,7 +116,7 @@ const SetupPaidAds = () => {
 
 		if ( hasAppliedIncentive ) {
 			recordGlaEvent( 'gla_campaign_with_cyo_incentive_selected', {
-				context: 'setup-ads',
+				context: CONTEXT,
 				level: incentiveOffer,
 			} );
 		}
@@ -155,7 +156,7 @@ const SetupPaidAds = () => {
 					'Create your campaign',
 					'google-listings-and-ads'
 				) }
-				context="setup-ads"
+				context={ CONTEXT }
 				continueButton={ renderSubmitButton }
 			/>
 			<BudgetIncentivePrompt
