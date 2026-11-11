@@ -65,7 +65,7 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 	/**
 	 * Schedule a post to be sent, unless it's already queued.
 	 *
-	 * @param array $args A single WordPress post ID, as `[ $post_id ]`.
+	 * @param array $args WordPress post IDs to send, as `[ [ $post_id, ... ] ]`.
 	 *
 	 * @throws JobException If no post ID is provided as argument.
 	 */
