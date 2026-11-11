@@ -22,13 +22,17 @@ import {
 import wooLogoURL from '~/images/logo/woocommerce-logo.svg';
 import googleLogoURL from '~/images/logo/google-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
+import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNoticeEffect';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
 
 const handleGuideFinish = ( e ) => {
 	// Keep the one-time arg for the Ads credit offer notice, which waits until this guide is closed.
-	const query = { incentive: getQuery()?.incentive };
+	const query =
+		getQuery()?.incentive === INCENTIVE_APPLIED_QUERY.incentive
+			? INCENTIVE_APPLIED_QUERY
+			: {};
 
 	// If there is no connected MC account, redirect to dashboard, otherwise to product feed.
 	const url = glaData.mcSetupComplete
