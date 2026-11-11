@@ -214,7 +214,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->assertSame( '1', get_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true ) );
 	}
 
-	public function test_restoring_a_trashed_post_whose_delete_failed_keeps_its_last_sync_outcome() {
+	public function test_restoring_a_trashed_post_whose_delete_failed_clears_its_last_sync_outcome_but_keeps_the_toggle_on() {
 		$post = $this->create_synced_post();
 		update_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => SyncOutcome::SUCCESS ] );
 		wp_trash_post( $post->ID );
@@ -224,7 +224,25 @@ class PostDeleteTriggerTest extends UnitTest {
 
 		wp_untrash_post( $post->ID );
 
-		$this->assertSame( [ 'outcome' => SyncOutcome::SUCCESS ], get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
+		// The stored result stays complete -- delete() threw before it could be cleared -- so
+		// get_share_status() keeps blocking a resend for as long as the post genuinely still
+		// looks live at Google. But the outcome itself is cleared regardless: leaving the old
+		// "success" in place would separately block sends_on_save() forever, even once the
+		// result does eventually clear, stranding the post with no save ever able to retry it.
+		$this->assertSame( '1', get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true ) );
+		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
+	}
+
+	public function test_restoring_a_trashed_post_whose_delete_is_still_queued_clears_its_last_sync_outcome() {
+		$post = $this->create_synced_post();
+		update_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => SyncOutcome::SUCCESS ] );
+
+		// The job is only scheduled here, never run -- the stored result stays complete not
+		// because the delete failed, but simply because it hasn't happened yet.
+		wp_trash_post( $post->ID );
+		wp_untrash_post( $post->ID );
+
+		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
 	}
 
 	public function test_restoring_a_duplicated_posts_copied_result_clears_its_sharing_toggle() {

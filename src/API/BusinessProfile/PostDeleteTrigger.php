@@ -126,13 +126,17 @@ class PostDeleteTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Clear a restored post's sharing toggle and last sync outcome, unless its stored result is
-	 * still complete -- which now means either the delete failed, or it's simply still queued
-	 * and hasn't run yet. Either way the post reads as still live at Google, matching the
-	 * equivalent, already-shipped coupon behavior: a pending delete job isn't cancelled on
-	 * restore, so a post restored during that window can still have its Google post removed once
-	 * the job eventually runs, orphaning the restored post's share state. Accepted, not actively
-	 * guarded against -- building cancellation here would be a larger, separate decision.
+	 * Clear a restored post's last sync outcome always, and its sharing toggle too unless the
+	 * stored result is still complete.
+	 *
+	 * A still-complete result now means either a delete that genuinely failed, or one that's
+	 * simply still queued and hasn't run yet -- not cancelled on restore, matching the equivalent,
+	 * already-shipped coupon behavior. Either way `get_share_status()` (reading that same stored
+	 * result) already keeps a resend blocked for as long as the post genuinely still looks live,
+	 * so leaving the toggle and result alone here is safe. But the last sync outcome is cleared
+	 * regardless: leaving a stale "success" in place would separately block `sends_on_save()`
+	 * forever, even once the result does eventually clear -- a queued delete finally succeeding,
+	 * say -- stranding the post sharing-on with no further save ever able to retry it.
 	 *
 	 * @param int $post_id
 	 */
@@ -143,11 +147,12 @@ class PostDeleteTrigger implements Service, Registerable {
 
 		$result = $this->local_post_service->get_stored_result( $post_id );
 
+		delete_post_meta( $post_id, LocalPostService::SYNC_OUTCOME_META_KEY );
+
 		if ( LocalPostService::has_complete_result( $result ) ) {
 			return;
 		}
 
 		delete_post_meta( $post_id, PostShareControl::SHARE_META_KEY );
-		delete_post_meta( $post_id, LocalPostService::SYNC_OUTCOME_META_KEY );
 	}
 }

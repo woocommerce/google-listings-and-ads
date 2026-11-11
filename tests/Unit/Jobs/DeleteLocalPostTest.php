@@ -118,4 +118,13 @@ class DeleteLocalPostTest extends UnitTest {
 
 		$this->job->process_items( [ 123, $this->result ] );
 	}
+
+	public function test_handle_process_items_action_reschedules_and_rethrows_on_a_delete_failure() {
+		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
+		$this->action_scheduler->expects( $this->once() )->method( 'schedule_immediate' );
+
+		$this->expectException( Exception::class );
+
+		$this->job->handle_process_items_action( [ 123, $this->result ] );
+	}
 }
