@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { renderHook, act } from '@testing-library/react';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -11,10 +10,8 @@ import useApplyCYOIncentive from './useApplyCYOIncentive';
 import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus';
 import useCYOIncentives from './useCYOIncentives';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
-import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 
-jest.mock( '@wordpress/api-fetch' );
 jest.mock( './useGoogleAdsAccountBillingStatus' );
 jest.mock( './useCYOIncentives' );
 jest.mock( '~/data', () => ( {
@@ -22,13 +19,13 @@ jest.mock( '~/data', () => ( {
 } ) );
 
 describe( 'useApplyCYOIncentive', () => {
-	const receiveCYOIncentiveApplied = jest.fn();
+	const applyCYOIncentive = jest.fn();
 
 	beforeEach( () => {
 		jest.clearAllMocks();
-		apiFetch.mockResolvedValue( {} );
+		applyCYOIncentive.mockResolvedValue( {} );
 		useCYOIncentives.mockReturnValue( { data: [] } );
-		useAppDispatch.mockReturnValue( { receiveCYOIncentiveApplied } );
+		useAppDispatch.mockReturnValue( { applyCYOIncentive } );
 	} );
 
 	it( 'exposes result with loading state', async () => {
@@ -36,7 +33,7 @@ describe( 'useApplyCYOIncentive', () => {
 		const fetchPromise = new Promise( ( resolve ) => {
 			resolveApiFetch = resolve;
 		} );
-		apiFetch.mockReturnValue( fetchPromise );
+		applyCYOIncentive.mockReturnValue( fetchPromise );
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
 			billingStatus: { status: GOOGLE_ADS_BILLING_STATUS.APPROVED },
 		} );
@@ -72,16 +69,12 @@ describe( 'useApplyCYOIncentive', () => {
 			} );
 		} );
 
-		it( 'calls apiFetch with the correct path, method, and incentive id', async () => {
+		it( 'applies the offer with its incentive id', async () => {
 			const { result } = renderHook( () => useApplyCYOIncentive() );
 
 			await act( () => result.current.applyIncentive( 'incentive-123' ) );
 
-			expect( apiFetch ).toHaveBeenCalledWith( {
-				path: `${ API_NAMESPACE }/ads/incentives`,
-				method: 'POST',
-				data: { id: 'incentive-123' },
-			} );
+			expect( applyCYOIncentive ).toHaveBeenCalledWith( 'incentive-123' );
 		} );
 
 		it( 'returns false when no matching incentive offer is found', async () => {
@@ -92,7 +85,7 @@ describe( 'useApplyCYOIncentive', () => {
 			);
 
 			expect( returnValue ).toBe( false );
-			expect( apiFetch ).not.toHaveBeenCalled();
+			expect( applyCYOIncentive ).not.toHaveBeenCalled();
 		} );
 
 		it( 'returns false when billing status is not yet loaded', async () => {
@@ -107,7 +100,7 @@ describe( 'useApplyCYOIncentive', () => {
 			);
 
 			expect( returnValue ).toBe( false );
-			expect( apiFetch ).not.toHaveBeenCalled();
+			expect( applyCYOIncentive ).not.toHaveBeenCalled();
 		} );
 
 		it( 'returns false when billing is not approved', async () => {
@@ -122,7 +115,7 @@ describe( 'useApplyCYOIncentive', () => {
 			);
 
 			expect( returnValue ).toBe( false );
-			expect( apiFetch ).not.toHaveBeenCalled();
+			expect( applyCYOIncentive ).not.toHaveBeenCalled();
 		} );
 
 		it( 'returns false when an offer was already applied', async () => {
@@ -138,10 +131,10 @@ describe( 'useApplyCYOIncentive', () => {
 			);
 
 			expect( returnValue ).toBe( false );
-			expect( apiFetch ).not.toHaveBeenCalled();
+			expect( applyCYOIncentive ).not.toHaveBeenCalled();
 		} );
 
-		it( 'marks the offer as applied in the store and returns true on success', async () => {
+		it( 'returns true on success', async () => {
 			const { result } = renderHook( () => useApplyCYOIncentive() );
 
 			const returnValue = await act( () =>
@@ -149,11 +142,11 @@ describe( 'useApplyCYOIncentive', () => {
 			);
 
 			expect( returnValue ).toBe( true );
-			expect( receiveCYOIncentiveApplied ).toHaveBeenCalledTimes( 1 );
+			expect( applyCYOIncentive ).toHaveBeenCalledTimes( 1 );
 		} );
 
 		it( 'swallows API errors and returns false', async () => {
-			apiFetch.mockRejectedValue( new Error( 'API error' ) );
+			applyCYOIncentive.mockRejectedValue( new Error( 'API error' ) );
 
 			const { result } = renderHook( () => useApplyCYOIncentive() );
 
@@ -162,7 +155,6 @@ describe( 'useApplyCYOIncentive', () => {
 			);
 
 			expect( returnValue ).toBe( false );
-			expect( receiveCYOIncentiveApplied ).not.toHaveBeenCalled();
 		} );
 	} );
 } );

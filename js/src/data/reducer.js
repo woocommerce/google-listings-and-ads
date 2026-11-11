@@ -682,7 +682,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, [ 'ads', 'cyo_incentives' ], cyoIncentives );
 		}
 
-		case TYPES.RECEIVE_CYO_INCENTIVE_APPLIED: {
+		case TYPES.APPLY_CYO_INCENTIVE: {
 			return setIn(
 				state,
 				[ 'ads', 'cyo_incentives', 'has_applied_incentive' ],

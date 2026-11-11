@@ -2,12 +2,10 @@
  * External dependencies
  */
 import { useState, useCallback } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
-import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus';
@@ -16,7 +14,7 @@ import useCYOIncentives from './useCYOIncentives';
 const useApplyCYOIncentive = () => {
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { data: incentives, hasAppliedIncentive } = useCYOIncentives();
-	const { receiveCYOIncentiveApplied } = useAppDispatch();
+	const { applyCYOIncentive } = useAppDispatch();
 	const [ loading, setLoading ] = useState( false );
 
 	/**
@@ -47,13 +45,7 @@ const useApplyCYOIncentive = () => {
 			try {
 				setLoading( true );
 
-				await apiFetch( {
-					path: `${ API_NAMESPACE }/ads/incentives`,
-					method: 'POST',
-					data: { id: incentiveId },
-				} );
-
-				receiveCYOIncentiveApplied();
+				await applyCYOIncentive( incentiveId );
 
 				return true;
 			} catch {
@@ -62,12 +54,7 @@ const useApplyCYOIncentive = () => {
 				setLoading( false );
 			}
 		},
-		[
-			billingStatus,
-			incentives,
-			hasAppliedIncentive,
-			receiveCYOIncentiveApplied,
-		]
+		[ billingStatus, incentives, hasAppliedIncentive, applyCYOIncentive ]
 	);
 
 	return { applyIncentive, loading };

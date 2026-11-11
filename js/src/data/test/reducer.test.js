@@ -1054,7 +1054,7 @@ describe( 'reducer', () => {
 			} );
 
 			const state = reducer( originalState, {
-				type: TYPES.RECEIVE_CYO_INCENTIVE_APPLIED,
+				type: TYPES.APPLY_CYO_INCENTIVE,
 			} );
 
 			expect( state ).toHaveProperty( path, {
