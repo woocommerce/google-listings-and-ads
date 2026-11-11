@@ -27,8 +27,8 @@ class AccountController extends BaseController {
 	protected const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
 
 	/**
-	 * Query arg tagging an OAuth return URL with which service's connect flow it belongs to, with
-	 * this service's ID as the value. Shared with the other services on the same Google connection.
+	 * Query arg naming which service's connect flow an OAuth return URL belongs to, with this
+	 * service's ID as the value.
 	 */
 	protected const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
 

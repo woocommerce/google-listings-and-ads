@@ -86,7 +86,7 @@ const AccessNoticeDetail = ( { isAccessNotGranted } ) => {
 const AllowAccessGoogleBusinessProfileAccountCard = () => {
 	const { google } = useGoogleAccount();
 
-	// Kept from the first render, since removing the query arg below re-renders the page without it.
+	// Kept from the first render: once the effect below removes the query arg, later renders can't read it.
 	const [ isAccessNotGranted ] = useState( () => {
 		return (
 			getQuery()?.[ GOOGLE_SERVICE_OAUTH_PARAM ] ===
