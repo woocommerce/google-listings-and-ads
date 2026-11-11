@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
+use Exception;
 use Google\Ads\GoogleAds\V23\Services\ApplyIncentiveResponse;
 use Google\Ads\GoogleAds\V23\Services\Client\IncentiveServiceClient;
 use Google\Ads\GoogleAds\V23\Services\CyoIncentives;
@@ -231,6 +232,15 @@ class AdsIncentivesTest extends UnitTest {
 	public function test_has_applied_incentive_counts_a_query_error_as_applied_without_caching() {
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 		$this->generate_ads_query_mock_exception( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
+
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->assertTrue( $this->ads_incentives->has_applied_incentive() );
+	}
+
+	public function test_has_applied_incentive_counts_an_unexpected_error_as_applied_without_caching() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->service_client->method( 'search' )->willThrowException( new Exception( 'unexpected' ) );
 
 		$this->transients->expects( $this->never() )->method( 'set' );
 

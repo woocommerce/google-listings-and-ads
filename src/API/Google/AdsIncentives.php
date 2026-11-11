@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Exception;
 use Google\Ads\GoogleAds\V23\Services\ApplyIncentiveRequest;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest\IncentiveType;
@@ -99,7 +100,7 @@ class AdsIncentives implements OptionsAwareInterface {
 				$has_applied = true;
 				break;
 			}
-		} catch ( ApiException $e ) {
+		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			return true;
