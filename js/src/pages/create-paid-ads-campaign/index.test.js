@@ -63,7 +63,7 @@ jest.mock( '~/components/paid-ads/campaign-assets-form', () => ( props ) => (
 
 const CAMPAIGN_NOTICE = 'You’ve successfully created a campaign!';
 const CAMPAIGN_WITH_OFFER_NOTICE =
-	'You’ve successfully created a campaign! The selected Ads credit offer was successfully applied to your account.';
+	'Campaign created. Your Ads credit offer is applied to your Google Ads account.';
 
 describe( 'CreatePaidAdsCampaign', () => {
 	let applyIncentive;

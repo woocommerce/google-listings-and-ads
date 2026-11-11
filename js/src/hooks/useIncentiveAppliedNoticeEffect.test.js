@@ -19,8 +19,7 @@ jest.mock( '@woocommerce/navigation', () => ( {
 
 jest.mock( './useDispatchCoreNotices' );
 
-const NOTICE =
-	'The selected Ads credit offer was successfully applied to your account.';
+const NOTICE = 'Your Ads credit offer is applied to your Google Ads account.';
 
 describe( 'useIncentiveAppliedNoticeEffect', () => {
 	let createNotice;

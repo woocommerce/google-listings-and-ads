@@ -36,7 +36,7 @@ export default function useIncentiveAppliedNoticeEffect() {
 		createNotice(
 			'success',
 			__(
-				'The selected Ads credit offer was successfully applied to your account.',
+				'Your Ads credit offer is applied to your Google Ads account.',
 				'google-listings-and-ads'
 			)
 		);

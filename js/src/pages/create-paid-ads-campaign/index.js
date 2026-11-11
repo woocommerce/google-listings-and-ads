@@ -158,7 +158,7 @@ const CreatePaidAdsCampaign = () => {
 				'success',
 				hasAppliedIncentive
 					? __(
-							'You’ve successfully created a campaign! The selected Ads credit offer was successfully applied to your account.',
+							'Campaign created. Your Ads credit offer is applied to your Google Ads account.',
 							'google-listings-and-ads'
 						)
 					: __(
