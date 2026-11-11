@@ -178,13 +178,13 @@ const pages = [
 		content: (
 			<GuidePageContent
 				title={ __(
-					'Spend $500 to get $500 in Google Ads credits',
+					'Get $500 USD or more in Google Ads credit',
 					'google-listings-and-ads'
 				) }
 			>
 				<p>
 					{ __(
-						'New to Google Ads? Get $500 in ad credit when you spend $500 within your first 60 days* You can edit or cancel your campaign at any time.',
+						'New to Google Ads? Choose an Ads credit offer when you create your campaign. You’ll get the credit once you meet the offer’s minimum spend in your first 60 days. You can edit or remove your campaign anytime.',
 						'google-listings-and-ads'
 					) }
 				</p>
