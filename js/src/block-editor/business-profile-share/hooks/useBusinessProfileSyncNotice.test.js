@@ -61,10 +61,15 @@ function mockEditor( {
 
 describe( 'useBusinessProfileSyncNotice', () => {
 	let createNotice;
+	let removeNotice;
 
 	beforeEach( () => {
 		createNotice = jest.fn();
-		useDispatchCoreNotices.mockReturnValue( { createNotice } );
+		removeNotice = jest.fn();
+		useDispatchCoreNotices.mockReturnValue( {
+			createNotice,
+			removeNotice,
+		} );
 	} );
 
 	/**
@@ -94,6 +99,7 @@ describe( 'useBusinessProfileSyncNotice', () => {
 				explicitDismiss: true,
 			}
 		);
+		expect( removeNotice ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows a warning with its own status', () => {
@@ -107,6 +113,7 @@ describe( 'useBusinessProfileSyncNotice', () => {
 			'Profile unverified',
 			expect.any( Object )
 		);
+		expect( removeNotice ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows nothing when the editor loads, without a save', () => {
@@ -115,23 +122,30 @@ describe( 'useBusinessProfileSyncNotice', () => {
 		renderHook( () => useBusinessProfileSyncNotice() );
 
 		expect( createNotice ).not.toHaveBeenCalled();
+		expect( removeNotice ).not.toHaveBeenCalled();
 	} );
 
-	it( 'shows nothing when the save attempted no share', () => {
+	it( 'clears a previous notice when a save succeeds with nothing new to show', () => {
 		saveWith( {}, { notice: null } );
 
 		expect( createNotice ).not.toHaveBeenCalled();
+		expect( removeNotice ).toHaveBeenCalledTimes( 1 );
+		expect( removeNotice ).toHaveBeenCalledWith(
+			'gla-business-profile-sync-notice'
+		);
 	} );
 
 	it( 'shows nothing after an autosave', () => {
 		saveWith( { isAutosaving: true }, { notice: UNREACHABLE_NOTICE } );
 
 		expect( createNotice ).not.toHaveBeenCalled();
+		expect( removeNotice ).not.toHaveBeenCalled();
 	} );
 
-	it( 'shows nothing when the save failed', () => {
+	it( 'shows nothing when the save failed, and leaves any existing notice as is', () => {
 		saveWith( {}, { didSaveSucceed: false, notice: UNREACHABLE_NOTICE } );
 
 		expect( createNotice ).not.toHaveBeenCalled();
+		expect( removeNotice ).not.toHaveBeenCalled();
 	} );
 } );

@@ -20,7 +20,7 @@ const NOTICE_ID = 'gla-business-profile-sync-notice';
  * closes it, after a save that attempted the share. Loading or reloading the editor shows nothing.
  */
 export default function useBusinessProfileSyncNotice() {
-	const { createNotice } = useDispatchCoreNotices();
+	const { createNotice, removeNotice } = useDispatchCoreNotices();
 	const wasSaving = useRef( false );
 	const wasAutosaving = useRef( false );
 
@@ -56,7 +56,14 @@ export default function useBusinessProfileSyncNotice() {
 
 		wasSaving.current = false;
 
-		if ( wasAutosaving.current || ! didSaveSucceed || ! notice ) {
+		if ( wasAutosaving.current || ! didSaveSucceed ) {
+			return;
+		}
+
+		if ( ! notice ) {
+			// A successful save can follow an earlier failure's snackbar, which otherwise stays
+			// open (explicitDismiss) showing a stale error for a share that has since succeeded.
+			removeNotice( NOTICE_ID );
 			return;
 		}
 
@@ -65,5 +72,12 @@ export default function useBusinessProfileSyncNotice() {
 			type: 'snackbar',
 			explicitDismiss: true,
 		} );
-	}, [ isSaving, isAutosaving, didSaveSucceed, notice, createNotice ] );
+	}, [
+		isSaving,
+		isAutosaving,
+		didSaveSucceed,
+		notice,
+		createNotice,
+		removeNotice,
+	] );
 }
