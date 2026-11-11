@@ -61,6 +61,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string} name Campaign name.
  * @property {'enabled'|'paused'|'removed'} status Campaign is currently running, has been paused or removed.
  * @property {number} amount Amount of daily budget for running ads.
+ * @property {'product'|'page'} [advertising_source] What the campaign advertises: the products from Merchant Center, or a page on the store.
  * @property {CountryCode} country The sales country of this campaign.
  *   Please note that this is a targeting country for advertising,
  *   but it is NOT set up via the location-based method.

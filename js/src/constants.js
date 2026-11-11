@@ -119,6 +119,11 @@ export const CATEGORIES_TO_SHOW_IN_TOOLTIP = 5;
 // Campaign related
 export const CAMPAIGN_TYPE_PMAX = 'performance_max';
 
+export const ADVERTISING_SOURCE = {
+	PRODUCT: 'product',
+	PAGE: 'page',
+};
+
 // Assets of Performance Max Campaign related
 export const ASSET_KEY = {
 	BUSINESS_NAME: 'business_name',
