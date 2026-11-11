@@ -14,6 +14,11 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
     -   Google Merchant Center account connection status and connected ID
     -   Google Ads account connected ID
     -   Number of markets whose first language or currency differs from the store default
+    -   Feed issue counts from the last completed Merchant Center status check (counts only, no product data): blocking account issues, products disapproved in at least one market, products with error-level issues, products failing pre-sync validation, and total synced products. A variable product counts once, and can count as both failing pre-sync validation and synced when only some of its variations fail. The counts are empty when Merchant Center is not connected or no status check has completed.
+
+Feed issue summaries are published only after all pages of a status check have been tracked. A check resumed partway through an upgrade keeps the previous summary (or reports unknown counts if none exists). Tracking state is stored separately from the legacy product statistics so older versions can finish an in-progress check after a rollback. Failed count queries or exceptions preserve the previous summary and emit a debug message.
+
+Issue counts use the stored source: `mc` for Merchant Center and `pre-sync` for validation. Custom issues added through `woocommerce_gla_custom_merchant_issues` should explicitly set `source` to `filter`; a row that omits it inherits the table's `mc` default and is included in the Merchant Center counts. Existing hook-provided sources are preserved.
 
 <!-- TODO: add more tracking information -->
 
