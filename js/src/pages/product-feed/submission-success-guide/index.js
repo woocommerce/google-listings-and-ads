@@ -191,7 +191,7 @@ const pages = [
 				<cite>
 					{ createInterpolateElement(
 						__(
-							'*Full terms and conditions <link>here</link>.',
+							'Full terms and conditions <link>here</link>.',
 							'google-listings-and-ads'
 						),
 						{
