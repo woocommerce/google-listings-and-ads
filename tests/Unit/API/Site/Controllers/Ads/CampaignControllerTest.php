@@ -343,6 +343,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
 		$this->assertEquals( 'Invalid parameter(s): name', $response->get_data()['message'] );
+		$this->assertEquals( 'name must be at most 50 characters long.', $response->get_data()['data']['params']['name'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
@@ -644,6 +645,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
 		$this->assertEquals( 'Invalid parameter(s): name', $response->get_data()['message'] );
+		$this->assertEquals( 'name must be at most 50 characters long.', $response->get_data()['data']['params']['name'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
@@ -659,6 +661,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
 		$this->assertEquals( 'Invalid parameter(s): name', $response->get_data()['message'] );
+		$this->assertEquals( 'Campaign name cannot be empty.', $response->get_data()['data']['params']['name'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
