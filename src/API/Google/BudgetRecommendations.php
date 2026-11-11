@@ -36,6 +36,13 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	use LocationIDTrait;
 
 	/**
+	 * How long a saved recommendation stays valid, in seconds.
+	 *
+	 * @var int
+	 */
+	protected const CACHE_LIFETIME = 12 * HOUR_IN_SECONDS;
+
+	/**
 	 * The Google Ads Client.
 	 *
 	 * @var GoogleAdsClient
@@ -74,8 +81,9 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 		$transient       = $this->transients->get( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS );
 
 		// Check if we have the budget recommendations cached in the transient.
-		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
-			return $transient[ $cache_key ];
+		$cached = $this->get_cached_recommendations( $transient, $cache_key );
+		if ( $cached ) {
+			return $cached;
 		}
 
 		$location_ids = $this->get_location_ids( $country_codes );
@@ -121,12 +129,13 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 				// Parse all the returned recommendations and assign to the first country.
 				$recommendations = $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
 
-				// Merge with previously cached recommendations.
-				if ( ! is_array( $transient ) ) {
-					$transient = [];
-				}
-				$transient[ $cache_key ] = $recommendations;
-				$this->transients->set( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS, $transient, HOUR_IN_SECONDS * 12 );
+				// Merge with the recommendations that are still valid.
+				$transient               = $this->remove_expired_recommendations( $transient );
+				$transient[ $cache_key ] = [
+					'saved_at'        => time(),
+					'recommendations' => $recommendations,
+				];
+				$this->transients->set( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS, $transient, self::CACHE_LIFETIME );
 				return $recommendations;
 			}
 		} catch ( ApiException $e ) {
@@ -134,6 +143,50 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 		}
 
 		return null;
+	}
+
+	/**
+	 * Get the saved recommendations for a cache key, unless they have expired.
+	 *
+	 * An entry saved before the save time was recorded is a plain list of recommendations and is still returned.
+	 *
+	 * @param mixed  $transient The value of the budget recommendations transient.
+	 * @param string $cache_key The cache key to look up.
+	 *
+	 * @return array|null
+	 */
+	protected function get_cached_recommendations( $transient, string $cache_key ): ?array {
+		$entry = is_array( $transient ) ? ( $transient[ $cache_key ] ?? null ) : null;
+
+		if ( empty( $entry ) ) {
+			return null;
+		}
+
+		if ( ! isset( $entry['saved_at'] ) ) {
+			return $entry;
+		}
+
+		return time() - $entry['saved_at'] < self::CACHE_LIFETIME ? $entry['recommendations'] : null;
+	}
+
+	/**
+	 * Keep only the saved recommendations that have not expired, so saving a new entry doesn't keep an old one alive.
+	 *
+	 * @param mixed $transient The value of the budget recommendations transient.
+	 *
+	 * @return array
+	 */
+	protected function remove_expired_recommendations( $transient ): array {
+		if ( ! is_array( $transient ) ) {
+			return [];
+		}
+
+		return array_filter(
+			$transient,
+			function ( $entry ) {
+				return isset( $entry['saved_at'] ) && time() - $entry['saved_at'] < self::CACHE_LIFETIME;
+			}
+		);
 	}
 
 	/**

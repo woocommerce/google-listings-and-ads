@@ -354,15 +354,73 @@ class BudgetRecommendationsTest extends UnitTest {
 		return $saved;
 	}
 
-	public function test_get_recommendations_saves_page_results_under_a_key_with_a_page_suffix_and_keeps_other_entries() {
-		$saved = $this->get_saved_budget_transient( AdvertisingSource::PAGE, [ 'us-existing' => [ 'daily_budget' => 20 ] ] );
+	public function test_get_recommendations_saves_page_results_under_a_key_with_a_page_suffix_and_keeps_valid_entries() {
+		$valid = [
+			'saved_at'        => time() - HOUR_IN_SECONDS,
+			'recommendations' => [ 'daily_budget' => 20 ],
+		];
+
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PAGE, [ 'us-existing' => $valid ] );
 
 		$this->assertSame( [ 'us-existing', 'us-new-page' ], array_keys( $saved ) );
+		$this->assertSame( $valid, $saved['us-existing'] );
+		$this->assertEquals( [ self::TEST_RECOMMENDATION ], $saved['us-new-page']['recommendations'] );
 	}
 
 	public function test_get_recommendations_saves_product_results_under_the_key_without_a_suffix() {
 		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, [] );
 
 		$this->assertSame( [ 'us-new' ], array_keys( $saved ) );
+	}
+
+	public function test_get_recommendations_drops_expired_and_unstamped_entries_when_saving() {
+		$cached = [
+			'gb-new'      => [
+				'saved_at'        => time() - 13 * HOUR_IN_SECONDS,
+				'recommendations' => [ 'daily_budget' => 20 ],
+			],
+			'gb-existing' => [ 'daily_budget' => 30 ],
+		];
+
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, $cached );
+
+		$this->assertSame( [ 'us-new' ], array_keys( $saved ) );
+	}
+
+	public function test_get_recommendations_ignores_an_expired_entry() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+		$this->generate_recommendations_mock( [ self::TEST_RECOMMENDATION ] );
+
+		$this->transients->method( 'get' )->willReturnCallback(
+			function ( string $name ) {
+				return TransientsInterface::ADS_BUDGET_RECOMMENDATIONS === $name
+					? [
+						'us-new' => [
+							'saved_at'        => time() - 13 * HOUR_IN_SECONDS,
+							'recommendations' => [ 'daily_budget' => 99 ],
+						],
+					]
+					: null;
+			}
+		);
+
+		$this->assertEquals( [ self::TEST_RECOMMENDATION ], $this->recommendations->get_recommendations( [ 'US' ] ) );
+	}
+
+	public function test_get_recommendations_returns_a_valid_stamped_entry() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$entry = [
+			'saved_at'        => time() - HOUR_IN_SECONDS,
+			'recommendations' => [ self::TEST_RECOMMENDATION ],
+		];
+
+		$this->transients->method( 'get' )
+			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
+			->willReturn( [ 'us-new' => $entry ] );
+
+		$this->assertSame( $entry['recommendations'], $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 }
