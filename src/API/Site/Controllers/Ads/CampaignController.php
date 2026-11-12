@@ -155,7 +155,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	protected function create_campaign_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$fields = $this->trim_name_field( array_intersect_key( $request->get_json_params(), $this->get_schema_properties() ) );
+				$fields = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
 
 				// Set the default value of campaign name.
 				if ( '' === ( $fields['name'] ?? '' ) ) {
@@ -247,7 +247,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	protected function edit_campaign_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$fields = $this->trim_name_field( array_intersect_key( $request->get_json_params(), $this->get_edit_schema() ) );
+				$fields = array_intersect_key( $request->get_json_params(), $this->get_edit_schema() );
 				if ( empty( $fields ) ) {
 					return new Response(
 						[
@@ -434,23 +434,6 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				return is_string( $value ) ? $this->trim_name( $value ) : $value;
 			},
 		];
-	}
-
-	/**
-	 * Trim the campaign name in the given request fields.
-	 *
-	 * The callbacks read the raw JSON body, which skips the schema's sanitize callback, so the name is trimmed here too.
-	 *
-	 * @param array $fields Request fields.
-	 *
-	 * @return array
-	 */
-	private function trim_name_field( array $fields ): array {
-		if ( isset( $fields['name'] ) && is_string( $fields['name'] ) ) {
-			$fields['name'] = $this->trim_name( $fields['name'] );
-		}
-
-		return $fields;
 	}
 
 	/**
