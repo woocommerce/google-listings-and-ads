@@ -82,3 +82,122 @@ jobs:
           path: ${{ github.workspace }}/google-listings-and-ads.zip
           # Do not bloat the storage. Keep in only long enough for a caller workflow to pick it up and follow up with some manual debugging.
           retention-days: 2
+
+      # The WordPress Playground link in the "Test the build" comment downloads this artifact on every click,
+      # so it is kept for longer. The run ID in the name gives each build its own URL: a link always opens
+      # the build it was written for, and a cached download of an older build is never served for a newer one.
+      # Pull requests from forks get no comment, hence no link, and skip it.
+      - name: Publish build artifact for the WordPress Playground preview
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: playground-preview-${{ github.run_id }}
+          path: ${{ github.workspace }}/google-listings-and-ads.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  TestTheBuildComment:
+    name: Comment with ways to test the build
+    needs: BuildExtensionBundle
+    # A pull request from a fork gets a read-only token, which cannot write the comment.
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    steps:
+      # WordPress Playground runs in the visitor's browser and can only fetch public URLs. Its artifact
+      # proxy serves this workflow's artifacts for the pull request and finds the workflow by its name,
+      # hence GITHUB_WORKFLOW instead of a literal that a rename would silently break.
+      # The artifact is a zip that wraps the plugin zip, so the Blueprint unzips it before installing.
+      - name: Build the WordPress Playground preview link
+        id: playground
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          ARTIFACT_URL=$( jq -rn \
+            --arg org "$GITHUB_REPOSITORY_OWNER" \
+            --arg repo "${GITHUB_REPOSITORY#*/}" \
+            --arg workflow "$GITHUB_WORKFLOW" \
+            --arg pr "$PR_NUMBER" \
+            --arg artifact "playground-preview-$GITHUB_RUN_ID" \
+            '"https://playground.wordpress.net/plugin-proxy.php?org=\($org|@uri)&repo=\($repo|@uri)&workflow=\($workflow|@uri)&pr=\($pr|@uri)&artifact=\($artifact|@uri)"' )
+
+          # Runs after WooCommerce is active: skips its setup wizard and adds a product to list on Google.
+          read -r -d '' STORE_SETUP <<'PHP' || true
+          <?php
+          require '/wordpress/wp-load.php';
+          delete_transient( '_wc_activation_redirect' );
+          update_option( 'woocommerce_onboarding_profile', array( 'skipped' => true ) );
+          update_option( 'woocommerce_coming_soon', 'no' );
+          $product = new WC_Product_Simple();
+          $product->set_name( 'Sample T-Shirt' );
+          $product->set_sku( 'sample-t-shirt' );
+          $product->set_regular_price( '18' );
+          $product->set_description( 'A sample product to try Google for WooCommerce with.' );
+          $product->save();
+          PHP
+
+          BLUEPRINT=$( jq -cn \
+            --arg artifact_url "$ARTIFACT_URL" \
+            --arg store_setup "$STORE_SETUP" \
+            '{
+              "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+              landingPage: "/wp-admin/admin.php?page=wc-admin&path=/google/start",
+              preferredVersions: { php: "8.3", wp: "latest" },
+              features: { networking: true },
+              steps: [
+                { step: "login", username: "admin" },
+                { step: "installPlugin", pluginData: { resource: "wordpress.org/plugins", slug: "woocommerce" }, options: { activate: true } },
+                { step: "runPHP", code: $store_setup },
+                { step: "unzip", zipFile: { resource: "url", url: $artifact_url, caption: "Downloading the Google for WooCommerce build for this PR" }, extractToPath: "/tmp/pr" },
+                { step: "installPlugin", pluginData: { resource: "vfs", path: "/tmp/pr/google-listings-and-ads.zip" }, options: { activate: true } }
+              ]
+            }' )
+
+          echo "url=https://playground.wordpress.net/#$( jq -rn --argjson blueprint "$BLUEPRINT" '$blueprint|tojson|@uri' )" >> "$GITHUB_OUTPUT"
+
+      - name: Add or update the comment in the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLAYGROUND_URL: ${{ steps.playground.outputs.url }}
+          PR_NUMBER: ${{ github.event.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BODY_FILE="$RUNNER_TEMP/test-the-build.md"
+
+          {
+            echo "### Test the build"
+            echo
+            echo "#### WordPress Playground - runs in your browser"
+
+            cat <<EOF
+
+          :test_tube: [Open this build in WordPress Playground](${PLAYGROUND_URL}): a fresh store with WooCommerce set up, a sample product, and Google for WooCommerce on its Get started screen.
+
+          :information_source: The preview shows the extension before it is connected: the Get started screen, the first step of the setup, and the Channel visibility box in the product editor. It cannot connect a WordPress.com or Google account, so nothing that needs a Merchant Center or Google Ads account works there. The link stops working 14 days after the last build.
+
+          ---
+
+          Build info:
+
+          - Latest commit: ${PR_HEAD_SHA}
+          - Build time: $( date -u "+%Y-%m-%d %H:%M:%S UTC" )
+
+          _Note: the build is updated when a new commit is pushed to this PR._
+          EOF
+          } > "$BODY_FILE"
+
+          # Update the existing comment instead of adding one per build. Only a comment by this workflow's
+          # bot is matched: it is the only one the token can edit.
+          COMMENT_IDS=$( gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq '.[] | select( .user.login == "github-actions[bot]" and ( .body | startswith( "### Test the build" ) ) ) | .id' )
+          COMMENT_ID="${COMMENT_IDS%%$'\n'*}"
+
+          if [ -n "$COMMENT_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" -X PATCH -F body=@"$BODY_FILE" --silent
+            echo "Updated comment ${COMMENT_ID}."
+          else
+            gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -F body=@"$BODY_FILE" --silent
+            echo "Created the comment."
+          fi
