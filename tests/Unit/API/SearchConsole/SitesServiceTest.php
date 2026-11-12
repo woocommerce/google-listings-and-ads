@@ -314,12 +314,12 @@ class SitesServiceTest extends UnitTest {
 
 		$this->client->expects( $this->once() )
 			->method( 'put' )
-			->with( 'sites/' . rawurlencode( self::STORE_URL ) );
+			->with( 'sites/' . rawurlencode( trailingslashit( self::STORE_URL ) ) );
 
 		$result = $this->service->resolve_property( self::STORE_URL );
 
 		$this->assertTrue( $result['created'] );
-		$this->assertEquals( self::STORE_URL, $result['resolved']['siteUrl'] );
+		$this->assertEquals( trailingslashit( self::STORE_URL ), $result['resolved']['siteUrl'] );
 
 		$unverified_domain_match = $result['matches'][0];
 		$this->assertTrue( $unverified_domain_match['covers_store_url'] );
@@ -345,7 +345,7 @@ class SitesServiceTest extends UnitTest {
 
 		$this->client->expects( $this->once() )
 			->method( 'put' )
-			->with( 'sites/' . rawurlencode( self::STORE_URL ) );
+			->with( 'sites/' . rawurlencode( trailingslashit( self::STORE_URL ) ) );
 
 		$result = $this->service->resolve_property( self::STORE_URL );
 
@@ -375,7 +375,7 @@ class SitesServiceTest extends UnitTest {
 		// The restricted domain property was filtered out before matching even began, so the
 		// only entry in `matches` is the newly created property — not the restricted one.
 		$this->assertCount( 1, $result['matches'] );
-		$this->assertEquals( self::STORE_URL, $result['matches'][0]['siteUrl'] );
+		$this->assertEquals( trailingslashit( self::STORE_URL ), $result['matches'][0]['siteUrl'] );
 	}
 
 	public function test_resolve_property_auto_creates_url_prefix_when_no_usable_match() {
@@ -383,15 +383,15 @@ class SitesServiceTest extends UnitTest {
 
 		$this->client->expects( $this->once() )
 			->method( 'put' )
-			->with( 'sites/' . rawurlencode( self::STORE_URL ) );
+			->with( 'sites/' . rawurlencode( trailingslashit( self::STORE_URL ) ) );
 
 		$result = $this->service->resolve_property( self::STORE_URL );
 
 		$this->assertTrue( $result['created'] );
-		$this->assertEquals( self::STORE_URL, $result['resolved']['siteUrl'] );
+		$this->assertEquals( trailingslashit( self::STORE_URL ), $result['resolved']['siteUrl'] );
 		$this->assertEquals( SitesService::PERMISSION_UNVERIFIED, $result['resolved']['permissionLevel'] );
 
-		$created_match = current( array_filter( $result['matches'], fn( $m ) => self::STORE_URL === $m['siteUrl'] ) );
+		$created_match = current( array_filter( $result['matches'], fn( $m ) => trailingslashit( self::STORE_URL ) === $m['siteUrl'] ) );
 		$this->assertTrue( $created_match['usable'], 'A freshly created url-prefix property is still usable even though unverified.' );
 	}
 
