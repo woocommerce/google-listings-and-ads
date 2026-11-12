@@ -198,24 +198,49 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 						return null;
 					}
 
-					return $this->get_sync_outcome( (int) $post['id'] );
+					$outcome = $this->get_sync_outcome( (int) $post['id'] );
+
+					if ( null === $outcome ) {
+						return null;
+					}
+
+					$outcome['display_message'] = SyncNotice::for_outcome( $outcome )['message'] ?? null;
+
+					return $outcome;
 				},
 				'schema'       => [
-					'description' => __( 'The outcome of the last attempt to share this post to Google Business Profile, with the message Google returned, if any.', 'google-listings-and-ads' ),
+					'description' => __( 'The outcome of the last attempt to share this post to Google Business Profile, with the message Google returned, if any, and a ready-to-display message for a non-success outcome.', 'google-listings-and-ads' ),
 					'type'        => [ 'object', 'null' ],
 					'context'     => [ 'edit' ],
 					'readonly'    => true,
 					'properties'  => [
-						'outcome'       => [
+						'outcome'         => [
 							'type' => 'string',
 							'enum' => SyncOutcome::ALL,
 						],
-						'message'       => [ 'type' => 'string' ],
-						'image_omitted' => [ 'type' => 'boolean' ],
+						'message'         => [ 'type' => 'string' ],
+						'image_omitted'   => [ 'type' => 'boolean' ],
+						'display_message' => [ 'type' => [ 'string', 'null' ] ],
 					],
 				],
 			]
 		);
+	}
+
+	/**
+	 * Whether a post can be shared to Google Business Profile: a location is connected, it's a
+	 * supported post type, and its sharing toggle is on. The single source of truth for this --
+	 * both the publish trigger and the background send job need the same answer, and previously
+	 * repeated the same three checks independently.
+	 *
+	 * @param WP_Post $post
+	 *
+	 * @return bool
+	 */
+	public function is_shareable( WP_Post $post ): bool {
+		return null !== $this->location_service->get_selected_location()
+			&& in_array( $post->post_type, self::SUPPORTED_POST_TYPES, true )
+			&& (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
 	}
 
 	/**
@@ -285,6 +310,15 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				]
 			)
 		);
+	}
+
+	/**
+	 * Clear a post's stored sync outcome, so it reads as never attempted.
+	 *
+	 * @param int $post_id
+	 */
+	public function clear_sync_outcome( int $post_id ): void {
+		delete_post_meta( $post_id, self::SYNC_OUTCOME_META_KEY );
 	}
 
 	/**

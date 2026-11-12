@@ -12,7 +12,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishT
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SendLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
@@ -252,37 +253,47 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->assertSame( '', get_post_meta( $duplicate->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
 	}
 
-	public function test_saving_a_post_restored_to_publish_after_a_failed_send_sends_it_once() {
+	public function test_saving_a_post_restored_to_publish_after_a_failed_send_schedules_it_once() {
 		add_filter( 'wp_untrash_post_status', 'wp_untrash_post_set_previous_status', 10, 3 );
 
-		$client = $this->createMock( BusinessProfileApiClient::class );
-		$wp     = $this->createMock( WP::class );
-		$wp->method( 'get_locale' )->willReturn( 'en_US' );
-		$iso_utility = $this->createMock( ISOUtility::class );
-		$iso_utility->method( 'wp_locale_to_bcp47' )->willReturn( 'en-US' );
-
-		$options = $this->createMock( OptionsInterface::class );
-		$options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE, [] )->willReturn(
+		$local_post_service = $this->getMockBuilder( LocalPostService::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'delete', 'create', 'is_shareable', 'get_share_status', 'get_sync_outcome', 'set_sync_outcome' ] )
+			->getMock();
+		// Reads the real sharing toggle rather than a blanket true -- the post is created below
+		// before its meta is set, and PostPublishTrigger is already registered by then, so a
+		// blanket true would treat that creation as shareable too, consuming the per-request
+		// dedup guard before the restore-and-resave this test is actually about ever happens.
+		$local_post_service->method( 'is_shareable' )->willReturnCallback(
+			function ( WP_Post $post ) {
+				return (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+			}
+		);
+		$local_post_service->method( 'get_share_status' )->willReturn(
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => SyncOutcome::REQUEST_FAILURE,
+				'message' => '',
 			]
 		);
 
-		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ), $this->createMock( LocationService::class ), $this->createMock( WPML::class ) );
-		$local_post_service->set_options_object( $options );
-		$location_service = $this->createMock( LocationService::class );
-		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
-		( new PostPublishTrigger( $local_post_service, $location_service ) )->register();
+		$send_local_post_job = $this->createMock( SendLocalPost::class );
+		$job_repository      = $this->createMock( JobRepository::class );
+		$job_repository->method( 'get' )->with( SendLocalPost::class )->willReturn( $send_local_post_job );
+		( new PostPublishTrigger( $local_post_service, $job_repository ) )->register();
 
 		// A post whose send failed: sharing on, a failed outcome, and no stored result.
 		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
 		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
-		$local_post_service->set_sync_outcome( $post_id, SyncOutcome::REQUEST_FAILURE );
 		wp_trash_post( $post_id );
 		wp_untrash_post( $post_id );
 
-		$client->expects( $this->once() )->method( 'post' );
+		$send_local_post_job->expects( $this->once() )->method( 'schedule' )->with( [ [ $post_id ] ] );
 
 		// The merchant switches sharing back on and saves, as they would on any published post.
 		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
@@ -325,10 +336,11 @@ class PostDeleteTriggerTest extends UnitTest {
 		// reaches publish -- the same precondition PostPublishTrigger relies on.
 		$this->register_only( new PostDeleteTrigger( $this->local_post_service_with_a_successful_delete() ) );
 
-		$publish_service  = $this->createMock( LocalPostService::class );
-		$location_service = $this->createMock( LocationService::class );
-		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
-		( new PostPublishTrigger( $publish_service, $location_service ) )->register();
+		$publish_service = $this->createMock( LocalPostService::class );
+		// The toggle PostDeleteTrigger's own restore handling clears after a successful delete --
+		// handle_publish() bails on this before it ever reaches the is_shared check below.
+		$publish_service->method( 'is_shareable' )->willReturn( false );
+		( new PostPublishTrigger( $publish_service, $this->createMock( JobRepository::class ) ) )->register();
 
 		$post = $this->create_synced_post();
 		wp_trash_post( $post->ID );
@@ -349,15 +361,16 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
 
 		$publish_service = $this->createMock( LocalPostService::class );
+		// The toggle is still on, since the delete failed -- handle_publish() must reach the
+		// is_shared check below, not bail earlier on is_shareable().
+		$publish_service->method( 'is_shareable' )->willReturn( true );
 		$publish_service->method( 'get_share_status' )->willReturn(
 			[
 				'is_shared'  => true,
 				'search_url' => 'https://g.page/r/abc',
 			]
 		);
-		$location_service = $this->createMock( LocationService::class );
-		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
-		( new PostPublishTrigger( $publish_service, $location_service ) )->register();
+		( new PostPublishTrigger( $publish_service, $this->createMock( JobRepository::class ) ) )->register();
 
 		$post = $this->create_synced_post();
 		wp_trash_post( $post->ID );

@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostIma
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncNotice;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -170,6 +172,39 @@ class LocalPostServiceTest extends UnitTest {
 		$this->expectException( Exception::class );
 
 		$service->create( $post );
+	}
+
+	public function test_is_shareable_is_true_when_a_location_is_connected_the_post_type_is_supported_and_sharing_is_on() {
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+
+		$this->assertTrue( $this->service->is_shareable( $post ) );
+	}
+
+	public function test_is_shareable_is_false_when_sharing_is_off() {
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+
+		$this->assertFalse( $this->service->is_shareable( $post ) );
+	}
+
+	public function test_is_shareable_is_false_for_an_unsupported_post_type() {
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'page' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+
+		$this->assertFalse( $this->service->is_shareable( $post ) );
+	}
+
+	public function test_is_shareable_is_false_when_no_location_is_connected() {
+		$location_service = $this->createMock( LocationService::class );
+		$location_service->method( 'get_selected_location' )->willReturn( null );
+		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service, $location_service, $this->wpml );
+		$service->set_options_object( $this->options );
+
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+
+		$this->assertFalse( $service->is_shareable( $post ) );
 	}
 
 	public function test_create_throws_when_google_returns_no_usable_post_identifier() {
@@ -1179,6 +1214,23 @@ class LocalPostServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_clear_sync_outcome_makes_a_post_read_as_never_sent() {
+		$post = $this->factory()->post->create_and_get();
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::QUEUED );
+
+		$this->service->clear_sync_outcome( $post->ID );
+
+		$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
+	}
+
+	public function test_clear_sync_outcome_on_a_post_with_no_stored_outcome_is_a_no_op() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->service->clear_sync_outcome( $post->ID );
+
+		$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
+	}
+
 	public function test_set_sync_outcome_throws_on_an_unknown_outcome() {
 		$post = $this->factory()->post->create_and_get();
 
@@ -1218,12 +1270,35 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'outcome'       => SyncOutcome::ACCOUNT_RESTRICTION,
-				'message'       => 'The profile is suspended.',
-				'image_omitted' => false,
+				'outcome'         => SyncOutcome::ACCOUNT_RESTRICTION,
+				'message'         => 'The profile is suspended.',
+				'image_omitted'   => false,
+				'display_message' => SyncNotice::for_outcome( [ 'outcome' => SyncOutcome::ACCOUNT_RESTRICTION ] )['message'],
 			],
 			$response->get_data()[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]
 		);
+	}
+
+	public function test_sync_outcome_field_display_message_is_null_for_a_queued_outcome() {
+		$this->login_as_administrator();
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::QUEUED );
+		$this->service->register_rest_fields();
+
+		$value = $this->get_sync_outcome_field_value( $post->ID );
+
+		$this->assertNull( $value['display_message'] );
+	}
+
+	public function test_sync_outcome_field_display_message_is_null_for_a_plain_success() {
+		$this->login_as_administrator();
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS );
+		$this->service->register_rest_fields();
+
+		$value = $this->get_sync_outcome_field_value( $post->ID );
+
+		$this->assertNull( $value['display_message'] );
 	}
 
 	public function test_sync_outcome_field_is_absent_from_a_default_context_post_response() {
@@ -1274,6 +1349,12 @@ class LocalPostServiceTest extends UnitTest {
 		$callback = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ]['get_callback'];
 
 		return $callback( [ 'id' => $post_id ], LocalPostService::SHARE_STATUS_FIELD_NAME, new WP_REST_Request(), 'post' );
+	}
+
+	private function get_sync_outcome_field_value( int $post_id ) {
+		$callback = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]['get_callback'];
+
+		return $callback( [ 'id' => $post_id ], LocalPostService::SYNC_OUTCOME_FIELD_NAME, new WP_REST_Request(), 'post' );
 	}
 
 	/**
