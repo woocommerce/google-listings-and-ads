@@ -262,6 +262,7 @@ class TrackerSnapshotTest extends UnitTest {
 		$container->addShared( TargetAudience::class, $this->target_audience );
 		$container->addShared( MarketService::class, $this->market_service );
 		$container->addShared( ProductImageSizeAudit::class, $this->image_size_audit );
+		$container->addShared( SearchConsoleConnection::class, $this->search_console_connection );
 
 		$this->snapshot = new TrackerSnapshot();
 		$this->snapshot->set_container( $container );
