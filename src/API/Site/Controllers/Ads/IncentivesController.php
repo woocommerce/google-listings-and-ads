@@ -252,7 +252,7 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 			],
 			'has_applied_incentive' => [
 				'type'        => 'boolean',
-				'description' => __( 'Whether an offer was already applied to the connected Google Ads account.', 'google-listings-and-ads' ),
+				'description' => __( 'Whether an offer was already applied to the connected Google Ads account. Always false when no offers are returned.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
 		];
