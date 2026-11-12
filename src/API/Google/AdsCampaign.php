@@ -296,6 +296,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function create_campaign( array $params ): array {
+		$params['advertising_source'] ??= AdvertisingSource::get_default( $this->options->get_merchant_id() );
+
 		try {
 			$base_country = $this->container->get( WC::class )->get_base_country();
 
@@ -312,7 +314,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$budget_operations = [ $this->budget->create_operation( $params['name'], $params['amount'] ) ];
 
 			// Create campaign operations.
-			$campaign_operations = [ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'], $params['advertising_source'] ?? AdvertisingSource::PRODUCT ) ];
+			$campaign_operations = [ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'], $params['advertising_source'] ) ];
 
 			// Create asset group operations.
 			$ad_asset_group = $this->container->get( AdsAssetGroup::class );

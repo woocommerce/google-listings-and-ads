@@ -555,6 +555,7 @@ class AdsCampaignTest extends UnitTest {
 			'type'                                  => 'performance_max',
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
+			'advertising_source'                    => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->transients->expects( $this->exactly( 2 ) )
@@ -585,10 +586,11 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'advertising_source' => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->assertEquals(
@@ -952,6 +954,36 @@ class AdsCampaignTest extends UnitTest {
 		return $has_shopping_setting;
 	}
 
+	/**
+	 * @dataProvider provide_default_advertising_source_cases
+	 *
+	 * @param int    $merchant_id     The connected Merchant Center ID, or 0 when none is connected.
+	 * @param string $expected_source The advertising source the campaign should default to.
+	 */
+	public function test_create_campaign_defaults_the_advertising_source( int $merchant_id, string $expected_source ) {
+		$this->options->method( 'get_merchant_id' )->willReturn( $merchant_id );
+		$this->wc->method( 'get_base_country' )->willReturn( self::BASE_COUNTRY );
+		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$campaign = $this->campaign->create_campaign(
+			[
+				'name'                                  => 'New Campaign',
+				'amount'                                => 20,
+				'targeted_locations'                    => [ 'US' ],
+				'eu_political_advertising_confirmation' => false,
+			]
+		);
+
+		$this->assertSame( $expected_source, $campaign['advertising_source'] );
+	}
+
+	public function provide_default_advertising_source_cases(): array {
+		return [
+			'Merchant Center connected'     => [ 1234, AdvertisingSource::PRODUCT ],
+			'Merchant Center not connected' => [ 0, AdvertisingSource::PAGE ],
+		];
+	}
+
 	public function test_create_campaign_with_page_advertising_source_skips_shopping_setting_when_merchant_center_connected() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 
@@ -990,10 +1022,11 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'advertising_source' => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->transients->expects( $this->exactly( 2 ) )
@@ -1071,10 +1104,11 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'advertising_source' => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->assertEquals(

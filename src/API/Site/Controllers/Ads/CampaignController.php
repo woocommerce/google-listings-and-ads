@@ -170,14 +170,10 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					);
 				}
 
-				$merchant_id = $this->options->get_merchant_id();
-
-				$fields['advertising_source'] ??= AdvertisingSource::get_default( $merchant_id );
-
-				if ( AdvertisingSource::PRODUCT === $fields['advertising_source'] && $merchant_id <= 0 ) {
+				if ( AdvertisingSource::PRODUCT === ( $fields['advertising_source'] ?? null ) && $this->options->get_merchant_id() <= 0 ) {
 					return new Response(
 						[
-							'code'    => 'rest_invalid_param',
+							'code'    => 'merchant_center_required',
 							'message' => __( 'A campaign that advertises products requires a connected Merchant Center account.', 'google-listings-and-ads' ),
 						],
 						400

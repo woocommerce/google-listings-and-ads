@@ -220,7 +220,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
+			->with( $campaign_data )
 			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
 
 		$this->expect_track_event(
@@ -263,7 +263,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
+			->with( $campaign_data )
 			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
 
 		$this->expect_track_event(
@@ -310,7 +310,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 					// Confirm name matches the datetime format.
 					$this->assertStringMatchesFormat( 'Campaign %d-%d-%d %d:%d:%d', $name, 'Name does not match' );
-					$this->assertEquals( $data, $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] );
+					$this->assertEquals( $data, $campaign_data );
 
 					return array_diff_key( $expected, [ 'start_date' => null ] );
 				}
@@ -334,7 +334,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
-		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'merchant_center_required', $response->get_data()['code'] );
 		$this->assertEquals( 'Invalid parameter(s): targeted_locations', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
@@ -423,7 +423,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
+			->with( $campaign_data )
 			->willReturn( $expected );
 
 		$this->expect_track_event(
@@ -550,31 +550,18 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		];
 	}
 
-	/**
-	 * @dataProvider provide_default_advertising_source_cases
-	 *
-	 * @param int    $merchant_id     The connected Merchant Center ID, or 0 when none is connected.
-	 * @param string $expected_source The advertising source the request should default to.
-	 */
-	public function test_create_campaign_defaults_the_advertising_source( int $merchant_id, string $expected_source ) {
-		$this->merchant_id = $merchant_id;
+	public function test_create_campaign_without_advertising_source_is_not_rejected_without_merchant_center() {
+		$this->merchant_id = 0;
 		$campaign_data     = $this->get_new_campaign_data();
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data + [ 'advertising_source' => $expected_source ] )
+			->with( $campaign_data )
 			->willReturn( $this->get_created_campaign_response( $campaign_data ) );
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
 		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function provide_default_advertising_source_cases(): array {
-		return [
-			'Merchant Center connected'     => [ self::MERCHANT_ID, AdvertisingSource::PRODUCT ],
-			'Merchant Center not connected' => [ 0, AdvertisingSource::PAGE ],
-		];
 	}
 
 	public function test_create_campaign_passes_a_page_advertising_source_with_merchant_center_connected() {
