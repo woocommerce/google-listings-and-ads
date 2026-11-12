@@ -96,8 +96,16 @@ class PostPublishTrigger implements Service, Registerable {
 
 		$last = $this->local_post_service->get_sync_outcome( $post->ID );
 
-		// A queued send, or one Google accepted without a post ID, still records an outcome, so
-		// neither is resent.
+		if ( null !== $last && SyncOutcome::QUEUED === $last['outcome'] ) {
+			// A queued outcome with no pending or running job is stale -- the job was cancelled,
+			// or died before it could store a final outcome, so this save should schedule it
+			// again rather than leave the post stuck. can_schedule() also counts an
+			// already-running job, so a save made while the job is genuinely still in flight
+			// doesn't schedule a duplicate send.
+			return $this->job_repository->get( SendLocalPost::class )->can_schedule( [ [ $post->ID ] ] );
+		}
+
+		// A send Google accepted without a post ID still records an outcome, so it isn't resent.
 		return null === $last || in_array( $last['outcome'], SyncOutcome::FAILURES, true );
 	}
 

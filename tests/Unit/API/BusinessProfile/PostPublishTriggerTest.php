@@ -251,11 +251,47 @@ class PostPublishTriggerTest extends UnitTest {
 	 */
 	public function data_provider_outcomes_that_are_not_retried(): array {
 		return [
-			'queued'                    => [ SyncOutcome::QUEUED ],
 			'success'                   => [ SyncOutcome::SUCCESS ],
 			'sent pending verification' => [ SyncOutcome::SENT_PENDING_VERIFICATION ],
 			'not found'                 => [ SyncOutcome::NOT_FOUND ],
 		];
+	}
+
+	public function test_does_not_reschedule_a_queued_post_while_its_send_job_is_still_pending() {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => SyncOutcome::QUEUED,
+				'message' => '',
+			]
+		);
+		$this->send_local_post_job->method( 'can_schedule' )->willReturn( false );
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * The motivating case: the job that was supposed to resolve a queued outcome died or was
+	 * cancelled before it could, leaving nothing left to finish the send. Without this, the post
+	 * would stay "queued" forever -- no error, no way to retry other than unpublishing.
+	 */
+	public function test_reschedules_a_queued_post_once_its_send_job_is_no_longer_pending() {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => SyncOutcome::QUEUED,
+				'message' => '',
+			]
+		);
+		$this->send_local_post_job->method( 'can_schedule' )->willReturn( true );
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->send_local_post_job->expects( $this->once() )->method( 'schedule' )->with( [ [ $post->ID ] ] );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}
 
 	public function test_schedules_a_published_post_saved_without_any_earlier_send() {
