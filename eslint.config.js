@@ -130,7 +130,6 @@ module.exports = [
 					definedTypes: [
 						...definedTypes,
 						'JSX',
-						'gla_campaign_with_cyo_incentive_selected',
 						'gla_datepicker_update',
 						'gla_documentation_link_click',
 						'gla_faq',

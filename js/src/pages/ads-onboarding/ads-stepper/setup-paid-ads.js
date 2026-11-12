@@ -47,6 +47,14 @@ function HookNavigateAwayPrompt() {
 }
 
 /**
+ * Applying a "Choose Your Own" incentive offer when creating a campaign in the "Set up Ads" flow.
+ *
+ * @event gla_campaign_with_cyo_incentive_selected
+ * @property {string} context The context in which the incentive offer is applied, e.g. 'create-ads' or 'setup-ads'.
+ * @property {string} level The level of the applied incentive offer, e.g. 'low', 'medium', or 'high'.
+ */
+
+/**
  * Renders the step to setup paid ads
  *
  * @fires gla_launch_paid_campaign_button_click on submit
