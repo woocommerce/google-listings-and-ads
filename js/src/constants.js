@@ -60,8 +60,8 @@ export const DEFAULT_SHIPPING_MAX_TIME = 5;
 
 // Stepper key related
 const campaignStepEntries = [
-	[ 'CAMPAIGN', 'campaign' ],
-	[ 'ASSET_GROUP', 'asset-group' ],
+	[ 'SETUP', 'setup' ],
+	[ 'BUDGET', 'budget' ],
 ];
 
 export const CAMPAIGN_STEP = Object.fromEntries( campaignStepEntries );
