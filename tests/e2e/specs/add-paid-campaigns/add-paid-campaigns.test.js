@@ -608,37 +608,6 @@ test.describe( 'Add paid campaign', () => {
 				).toBeVisible();
 			} );
 
-			test( 'Ads credit offer picker should be hidden once an offer was applied', async () => {
-				await createCampaignPage.fulfillCYOIncentives(
-					undefined,
-					200,
-					true
-				);
-				const incentivesResponse = page.waitForResponse(
-					( response ) =>
-						/\/wc\/gla\/ads\/incentives\b/.test( response.url() ) &&
-						response.request().method() === 'GET'
-				);
-				await createCampaignPage.goto();
-				await incentivesResponse;
-
-				await expect(
-					page.getByRole( 'heading', {
-						name: 'Create your campaign',
-					} )
-				).toBeVisible();
-				await expect(
-					page.getByText( 'Ads credit offer', { exact: true } )
-				).not.toBeVisible();
-
-				// Restore for subsequent tests.
-				await createCampaignPage.fulfillCYOIncentives();
-				await createCampaignPage.goto();
-				await expect(
-					page.getByText( 'Ads credit offer', { exact: true } )
-				).toBeVisible();
-			} );
-
 			test( 'Clicking the "Continue" button takes you to the "Optimize your campaign" step', async () => {
 				const continueButton = createCampaignPage.getContinueButton();
 				continueButton.click();
@@ -1178,6 +1147,33 @@ test.describe( 'Add paid campaign', () => {
 						} );
 					} );
 				} );
+			} );
+		} );
+
+		// Runs last, so no later test depends on its "already applied" mock.
+		test.describe( 'Ads credit offer already applied', () => {
+			test( 'Ads credit offer picker should be hidden once an offer was applied', async () => {
+				await createCampaignPage.fulfillCYOIncentives(
+					undefined,
+					200,
+					true
+				);
+				const incentivesResponse = page.waitForResponse(
+					( response ) =>
+						/\/wc\/gla\/ads\/incentives\b/.test( response.url() ) &&
+						response.request().method() === 'GET'
+				);
+				await createCampaignPage.goto();
+				await incentivesResponse;
+
+				await expect(
+					page.getByRole( 'heading', {
+						name: 'Create your campaign',
+					} )
+				).toBeVisible();
+				await expect(
+					page.getByText( 'Ads credit offer', { exact: true } )
+				).not.toBeVisible();
 			} );
 		} );
 	} );
