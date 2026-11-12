@@ -12,7 +12,12 @@ import Guide from '~/components/external/wordpress/guide';
 import GuidePageContent, { ContentLink } from '~/components/guide-page-content';
 import AppButton from '~/components/app-button';
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
-import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '~/constants';
+import {
+	glaData,
+	GUIDE_NAMES,
+	INCENTIVE_APPLIED_QUERY,
+	LOCAL_STORAGE_KEYS,
+} from '~/constants';
 import localStorage from '~/utils/localStorage';
 import {
 	getDashboardUrl,
@@ -22,7 +27,6 @@ import {
 import wooLogoURL from '~/images/logo/woocommerce-logo.svg';
 import googleLogoURL from '~/images/logo/google-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
-import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNoticeEffect';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';

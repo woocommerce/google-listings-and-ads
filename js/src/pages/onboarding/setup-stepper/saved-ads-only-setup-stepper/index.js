@@ -15,14 +15,13 @@ import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNoticeEffect';
 import SetupAccounts from './setup-accounts';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AssetGroup from '~/components/paid-ads/asset-group';
 import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
 import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
-import { GUIDE_NAMES } from '~/constants';
+import { GUIDE_NAMES, INCENTIVE_APPLIED_QUERY } from '~/constants';
 import { ADS_ONLY_STEP_NAME_KEY_MAP } from '../constants';
 import { getDashboardUrl } from '~/utils/urls';
 import {

@@ -21,10 +21,12 @@ import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import AppSpinner from '~/components/app-spinner';
-import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import {
+	GOOGLE_ADS_BILLING_STATUS,
+	INCENTIVE_APPLIED_QUERY,
+} from '~/constants';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
-import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNoticeEffect';
 
 const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 const CONTEXT = 'setup-ads';

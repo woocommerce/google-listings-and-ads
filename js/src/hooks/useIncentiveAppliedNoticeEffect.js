@@ -8,13 +8,8 @@ import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import { INCENTIVE_APPLIED_QUERY } from '~/constants';
 import useDispatchCoreNotices from './useDispatchCoreNotices';
-
-/**
- * The one-time query arg added to a redirect URL after an Ads credit offer was applied.
- * Flows that end with a full page reload use it, since a notice created before the reload is lost.
- */
-export const INCENTIVE_APPLIED_QUERY = { incentive: 'applied' };
 
 /**
  * Shows a notice that the selected Ads credit offer was applied, when the URL has the
@@ -26,7 +21,7 @@ export default function useIncentiveAppliedNoticeEffect() {
 	const { createNotice } = useDispatchCoreNotices();
 	const query = getQuery();
 	const shouldShow =
-		query?.incentive === INCENTIVE_APPLIED_QUERY.incentive && ! query.guide;
+		query.incentive === INCENTIVE_APPLIED_QUERY.incentive && ! query.guide;
 
 	useEffect( () => {
 		if ( ! shouldShow ) {
