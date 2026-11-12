@@ -109,8 +109,12 @@ class AdsIncentives implements OptionsAwareInterface {
 				$has_applied = true;
 				break;
 			}
-		} catch ( Exception $e ) {
+		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			return true;
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 
 			return true;
 		} catch ( Error $e ) {
