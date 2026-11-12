@@ -32,6 +32,11 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	use CountryCodeTrait;
 
 	/**
+	 * Maximum length of a campaign name sent to create or update a campaign.
+	 */
+	protected const NAME_MAX_LENGTH = 50;
+
+	/**
 	 * @var AdsCampaign
 	 */
 	protected $ads_campaign;
@@ -399,24 +404,27 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	}
 
 	/**
-	 * Get the validate and sanitize callbacks for the campaign name.
+	 * Get the length limit and the validate and sanitize callbacks for the campaign name request arg.
 	 *
-	 * The length is checked on the trimmed name, and the sanitize callback stops WordPress
+	 * The limit applies to the request only, since campaigns created or renamed in Google Ads can have
+	 * longer names. The length is checked on the trimmed name, and the sanitize callback stops WordPress
 	 * from re-checking the untrimmed value against the schema.
 	 *
 	 * @param bool $allow_blank Whether an empty or whitespace-only name is accepted.
 	 *
 	 * @return array
 	 */
-	private function get_name_callbacks( bool $allow_blank ): array {
+	protected function get_name_callbacks( bool $allow_blank ): array {
 		return [
+			'maxLength'         => self::NAME_MAX_LENGTH,
 			'validate_callback' => function ( $value, $request, $param ) use ( $allow_blank ) {
 				if ( ! is_string( $value ) ) {
 					return rest_validate_request_arg( $value, $request, $param );
 				}
 
 				$name   = $this->trim_name( $value );
-				$result = rest_validate_value_from_schema( $name, $this->get_schema_properties()['name'], $param );
+				$schema = array_merge( $this->get_schema_properties()['name'], [ 'maxLength' => self::NAME_MAX_LENGTH ] );
+				$result = rest_validate_value_from_schema( $name, $schema, $param );
 				if ( true !== $result ) {
 					return $result;
 				}
@@ -437,14 +445,15 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	}
 
 	/**
-	 * Trim whitespace from both ends of a name, including non-breaking and other Unicode spaces.
+	 * Trim whitespace from both ends of a name, including non-breaking and other Unicode spaces,
+	 * and the zero-width space and byte order mark that pasted text can carry.
 	 *
 	 * @param string $name Campaign name.
 	 *
 	 * @return string
 	 */
-	private function trim_name( string $name ): string {
-		return preg_replace( '/^[\s\p{Z}]+|[\s\p{Z}]+$/u', '', $name ) ?? $name;
+	protected function trim_name( string $name ): string {
+		return preg_replace( '/^[\s\p{Z}\x{200B}\x{FEFF}]+|[\s\p{Z}\x{200B}\x{FEFF}]+$/u', '', $name ) ?? $name;
 	}
 
 	/**
@@ -488,7 +497,6 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'type'              => 'string',
 				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
-				'maxLength'         => 50,
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 			],

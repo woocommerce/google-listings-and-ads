@@ -791,6 +791,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'empty'                    => [ '' ],
 			'only spaces'              => [ '   ' ],
 			'only non-breaking spaces' => [ "\u{00A0}\u{00A0}" ],
+			'only zero-width marks'    => [ "\u{200B}\u{FEFF}" ],
 		];
 	}
 
