@@ -14,6 +14,7 @@ import withAdminPageShell from '~/components/withAdminPageShell';
 import './data';
 import './filters/analytics-overview-section';
 import { addBaseEventProperties } from '~/utils/tracks';
+import canViewReports from '~/utils/canViewReports';
 import { glaData } from './constants';
 
 const Dashboard = lazy(
@@ -81,7 +82,12 @@ const PAGES_FILTER = 'woocommerce_admin_pages_list';
 let hasAddedPluginAdminPages = false;
 
 const registerPluginAdminPages = () => {
-	const { serviceBasedMerchant } = glaData;
+	const {
+		serviceBasedMerchant,
+		enableReports,
+		adsSetupComplete,
+		mcSetupComplete,
+	} = glaData;
 	const namespace = 'woocommerce/google-listings-and-ads/add-page-routes';
 
 	addFilter( PAGES_FILTER, namespace, ( pages ) => {
@@ -186,6 +192,19 @@ const registerPluginAdminPages = () => {
 			'/google/dashboard',
 			'/google/settings',
 		];
+
+		// Routes register before the Merchant Center account loads, so only the
+		// setup flag counts here. Service-based merchants can't hold an MC connection
+		// without first confirming supported products, which ends service-based status.
+		if (
+			canViewReports( {
+				enableReports,
+				adsSetupComplete,
+				hasMC: mcSetupComplete,
+			} )
+		) {
+			adsOnlyRoutes.push( '/google/reports' );
+		}
 
 		if ( serviceBasedMerchant ) {
 			pluginAdminPages = pluginAdminPages.filter( ( page ) =>
