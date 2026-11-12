@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
 use Exception;
+use WP_Error;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -33,6 +34,11 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 
 	use CountryCodeTrait;
 	use OptionsAwareTrait;
+
+	/**
+	 * Maximum length of a campaign name sent to create or update a campaign.
+	 */
+	protected const NAME_MAX_LENGTH = 50;
 
 	/**
 	 * @var AdsCampaign
@@ -67,7 +73,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->create_campaign_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_schema_properties(),
+					'args'                => $this->get_create_schema(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -161,7 +167,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				$fields = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
 
 				// Set the default value of campaign name.
-				if ( empty( $fields['name'] ) ) {
+				if ( '' === ( $fields['name'] ?? '' ) ) {
 					$current_date_time = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
 					$fields['name']    = sprintf(
 					/* translators: %s: current date time. */
@@ -392,7 +398,76 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 			}
 		);
 
+		// Create falls back to a generated name, but an update must not blank the name.
+		$fields['name'] = array_merge( $fields['name'], $this->get_name_callbacks( false ) );
+
 		return $fields;
+	}
+
+	/**
+	 * Get the schema for fields we accept when creating a campaign.
+	 *
+	 * @return array
+	 */
+	protected function get_create_schema(): array {
+		$fields = $this->get_schema_properties();
+
+		$fields['name'] = array_merge( $fields['name'], $this->get_name_callbacks( true ) );
+
+		return $fields;
+	}
+
+	/**
+	 * Get the length limit and the validate and sanitize callbacks for the campaign name request arg.
+	 *
+	 * The limit applies to the request only, since campaigns created or renamed in Google Ads can have
+	 * longer names. The length is checked on the trimmed name, and the sanitize callback stops WordPress
+	 * from re-checking the untrimmed value against the schema.
+	 *
+	 * @param bool $allow_blank Whether an empty or whitespace-only name is accepted.
+	 *
+	 * @return array
+	 */
+	protected function get_name_callbacks( bool $allow_blank ): array {
+		return [
+			'maxLength'         => self::NAME_MAX_LENGTH,
+			'validate_callback' => function ( $value, $request, $param ) use ( $allow_blank ) {
+				if ( ! is_string( $value ) ) {
+					return rest_validate_request_arg( $value, $request, $param );
+				}
+
+				$name   = $this->trim_name( $value );
+				$schema = array_merge( $this->get_schema_properties()['name'], [ 'maxLength' => self::NAME_MAX_LENGTH ] );
+				$result = rest_validate_value_from_schema( $name, $schema, $param );
+				if ( true !== $result ) {
+					return $result;
+				}
+
+				if ( ! $allow_blank && '' === $name ) {
+					return new WP_Error(
+						'rest_invalid_param',
+						__( 'Campaign name cannot be empty.', 'google-listings-and-ads' )
+					);
+				}
+
+				return true;
+			},
+			'sanitize_callback' => function ( $value ) {
+				return is_string( $value ) ? $this->trim_name( $value ) : $value;
+			},
+		];
+	}
+
+	/**
+	 * Trim whitespace from both ends of a name, including non-breaking and other Unicode spaces,
+	 * and the zero-width space and byte order mark that pasted text can carry.
+	 *
+	 * @param string $name Campaign name.
+	 *
+	 * @return string
+	 */
+	protected function trim_name( string $name ): string {
+		return preg_replace( '/^[\s\p{Z}\x{200B}\x{FEFF}]+|[\s\p{Z}\x{200B}\x{FEFF}]+$/u', '', $name ) ?? $name;
 	}
 
 	/**

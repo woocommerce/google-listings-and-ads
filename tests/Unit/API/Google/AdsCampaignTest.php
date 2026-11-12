@@ -27,6 +27,11 @@ use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsRequest;
 use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsResponse;
 use Google\Ads\GoogleAds\V23\Services\MutateOperationResponse;
 use Google\ApiCore\ApiException;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
+use Google\Ads\GoogleAds\V23\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsResponse;
+use Google\Ads\GoogleAds\V23\Services\MutateOperationResponse;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
 
@@ -694,6 +699,34 @@ class AdsCampaignTest extends UnitTest {
 		$this->assertEquals(
 			self::TEST_CAMPAIGN_ID,
 			$this->campaign->edit_campaign( self::TEST_CAMPAIGN_ID, $campaign_data )
+		);
+	}
+
+	public function test_edit_campaign_sends_name_zero() {
+		$campaign_result = $this->createMock( MutateCampaignResult::class );
+		$campaign_result->method( 'getResourceName' )->willReturn(
+			ResourceNames::forCampaign( $this->ads_id, self::TEST_CAMPAIGN_ID )
+		);
+
+		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+			[ ( new MutateOperationResponse() )->setCampaignResult( $campaign_result ) ]
+		);
+
+		$this->service_client->expects( $this->once() )
+			->method( 'mutate' )
+			->willReturnCallback(
+				function ( MutateGoogleAdsRequest $request ) use ( $response ) {
+					$campaign = $request->getMutateOperations()[0]->getCampaignOperation()->getUpdate();
+
+					$this->assertEquals( '0', $campaign->getName() );
+
+					return $response;
+				}
+			);
+
+		$this->assertEquals(
+			self::TEST_CAMPAIGN_ID,
+			$this->campaign->edit_campaign( self::TEST_CAMPAIGN_ID, [ 'name' => '0' ] )
 		);
 	}
 
