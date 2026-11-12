@@ -20,6 +20,8 @@ const POST_SCREEN_GLA_BUSINESS_PROFILE_DATA = {
 		summary: '',
 		isShared: false,
 		searchUrl: '',
+		restPath: '/wp/v2/posts/123',
+		syncOutcome: null,
 	},
 };
 

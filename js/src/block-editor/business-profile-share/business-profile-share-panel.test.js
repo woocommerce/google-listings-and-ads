@@ -15,6 +15,7 @@ import {
  */
 import BusinessProfileSharePanel from './business-profile-share-panel';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
+import useBusinessProfileSyncStatus from '~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus';
 import { glaBusinessProfileData } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 
@@ -36,9 +37,12 @@ jest.mock(
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
-jest.mock( './hooks/useBusinessProfileSyncNotice', () => jest.fn() );
 jest.mock( './hooks/useBusinessProfileSharePost', () =>
 	jest.fn().mockName( 'useBusinessProfileSharePost' )
+);
+jest.mock(
+	'~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus',
+	() => jest.fn().mockName( 'useBusinessProfileSyncStatus' )
 );
 
 /**
@@ -50,10 +54,27 @@ function mockPost( overrides = {} ) {
 	useBusinessProfileSharePost.mockReturnValue( {
 		isShareEnabled: false,
 		summary: '',
-		isShared: false,
-		searchUrl: '',
+		shareStatus: null,
+		syncOutcome: null,
+		restPath: '/wp/v2/posts/240',
+		savedAt: '2026-11-11T16:42:44',
 		setShareEnabled: jest.fn(),
 		setSummary: jest.fn(),
+		...overrides,
+	} );
+}
+
+/**
+ * Mocks the post's current send status.
+ *
+ * @param {Object} [overrides] Values to override.
+ */
+function mockSyncStatus( overrides = {} ) {
+	useBusinessProfileSyncStatus.mockReturnValue( {
+		syncOutcome: null,
+		isShared: false,
+		searchUrl: '',
+		isChecking: false,
 		...overrides,
 	} );
 }
@@ -102,6 +123,10 @@ function renderPanel( { title = '', blocks = [] } = {} ) {
 }
 
 describe( 'BusinessProfileSharePanel', () => {
+	beforeEach( () => {
+		mockSyncStatus();
+	} );
+
 	afterEach( () => {
 		glaBusinessProfileData.businessProfileLocation = null;
 	} );
@@ -241,5 +266,50 @@ describe( 'BusinessProfileSharePanel', () => {
 		const { getBlocks } = renderPanel();
 
 		expect( getBlocks ).not.toHaveBeenCalled();
+	} );
+
+	it( "keeps the saved post's send status current, and shows it", () => {
+		glaBusinessProfileData.businessProfileLocation = {
+			title: 'Trailmark Athletics',
+		};
+		const savedSyncOutcome = { outcome: 'queued' };
+		const shareStatus = { is_shared: false, search_url: '' };
+		mockPost( { syncOutcome: savedSyncOutcome, shareStatus } );
+		mockSyncStatus( {
+			syncOutcome: savedSyncOutcome,
+			isChecking: true,
+		} );
+
+		renderPanel();
+
+		expect( useBusinessProfileSyncStatus ).toHaveBeenCalledWith( {
+			restPath: '/wp/v2/posts/240',
+			syncOutcome: savedSyncOutcome,
+			shareStatus,
+			savedAt: '2026-11-11T16:42:44',
+		} );
+		expect(
+			screen.getByText( 'Sending to Google Business Profile…' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'links to the post on Google once its send has settled', () => {
+		glaBusinessProfileData.businessProfileLocation = {
+			title: 'Trailmark Athletics',
+		};
+		mockPost();
+		mockSyncStatus( {
+			syncOutcome: { outcome: 'success' },
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+		} );
+
+		renderPanel();
+
+		expect(
+			screen.getByRole( 'link', {
+				name: 'View on Google Business Profile (opens in a new tab)',
+			} )
+		).toBeInTheDocument();
 	} );
 } );

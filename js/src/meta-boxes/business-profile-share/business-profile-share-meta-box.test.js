@@ -10,10 +10,15 @@ import userEvent from '@testing-library/user-event';
  */
 import BusinessProfileShareMetaBox from './business-profile-share-meta-box';
 import { recordGlaEvent } from '~/utils/tracks';
+import useBoundedPolling from '~/components/business-profile-share-control/hooks/useBoundedPolling';
 
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
+jest.mock(
+	'~/components/business-profile-share-control/hooks/useBoundedPolling',
+	() => jest.fn().mockName( 'useBoundedPolling' )
+);
 
 const location = {
 	title: 'Trailmark Athletics',
@@ -25,6 +30,8 @@ const savedPost = {
 	summary: '',
 	isShared: false,
 	searchUrl: '',
+	restPath: '/wp/v2/posts/123',
+	syncOutcome: null,
 };
 
 /**
@@ -98,8 +105,16 @@ function getSubmittedValue( form, name ) {
 }
 
 describe( 'BusinessProfileShareMetaBox', () => {
+	let start;
+
 	beforeEach( () => {
 		recordGlaEvent.mockClear();
+		start = jest.fn().mockName( 'start' );
+		useBoundedPolling.mockReturnValue( {
+			start,
+			data: undefined,
+			hasReachedMaxAttempts: false,
+		} );
 	} );
 
 	afterEach( () => {
@@ -280,6 +295,58 @@ describe( 'BusinessProfileShareMetaBox', () => {
 			screen.getByText(
 				'Share to 456 Riverside Ave, San Francisco, 94107 as an update when you publish.'
 			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'checks on a queued send and says the post is on its way', () => {
+		renderMetaBox( { syncOutcome: { outcome: 'queued' } } );
+
+		expect( start ).toHaveBeenCalledTimes( 1 );
+		expect( useBoundedPolling.mock.calls[ 0 ][ 0 ].path ).toMatch(
+			/^\/wp\/v2\/posts\/123\?/
+		);
+		expect(
+			screen.getByText( 'Sending to Google Business Profile…' )
+		).toBeInTheDocument();
+	} );
+
+	it( "shows a failed send's message once the send settles", () => {
+		useBoundedPolling.mockReturnValue( {
+			start,
+			data: {
+				gla_gbp_sync_outcome: {
+					outcome: 'request-failure',
+					display_message: 'Google couldn’t be reached.',
+					display_status: 'error',
+				},
+				gla_gbp_share_status: { is_shared: false, search_url: '' },
+			},
+			hasReachedMaxAttempts: false,
+		} );
+
+		renderMetaBox( { syncOutcome: { outcome: 'queued' } } );
+
+		expect(
+			screen.getByText( 'Google couldn’t be reached.', {
+				selector: '.components-notice__content',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	it( "shows a saved failure's message on load without checking", () => {
+		renderMetaBox( {
+			syncOutcome: {
+				outcome: 'content-rejection',
+				display_message: 'This update was rejected by Google.',
+				display_status: 'error',
+			},
+		} );
+
+		expect( start ).not.toHaveBeenCalled();
+		expect(
+			screen.getByText( 'This update was rejected by Google.', {
+				selector: '.components-notice__content',
+			} )
 		).toBeInTheDocument();
 	} );
 } );

@@ -10,9 +10,9 @@ import { useRegistry } from '@wordpress/data';
  */
 import { glaBusinessProfileData } from '~/constants';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
-import useBusinessProfileSyncNotice from './hooks/useBusinessProfileSyncNotice';
 import getBodyTextFromBlocks from './utils/getBodyTextFromBlocks';
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
+import useBusinessProfileSyncStatus from '~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus';
 import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from './constants';
 
 /**
@@ -26,12 +26,20 @@ export default function BusinessProfileSharePanel() {
 	const {
 		isShareEnabled,
 		summary,
-		isShared,
-		searchUrl,
+		shareStatus,
+		syncOutcome: savedSyncOutcome,
+		restPath,
+		savedAt,
 		setShareEnabled,
 		setSummary,
 	} = useBusinessProfileSharePost();
-	useBusinessProfileSyncNotice();
+	const { syncOutcome, isShared, searchUrl, isChecking } =
+		useBusinessProfileSyncStatus( {
+			restPath,
+			syncOutcome: savedSyncOutcome,
+			shareStatus,
+			savedAt,
+		} );
 	const registry = useRegistry();
 
 	const location = glaBusinessProfileData?.businessProfileLocation;
@@ -67,6 +75,8 @@ export default function BusinessProfileSharePanel() {
 				getLivePostContent={ getLivePostContent }
 				searchUrl={ searchUrl }
 				isShared={ isShared }
+				syncOutcome={ syncOutcome }
+				isCheckingSync={ isChecking }
 			/>
 		</PluginDocumentSettingPanel>
 	);

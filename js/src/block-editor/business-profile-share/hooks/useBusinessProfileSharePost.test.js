@@ -20,12 +20,20 @@ jest.mock( '@wordpress/data', () => ( {
  * @param {Object} options
  * @param {Object} [options.savedPost] The post as last saved.
  * @param {Object} [options.meta] The post's edited meta.
+ * @param {string} [options.postType] The post's type; anything but `post` has no loaded type object.
  */
-function mockEditor( { savedPost = {}, meta = {} } = {} ) {
+function mockEditor( { savedPost = {}, meta = {}, postType = 'post' } = {} ) {
 	const stores = {
+		core: {
+			getPostType: ( requestedPostType ) => {
+				return requestedPostType === 'post'
+					? { rest_base: 'posts', rest_namespace: 'wp/v2' }
+					: undefined;
+			},
+		},
 		'core/editor': {
 			getCurrentPostType: () => {
-				return 'post';
+				return postType;
 			},
 			getCurrentPostId: () => {
 				return 240;
@@ -85,34 +93,48 @@ describe( 'useBusinessProfileSharePost', () => {
 		} );
 	} );
 
-	it( 'reads whether the saved post is shared, and its link on Google', () => {
+	it( "reads the saved post's share status and sync outcome, and its REST route", () => {
+		const shareStatus = {
+			is_shared: true,
+			search_url: 'https://local.google.com/place?id=1&use=posts',
+		};
+		const syncOutcome = { outcome: 'queued', display_message: null };
 		mockEditor( {
 			savedPost: {
 				status: 'publish',
-				gla_gbp_share_status: {
-					is_shared: true,
-					search_url: 'https://local.google.com/place?id=1&use=posts',
-				},
+				modified_gmt: '2026-11-11T16:45:05',
+				gla_gbp_share_status: shareStatus,
+				gla_gbp_sync_outcome: syncOutcome,
 			},
 		} );
 
 		const { result } = renderHook( () => useBusinessProfileSharePost() );
 
 		expect( result.current ).toMatchObject( {
-			isShared: true,
-			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+			shareStatus,
+			syncOutcome,
+			restPath: '/wp/v2/posts/240',
+			savedAt: '2026-11-11T16:45:05',
 		} );
 	} );
 
-	it( 'reports a post that is not shared, with no link', () => {
+	it( 'reports a never-sent post, with no share status or sync outcome', () => {
 		mockEditor( { savedPost: { status: 'draft' } } );
 
 		const { result } = renderHook( () => useBusinessProfileSharePost() );
 
 		expect( result.current ).toMatchObject( {
-			isShared: false,
-			searchUrl: '',
+			shareStatus: null,
+			syncOutcome: null,
 		} );
+	} );
+
+	it( "has no REST route until the post's type has loaded", () => {
+		mockEditor( { savedPost: { status: 'draft' }, postType: 'unloaded' } );
+
+		const { result } = renderHook( () => useBusinessProfileSharePost() );
+
+		expect( result.current.restPath ).toBeNull();
 	} );
 
 	it( 'edits the share choice and the text as post meta', () => {
