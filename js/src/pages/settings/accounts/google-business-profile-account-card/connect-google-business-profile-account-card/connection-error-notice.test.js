@@ -94,5 +94,24 @@ describe( 'ConnectionErrorNotice', () => {
 
 		expect( retryStatusRefresh ).toHaveBeenCalledTimes( 1 );
 		expect( clearDetailedErrorBySlots ).not.toHaveBeenCalled();
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_connection_try_again_button_click',
+			{ context: 'settings-business-profile' }
+		);
+	} );
+
+	it( 'disables "Try again" while the status refresh is retrying', () => {
+		useDetailedErrorBySlots.mockReturnValue( [
+			{ error: { refreshFailedAfterConnecting: true } },
+		] );
+		useConnectGoogleBusinessProfileLocation.mockReturnValue( {
+			isConnecting: true,
+			retryStatusRefresh,
+		} );
+		render( <ConnectionErrorNotice /> );
+
+		expect(
+			screen.getByRole( 'button', { name: 'Try again' } )
+		).toBeDisabled();
 	} );
 } );

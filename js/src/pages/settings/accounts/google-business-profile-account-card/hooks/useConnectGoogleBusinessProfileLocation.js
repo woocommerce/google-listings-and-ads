@@ -41,16 +41,8 @@ export default function useConnectGoogleBusinessProfileLocation() {
 	 * Records a connect/refresh failure in the connection error slot rather than a transient
 	 * notice, since there's no page navigation here to otherwise lose track of the failure.
 	 *
-	 * @param {Error}   [error]                       The thrown error, when there is one -- a
-	 *                                                 refresh failure has none of its own, since
-	 *                                                 `fetchGoogleBusinessProfileAccount` already
-	 *                                                 reports it and resolves rather than rejects.
-	 * @param {boolean} refreshFailedAfterConnecting Whether the connect request itself already
-	 *                                                 succeeded, and only the status refresh failed
-	 *                                                 -- read by `ConnectionErrorNotice` to retry
-	 *                                                 only the refresh, since repeating the connect
-	 *                                                 request for an already-connected location
-	 *                                                 gets rejected by the backend.
+	 * @param {Error} [error] The thrown error; absent for a refresh failure.
+	 * @param {boolean} refreshFailedAfterConnecting Whether only the status refresh failed.
 	 */
 	const recordConnectionError = async (
 		error,

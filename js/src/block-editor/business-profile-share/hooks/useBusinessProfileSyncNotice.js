@@ -61,8 +61,8 @@ export default function useBusinessProfileSyncNotice() {
 		}
 
 		if ( ! notice ) {
-			// A successful save can follow an earlier failure's snackbar, which otherwise stays
-			// open (explicitDismiss) showing a stale error for a share that has since succeeded.
+			// Clear an earlier save's snackbar (explicitDismiss keeps it open): this save either
+			// shared successfully or attempted no share, so that snackbar no longer applies.
 			removeNotice( NOTICE_ID );
 			return;
 		}
