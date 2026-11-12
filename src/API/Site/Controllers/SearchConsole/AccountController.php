@@ -119,6 +119,16 @@ class AccountController extends BaseController {
 				],
 			]
 		);
+		$this->register_route(
+			'search-console/verify',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_verify_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -225,6 +235,10 @@ class AccountController extends BaseController {
 					$response['just_resolved'] = $status['just_resolved'];
 				}
 
+				if ( ! empty( $status['needs_verification'] ) ) {
+					$response['needs_verification'] = $status['needs_verification'];
+				}
+
 				return $response;
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -279,6 +293,22 @@ class AccountController extends BaseController {
 		return function ( Request $request ) {
 			try {
 				return $this->connection->select_property( $request->get_param( 'site_url' ) );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for verifying the selected property through the site
+	 * verification META-tag flow.
+	 *
+	 * @return callable
+	 */
+	protected function get_verify_callback(): callable {
+		return function () {
+			try {
+				return $this->connection->verify_property();
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
