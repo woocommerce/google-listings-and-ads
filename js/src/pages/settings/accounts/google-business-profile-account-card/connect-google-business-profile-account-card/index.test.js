@@ -117,10 +117,15 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			{ loading: false },
 		] );
 
+		// Mirrors the real action: it never rejects, only resolves to the dispatched action
+		// object on success, or to `undefined` on a failure it already reported itself.
 		fetchGoogleBusinessProfileAccount = jest
 			.fn()
 			.mockName( 'fetchGoogleBusinessProfileAccount' )
-			.mockResolvedValue();
+			.mockResolvedValue( {
+				type: 'RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE',
+				account: {},
+			} );
 		fetchGoogleBusinessProfileLocations = jest
 			.fn()
 			.mockName( 'fetchGoogleBusinessProfileLocations' )
@@ -364,7 +369,10 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
 			expect( connectButton ).toBeDisabled();
 
-			resolveAccountFetch();
+			resolveAccountFetch( {
+				type: 'RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE',
+				account: {},
+			} );
 
 			await waitFor( () => expect( connectButton ).toBeEnabled() );
 		} );
