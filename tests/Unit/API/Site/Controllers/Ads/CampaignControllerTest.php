@@ -345,6 +345,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
 			'start_date'                            => null,
+			'advertising_source'                    => null,
 		] + $campaign_data;
 
 		$this->ads_campaign->expects( $this->once() )

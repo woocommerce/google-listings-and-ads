@@ -27,11 +27,6 @@ use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsRequest;
 use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsResponse;
 use Google\Ads\GoogleAds\V23\Services\MutateOperationResponse;
 use Google\ApiCore\ApiException;
-use Google\Ads\GoogleAds\Util\V23\ResourceNames;
-use Google\Ads\GoogleAds\V23\Services\MutateCampaignResult;
-use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsRequest;
-use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsResponse;
-use Google\Ads\GoogleAds\V23\Services\MutateOperationResponse;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
 
