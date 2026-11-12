@@ -172,7 +172,7 @@ const CreatePaidAdsCampaign = () => {
 						{
 							key: STEP.SETUP,
 							label: __(
-								'Create campaign',
+								'Campaign setup',
 								'google-listings-and-ads'
 							),
 							content: (
@@ -203,7 +203,7 @@ const CreatePaidAdsCampaign = () => {
 						{
 							key: STEP.BUDGET,
 							label: __(
-								'Optimize your campaign',
+								'Set your budget',
 								'google-listings-and-ads'
 							),
 							content: <AssetGroup />,
