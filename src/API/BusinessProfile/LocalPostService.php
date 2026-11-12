@@ -297,9 +297,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Clear a post's stored sync outcome, so it reads as never attempted. Used when a queued send
-	 * is skipped because the post no longer qualifies -- a stale "queued" record would otherwise
-	 * block every future save from retrying it.
+	 * Clear a post's stored sync outcome, so it reads as never attempted.
 	 *
 	 * @param int $post_id
 	 */
