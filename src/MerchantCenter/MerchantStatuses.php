@@ -913,8 +913,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * pages in one request. If a page fails before it processes any product,
 	 * handle_failed_mc_statuses_fetching() would otherwise delete the issue rows
 	 * of the previous page, which a retry of the failed page never rewrites. Call
-	 * it at the start of every page. process_mapi_products() calls it too, so this
-	 * is the one place that clears the per-page state.
+	 * it at the start of every page.
 	 *
 	 * @since x.x.x
 	 */
