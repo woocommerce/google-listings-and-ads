@@ -12,10 +12,9 @@ import Faqs from '../asset-group/faqs';
  */
 
 /**
- * Renders the "Campaign setup" step: the given sections, then the "Continue" button, then the FAQs.
+ * Renders the first step of campaign management: the given sections, the "Continue" button and the FAQs.
  *
- * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
- * so it expects a `CampaignAssetsForm` to exist in its parents.
+ * It expects a `CampaignAssetsForm` to exist in its parents.
  *
  * @param {Object} props React props.
  * @param {JSX.Element} props.children The sections of the step.
