@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
@@ -39,9 +38,6 @@ class SendLocalPostTest extends UnitTest {
 	/** @var MockObject|LocalPostService $local_post_service */
 	protected $local_post_service;
 
-	/** @var MockObject|LocationService $location_service */
-	protected $location_service;
-
 	/** @var SendLocalPost $job */
 	protected $job;
 
@@ -54,8 +50,9 @@ class SendLocalPostTest extends UnitTest {
 		$this->action_scheduler   = $this->createMock( ActionSchedulerInterface::class );
 		$this->monitor            = $this->createMock( ActionSchedulerJobMonitor::class );
 		$this->local_post_service = $this->createMock( LocalPostService::class );
-		$this->location_service   = $this->createMock( LocationService::class );
-		$this->location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
+
+		// Shareable by default -- the test checking disqualification overrides this itself.
+		$this->local_post_service->method( 'is_shareable' )->willReturn( true );
 
 		// Not shared by default -- the one test needing otherwise overrides this itself.
 		$this->local_post_service->method( 'get_share_status' )->willReturn(
@@ -65,7 +62,7 @@ class SendLocalPostTest extends UnitTest {
 			]
 		);
 
-		$this->job = new SendLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service, $this->location_service );
+		$this->job = new SendLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service );
 	}
 
 	public function test_schedule_throws_when_no_post_id_is_provided() {
@@ -109,9 +106,17 @@ class SendLocalPostTest extends UnitTest {
 		$this->job->handle_process_items_action( [ $post->ID ] );
 	}
 
-	public function test_a_post_whose_sharing_toggle_is_now_off_is_skipped_and_its_queued_outcome_is_cleared() {
-		$post = $this->create_shared_post();
-		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+	public function test_a_post_that_is_no_longer_shareable_is_skipped_and_its_queued_outcome_is_cleared() {
+		$post                     = $this->create_shared_post();
+		$this->local_post_service = $this->createMock( LocalPostService::class );
+		$this->local_post_service->method( 'is_shareable' )->willReturn( false );
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$this->job = new SendLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service );
 
 		$this->local_post_service->expects( $this->never() )->method( 'create' );
 		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
@@ -150,20 +155,8 @@ class SendLocalPostTest extends UnitTest {
 		// The prior send already stored its own accurate outcome -- this skip must not clear it.
 		$local_post_service->expects( $this->never() )->method( 'clear_sync_outcome' );
 
-		$job = new SendLocalPost( $this->action_scheduler, $this->monitor, $local_post_service, $this->location_service );
+		$job = new SendLocalPost( $this->action_scheduler, $this->monitor, $local_post_service );
 		$job->process_items( [ $post->ID ] );
-	}
-
-	public function test_a_post_whose_location_is_no_longer_connected_is_skipped_and_its_queued_outcome_is_cleared() {
-		$post                   = $this->create_shared_post();
-		$this->location_service = $this->createMock( LocationService::class );
-		$this->location_service->method( 'get_selected_location' )->willReturn( null );
-		$this->job = new SendLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service, $this->location_service );
-
-		$this->local_post_service->expects( $this->never() )->method( 'create' );
-		$this->local_post_service->expects( $this->once() )->method( 'clear_sync_outcome' )->with( $post->ID );
-
-		$this->job->process_items( [ $post->ID ] );
 	}
 
 	public function test_a_deleted_post_is_skipped_and_its_queued_outcome_is_cleared() {

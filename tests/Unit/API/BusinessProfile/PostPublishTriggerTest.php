@@ -48,6 +48,8 @@ class PostPublishTriggerTest extends UnitTest {
 		parent::setUp();
 
 		$this->local_post_service = $this->createMock( LocalPostService::class );
+		// Shareable by default -- the test checking disqualification overrides this itself.
+		$this->local_post_service->method( 'is_shareable' )->willReturn( true );
 		$this->local_post_service->method( 'get_share_status' )->willReturn(
 			[
 				'is_shared'  => false,
@@ -55,6 +57,7 @@ class PostPublishTriggerTest extends UnitTest {
 			]
 		);
 
+		// Still needed for register_share_meta()'s own PostShareControl, not for the trigger.
 		$this->location_service = $this->createMock( LocationService::class );
 		$this->location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
 
@@ -62,7 +65,7 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->job_repository      = $this->createMock( JobRepository::class );
 		$this->job_repository->method( 'get' )->with( SendLocalPost::class )->willReturn( $this->send_local_post_job );
 
-		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service, $this->job_repository );
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
 	}
 
 	public function test_register_hooks_wp_after_insert_post_to_publish_to_business_profile() {
@@ -133,40 +136,15 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}
 
-	public function test_does_not_schedule_a_post_whose_sharing_toggle_is_off() {
-		$post = $this->factory()->post->create_and_get(
-			[
-				'post_type'   => 'post',
-				'post_status' => 'publish',
-			]
-		);
-		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
-		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
-
-		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
-
-		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
-	}
-
-	public function test_does_not_schedule_a_post_of_an_unsupported_post_type() {
-		$post = $this->factory()->post->create_and_get(
-			[
-				'post_type'   => 'page',
-				'post_status' => 'publish',
-			]
-		);
-		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
-		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
-
-		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
-
-		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
-	}
-
-	public function test_does_not_schedule_when_no_location_is_connected() {
-		$this->location_service = $this->createMock( LocationService::class );
-		$this->location_service->method( 'get_selected_location' )->willReturn( null );
-		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service, $this->job_repository );
+	/**
+	 * Covers every reason LocalPostService::is_shareable() can say no -- no location connected,
+	 * an unsupported post type, or sharing switched off -- since the trigger no longer tells them
+	 * apart itself; each has its own direct coverage in LocalPostServiceTest.
+	 */
+	public function test_does_not_schedule_a_post_that_is_not_shareable() {
+		$this->local_post_service = $this->createMock( LocalPostService::class );
+		$this->local_post_service->method( 'is_shareable' )->willReturn( false );
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
 
 		$post        = $this->create_shared_post();
 		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
@@ -178,13 +156,14 @@ class PostPublishTriggerTest extends UnitTest {
 
 	public function test_does_not_schedule_a_post_that_is_already_shared() {
 		$this->local_post_service = $this->createMock( LocalPostService::class );
+		$this->local_post_service->method( 'is_shareable' )->willReturn( true );
 		$this->local_post_service->method( 'get_share_status' )->willReturn(
 			[
 				'is_shared'  => true,
 				'search_url' => 'https://g.page/r/abc',
 			]
 		);
-		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service, $this->job_repository );
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
 
 		$post        = $this->create_shared_post();
 		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
@@ -305,9 +284,14 @@ class PostPublishTriggerTest extends UnitTest {
 	}
 
 	public function test_does_not_schedule_a_published_post_saved_without_any_earlier_send_once_sharing_is_off() {
+		// method()->willReturn() keeps whichever stub was configured first, so a disqualifying
+		// is_shareable() needs its own mock rather than re-stubbing setUp()'s shared one.
+		$this->local_post_service = $this->createMock( LocalPostService::class );
 		$this->local_post_service->method( 'get_sync_outcome' )->willReturn( null );
-		$post = $this->create_shared_post();
-		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+		$this->local_post_service->method( 'is_shareable' )->willReturn( false );
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_shared_post();
 		$post_before = $this->create_post_with_status( 'publish' );
 
 		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
@@ -351,14 +335,19 @@ class PostPublishTriggerTest extends UnitTest {
 	}
 
 	public function test_does_not_retry_a_failed_schedule_once_sharing_is_switched_off() {
+		// method()->willReturn() keeps whichever stub was configured first, so a disqualifying
+		// is_shareable() needs its own mock rather than re-stubbing setUp()'s shared one.
+		$this->local_post_service = $this->createMock( LocalPostService::class );
 		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
 			[
 				'outcome' => SyncOutcome::REQUEST_FAILURE,
 				'message' => '',
 			]
 		);
-		$post = $this->create_shared_post();
-		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+		$this->local_post_service->method( 'is_shareable' )->willReturn( false );
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_shared_post();
 		$post_before = $this->create_post_with_status( 'publish' );
 
 		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
@@ -384,15 +373,6 @@ class PostPublishTriggerTest extends UnitTest {
 		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
 		$request->set_body_params( [ 'title' => 'Edited title' ] );
 		rest_do_request( $request );
-	}
-
-	public function test_does_not_schedule_when_nothing_qualifies() {
-		$post        = $this->create_post_with_status( 'publish', [ 'post_type' => 'post' ] );
-		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
-
-		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
-
-		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}
 
 	public function test_publishing_a_shared_post_succeeds_without_waiting_on_google() {

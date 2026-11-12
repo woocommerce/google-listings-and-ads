@@ -15,7 +15,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Services\YouTubeOr
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
@@ -198,7 +197,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_action_scheduler_job( UpdateEuPoliticalCampaigns::class, AdsCampaign::class, AdsService::class );
 
 		$this->share_action_scheduler_job( CheckUnclaimedIncentive::class, AdsIncentives::class, Middleware::class );
-		$this->share_action_scheduler_job( SendLocalPost::class, LocalPostService::class, LocationService::class );
+		$this->share_action_scheduler_job( SendLocalPost::class, LocalPostService::class );
 	}
 
 	/**

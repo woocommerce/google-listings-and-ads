@@ -228,6 +228,22 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Whether a post can be shared to Google Business Profile: a location is connected, it's a
+	 * supported post type, and its sharing toggle is on. The single source of truth for this --
+	 * both the publish trigger and the background send job need the same answer, and previously
+	 * repeated the same three checks independently.
+	 *
+	 * @param WP_Post $post
+	 *
+	 * @return bool
+	 */
+	public function is_shareable( WP_Post $post ): bool {
+		return null !== $this->location_service->get_selected_location()
+			&& in_array( $post->post_type, self::SUPPORTED_POST_TYPES, true )
+			&& (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+	}
+
+	/**
 	 * Get whether a post has been shared, and its `searchUrl` once Google provides one, from the
 	 * stored result.
 	 *

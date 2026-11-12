@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostIma
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncNotice;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
@@ -171,6 +172,39 @@ class LocalPostServiceTest extends UnitTest {
 		$this->expectException( Exception::class );
 
 		$service->create( $post );
+	}
+
+	public function test_is_shareable_is_true_when_a_location_is_connected_the_post_type_is_supported_and_sharing_is_on() {
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+
+		$this->assertTrue( $this->service->is_shareable( $post ) );
+	}
+
+	public function test_is_shareable_is_false_when_sharing_is_off() {
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+
+		$this->assertFalse( $this->service->is_shareable( $post ) );
+	}
+
+	public function test_is_shareable_is_false_for_an_unsupported_post_type() {
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'page' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+
+		$this->assertFalse( $this->service->is_shareable( $post ) );
+	}
+
+	public function test_is_shareable_is_false_when_no_location_is_connected() {
+		$location_service = $this->createMock( LocationService::class );
+		$location_service->method( 'get_selected_location' )->willReturn( null );
+		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service, $location_service, $this->wpml );
+		$service->set_options_object( $this->options );
+
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+
+		$this->assertFalse( $service->is_shareable( $post ) );
 	}
 
 	public function test_create_throws_when_google_returns_no_usable_post_identifier() {

@@ -26,9 +26,6 @@ class PostPublishTrigger implements Service, Registerable {
 	/** @var LocalPostService */
 	private $local_post_service;
 
-	/** @var LocationService */
-	private $location_service;
-
 	/** @var JobRepository */
 	private $job_repository;
 
@@ -39,12 +36,10 @@ class PostPublishTrigger implements Service, Registerable {
 	 * PostPublishTrigger constructor.
 	 *
 	 * @param LocalPostService $local_post_service
-	 * @param LocationService  $location_service
 	 * @param JobRepository    $job_repository
 	 */
-	public function __construct( LocalPostService $local_post_service, LocationService $location_service, JobRepository $job_repository ) {
+	public function __construct( LocalPostService $local_post_service, JobRepository $job_repository ) {
 		$this->local_post_service = $local_post_service;
-		$this->location_service   = $location_service;
 		$this->job_repository     = $job_repository;
 	}
 
@@ -110,22 +105,13 @@ class PostPublishTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Schedule the post to be sent to Google Business Profile, when a location is connected, it's
-	 * a supported post type with sharing switched on, it isn't already shared, and it hasn't
-	 * already been scheduled during this request.
+	 * Schedule the post to be sent to Google Business Profile, when it's shareable, it isn't
+	 * already shared, and it hasn't already been scheduled during this request.
 	 *
 	 * @param WP_Post $post
 	 */
 	protected function handle_publish( WP_Post $post ): void {
-		if ( null === $this->location_service->get_selected_location() ) {
-			return;
-		}
-
-		if ( ! in_array( $post->post_type, LocalPostService::SUPPORTED_POST_TYPES, true ) ) {
-			return;
-		}
-
-		if ( ! (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true ) ) {
+		if ( ! $this->local_post_service->is_shareable( $post ) ) {
 			return;
 		}
 

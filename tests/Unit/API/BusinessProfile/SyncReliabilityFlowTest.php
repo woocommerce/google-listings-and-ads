@@ -124,7 +124,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->job_repository = $this->createMock( JobRepository::class );
 		$this->job_repository->method( 'get' )->with( SendLocalPost::class )->willReturn( $this->send_local_post_job() );
 
-		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service, $this->job_repository );
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
 
 		// Only this instance sends, not the one the plugin registered at boot.
 		remove_all_actions( 'wp_after_insert_post' );
@@ -536,8 +536,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 		return new SendLocalPost(
 			$action_scheduler,
 			$this->createMock( ActionSchedulerJobMonitor::class ),
-			$this->local_post_service,
-			$this->location_service
+			$this->local_post_service
 		);
 	}
 
@@ -557,7 +556,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 	 */
 	protected function start_new_request(): void {
 		remove_all_actions( 'wp_after_insert_post' );
-		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service, $this->job_repository );
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
 		$this->trigger->register();
 	}
 

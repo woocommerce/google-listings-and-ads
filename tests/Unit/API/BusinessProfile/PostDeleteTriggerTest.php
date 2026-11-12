@@ -258,8 +258,9 @@ class PostDeleteTriggerTest extends UnitTest {
 
 		$local_post_service = $this->getMockBuilder( LocalPostService::class )
 			->disableOriginalConstructor()
-			->onlyMethods( [ 'delete', 'create', 'get_share_status', 'get_sync_outcome', 'set_sync_outcome' ] )
+			->onlyMethods( [ 'delete', 'create', 'is_shareable', 'get_share_status', 'get_sync_outcome', 'set_sync_outcome' ] )
 			->getMock();
+		$local_post_service->method( 'is_shareable' )->willReturn( true );
 		$local_post_service->method( 'get_share_status' )->willReturn(
 			[
 				'is_shared'  => false,
@@ -272,13 +273,11 @@ class PostDeleteTriggerTest extends UnitTest {
 				'message' => '',
 			]
 		);
-		$location_service = $this->createMock( LocationService::class );
-		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
 
 		$send_local_post_job = $this->createMock( SendLocalPost::class );
 		$job_repository      = $this->createMock( JobRepository::class );
 		$job_repository->method( 'get' )->with( SendLocalPost::class )->willReturn( $send_local_post_job );
-		( new PostPublishTrigger( $local_post_service, $location_service, $job_repository ) )->register();
+		( new PostPublishTrigger( $local_post_service, $job_repository ) )->register();
 
 		// A post whose send failed: sharing on, a failed outcome, and no stored result.
 		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
@@ -329,10 +328,11 @@ class PostDeleteTriggerTest extends UnitTest {
 		// reaches publish -- the same precondition PostPublishTrigger relies on.
 		$this->register_only( new PostDeleteTrigger( $this->local_post_service_with_a_successful_delete() ) );
 
-		$publish_service  = $this->createMock( LocalPostService::class );
-		$location_service = $this->createMock( LocationService::class );
-		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
-		( new PostPublishTrigger( $publish_service, $location_service, $this->createMock( JobRepository::class ) ) )->register();
+		$publish_service = $this->createMock( LocalPostService::class );
+		// The toggle PostDeleteTrigger's own restore handling clears after a successful delete --
+		// handle_publish() bails on this before it ever reaches the is_shared check below.
+		$publish_service->method( 'is_shareable' )->willReturn( false );
+		( new PostPublishTrigger( $publish_service, $this->createMock( JobRepository::class ) ) )->register();
 
 		$post = $this->create_synced_post();
 		wp_trash_post( $post->ID );
@@ -353,15 +353,16 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
 
 		$publish_service = $this->createMock( LocalPostService::class );
+		// The toggle is still on, since the delete failed -- handle_publish() must reach the
+		// is_shared check below, not bail earlier on is_shareable().
+		$publish_service->method( 'is_shareable' )->willReturn( true );
 		$publish_service->method( 'get_share_status' )->willReturn(
 			[
 				'is_shared'  => true,
 				'search_url' => 'https://g.page/r/abc',
 			]
 		);
-		$location_service = $this->createMock( LocationService::class );
-		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
-		( new PostPublishTrigger( $publish_service, $location_service, $this->createMock( JobRepository::class ) ) )->register();
+		( new PostPublishTrigger( $publish_service, $this->createMock( JobRepository::class ) ) )->register();
 
 		$post = $this->create_synced_post();
 		wp_trash_post( $post->ID );
