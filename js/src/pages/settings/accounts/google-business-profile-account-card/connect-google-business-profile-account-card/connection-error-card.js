@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import Badge from '~/components/badge';
 import ConnectAccountCard from './connect-account-card';
 import ConnectionErrorNotice from './connection-error-notice';
-import { CONNECTION_ERROR_SLOTS } from '../hooks/useConnectGoogleBusinessProfileLocation';
+import { CONNECTION_ERROR_SLOTS } from '../constants';
 
 /**
  * Renders the not-yet-connected card for when the last connect attempt failed: a "Not connected"

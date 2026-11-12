@@ -7,13 +7,14 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import { GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT } from '../constants';
+import {
+	CONNECTION_ERROR_SLOTS,
+	GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
+} from '../constants';
 import { useAppDispatch } from '~/data';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import NoticeDetail from '../notice-detail';
-import useConnectGoogleBusinessProfileLocation, {
-	CONNECTION_ERROR_SLOTS,
-} from '../hooks/useConnectGoogleBusinessProfileLocation';
+import useConnectGoogleBusinessProfileLocation from '../hooks/useConnectGoogleBusinessProfileLocation';
 
 /**
  * Clicking "Try again" after connecting a Google Business Profile location failed.

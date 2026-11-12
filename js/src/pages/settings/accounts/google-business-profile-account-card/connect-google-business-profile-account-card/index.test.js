@@ -11,15 +11,12 @@ import { dispatch } from '@wordpress/data';
  */
 import ConnectGoogleBusinessProfileAccountCard from './index';
 import { useAppDispatch } from '~/data';
-import { STORE_KEY, ERROR_SLOTS } from '~/data/constants';
+import { STORE_KEY } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleBusinessProfileLocations from '../hooks/useGoogleBusinessProfileLocations';
 import { recordGlaEvent } from '~/utils/tracks';
-
-const CONNECTION_ERROR_SLOTS = [
-	ERROR_SLOTS.GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT,
-];
+import { CONNECTION_ERROR_SLOTS } from '../constants';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),

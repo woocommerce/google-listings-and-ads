@@ -7,9 +7,8 @@ import { dispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import useConnectGoogleBusinessProfileLocation, {
-	CONNECTION_ERROR_SLOTS,
-} from './useConnectGoogleBusinessProfileLocation';
+import useConnectGoogleBusinessProfileLocation from './useConnectGoogleBusinessProfileLocation';
+import { CONNECTION_ERROR_SLOTS } from '../constants';
 import { useAppDispatch } from '~/data';
 import { ERROR_SLOTS, STORE_KEY } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';

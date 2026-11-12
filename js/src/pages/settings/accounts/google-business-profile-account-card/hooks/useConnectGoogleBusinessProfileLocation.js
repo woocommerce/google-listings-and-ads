@@ -10,15 +10,7 @@ import { API_NAMESPACE, ERROR_SLOTS } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import extractDetailedApiError from '~/utils/extractDetailedApiError';
-
-/**
- * The connection error slot this hook records a failure in, and clears on success.
- *
- * @type {Array<string>}
- */
-export const CONNECTION_ERROR_SLOTS = [
-	ERROR_SLOTS.GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT,
-];
+import { CONNECTION_ERROR_SLOTS } from '../constants';
 
 /**
  * @typedef {Object} ConnectGoogleBusinessProfileLocation

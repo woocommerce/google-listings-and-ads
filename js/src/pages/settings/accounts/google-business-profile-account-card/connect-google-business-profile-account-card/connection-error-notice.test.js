@@ -12,9 +12,8 @@ import ConnectionErrorNotice from './connection-error-notice';
 import { useAppDispatch } from '~/data';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import { recordGlaEvent } from '~/utils/tracks';
-import useConnectGoogleBusinessProfileLocation, {
-	CONNECTION_ERROR_SLOTS,
-} from '../hooks/useConnectGoogleBusinessProfileLocation';
+import useConnectGoogleBusinessProfileLocation from '../hooks/useConnectGoogleBusinessProfileLocation';
+import { CONNECTION_ERROR_SLOTS } from '../constants';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
