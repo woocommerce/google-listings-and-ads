@@ -116,6 +116,12 @@ export const YOUTUBE_ACCOUNT_STATUS = {
  */
 export const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
 
+/**
+ * Query arg the backend tags an OAuth return URL with to identify which service's connect flow
+ * a return belongs to.
+ */
+export const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
+
 export const GOOGLE_SERVICE = {
 	BUSINESS_PROFILE: 'business-profile',
 };

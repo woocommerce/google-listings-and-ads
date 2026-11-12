@@ -40,6 +40,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$return_url = add_query_arg(
 			[
 				'focus-account-card' => 'business-profile',
+				'google-service'     => 'business-profile',
 			],
 			admin_url( 'admin.php?page=wc-admin&path=/google/settings&section=accounts' )
 		);
