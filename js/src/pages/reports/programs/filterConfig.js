@@ -40,6 +40,7 @@ function isSubset( subset, superset ) {
 
 export const createProgramsFilterConfig = () => {
 	let adsCampaigns;
+	let staticPrograms = freeListingsPrograms;
 	let resolveAdsCampaigns;
 	let promiseProgramsList;
 
@@ -48,7 +49,15 @@ export const createProgramsFilterConfig = () => {
 		promiseProgramsList = new Promise( ( resolve ) => {
 			resolveAdsCampaigns = resolve;
 		} ).then( () => {
-			return freeListingsPrograms.concat( adsCampaigns );
+			return adsCampaigns;
+		} );
+	}
+
+	// The resolved promise is cached, so `staticPrograms` is added on every read instead.
+	// Otherwise a `hasMC` change with the same Ads data would keep the old list.
+	function getProgramsList() {
+		return promiseProgramsList.then( ( ads ) => {
+			return staticPrograms.concat( ads );
 		} );
 	}
 
@@ -57,7 +66,7 @@ export const createProgramsFilterConfig = () => {
 
 	const autocompleter = {
 		name: 'programs',
-		options: () => promiseProgramsList,
+		options: getProgramsList,
 		getOptionIdentifier: ( option ) => option.id,
 		getOptionLabel: ( option ) => option.name,
 		getOptionKeywords: ( option ) => [ option.name ],
@@ -79,10 +88,10 @@ export const createProgramsFilterConfig = () => {
 		let programs;
 		// If it's a subset of static values, resolve it immediately.
 		if ( isSubset( ids, freeListingsProgramsIds ) ) {
-			programs = freeListingsPrograms;
+			programs = staticPrograms;
 		} else {
 			// If there are any paid programs, resolve it once we get it.
-			programs = ( await promiseProgramsList ).filter( ( campaign ) =>
+			programs = ( await getProgramsList() ).filter( ( campaign ) =>
 				ids.has( campaign.id )
 			);
 		}
@@ -169,7 +178,16 @@ export const createProgramsFilterConfig = () => {
 		],
 	};
 
-	return ( { data, loaded } ) => {
+	/**
+	 * @param {Object} adsCampaigns Result of `useAdsCampaigns`.
+	 * @param {Object} adsCampaigns.data Ads campaigns.
+	 * @param {boolean} adsCampaigns.loaded Whether the Ads campaigns are loaded.
+	 * @param {boolean} [hasMC=true] Whether Merchant Center is set up or connected. Without it, there is no Product Feed program.
+	 * @return {Object} The programs filter config.
+	 */
+	return ( { data, loaded }, hasMC = true ) => {
+		staticPrograms = hasMC ? freeListingsPrograms : [];
+
 		if ( loaded ) {
 			// Handle the case of no change in `loaded` status between continuous updates.
 			if ( adsCampaigns && adsCampaigns !== data ) {
