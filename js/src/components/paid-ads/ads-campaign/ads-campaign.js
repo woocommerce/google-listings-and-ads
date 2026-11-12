@@ -31,10 +31,10 @@ import CyoIncentivePicker from './cyo-incentive-picker';
  * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
  * so it expects a `CampaignAssetsForm` to exist in its parents.
  *
- * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+ * @fires gla_documentation_link_click with `{ context: 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  * @param {Object} props React props.
  * @param {string} props.headerTitle The title of the step.
- * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'|'setup-ads-only'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {'edit-ads'|'setup-ads'|'setup-mc'|'setup-ads-only'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
  * @return {JSX.Element} The rendered component.
