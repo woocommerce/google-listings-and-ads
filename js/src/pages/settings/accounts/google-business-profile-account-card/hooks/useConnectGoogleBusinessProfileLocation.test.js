@@ -40,10 +40,15 @@ describe( 'useConnectGoogleBusinessProfileLocation', () => {
 			{ loading: false },
 		] );
 
+		// Mirrors the real action: it never rejects, only resolves to the dispatched action
+		// object on success, or to `undefined` on a failure it already reported itself.
 		fetchGoogleBusinessProfileAccount = jest
 			.fn()
 			.mockName( 'fetchGoogleBusinessProfileAccount' )
-			.mockResolvedValue();
+			.mockResolvedValue( {
+				type: 'RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE',
+				account: {},
+			} );
 		receiveDetailedError = jest
 			.fn()
 			.mockName( 'receiveDetailedError' )
@@ -114,9 +119,9 @@ describe( 'useConnectGoogleBusinessProfileLocation', () => {
 	} );
 
 	it( 'marks the error as a refresh-only failure when the connect request already succeeded', async () => {
-		fetchGoogleBusinessProfileAccount.mockRejectedValue(
-			new Error( 'Network error' )
-		);
+		// The real action reports its own failure and resolves to `undefined` -- it never
+		// rejects (see actions.js's fetchGoogleBusinessProfileAccount).
+		fetchGoogleBusinessProfileAccount.mockResolvedValue( undefined );
 		const { result } = renderHook( () =>
 			useConnectGoogleBusinessProfileLocation()
 		);
@@ -151,9 +156,7 @@ describe( 'useConnectGoogleBusinessProfileLocation', () => {
 	} );
 
 	it( 'retryStatusRefresh records another refresh-only failure when it fails again', async () => {
-		fetchGoogleBusinessProfileAccount.mockRejectedValue(
-			new Error( 'Network error' )
-		);
+		fetchGoogleBusinessProfileAccount.mockResolvedValue( undefined );
 		const { result } = renderHook( () =>
 			useConnectGoogleBusinessProfileLocation()
 		);
