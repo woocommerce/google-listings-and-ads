@@ -854,11 +854,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @param Product[] $products One page of Merchant API products.
 	 */
 	public function process_mapi_products( array $products ): void {
-		$this->page_disapproved_product_ids = [];
-		$product_helper                     = $this->container->get( ProductHelper::class );
-		$statuses                           = [];
-		$products_by_google_id              = [];
-		$disapproved_ids                    = [];
+		$this->reset_page_state();
+		$product_helper        = $this->container->get( ProductHelper::class );
+		$statuses              = [];
+		$products_by_google_id = [];
+		$disapproved_ids       = [];
 
 		foreach ( $products as $product ) {
 			$product_status = $product->get_product_status();
@@ -912,8 +912,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * This service is shared, and the queue runner can process several status
 	 * pages in one request. If a page fails before it processes any product,
 	 * handle_failed_mc_statuses_fetching() would otherwise delete the issue rows
-	 * of the previous page, which the retry never rewrites. Call it at the start
-	 * of every page.
+	 * of the previous page, which a retry of the failed page never rewrites. Call
+	 * it at the start of every page. process_mapi_products() calls it too, so this
+	 * is the one place that clears the per-page state.
 	 *
 	 * @since x.x.x
 	 */
