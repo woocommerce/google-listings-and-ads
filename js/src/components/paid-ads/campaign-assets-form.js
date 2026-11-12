@@ -197,7 +197,7 @@ function hasValidAIGeneratedAssets( assetKeys, data ) {
  *
  * @augments AdaptiveForm
  * @param {Object} props React props.
- * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
+ * @param {Partial<CampaignFormValues>} props.initialCampaign Initial campaign values. Any value left out gets its default.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
  * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations.
  */
