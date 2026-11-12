@@ -59,7 +59,9 @@ jobs:
     if: github.event_name != 'workflow_dispatch'
     name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version || 'latest' }}, WC ${{ matrix.wc-versions || 'latest' }}
     needs: GetMatrix
-    runs-on: ubuntu-latest
+    # Pinned below ubuntu-latest: the newer MySQL on ubuntu-26.04 no longer accepts
+    # prepare-mysql's default_authentication_plugin directive, so mysqld refuses to start.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
       WP_CORE_DIR: "/tmp/wordpress/src"
@@ -124,7 +126,9 @@ jobs:
   ReleaseCandidateUnitTests:
     if: github.event_name == 'workflow_dispatch'
     name: PHP unit tests (for Release Candidates)
-    runs-on: ubuntu-latest
+    # Pinned below ubuntu-latest: the newer MySQL on ubuntu-26.04 no longer accepts
+    # prepare-mysql's default_authentication_plugin directive, so mysqld refuses to start.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
       WP_CORE_DIR: "/tmp/wordpress/src"
