@@ -5,13 +5,14 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WP_Post;
+use WP_Term;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class PagePostResolver
  *
- * Resolves a Search Console page URL to the post it belongs to.
+ * Resolves a Search Console page URL to the post it belongs to, or to the product category whose page it is.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole
  */
@@ -27,6 +28,12 @@ class PagePostResolver {
 
 	/** @var int Most posts checked for a former slug, since only those under the URL's parent path match. */
 	protected const MAX_OLD_SLUG_CANDIDATES = 10;
+
+	/** @var string Taxonomy of WooCommerce product categories. */
+	protected const PRODUCT_CATEGORY_TAXONOMY = 'product_cat';
+
+	/** @var string[] Query variables that name a post by its ID. */
+	protected const POST_ID_QUERY_VARS = [ 'p', 'page_id', 'attachment_id' ];
 
 	/**
 	 * Resolve a page URL to a post ID.
@@ -78,6 +85,76 @@ class PagePostResolver {
 		}
 
 		return $post_id;
+	}
+
+	/**
+	 * Resolve a page URL to the product category whose page it is.
+	 *
+	 * A URL at the category page's path, such as `/product-category/shoes/`, or a plain-permalink
+	 * query at the home path, such as `/?product_cat=shoes`, resolves to the category. A search
+	 * results page, or a query that also names a post, doesn't.
+	 *
+	 * @param string $url Absolute page URL as reported by Search Console.
+	 *
+	 * @return WP_Term|null The category, or null when the URL isn't a product category page on this site.
+	 */
+	public function resolve_product_category( string $url ): ?WP_Term {
+		if ( ! $this->is_store_url( $url ) || ! taxonomy_exists( self::PRODUCT_CATEGORY_TAXONOMY ) ) {
+			return null;
+		}
+
+		$url = $this->to_home_url( $url );
+
+		wp_parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query_vars );
+
+		if ( isset( $query_vars['s'] ) ) {
+			return null;
+		}
+
+		if ( self::get_comparable_path( $url ) === self::get_comparable_path( home_url() ) ) {
+			return $this->find_product_category_by_query_var( $url, $query_vars );
+		}
+
+		$slug = sanitize_title( rawurldecode( basename( untrailingslashit( (string) wp_parse_url( $url, PHP_URL_PATH ) ) ) ) );
+		$term = '' === $slug ? false : get_term_by( 'slug', $slug, self::PRODUCT_CATEGORY_TAXONOMY );
+
+		if ( ! $term instanceof WP_Term ) {
+			return null;
+		}
+
+		// reason: categories under different parents can share a slug, so only the one whose page is at the URL's path matches.
+		$link = get_term_link( $term );
+
+		return is_string( $link ) && self::get_comparable_path( $link ) === self::get_comparable_path( $url ) ? $term : null;
+	}
+
+	/**
+	 * Find the product category a plain-permalink query names, such as `?product_cat=shoes`.
+	 *
+	 * A query that also names a post, such as `?product=blue-shirt&product_cat=shoes`, shows that post, so it
+	 * isn't a category page.
+	 *
+	 * @param string $url        A URL at the home path.
+	 * @param array  $query_vars The URL's query variables.
+	 *
+	 * @return WP_Term|null The category, or null when the query names none.
+	 */
+	protected function find_product_category_by_query_var( string $url, array $query_vars ): ?WP_Term {
+		$query_var = get_taxonomy( self::PRODUCT_CATEGORY_TAXONOMY )->query_var;
+		$value     = is_string( $query_var ) ? ( $query_vars[ $query_var ] ?? null ) : null;
+
+		if ( ! is_string( $value ) || '' === $value ) {
+			return null;
+		}
+
+		if ( ! empty( $this->get_query_slugs( $url ) ) || ! empty( array_intersect_key( $query_vars, array_flip( self::POST_ID_QUERY_VARS ) ) ) ) {
+			return null;
+		}
+
+		// A child category can be named by its full path, such as `clothing/shirts`.
+		$term = get_term_by( 'slug', sanitize_title( basename( $value ) ), self::PRODUCT_CATEGORY_TAXONOMY );
+
+		return $term instanceof WP_Term ? $term : null;
 	}
 
 	/**
