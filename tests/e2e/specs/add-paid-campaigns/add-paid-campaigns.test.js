@@ -1150,8 +1150,12 @@ test.describe( 'Add paid campaign', () => {
 			} );
 		} );
 
-		// Runs last, so no later test depends on its "already applied" mock.
 		test.describe( 'Ads credit offer already applied', () => {
+			// The latest route handler runs first, so this replaces the "already applied" mock for later tests.
+			test.afterAll( async () => {
+				await createCampaignPage.fulfillCYOIncentives();
+			} );
+
 			test( 'Ads credit offer picker should be hidden once an offer was applied', async () => {
 				await createCampaignPage.fulfillCYOIncentives(
 					undefined,
