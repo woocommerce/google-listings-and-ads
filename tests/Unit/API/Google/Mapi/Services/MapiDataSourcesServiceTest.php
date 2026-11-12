@@ -1403,7 +1403,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			->method( 'post' )
 			->willReturnCallback(
 				function ( $path, $body ) use ( &$requested ) {
-					$requested[] = $body['primaryProductDataSource']['destinations'] ?? null;
+					$requested[] = array_column( $body['primaryProductDataSource']['destinations'], 'destination' );
 					if ( 1 === count( $requested ) ) {
 						throw $this->invalid_destinations_exception();
 					}
@@ -1423,15 +1423,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		);
 
 		remove_action( 'woocommerce_gla_error', $callback );
-		$this->assertSame(
-			[
-				[
-					'destination' => 'SHOPPING_ADS',
-					'state'       => 'ENABLED',
-				],
-			],
-			$requested[1]
-		);
+		$this->assertSame( [ [ 'SHOPPING_ADS', 'FREE_LISTINGS' ], [ 'SHOPPING_ADS' ] ], $requested );
 		$this->assertCount( 1, $logged );
 		$this->assertStringContainsString( 'retrying with [SHOPPING_ADS]', $logged[0] );
 	}
