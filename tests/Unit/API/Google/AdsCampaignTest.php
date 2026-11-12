@@ -152,6 +152,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [ 'TW' ],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -163,6 +164,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [ 'HK', 'GB' ],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -182,6 +184,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -193,6 +196,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -234,6 +238,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -245,6 +250,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -330,11 +336,55 @@ class AdsCampaignTest extends UnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [ 'TW' ],
 			'eu_political_advertising_confirmation' => false,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 			'start_date'                            => '2025-01-15',
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
 		$this->assertEquals( $campaign_data, $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID ) );
+	}
+
+	public function test_get_campaign_advertising_source_is_product_with_a_merchant_center_id() {
+		$this->assertSame( AdvertisingSource::PRODUCT, $this->get_advertising_source_for_merchant_id( 1234567890 ) );
+	}
+
+	public function test_get_campaign_advertising_source_is_page_without_a_shopping_setting() {
+		$this->assertSame( AdvertisingSource::PAGE, $this->get_advertising_source_for_merchant_id( null ) );
+	}
+
+	public function test_get_campaign_advertising_source_is_page_with_a_zero_merchant_center_id() {
+		$this->assertSame( AdvertisingSource::PAGE, $this->get_advertising_source_for_merchant_id( 0 ) );
+	}
+
+	/**
+	 * Get the advertising source of a campaign whose shopping setting has the given Merchant Center ID.
+	 *
+	 * @param int|null $merchant_id Merchant Center ID, or null for a campaign without a shopping setting.
+	 *
+	 * @return string
+	 */
+	private function get_advertising_source_for_merchant_id( ?int $merchant_id ): string {
+		$campaign_data = [
+			'id'          => self::TEST_CAMPAIGN_ID,
+			'name'        => 'Single Campaign',
+			'status'      => 'enabled',
+			'type'        => 'performance_max',
+			'amount'      => 10,
+			'country'     => 'US',
+			'merchant_id' => $merchant_id,
+		];
+
+		$this->generate_ads_campaign_query_mock(
+			[ $campaign_data ],
+			[
+				[
+					'campaign_id'         => self::TEST_CAMPAIGN_ID,
+					'geo_target_constant' => 'geoTargetConstants/2158',
+				],
+			]
+		);
+
+		return $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID )['advertising_source'];
 	}
 
 	public function test_get_campaign_returns_null_start_date_when_unavailable() {
@@ -352,6 +402,7 @@ class AdsCampaignTest extends UnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [ 'TW' ],
 			'eu_political_advertising_confirmation' => false,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 		];
 
 		$expected               = $campaign_data_without_start_date;

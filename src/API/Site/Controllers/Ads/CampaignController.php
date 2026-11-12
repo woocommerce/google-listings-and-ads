@@ -518,7 +518,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'type'              => 'string',
 				'enum'              => AdvertisingSource::values(),
 				'description'       => __( 'What the campaign advertises: the Merchant Center product feed or a page on the store. Defaults to the product feed when Merchant Center is connected, otherwise a page. It cannot be changed after the campaign is created.', 'google-listings-and-ads' ),
-				'context'           => [ 'edit' ],
+				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 			],

@@ -851,6 +851,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			];
 		}
 
+		// Use the campaign's own Merchant Center ID, so a later disconnect doesn't change the source.
+		$data['advertising_source'] = $shopping && $shopping->getMerchantId() > 0 ? AdvertisingSource::PRODUCT : AdvertisingSource::PAGE;
+
 		return $data;
 	}
 

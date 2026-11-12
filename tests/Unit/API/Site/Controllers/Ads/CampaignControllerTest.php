@@ -92,6 +92,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -103,6 +104,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PAGE,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -135,6 +137,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -146,6 +149,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -160,6 +164,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -171,6 +176,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -216,6 +222,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
 			'start_date'                            => null,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 		] + array_diff_key( $campaign_data, [ 'label' => 'wc-web' ] );
 
 		$this->ads_campaign->expects( $this->once() )
@@ -259,6 +266,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'targeted_locations'                    => [ 'US', 'GB', 'TW' ],
 			'eu_political_advertising_confirmation' => false,
 			'start_date'                            => null,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
@@ -299,6 +307,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
 			'start_date'                            => null,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 		] + $campaign_data;
 
 		$this->ads_campaign->expects( $this->once() )
@@ -575,6 +584,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'targeted_locations'                    => [ 'US', 'GB' ],
 			'eu_political_advertising_confirmation' => false,
 			'start_date'                            => null,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
@@ -615,6 +625,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [],
 			'eu_political_advertising_confirmation' => false,
+			'advertising_source'                    => AdvertisingSource::PAGE,
 			'start_date'                            => '2025-01-15',
 		];
 
@@ -630,6 +641,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertArrayHasKey( 'start_date', $data );
 		$this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}$/', $data['start_date'] );
+		$this->assertSame( AdvertisingSource::PAGE, $data['advertising_source'] );
 	}
 
 	public function test_get_campaign_returns_null_start_date_when_unavailable() {
