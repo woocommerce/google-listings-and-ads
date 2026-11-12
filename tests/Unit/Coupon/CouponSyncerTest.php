@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTr
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\SettingsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Coupon;
 
@@ -65,7 +66,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$this->mock_promotions_service( $coupon );
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
-			->willReturn( [] );
+			->willReturn( new ConstraintViolationList() );
 
 		$this->coupon_syncer->update( $coupon );
 
@@ -79,7 +80,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$this->mock_promotions_service( $exist_coupon );
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
-			->willReturn( [] );
+			->willReturn( new ConstraintViolationList() );
 
 		$this->coupon_syncer->update( $invalid_coupon );
 
@@ -96,7 +97,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$coupon = $this->create_ready_to_sync_coupon();
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
-			->willReturn( [] );
+			->willReturn( new ConstraintViolationList() );
 		$this->data_sources->expects( $this->any() )
 			->method( 'ensure_promotion_data_source_for' )
 			->willThrowException(
@@ -124,7 +125,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$coupon = $this->create_ready_to_sync_coupon();
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
-			->willReturn( [] );
+			->willReturn( new ConstraintViolationList() );
 
 		$this->data_sources->expects( $this->exactly( 2 ) )
 			->method( 'ensure_promotion_data_source_for' )
@@ -161,7 +162,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$coupon = $this->create_ready_to_sync_coupon();
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
-			->willReturn( [] );
+			->willReturn( new ConstraintViolationList() );
 		$this->data_sources->expects( $this->any() )
 			->method( 'ensure_promotion_data_source_for' )
 			->willReturn( 'datasources/v1/accounts/12345/dataSources/67890' );

@@ -194,7 +194,6 @@ class CheckUnclaimedIncentiveTest extends UnitTest {
 	 */
 	protected function invoke_process_items(): void {
 		$method = new ReflectionMethod( CheckUnclaimedIncentive::class, 'process_items' );
-		$method->setAccessible( true );
 		$method->invoke( $this->job, [] );
 	}
 }

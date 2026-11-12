@@ -300,7 +300,6 @@ class ClientTest extends UnitTest {
 
 	public function test_retry_delay_caps_a_large_retry_after() {
 		$method = new ReflectionMethod( GoogleServiceProvider::class, 'retry_delay' );
-		$method->setAccessible( true );
 
 		// Retry-After: 3600 would be 3,600,000ms uncapped; must be clamped to 30s so a
 		// large value can't stall the background sync job.
@@ -311,7 +310,6 @@ class ClientTest extends UnitTest {
 
 	public function test_retry_delay_caps_the_backoff() {
 		$method = new ReflectionMethod( GoogleServiceProvider::class, 'retry_delay' );
-		$method->setAccessible( true );
 
 		// A high retry count is clamped to the 30s cap (jitter is added inside the cap).
 		$delay = $method->invoke( $this->provider, 20, null );
@@ -480,7 +478,6 @@ class ClientTest extends UnitTest {
 	 */
 	protected function invoke_handler( string $handler_function ) {
 		$handler = new ReflectionMethod( GoogleServiceProvider::class, $handler_function );
-		$handler->setAccessible( true );
 
 		return $handler->invoke( $this->provider );
 	}

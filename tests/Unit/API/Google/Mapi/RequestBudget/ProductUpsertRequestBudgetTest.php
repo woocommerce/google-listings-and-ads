@@ -145,7 +145,6 @@ class ProductUpsertRequestBudgetTest extends RequestBudgetTestCase {
 
 	protected function service_batch_size(): int {
 		$method = new ReflectionMethod( MapiProductInputsService::class, 'get_batch_size' );
-		$method->setAccessible( true );
 
 		return $method->invoke( $this->service );
 	}
