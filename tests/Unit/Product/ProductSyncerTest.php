@@ -581,14 +581,87 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$this->assertSame( [ 'US' => $us_google_id ], $this->product_meta->get_google_ids( $wc_product ) );
 	}
 
-	public function test_delete_by_id_map_skips_malformed_ids() {
+	public function test_delete_by_batch_requests_deletes_legacy_colon_id() {
+		// The language and market cleanup jobs must delete products stored under the
+		// pre-MAPI Content API id, converting it to the MAPI identity instead of skipping it.
+		$product   = WC_Helper_Product::create_simple_product();
+		$legacy_id = "online:fr:US:gla_{$product->get_id()}";
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $legacy_id, 'US' ) );
+
+		$captured = null;
+		$this->mapi_inputs->expects( $this->once() )
+			->method( 'delete_many' )
+			->willReturnCallback(
+				function ( array $inputs ) use ( &$captured ) {
+					$captured = $inputs[0];
+					return [
+						'successes' => [ 0 => $inputs[0] ],
+						'failures'  => [],
+					];
+				}
+			);
+
+		$results = $this->product_syncer->delete_by_batch_requests(
+			[ new BatchProductIDRequestEntry( $product->get_id(), $legacy_id ) ]
+		);
+
+		$this->assertInstanceOf( ProductInput::class, $captured );
+		$this->assertSame( 'fr', $captured->get_content_language() );
+		$this->assertSame( 'US', $captured->get_feed_label() );
+		$this->assertSame( "gla_{$product->get_id()}", $captured->get_offer_id() );
+		$this->assertCount( 1, $results->get_products() );
+		$this->assertFalse( $this->product_helper->is_product_synced( wc_get_product( $product->get_id() ) ) );
+	}
+
+	public function test_delete_by_batch_requests_logs_and_skips_malformed_ids() {
 		$this->mapi_inputs->expects( $this->never() )
 			->method( 'delete_many' );
 
-		$results = $this->product_syncer->delete_by_id_map( [ 'not-mapi-shape' => 99 ] );
+		$logged   = [];
+		$listener = function ( $message ) use ( &$logged ) {
+			$logged[] = $message;
+		};
+		add_action( 'woocommerce_gla_error', $listener );
+
+		$results = $this->product_syncer->delete_by_batch_requests(
+			[ new BatchProductIDRequestEntry( 99, 'not-mapi-shape' ) ]
+		);
+
+		remove_action( 'woocommerce_gla_error', $listener );
 
 		$this->assertEmpty( $results->get_products() );
 		$this->assertEmpty( $results->get_errors() );
+		$this->assertSame(
+			[ 'Skipped deleting product "not-mapi-shape" (WooCommerce Product ID: 99) because its Google ID is not in a recognized format.' ],
+			$logged
+		);
+	}
+
+	public function test_delete_by_id_map_logs_and_skips_malformed_ids() {
+		$this->mapi_inputs->expects( $this->never() )
+			->method( 'delete_many' );
+
+		$logged   = [];
+		$listener = function ( $message, $method ) use ( &$logged ) {
+			$logged[] = [ $message, $method ];
+		};
+		add_action( 'woocommerce_gla_error', $listener, 10, 2 );
+
+		$results = $this->product_syncer->delete_by_id_map( [ 'not-mapi-shape' => 99 ] );
+
+		remove_action( 'woocommerce_gla_error', $listener, 10 );
+
+		$this->assertEmpty( $results->get_products() );
+		$this->assertEmpty( $results->get_errors() );
+		$this->assertSame(
+			[
+				[
+					'Skipped deleting product "not-mapi-shape" (WooCommerce Product ID: 99) because its Google ID is not in a recognized format.',
+					ProductSyncer::class . '::delete_by_id_map',
+				],
+			],
+			$logged
+		);
 	}
 
 	public function test_delete_by_id_map_deletes_legacy_colon_id() {
