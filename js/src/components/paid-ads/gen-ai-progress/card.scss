@@ -1,0 +1,21 @@
+.gen-ai-progress-card {
+	.gen-ai-progress-card__title {
+		font-size: $gla-font-small-medium;
+		margin: 0 0 $grid-unit-05;
+	}
+
+	.gen-ai-progress-card__text {
+		color: $gray-700;
+		margin: 0;
+	}
+
+	.gen-ai-progress-card__bar {
+		height: $grid-unit-05;
+		width: 100%;
+	}
+
+	// Keep the space of the skip button when it is hidden.
+	.gen-ai-progress-card__actions {
+		min-height: $gla-size-control-height;
+	}
+}
