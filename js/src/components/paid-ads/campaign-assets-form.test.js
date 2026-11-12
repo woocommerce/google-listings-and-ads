@@ -560,6 +560,34 @@ describe( 'CampaignAssetsForm', () => {
 			);
 		} );
 
+		it( 'Should leave the advertising source unset when the Merchant Center account failed to load', () => {
+			useGoogleMCAccount.mockReturnValue( {
+				hasFinishedResolution: true,
+				isPreconditionReady: true,
+				googleMCAccount: null,
+				hasGoogleMCConnection: false,
+			} );
+
+			const { children } = renderForm();
+
+			expectLastValuesToMatch( children, {
+				advertisingSource: undefined,
+			} );
+		} );
+
+		it( 'Should not wait for the Merchant Center account when a starting source is passed', () => {
+			useGoogleMCAccount.mockReturnValue( {
+				hasFinishedResolution: false,
+				hasGoogleMCConnection: false,
+			} );
+
+			const { children } = renderForm( {
+				initialCampaign: { advertisingSource: 'page' },
+			} );
+
+			expectLastValuesToMatch( children, { advertisingSource: 'page' } );
+		} );
+
 		it( 'Should generate the default name in the site timezone', () => {
 			mockCurrentTime( '2026-11-05T20:30:00Z' );
 			setSiteTimezoneOffset( 9 );

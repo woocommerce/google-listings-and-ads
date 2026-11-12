@@ -168,6 +168,32 @@ function resolveInitialCampaign(
 	return injectDailyBudget( values, budgetRecommendation );
 }
 
+/**
+ * Gets the advertising source a new campaign starts with.
+ *
+ * A failed Merchant Center account load leaves the account empty even though the store may be
+ * connected, so the source is left unset for the server to decide.
+ *
+ * @param {Object} params Merchant Center account state.
+ * @param {Object|null|undefined} params.googleMCAccount The loaded Merchant Center account.
+ * @param {boolean} params.isPreconditionReady Whether the Google account can reach Merchant Center.
+ * @param {boolean} params.hasGoogleMCConnection Whether Merchant Center is connected.
+ * @return {'product'|'page'|undefined} The default advertising source.
+ */
+function getDefaultAdvertisingSource( {
+	googleMCAccount,
+	isPreconditionReady,
+	hasGoogleMCConnection,
+} ) {
+	if ( isPreconditionReady && ! googleMCAccount ) {
+		return undefined;
+	}
+
+	return hasGoogleMCConnection
+		? ADVERTISING_SOURCE.PRODUCT
+		: ADVERTISING_SOURCE.PAGE;
+}
+
 function hasValidAIGeneratedAssets( assetKeys, data ) {
 	if ( ! data || typeof data !== 'object' ) {
 		return false;
@@ -225,6 +251,8 @@ export default function CampaignAssetsForm( {
 		useBudgetRecommendation( countryCodes );
 	const { createNotice } = useDispatchCoreNotices();
 	const {
+		googleMCAccount,
+		isPreconditionReady,
 		hasGoogleMCConnection,
 		hasFinishedResolution: hasResolvedMCAccount,
 	} = useGoogleMCAccount();
@@ -251,10 +279,14 @@ export default function CampaignAssetsForm( {
 		hasFinishedResolution: hasResolvedRaiseBudgetRecommendations,
 	} = useRaiseBudgetRecommendations( campaignId );
 
+	// The Merchant Center account only decides the default source, so a caller
+	// that passes its own source doesn't need to wait for it.
+	const hasStartingSource = initialCampaign?.advertisingSource !== undefined;
+
 	if (
 		! hasResolved ||
 		! hasResolvedRaiseBudgetRecommendations ||
-		! hasResolvedMCAccount
+		( ! hasResolvedMCAccount && ! hasStartingSource )
 	) {
 		return <AppSpinner />;
 	}
@@ -421,9 +453,11 @@ export default function CampaignAssetsForm( {
 						amount: selectedBudgetRecommendation.recommendedDailyBudget,
 						incentiveOffer: 'medium',
 						campaignName: defaultCampaignName,
-						advertisingSource: hasGoogleMCConnection
-							? ADVERTISING_SOURCE.PRODUCT
-							: ADVERTISING_SOURCE.PAGE,
+						advertisingSource: getDefaultAdvertisingSource( {
+							googleMCAccount,
+							isPreconditionReady,
+							hasGoogleMCConnection,
+						} ),
 						includeCreativeAssets: false,
 					},
 					selectedBudgetRecommendation,
