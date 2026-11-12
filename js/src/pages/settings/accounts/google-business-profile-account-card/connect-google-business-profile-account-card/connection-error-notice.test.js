@@ -79,7 +79,7 @@ describe( 'ConnectionErrorNotice', () => {
 		expect( retryStatusRefresh ).not.toHaveBeenCalled();
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_google_business_profile_connection_try_again_button_click',
-			{ context: 'settings-business-profile' }
+			{ context: 'settings-business-profile', retry_type: 'connect' }
 		);
 	} );
 
@@ -96,7 +96,10 @@ describe( 'ConnectionErrorNotice', () => {
 		expect( clearDetailedErrorBySlots ).not.toHaveBeenCalled();
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_google_business_profile_connection_try_again_button_click',
-			{ context: 'settings-business-profile' }
+			{
+				context: 'settings-business-profile',
+				retry_type: 'status_refresh',
+			}
 		);
 	} );
 

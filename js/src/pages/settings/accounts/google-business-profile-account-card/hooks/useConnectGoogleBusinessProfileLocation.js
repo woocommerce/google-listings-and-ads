@@ -48,7 +48,9 @@ export default function useConnectGoogleBusinessProfileLocation() {
 		error,
 		refreshFailedAfterConnecting
 	) => {
-		const detailedError = await extractDetailedApiError( error );
+		const detailedError = error
+			? await extractDetailedApiError( error )
+			: null;
 
 		// Only trust a genuinely structured backend error for the message shown to the user —
 		// `extractDetailedApiError`'s other branches synthesize a generic message (e.g. "An

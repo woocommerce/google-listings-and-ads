@@ -21,6 +21,7 @@ import useConnectGoogleBusinessProfileLocation from '../hooks/useConnectGoogleBu
  *
  * @event gla_google_business_profile_connection_try_again_button_click
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+ * @property {string} retry_type Which step is retried. Possible values: 'connect' (falls back to the location picker), 'status_refresh' (refreshes the status of an already-connected location).
  */
 
 /**
@@ -32,7 +33,7 @@ import useConnectGoogleBusinessProfileLocation from '../hooks/useConnectGoogleBu
  *
  * `null` when the store has no error for the connection error slot.
  *
- * @fires gla_google_business_profile_connection_try_again_button_click with `{ context: 'settings-business-profile' }`.
+ * @fires gla_google_business_profile_connection_try_again_button_click with `{ context: 'settings-business-profile', retry_type: 'connect' | 'status_refresh' }`.
  *
  * @return {JSX.Element|null} The notice, or `null` when there's no connection error.
  */
@@ -81,6 +82,9 @@ export default function ConnectionErrorNotice() {
 					eventName="gla_google_business_profile_connection_try_again_button_click"
 					eventProps={ {
 						context: GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
+						retry_type: refreshFailedAfterConnecting
+							? 'status_refresh'
+							: 'connect',
 					} }
 					onClick={ handleTryAgainClick }
 					loading={ refreshFailedAfterConnecting && isConnecting }

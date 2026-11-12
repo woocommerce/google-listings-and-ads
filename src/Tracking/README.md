@@ -877,14 +877,15 @@ Clicking the button to grant the Google Business Profile scope.
 #### Emitters
 - [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L39)
 
-### [`gla_google_business_profile_connection_try_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/connection-error-notice.js#L16)
+### [`gla_google_business_profile_connection_try_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/connection-error-notice.js#L19)
 Clicking "Try again" after connecting a Google Business Profile location failed.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+`retry_type` | `string` | Which step is retried. Possible values: 'connect' (falls back to the location picker), 'status_refresh' (refreshes the status of an already-connected location).
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/connection-error-notice.js#L33) with `{ context: 'settings-business-profile' }`.
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/connection-error-notice.js#L40) with `{ context: 'settings-business-profile', retry_type: 'connect' | 'status_refresh' }`.
 
 ### [`gla_google_business_profile_create_account_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L15)
 Clicking the link to create a new Google Business Profile account off-site.
