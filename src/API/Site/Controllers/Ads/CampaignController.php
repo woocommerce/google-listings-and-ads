@@ -64,7 +64,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->create_campaign_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_schema_properties(),
+					'args'                => $this->get_create_schema(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -155,11 +155,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	protected function create_campaign_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$fields = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
-
-				if ( isset( $fields['name'] ) ) {
-					$fields['name'] = trim( $fields['name'] );
-				}
+				$fields = $this->trim_name_field( array_intersect_key( $request->get_json_params(), $this->get_schema_properties() ) );
 
 				// Set the default value of campaign name.
 				if ( '' === ( $fields['name'] ?? '' ) ) {
@@ -251,7 +247,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	protected function edit_campaign_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$fields = array_intersect_key( $request->get_json_params(), $this->get_edit_schema() );
+				$fields = $this->trim_name_field( array_intersect_key( $request->get_json_params(), $this->get_edit_schema() ) );
 				if ( empty( $fields ) ) {
 					return new Response(
 						[
@@ -384,23 +380,86 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 		);
 
 		// Create falls back to a generated name, but an update must not blank the name.
-		$fields['name']['validate_callback'] = function ( $value, $request, $param ) {
-			$result = rest_validate_request_arg( $value, $request, $param );
-			if ( true !== $result ) {
-				return $result;
-			}
-
-			if ( '' === trim( $value ) ) {
-				return new WP_Error(
-					'rest_invalid_param',
-					__( 'Campaign name cannot be empty.', 'google-listings-and-ads' )
-				);
-			}
-
-			return true;
-		};
+		$fields['name'] = array_merge( $fields['name'], $this->get_name_callbacks( false ) );
 
 		return $fields;
+	}
+
+	/**
+	 * Get the schema for fields we accept when creating a campaign.
+	 *
+	 * @return array
+	 */
+	protected function get_create_schema(): array {
+		$fields = $this->get_schema_properties();
+
+		$fields['name'] = array_merge( $fields['name'], $this->get_name_callbacks( true ) );
+
+		return $fields;
+	}
+
+	/**
+	 * Get the validate and sanitize callbacks for the campaign name.
+	 *
+	 * The length is checked on the trimmed name, and the sanitize callback stops WordPress
+	 * from re-checking the untrimmed value against the schema.
+	 *
+	 * @param bool $allow_blank Whether an empty or whitespace-only name is accepted.
+	 *
+	 * @return array
+	 */
+	private function get_name_callbacks( bool $allow_blank ): array {
+		return [
+			'validate_callback' => function ( $value, $request, $param ) use ( $allow_blank ) {
+				if ( ! is_string( $value ) ) {
+					return rest_validate_request_arg( $value, $request, $param );
+				}
+
+				$name   = $this->trim_name( $value );
+				$result = rest_validate_value_from_schema( $name, $this->get_schema_properties()['name'], $param );
+				if ( true !== $result ) {
+					return $result;
+				}
+
+				if ( ! $allow_blank && '' === $name ) {
+					return new WP_Error(
+						'rest_invalid_param',
+						__( 'Campaign name cannot be empty.', 'google-listings-and-ads' )
+					);
+				}
+
+				return true;
+			},
+			'sanitize_callback' => function ( $value ) {
+				return is_string( $value ) ? $this->trim_name( $value ) : $value;
+			},
+		];
+	}
+
+	/**
+	 * Trim the campaign name in the given request fields.
+	 *
+	 * @param array $fields Request fields.
+	 *
+	 * @return array
+	 */
+	private function trim_name_field( array $fields ): array {
+		if ( isset( $fields['name'] ) && is_string( $fields['name'] ) ) {
+			$fields['name'] = $this->trim_name( $fields['name'] );
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Trim whitespace from both ends of a name, including non-breaking and other Unicode spaces.
+	 *
+	 * @param string $name Campaign name.
+	 *
+	 * @return string
+	 */
+	private function trim_name( string $name ): string {
+		return preg_replace( '/^[\s\p{Z}]+|[\s\p{Z}]+$/u', '', $name ) ?? $name;
 	}
 
 	/**

@@ -407,6 +407,58 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_create_campaign_trims_name() {
+		$campaign_data = [
+			'name'               => '  New Campaign  ',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( array_merge( $campaign_data, [ 'name' => 'New Campaign' ] ) )
+			->willReturn(
+				[
+					'id'                 => self::TEST_CAMPAIGN_ID,
+					'status'             => 'enabled',
+					'name'               => 'New Campaign',
+					'amount'             => 20,
+					'country'            => self::BASE_COUNTRY,
+					'targeted_locations' => [ 'US' ],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_accepts_padded_name_that_fits_once_trimmed() {
+		$campaign_data = [
+			'name'               => '   ' . str_repeat( 'a', 48 ) . '   ',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( array_merge( $campaign_data, [ 'name' => str_repeat( 'a', 48 ) ] ) )
+			->willReturn(
+				[
+					'id'                 => self::TEST_CAMPAIGN_ID,
+					'status'             => 'enabled',
+					'name'               => str_repeat( 'a', 48 ),
+					'amount'             => 20,
+					'country'            => self::BASE_COUNTRY,
+					'targeted_locations' => [ 'US' ],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_create_campaign_invalid_country_code() {
 		$campaign_data = [
 			'amount'             => 20,
@@ -687,6 +739,37 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_edit_campaign_trims_name() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, [ 'name' => 'Spring sale' ] )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => '  Spring sale  ' ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_campaign_accepts_padded_name_that_fits_once_trimmed() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, [ 'name' => str_repeat( 'a', 48 ) ] )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => '   ' . str_repeat( 'a', 48 ) . '   ' ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_campaign_rejects_padded_name_over_length_limit_once_trimmed() {
+		$this->ads_campaign->expects( $this->never() )->method( 'edit_campaign' );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => ' ' . str_repeat( 'a', 51 ) . ' ' ] );
+
+		$this->assertEquals( 'name must be at most 50 characters long.', $response->get_data()['data']['params']['name'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	/**
 	 * @param string $name Blank campaign name.
 	 *
@@ -705,8 +788,9 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 	public function provide_blank_campaign_names(): array {
 		return [
-			'empty'       => [ '' ],
-			'only spaces' => [ '   ' ],
+			'empty'                    => [ '' ],
+			'only spaces'              => [ '   ' ],
+			'only non-breaking spaces' => [ "\u{00A0}\u{00A0}" ],
 		];
 	}
 
