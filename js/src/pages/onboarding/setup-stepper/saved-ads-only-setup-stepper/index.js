@@ -12,6 +12,7 @@ import { useAppDispatch } from '~/data';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useCompleteAdsSetup from '~/hooks/useCompleteAdsSetup';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
@@ -43,7 +44,8 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	const adminUrl = useAdminUrl();
 	const [ step, setStep ] = useState( savedStep );
 	const [ paidAdValues, setPaidAdValues ] = useState( {} );
-	const hasAppliedIncentiveRef = useRef( false );
+	const appliedIncentiveAdsIdRef = useRef( null );
+	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 	const { completeAdsSetup } = useCompleteAdsSetup();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
@@ -96,9 +98,13 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	};
 
 	const redirectToDashboard = () => {
+		// The merchant can go back to the accounts step and connect another Ads account after applying the offer.
+		const hasAppliedIncentive =
+			!! appliedIncentiveAdsIdRef.current &&
+			appliedIncentiveAdsIdRef.current === googleAdsAccount?.id;
 		const query = {
 			guide: GUIDE_NAMES.SUBMISSION_SUCCESS,
-			...( hasAppliedIncentiveRef.current && INCENTIVE_APPLIED_QUERY ),
+			...( hasAppliedIncentive && INCENTIVE_APPLIED_QUERY ),
 		};
 		window.location.href = adminUrl + getDashboardUrl( query );
 	};
@@ -146,10 +152,10 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	};
 
 	// The offer is applied on the "Create your campaign" step, but the redirect happens after a later step.
-	// Keep the result once the offer applied, since going back and continuing again returns false.
+	// Keep the Ads account the offer applied to, since going back and continuing again returns false.
 	const rememberAppliedIncentive = ( hasAppliedIncentive ) => {
 		if ( hasAppliedIncentive ) {
-			hasAppliedIncentiveRef.current = true;
+			appliedIncentiveAdsIdRef.current = googleAdsAccount?.id;
 		}
 	};
 
