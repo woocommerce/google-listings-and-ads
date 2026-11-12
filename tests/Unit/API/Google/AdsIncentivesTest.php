@@ -10,7 +10,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
-use Exception;
 use Google\Ads\GoogleAds\V23\Services\ApplyIncentiveResponse;
 use Google\Ads\GoogleAds\V23\Services\Client\IncentiveServiceClient;
 use Google\Ads\GoogleAds\V23\Services\CyoIncentives;
@@ -25,6 +24,8 @@ use Google\Ads\GoogleAds\V23\Services\IncentiveOffer\OfferType;
 use Google\ApiCore\ApiException;
 use Google\Type\Money;
 use PHPUnit\Framework\MockObject\MockObject;
+use Error;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -262,6 +263,16 @@ class AdsIncentivesTest extends UnitTest {
 		$this->transients->expects( $this->never() )->method( 'set' );
 
 		$this->assertTrue( $this->ads_incentives->has_applied_incentive() );
+	}
+
+	public function test_has_applied_incentive_counts_a_php_error_as_applied_without_caching() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->service_client->method( 'search' )->willThrowException( new Error( 'Class not found' ) );
+
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->assertTrue( $this->ads_incentives->has_applied_incentive() );
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_error' ) );
 	}
 
 	public function test_has_applied_incentive_uses_the_cached_not_applied_result() {
