@@ -48,8 +48,15 @@ class PostPublishTriggerTest extends UnitTest {
 		parent::setUp();
 
 		$this->local_post_service = $this->createMock( LocalPostService::class );
-		// Shareable by default -- the test checking disqualification overrides this itself.
-		$this->local_post_service->method( 'is_shareable' )->willReturn( true );
+		// Reads the real sharing toggle rather than a blanket true -- the REST-flow tests below
+		// register the trigger for real, so a brand-new post's own wp_after_insert_post fires
+		// before its meta is set; a blanket true would treat it as shareable then too, consuming
+		// the per-request dedup guard before the test's own scenario even begins.
+		$this->local_post_service->method( 'is_shareable' )->willReturnCallback(
+			function ( WP_Post $post ) {
+				return (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+			}
+		);
 		$this->local_post_service->method( 'get_share_status' )->willReturn(
 			[
 				'is_shared'  => false,

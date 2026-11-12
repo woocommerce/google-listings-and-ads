@@ -260,7 +260,15 @@ class PostDeleteTriggerTest extends UnitTest {
 			->disableOriginalConstructor()
 			->onlyMethods( [ 'delete', 'create', 'is_shareable', 'get_share_status', 'get_sync_outcome', 'set_sync_outcome' ] )
 			->getMock();
-		$local_post_service->method( 'is_shareable' )->willReturn( true );
+		// Reads the real sharing toggle rather than a blanket true -- the post is created below
+		// before its meta is set, and PostPublishTrigger is already registered by then, so a
+		// blanket true would treat that creation as shareable too, consuming the per-request
+		// dedup guard before the restore-and-resave this test is actually about ever happens.
+		$local_post_service->method( 'is_shareable' )->willReturnCallback(
+			function ( WP_Post $post ) {
+				return (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+			}
+		);
 		$local_post_service->method( 'get_share_status' )->willReturn(
 			[
 				'is_shared'  => false,
