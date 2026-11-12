@@ -700,13 +700,20 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 			return $this->post_data_source( $type, $content_language, $match_value, $destinations );
 		} catch ( MerchantApiException $exception ) {
 			if ( self::is_invalid_destinations_failure( $exception ) ) {
+				$tried = array_map(
+					static function ( array $destination_list ): string {
+						return '[' . implode( ', ', $destination_list ) . ']';
+					},
+					self::PRODUCT_DESTINATION_FALLBACKS
+				);
+
 				do_action(
 					'woocommerce_gla_error',
 					sprintf(
-						'Google rejected every online destination for data source %s|%s, so products cannot sync until the Merchant Center account can use [%s]: %s',
+						'Google rejected every destination list tried for data source %s|%s (%s), so products cannot sync until the Merchant Center account can use at least one of them: %s',
 						$content_language,
 						$match_value,
-						implode( ', ', $destinations ),
+						implode( ', ', $tried ),
 						$exception->getMessage()
 					),
 					__METHOD__

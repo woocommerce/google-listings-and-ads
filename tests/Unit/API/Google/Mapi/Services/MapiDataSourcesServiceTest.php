@@ -1441,9 +1441,18 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		// rejects even SHOPPING_ADS would likely get one, so the error surfaces instead.
 		$this->options->method( 'get' )->willReturn( [] );
 		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+
+		$requested = [];
 		$this->client->expects( $this->exactly( 2 ) )
 			->method( 'post' )
-			->willThrowException( $this->invalid_destinations_exception() );
+			->willReturnCallback(
+				function ( $path, $body ) use ( &$requested ) {
+					$requested[] = array_column( $body['primaryProductDataSource']['destinations'], 'destination' );
+					throw $this->invalid_destinations_exception(
+						2 === count( $requested ) ? 'SHOPPING_ADS' : 'ORGANIC_EXPERIENCES'
+					);
+				}
+			);
 
 		$logged   = [];
 		$callback = static function ( $message ) use ( &$logged ) {
@@ -1460,8 +1469,12 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			remove_action( 'woocommerce_gla_error', $callback );
 		}
 
+		$this->assertSame( [ [ 'SHOPPING_ADS', 'FREE_LISTINGS' ], [ 'SHOPPING_ADS' ] ], $requested );
 		$this->assertCount( 2, $logged );
-		$this->assertStringContainsString( 'rejected every online destination', $logged[1] );
+		$this->assertStringContainsString(
+			'rejected every destination list tried for data source en|US ([SHOPPING_ADS, FREE_LISTINGS], [SHOPPING_ADS])',
+			$logged[1]
+		);
 	}
 
 	public function test_rethrows_a_different_error_from_the_fallback_create_without_retrying_again() {
@@ -1628,14 +1641,17 @@ class MapiDataSourcesServiceTest extends UnitTest {
 
 	/**
 	 * The rejection Google returns when a data source requests a destination the account can't
-	 * use, as reported by merchants.
+	 * use. The ORGANIC_EXPERIENCES form is the one reported by merchants; other destination names
+	 * follow the same shape.
+	 *
+	 * @param string $destination The destination Google names as invalid.
 	 *
 	 * @return MerchantApiException
 	 */
-	private function invalid_destinations_exception(): MerchantApiException {
+	private function invalid_destinations_exception( string $destination = 'ORGANIC_EXPERIENCES' ): MerchantApiException {
 		return new MerchantApiException(
 			400,
-			[ 'error' => [ 'message' => '[primaryProductDataSource.destinations] Destinations of the data source are invalid: ORGANIC_EXPERIENCES.' ] ],
+			[ 'error' => [ 'message' => "[primaryProductDataSource.destinations] Destinations of the data source are invalid: {$destination}." ] ],
 			'post'
 		);
 	}
