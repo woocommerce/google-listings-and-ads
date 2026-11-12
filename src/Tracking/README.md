@@ -432,19 +432,8 @@ Triggered when the product feed "bulk edit" functionality is being used
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
 
-### [`gla_campaign_with_cyo_incentive_selected`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L49)
-Applying a "Choose Your Own" incentive offer when creating a campaign in the "Set up Ads" flow.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`context` | `string` | The context in which the incentive offer is applied, e.g. 'create-ads' or 'setup-ads'.
-`level` | `string` | The level of the applied incentive offer, e.g. 'low', 'medium', or 'high'.
-#### Emitters
-- [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L61) with `{ context: 'create-ads', level: 'low' | 'medium' | 'high' }`.
-- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L63) with `{ context: 'setup-ads', level: 'low' | 'medium' | 'high' }`
-
 ### [`gla_campaign_with_cyo_incentive_selected`](../../js/src/pages/create-paid-ads-campaign/index.js#L46)
-Applying a "Choose Your Own" incentive offer when creating a campaign after onboarding.
+Applying a "Choose Your Own" incentive offer when creating a campaign in the "Set up Ads" or "Create campaign" flow.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
@@ -452,7 +441,7 @@ Applying a "Choose Your Own" incentive offer when creating a campaign after onbo
 `level` | `string` | The level of the applied incentive offer, e.g. 'low', 'medium', or 'high'.
 #### Emitters
 - [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L61) with `{ context: 'create-ads', level: 'low' | 'medium' | 'high' }`.
-- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L63) with `{ context: 'setup-ads', level: 'low' | 'medium' | 'high' }`
+- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L55) with `{ context: 'setup-ads', level: 'low' | 'medium' | 'high' }`
 
 ### [`gla_cancel_button_clicked`](../../js/src/pages/markets/components/add-market-modal/modal-footer.js#L15)
 Event fired when the "Cancel" button in the AddMarketModal is clicked.
@@ -888,7 +877,7 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 `recommended_budget` | `number` | The recommended daily budget displayed to merchants regardless of the final amount they choose.
 `has_confirmed_eu_political_content` | `boolean` | Whether the user has confirmed that the ads campaign contains EU political content.
 #### Emitters
-- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L63) on submit
+- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L55) on submit
 
 ### [`gla_link_youtube_account_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/indicator.js#L14)
 Clicking on the button to link the YouTube account.

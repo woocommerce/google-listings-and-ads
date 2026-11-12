@@ -44,7 +44,7 @@ const eventContext = 'create-ads';
 const dashboardURL = getDashboardUrl();
 
 /**
- * Applying a "Choose Your Own" incentive offer when creating a campaign after onboarding.
+ * Applying a "Choose Your Own" incentive offer when creating a campaign in the "Set up Ads" or "Create campaign" flow.
  *
  * @event gla_campaign_with_cyo_incentive_selected
  * @property {string} context The context in which the incentive offer is applied, e.g. 'create-ads' or 'setup-ads'.
