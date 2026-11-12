@@ -30,7 +30,8 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 	 * Check if the store is service-based.
 	 *
 	 * If the option has not been calculated yet, it will be calculated automatically
-	 * based on whether the store has physical products.
+	 * based on whether the store has physical products. A recalculation that classes
+	 * the store as service-based also clears the recorded switch to physical products.
 	 *
 	 * @return bool True if service-based, false otherwise.
 	 */
