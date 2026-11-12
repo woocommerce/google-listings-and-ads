@@ -439,6 +439,8 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	/**
 	 * Trim the campaign name in the given request fields.
 	 *
+	 * The callbacks read the raw JSON body, which skips the schema's sanitize callback, so the name is trimmed here too.
+	 *
 	 * @param array $fields Request fields.
 	 *
 	 * @return array
