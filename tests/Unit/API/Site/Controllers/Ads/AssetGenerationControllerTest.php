@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetGenerationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use WP_REST_Request as Request;
 use Exception;
 
 /**
@@ -294,6 +295,88 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 		$data = $response->get_data();
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( 'marketing_image', $data['items'][0]['type'] );
+	}
+
+	/**
+	 * @dataProvider sanitized_prompt_provider
+	 *
+	 * @param string $prompt   The prompt sent in the request.
+	 * @param string $expected The prompt the service should receive.
+	 */
+	public function test_generate_images_sanitizes_prompt( string $prompt, string $expected ) {
+		$this->service->expects( $this->once() )
+			->method( 'generate_images' )
+			->with(
+				[
+					'final_url'        => self::TEST_SITE_URL,
+					'prompt'           => $expected,
+					'source_image_url' => '',
+				]
+			)
+			->willReturn( [] );
+
+		$response = $this->do_request( self::ROUTE_GENERATE_IMAGES, 'POST', [ 'prompt' => $prompt ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function sanitized_prompt_provider(): array {
+		return [
+			'whole prompt in angle brackets' => [ '<a red bicycle on the beach>', '<a red bicycle on the beach>' ],
+			'word in angle brackets'         => [ 'a <red> bicycle on the beach', 'a <red> bicycle on the beach' ],
+			'html-like markup'               => [ 'use <b>bold</b> text', 'use <b>bold</b> text' ],
+			'line breaks and tabs'           => [ "a red bicycle\non the\tbeach", "a red bicycle\non the\tbeach" ],
+			'control characters'             => [ "a red\x00 bicycle\x07 on the beach\x7F", 'a red bicycle on the beach' ],
+			'surrounding whitespace'         => [ '  a red bicycle on the beach  ', 'a red bicycle on the beach' ],
+		];
+	}
+
+	/**
+	 * @dataProvider unusable_prompt_provider
+	 *
+	 * @param string $prompt The prompt sent in the request.
+	 */
+	public function test_generate_images_rejects_prompt_empty_after_sanitizing( string $prompt ) {
+		$this->service->expects( $this->never() )->method( 'generate_images' );
+
+		// Send a form body, since a JSON body can't carry invalid UTF-8.
+		$request = new Request( 'POST', self::ROUTE_GENERATE_IMAGES );
+		$request->set_body_params( [ 'prompt' => $prompt ] );
+		$response = $this->server->dispatch_request( $request );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'The prompt contains no valid text.', $response->get_data()['data']['params']['prompt'] );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function unusable_prompt_provider(): array {
+		return [
+			'invalid UTF-8'           => [ "a red bicycle \xC3\x28 on the beach" ],
+			'only control characters' => [ "\x07\x1B" ],
+		];
+	}
+
+	public function test_generate_images_with_whitespace_only_prompt_uses_final_url() {
+		$this->service->expects( $this->once() )
+			->method( 'generate_images' )
+			->with(
+				[
+					'final_url'        => self::TEST_SITE_URL,
+					'prompt'           => '',
+					'source_image_url' => '',
+				]
+			)
+			->willReturn( [] );
+
+		$response = $this->do_request( self::ROUTE_GENERATE_IMAGES, 'POST', [ 'prompt' => "  \n\t " ] );
+
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_generate_images_with_source_image_url() {
