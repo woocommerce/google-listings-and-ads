@@ -334,7 +334,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
-		$this->assertEquals( 'merchant_center_required', $response->get_data()['code'] );
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
 		$this->assertEquals( 'Invalid parameter(s): targeted_locations', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
@@ -601,7 +601,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		);
 
 		$this->assertEquals( 400, $response->get_status() );
-		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'merchant_center_required', $response->get_data()['code'] );
 	}
 
 	public function test_edit_campaign_ignores_the_advertising_source() {
