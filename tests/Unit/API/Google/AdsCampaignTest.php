@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignLabel;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -20,7 +21,17 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
+use Google\Ads\GoogleAds\V23\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsResponse;
+use Google\Ads\GoogleAds\V23\Services\MutateOperationResponse;
 use Google\ApiCore\ApiException;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
+use Google\Ads\GoogleAds\V23\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsResponse;
+use Google\Ads\GoogleAds\V23\Services\MutateOperationResponse;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
 
@@ -141,6 +152,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [ 'TW' ],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -152,6 +164,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [ 'HK', 'GB' ],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -171,6 +184,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -182,6 +196,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -223,6 +238,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -234,6 +250,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -319,11 +336,55 @@ class AdsCampaignTest extends UnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [ 'TW' ],
 			'eu_political_advertising_confirmation' => false,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 			'start_date'                            => '2025-01-15',
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
 		$this->assertEquals( $campaign_data, $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID ) );
+	}
+
+	public function test_get_campaign_advertising_source_is_product_with_a_merchant_center_id() {
+		$this->assertSame( AdvertisingSource::PRODUCT, $this->get_advertising_source_for_merchant_id( 1234567890 ) );
+	}
+
+	public function test_get_campaign_advertising_source_is_page_without_a_shopping_setting() {
+		$this->assertSame( AdvertisingSource::PAGE, $this->get_advertising_source_for_merchant_id( null ) );
+	}
+
+	public function test_get_campaign_advertising_source_is_page_with_a_zero_merchant_center_id() {
+		$this->assertSame( AdvertisingSource::PAGE, $this->get_advertising_source_for_merchant_id( 0 ) );
+	}
+
+	/**
+	 * Get the advertising source of a campaign whose shopping setting has the given Merchant Center ID.
+	 *
+	 * @param int|null $merchant_id Merchant Center ID, or null for a campaign without a shopping setting.
+	 *
+	 * @return string
+	 */
+	private function get_advertising_source_for_merchant_id( ?int $merchant_id ): string {
+		$campaign_data = [
+			'id'          => self::TEST_CAMPAIGN_ID,
+			'name'        => 'Single Campaign',
+			'status'      => 'enabled',
+			'type'        => 'performance_max',
+			'amount'      => 10,
+			'country'     => 'US',
+			'merchant_id' => $merchant_id,
+		];
+
+		$this->generate_ads_campaign_query_mock(
+			[ $campaign_data ],
+			[
+				[
+					'campaign_id'         => self::TEST_CAMPAIGN_ID,
+					'geo_target_constant' => 'geoTargetConstants/2158',
+				],
+			]
+		);
+
+		return $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID )['advertising_source'];
 	}
 
 	public function test_get_campaign_returns_null_start_date_when_unavailable() {
@@ -341,6 +402,7 @@ class AdsCampaignTest extends UnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [ 'TW' ],
 			'eu_political_advertising_confirmation' => false,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 		];
 
 		$expected               = $campaign_data_without_start_date;
@@ -549,6 +611,7 @@ class AdsCampaignTest extends UnitTest {
 			'type'                                  => 'performance_max',
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
+			'advertising_source'                    => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->transients->expects( $this->exactly( 2 ) )
@@ -579,10 +642,11 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'advertising_source' => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->assertEquals(
@@ -686,6 +750,34 @@ class AdsCampaignTest extends UnitTest {
 		$this->assertEquals(
 			self::TEST_CAMPAIGN_ID,
 			$this->campaign->edit_campaign( self::TEST_CAMPAIGN_ID, $campaign_data )
+		);
+	}
+
+	public function test_edit_campaign_sends_name_zero() {
+		$campaign_result = $this->createMock( MutateCampaignResult::class );
+		$campaign_result->method( 'getResourceName' )->willReturn(
+			ResourceNames::forCampaign( $this->ads_id, self::TEST_CAMPAIGN_ID )
+		);
+
+		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+			[ ( new MutateOperationResponse() )->setCampaignResult( $campaign_result ) ]
+		);
+
+		$this->service_client->expects( $this->once() )
+			->method( 'mutate' )
+			->willReturnCallback(
+				function ( MutateGoogleAdsRequest $request ) use ( $response ) {
+					$campaign = $request->getMutateOperations()[0]->getCampaignOperation()->getUpdate();
+
+					$this->assertEquals( '0', $campaign->getName() );
+
+					return $response;
+				}
+			);
+
+		$this->assertEquals(
+			self::TEST_CAMPAIGN_ID,
+			$this->campaign->edit_campaign( self::TEST_CAMPAIGN_ID, [ 'name' => '0' ] )
 		);
 	}
 
@@ -900,6 +992,104 @@ class AdsCampaignTest extends UnitTest {
 		$this->assertEquals( 'unconverted', $this->campaign->get_campaign_convert_status() );
 	}
 
+	/**
+	 * Create a campaign and report whether the created campaign carries a shopping setting.
+	 *
+	 * @param array $extra_campaign_data Extra campaign data, such as the advertising source.
+	 *
+	 * @return bool
+	 */
+	protected function create_campaign_and_check_for_shopping_setting( array $extra_campaign_data ): bool {
+		$campaign_data = [
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US' ],
+			'eu_political_advertising_confirmation' => false,
+		] + $extra_campaign_data;
+
+		$this->wc->method( 'get_base_country' )->willReturn( self::BASE_COUNTRY );
+
+		$has_shopping_setting = null;
+
+		$campaign_result = $this->createMock( MutateCampaignResult::class );
+		$campaign_result->method( 'getResourceName' )->willReturn(
+			ResourceNames::forCampaign( $this->ads_id, self::TEST_CAMPAIGN_ID )
+		);
+		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+			[ ( new MutateOperationResponse() )->setCampaignResult( $campaign_result ) ]
+		);
+
+		$this->service_client->expects( $this->once() )
+			->method( 'mutate' )
+			->willReturnCallback(
+				function ( MutateGoogleAdsRequest $request ) use ( &$has_shopping_setting, $response ) {
+					foreach ( $request->getMutateOperations() as $operation ) {
+						if ( 'campaign_operation' === $operation->getOperation() ) {
+							$has_shopping_setting = $operation->getCampaignOperation()->getCreate()->hasShoppingSetting();
+						}
+					}
+
+					return $response;
+				}
+			);
+
+		$this->campaign->create_campaign( $campaign_data );
+
+		return $has_shopping_setting;
+	}
+
+	/**
+	 * @dataProvider provide_default_advertising_source_cases
+	 *
+	 * @param int    $merchant_id     The connected Merchant Center ID, or 0 when none is connected.
+	 * @param string $expected_source The advertising source the campaign should default to.
+	 */
+	public function test_create_campaign_defaults_the_advertising_source( int $merchant_id, string $expected_source ) {
+		$this->options->method( 'get_merchant_id' )->willReturn( $merchant_id );
+		$this->wc->method( 'get_base_country' )->willReturn( self::BASE_COUNTRY );
+		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$campaign = $this->campaign->create_campaign(
+			[
+				'name'                                  => 'New Campaign',
+				'amount'                                => 20,
+				'targeted_locations'                    => [ 'US' ],
+				'eu_political_advertising_confirmation' => false,
+			]
+		);
+
+		$this->assertSame( $expected_source, $campaign['advertising_source'] );
+	}
+
+	public function provide_default_advertising_source_cases(): array {
+		return [
+			'Merchant Center connected'     => [ 1234, AdvertisingSource::PRODUCT ],
+			'Merchant Center not connected' => [ 0, AdvertisingSource::PAGE ],
+		];
+	}
+
+	public function test_create_campaign_with_page_advertising_source_skips_shopping_setting_when_merchant_center_connected() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+
+		$this->assertFalse(
+			$this->create_campaign_and_check_for_shopping_setting( [ 'advertising_source' => AdvertisingSource::PAGE ] )
+		);
+	}
+
+	public function test_create_campaign_with_product_advertising_source_keeps_shopping_setting_when_merchant_center_connected() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+
+		$this->assertTrue(
+			$this->create_campaign_and_check_for_shopping_setting( [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
+		);
+	}
+
+	public function test_create_campaign_without_advertising_source_keeps_shopping_setting_when_merchant_center_connected() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+
+		$this->assertTrue( $this->create_campaign_and_check_for_shopping_setting( [] ) );
+	}
+
 	public function test_create_campaign_with_label() {
 		$campaign_data = [
 			'name'                                  => 'New Campaign',
@@ -916,10 +1106,11 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'advertising_source' => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->transients->expects( $this->exactly( 2 ) )
@@ -997,10 +1188,11 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'advertising_source' => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->assertEquals(

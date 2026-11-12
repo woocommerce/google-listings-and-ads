@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
@@ -13,9 +14,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
 use Exception;
+use WP_Error;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -26,9 +30,15 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class CampaignController extends BaseController implements GoogleHelperAwareInterface, ISO3166AwareInterface {
+class CampaignController extends BaseController implements GoogleHelperAwareInterface, ISO3166AwareInterface, OptionsAwareInterface {
 
 	use CountryCodeTrait;
+	use OptionsAwareTrait;
+
+	/**
+	 * Maximum length of a campaign name sent to create or update a campaign.
+	 */
+	protected const NAME_MAX_LENGTH = 50;
 
 	/**
 	 * @var AdsCampaign
@@ -63,7 +73,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->create_campaign_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_schema_properties(),
+					'args'                => $this->get_create_schema(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -157,12 +167,22 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				$fields = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
 
 				// Set the default value of campaign name.
-				if ( empty( $fields['name'] ) ) {
+				if ( '' === ( $fields['name'] ?? '' ) ) {
 					$current_date_time = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
 					$fields['name']    = sprintf(
 					/* translators: %s: current date time. */
 						__( 'Campaign %s', 'google-listings-and-ads' ),
 						$current_date_time
+					);
+				}
+
+				if ( AdvertisingSource::PRODUCT === ( $fields['advertising_source'] ?? null ) && $this->options->get_merchant_id() <= 0 ) {
+					return new Response(
+						[
+							'code'    => 'merchant_center_required',
+							'message' => __( 'A campaign that advertises products requires a connected Merchant Center account.', 'google-listings-and-ads' ),
+						],
+						400
 					);
 				}
 
@@ -378,7 +398,76 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 			}
 		);
 
+		// Create falls back to a generated name, but an update must not blank the name.
+		$fields['name'] = array_merge( $fields['name'], $this->get_name_callbacks( false ) );
+
 		return $fields;
+	}
+
+	/**
+	 * Get the schema for fields we accept when creating a campaign.
+	 *
+	 * @return array
+	 */
+	protected function get_create_schema(): array {
+		$fields = $this->get_schema_properties();
+
+		$fields['name'] = array_merge( $fields['name'], $this->get_name_callbacks( true ) );
+
+		return $fields;
+	}
+
+	/**
+	 * Get the length limit and the validate and sanitize callbacks for the campaign name request arg.
+	 *
+	 * The limit applies to the request only, since campaigns created or renamed in Google Ads can have
+	 * longer names. The length is checked on the trimmed name, and the sanitize callback stops WordPress
+	 * from re-checking the untrimmed value against the schema.
+	 *
+	 * @param bool $allow_blank Whether an empty or whitespace-only name is accepted.
+	 *
+	 * @return array
+	 */
+	protected function get_name_callbacks( bool $allow_blank ): array {
+		return [
+			'maxLength'         => self::NAME_MAX_LENGTH,
+			'validate_callback' => function ( $value, $request, $param ) use ( $allow_blank ) {
+				if ( ! is_string( $value ) ) {
+					return rest_validate_request_arg( $value, $request, $param );
+				}
+
+				$name   = $this->trim_name( $value );
+				$schema = array_merge( $this->get_schema_properties()['name'], [ 'maxLength' => self::NAME_MAX_LENGTH ] );
+				$result = rest_validate_value_from_schema( $name, $schema, $param );
+				if ( true !== $result ) {
+					return $result;
+				}
+
+				if ( ! $allow_blank && '' === $name ) {
+					return new WP_Error(
+						'rest_invalid_param',
+						__( 'Campaign name cannot be empty.', 'google-listings-and-ads' )
+					);
+				}
+
+				return true;
+			},
+			'sanitize_callback' => function ( $value ) {
+				return is_string( $value ) ? $this->trim_name( $value ) : $value;
+			},
+		];
+	}
+
+	/**
+	 * Trim whitespace from both ends of a name, including non-breaking and other Unicode spaces,
+	 * and the zero-width space and byte order mark that pasted text can carry.
+	 *
+	 * @param string $name Campaign name.
+	 *
+	 * @return string
+	 */
+	protected function trim_name( string $name ): string {
+		return preg_replace( '/^[\s\p{Z}\x{200B}\x{FEFF}]+|[\s\p{Z}\x{200B}\x{FEFF}]+$/u', '', $name ) ?? $name;
 	}
 
 	/**
@@ -421,6 +510,14 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 			'name'                                  => [
 				'type'              => 'string',
 				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => false,
+			],
+			'advertising_source'                    => [
+				'type'              => 'string',
+				'enum'              => AdvertisingSource::values(),
+				'description'       => __( 'What the campaign advertises: the Merchant Center product feed or a page on the store. Defaults to the product feed when Merchant Center is connected, otherwise a page. It cannot be changed after the campaign is created.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
