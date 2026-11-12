@@ -30,6 +30,7 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import CampaignSetup from '~/components/paid-ads/campaign-setup';
 import BudgetSection from '~/components/paid-ads/budget-section';
 import EuRegulationsSection from '~/components/paid-ads/eu-regulations-section';
+import GenAIProgressCard from '~/components/paid-ads/gen-ai-progress/card';
 import {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 	ACTION_SUBMIT_CAMPAIGN_ONLY,
@@ -49,6 +50,21 @@ import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationC
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
 const dashboardURL = getDashboardUrl();
+
+/**
+ * Renders the Google AI progress card while the assets are being fetched.
+ *
+ * @return {JSX.Element|null} The rendered component, or `null` when the assets are not being fetched.
+ */
+const GenAIProgressSection = () => {
+	const { adapter } = useAdaptiveFormContext();
+
+	if ( ! adapter.isFetchingAssets ) {
+		return null;
+	}
+
+	return <GenAIProgressCard />;
+};
 
 /**
  * Renders the "Set your budget" step: the budget card, then the "Create campaign" button, then the FAQs.
@@ -230,6 +246,7 @@ const CreatePaidAdsCampaign = () => {
 									<EuRegulationsSection
 										context={ eventContext }
 									/>
+									<GenAIProgressSection />
 								</CampaignSetup>
 							),
 							onClick: handleStepperClick,
