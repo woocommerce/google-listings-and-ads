@@ -6,6 +6,8 @@ import Products from './products';
 import SearchConsole from './search-console';
 import getSelectedReportKey from '~/utils/getSelectedReportKey';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
+import AppSpinner from '~/components/app-spinner';
+import useReportsAvailability from '~/hooks/useReportsAvailability';
 
 const REPORTS = {
 	programs: Programs,
@@ -14,7 +16,17 @@ const REPORTS = {
 };
 
 const Reports = () => {
-	const Report = REPORTS[ getSelectedReportKey() ];
+	const reportKey = getSelectedReportKey();
+	const { hasMC, hasFinishedResolution } = useReportsAvailability();
+
+	// Wait for the Merchant Center account, so the report and its requests don't change after the first render.
+	if ( ! hasFinishedResolution ) {
+		return <AppSpinner />;
+	}
+
+	// The Products report needs a product feed, which comes from Merchant Center.
+	const Report =
+		! hasMC && reportKey === 'products' ? Programs : REPORTS[ reportKey ];
 
 	return (
 		<>
