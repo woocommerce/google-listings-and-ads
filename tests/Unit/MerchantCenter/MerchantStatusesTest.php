@@ -1311,6 +1311,55 @@ class MerchantStatusesTest extends UnitTest {
 		$this->assertSame( 2, $stored( OptionsInterface::FEED_ISSUE_SUMMARY )['error_issue_product_count'] );
 	}
 
+	public function test_failed_page_keeps_earlier_page_issue_rows_when_the_check_restarts_on_a_shared_instance() {
+		$product_a = WC_Helper_Product::create_simple_product();
+		$product_b = WC_Helper_Product::create_simple_product();
+		$stored    = $this->use_product_status_fakes( [ $product_a, $product_b ] );
+		$issues    = $this->use_issue_store_fakes();
+
+		$mapi   = $this->createMock( MapiProductsService::class );
+		$failed = false;
+		$mapi->method( 'list_page' )->willReturnCallback(
+			function ( $token ) use ( &$failed, $product_a, $product_b ) {
+				if ( null === $token ) {
+					return [
+						'products'        => [ $this->get_mapi_offer_with_issue( $product_a->get_id() ) ],
+						'next_page_token' => 'page-2',
+					];
+				}
+				if ( ! $failed ) {
+					$failed = true;
+					throw new Exception( 'Temporary API failure' );
+				}
+				return [
+					'products'        => [ $this->get_mapi_offer_with_issue( $product_b->get_id() ) ],
+					'next_page_token' => null,
+				];
+			}
+		);
+
+		// One shared service for every attempt, as when the queue runner claims
+		// several batches in the same request.
+		$job = $this->get_status_job( $mapi );
+
+		$job->process_items( [] );
+
+		try {
+			$job->process_items( [ 'next_page_token' => 'page-2' ] );
+			$this->fail( 'The second attempt must fail.' );
+		} catch ( JobException $e ) {
+			$this->assertStringContainsString( 'Temporary API failure', $e->getMessage() );
+		}
+		$this->assertSame( [ $product_a->get_id() ], $issues(), 'A failed page must not delete the rows of an earlier page.' );
+
+		// The check restarts from page 1 instead of retrying page 2.
+		$job->process_items( [] );
+		$job->process_items( [ 'next_page_token' => 'page-2' ] );
+
+		$this->assertSame( [ $product_a->get_id(), $product_b->get_id() ], $issues() );
+		$this->assertSame( 2, $stored( OptionsInterface::FEED_ISSUE_SUMMARY )['error_issue_product_count'] );
+	}
+
 	/**
 	 * @dataProvider incomplete_feed_check_provider
 	 * @param bool $has_stale_tracking Whether tracking from a different check remains after a rollback.
