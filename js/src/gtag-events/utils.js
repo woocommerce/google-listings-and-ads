@@ -20,6 +20,7 @@ export const trackEvent = ( eventName, eventParams ) => {
 	window.gtag( 'event', eventName, {
 		send_to: SEND_TO_GROUP,
 		...eventParams,
+		[ `developer_id.${ glaGtagData.developer_id }` ]: true,
 	} );
 };
 
