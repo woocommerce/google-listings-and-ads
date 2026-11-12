@@ -11,15 +11,12 @@ import { dispatch } from '@wordpress/data';
  */
 import ConnectGoogleBusinessProfileAccountCard from './index';
 import { useAppDispatch } from '~/data';
-import { STORE_KEY, ERROR_SLOTS } from '~/data/constants';
+import { STORE_KEY } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleBusinessProfileLocations from '../hooks/useGoogleBusinessProfileLocations';
 import { recordGlaEvent } from '~/utils/tracks';
-
-const CONNECTION_ERROR_SLOTS = [
-	ERROR_SLOTS.GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT,
-];
+import { CONNECTION_ERROR_SLOTS } from '../constants';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
@@ -120,10 +117,15 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			{ loading: false },
 		] );
 
+		// Mirrors the real action: it never rejects, only resolves to the dispatched action
+		// object on success, or to `undefined` on a failure it already reported itself.
 		fetchGoogleBusinessProfileAccount = jest
 			.fn()
 			.mockName( 'fetchGoogleBusinessProfileAccount' )
-			.mockResolvedValue();
+			.mockResolvedValue( {
+				type: 'RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE',
+				account: {},
+			} );
 		fetchGoogleBusinessProfileLocations = jest
 			.fn()
 			.mockName( 'fetchGoogleBusinessProfileLocations' )
@@ -367,7 +369,10 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
 			expect( connectButton ).toBeDisabled();
 
-			resolveAccountFetch();
+			resolveAccountFetch( {
+				type: 'RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE',
+				account: {},
+			} );
 
 			await waitFor( () => expect( connectButton ).toBeEnabled() );
 		} );
