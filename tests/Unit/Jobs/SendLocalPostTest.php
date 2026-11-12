@@ -387,6 +387,34 @@ class SendLocalPostTest extends UnitTest {
 		$this->assertSame( $exceptions_before + 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 
+	public function test_a_throwing_exception_listener_in_record_failure_does_not_break_processing() {
+		$post = $this->create_shared_post();
+		$this->local_post_service->method( 'create' )->willThrowException( new Exception( 'Network error.' ) );
+
+		add_action(
+			'woocommerce_gla_exception',
+			function () {
+				throw new Exception( 'Listener failed.' );
+			}
+		);
+
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::REQUEST_FAILURE, '' );
+
+		$logged = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( string $message ) use ( &$logged ) {
+				$logged[] = $message;
+			}
+		);
+
+		$this->job->process_items( [ $post->ID ] );
+
+		$this->assertSame( [ 'A woocommerce_gla_exception callback threw: Listener failed.' ], $logged );
+	}
+
 	public function test_a_throwing_sync_success_listener_does_not_break_processing_or_store_a_failure() {
 		$post = $this->create_shared_post();
 

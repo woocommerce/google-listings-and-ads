@@ -173,11 +173,17 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 
 		$this->report_sync_failure( $failure );
 
-		// Callbacks on the exception action may expect an Exception, so report an Error by message.
-		if ( $failure instanceof Exception ) {
-			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
-		} else {
-			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+		try {
+			// Callbacks on the exception action may expect an Exception, so report an Error by message.
+			if ( $failure instanceof Exception ) {
+				do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+			} else {
+				do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+			}
+		} catch ( Throwable $error ) {
+			// A throwing listener here must not escape and reschedule the batch -- the send
+			// already failed, so replaying it would only retry it a second, redundant time.
+			$this->report_listener_error( $failure instanceof Exception ? 'woocommerce_gla_exception' : 'woocommerce_gla_error', $error );
 		}
 	}
 
