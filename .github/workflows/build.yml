@@ -19,8 +19,6 @@ jobs:
     timeout-minutes: 10
     env:
       FORCE_COLOR: 2
-    outputs:
-      jetpack-beta: ${{ steps.jetpack-beta-inform.outputs.informed }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
@@ -98,83 +96,6 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      # Jetpack Beta and Jurassic Ninja install PR builds from the Jetpack Beta Builder. This extension is
-      # not registered there yet, so the steps below are skipped until the JETPACK_BETA_BUILDER_SECRET
-      # repository secret exists. Pull requests from forks never receive it and skip them as well.
-      - name: Check whether Jetpack Beta Builder is set up
-        id: jetpack-beta
-        if: ${{ github.event_name == 'pull_request' }}
-        env:
-          SECRET: ${{ secrets.JETPACK_BETA_BUILDER_SECRET }}
-        run: |
-          if [ -n "$SECRET" ]; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Jetpack Beta Builder: skipped, the JETPACK_BETA_BUILDER_SECRET secret is not available." >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      # Jetpack Beta installs a dev build next to the released plugin, in a "<slug>-dev" folder, and tells
-      # builds apart by their version. The zip built above is repackaged here instead of changing the build.
-      - name: Prepare the dev build for Jetpack Beta Builder
-        id: jetpack-beta-build
-        if: ${{ steps.jetpack-beta.outputs.enabled == 'true' }}
-        env:
-          PR_NUMBER: ${{ github.event.number }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          VERSION=$( jq -r '.version' package.json )
-          MAJOR=$( echo "$VERSION" | cut -d. -f1 )
-          MINOR=$( echo "$VERSION" | cut -d. -f2 )
-          DEV_VERSION="${MAJOR}.$(( MINOR + 1 )).0-dev_PR-${PR_NUMBER}_commit-${PR_HEAD_SHA:0:7}"
-          echo "Dev version: $DEV_VERSION" >> "$GITHUB_STEP_SUMMARY"
-
-          mkdir -p "$RUNNER_TEMP/jetpack-beta"
-          unzip -q google-listings-and-ads.zip -d "$RUNNER_TEMP/jetpack-beta"
-          cd "$RUNNER_TEMP/jetpack-beta"
-          mv google-listings-and-ads google-listings-and-ads-dev
-
-          # 'Version' header and WC_GLA_VERSION constant in the plugin entry file.
-          sed -i "s/^ \* Version: .*$/ * Version: ${DEV_VERSION}/" google-listings-and-ads-dev/google-listings-and-ads.php
-          sed -i "s/define( 'WC_GLA_VERSION', '[^']*' )/define( 'WC_GLA_VERSION', '${DEV_VERSION}' )/" google-listings-and-ads-dev/google-listings-and-ads.php
-
-          # 'Stable tag' header in readme.txt.
-          sed -i "s/^Stable tag: .*$/Stable tag: ${DEV_VERSION}/" google-listings-and-ads-dev/readme.txt
-
-          zip -q -r google-listings-and-ads-dev.zip google-listings-and-ads-dev
-          rm -rf google-listings-and-ads-dev
-
-          PLUGIN_DATA=$( jq -cn --arg slug "google-listings-and-ads" --arg ver "$DEV_VERSION" '{ ($slug): { version: $ver } }' )
-          echo "plugin-data=$PLUGIN_DATA" >> "$GITHUB_OUTPUT"
-
-      - name: Publish dev build artifact for Jetpack Beta Builder
-        if: ${{ steps.jetpack-beta.outputs.enabled == 'true' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: plugins # Hard-coded value for Jetpack Beta Builder.
-          path: ${{ runner.temp }}/jetpack-beta
-          if-no-files-found: error
-          # Only needs to be kept for a day since the Jetpack Beta Builder picks it up to distribute.
-          retention-days: 1
-
-      - name: Inform Jetpack Beta Builder webhook
-        id: jetpack-beta-inform
-        if: ${{ steps.jetpack-beta.outputs.enabled == 'true' }}
-        env:
-          SECRET: ${{ secrets.JETPACK_BETA_BUILDER_SECRET }}
-          PLUGIN_DATA: ${{ steps.jetpack-beta-build.outputs.plugin-data }}
-          PR_NUMBER: ${{ github.event.number }}
-          PR_HEAD_REF: ${{ github.head_ref }}
-        run: |
-          # GITHUB_REF is "refs/pull/<number>/merge" on pull requests, so the head branch is sent instead:
-          # it is the name Jetpack Beta and Jurassic Ninja look the build up by.
-          curl --fail --silent --show-error -L \
-            --url "https://betadownload.jetpack.me/gh-action.php?run_id=$GITHUB_RUN_ID&pr=$PR_NUMBER&commit=$GITHUB_SHA" \
-            --form-string "repo=$GITHUB_REPOSITORY" \
-            --form-string "branch=$PR_HEAD_REF" \
-            --form-string "plugins=$PLUGIN_DATA" \
-            --form-string "secret=$SECRET"
-          echo "informed=true" >> "$GITHUB_OUTPUT"
-
   TestTheBuildComment:
     name: Comment with ways to test the build
     needs: BuildExtensionBundle
@@ -239,53 +160,18 @@ jobs:
       - name: Add or update the comment in the pull request
         env:
           GH_TOKEN: ${{ github.token }}
-          JETPACK_BETA: ${{ needs.BuildExtensionBundle.outputs.jetpack-beta }}
           PLAYGROUND_URL: ${{ steps.playground.outputs.url }}
           PR_NUMBER: ${{ github.event.number }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR_HEAD_REF: ${{ github.head_ref }}
         run: |
           BODY_FILE="$RUNNER_TEMP/test-the-build.md"
 
           {
             echo "### Test the build"
             echo
-
-            # The comment always lists the three options. The two that rely on the Jetpack Beta Builder
-            # only get their instructions and link when it has this build; until then they say what is missing.
-            if [ "$JETPACK_BETA" = "true" ]; then
-              JURASSIC_NINJA_URL="https://jurassic.ninja/create/?jetpack-beta&nojetpack&woocommerce&woocommerce-import-sample-data&branches.google-listings-and-ads=$( jq -rn --arg ref "$PR_HEAD_REF" '$ref|@uri' )"
-              cat <<EOF
-          #### Option 1. Jetpack Beta
-
-          - Install and activate [Jetpack Beta](https://jetpack.com/beta/#download-and-install).
-          - Use this build by searching for PR number \`${PR_NUMBER}\` or branch name \`${PR_HEAD_REF}\` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=google-listings-and-ads
-
-          :information_source: This is your own site. Onboarding connects real WordPress.com and Google accounts, and the WordPress.com connection needs a site that is reachable from the internet.
-
-          #### Option 2. Jurassic Ninja - available for logged-in A12s
-
-          :warning: Log in at [jurassic.ninja](https://jurassic.ninja/) first. Without a login, the link below takes you to the Jurassic Ninja homepage and no site is created.
-
-          :rocket: [Launch a JN site with this branch and sample products](${JURASSIC_NINJA_URL}) :rocket:
-
-          :information_source: The site is public and temporary. Onboarding connects real WordPress.com and Google accounts, so use test ones.
-          EOF
-            else
-              cat <<EOF
-          #### Option 1. Jetpack Beta
-
-          :construction: Not available yet. Google for WooCommerce is not registered with the Jetpack Beta Builder, so Jetpack Beta cannot offer this build. It needs that registration, and its webhook secret in this repository as \`JETPACK_BETA_BUILDER_SECRET\`.
-
-          #### Option 2. Jurassic Ninja - available for logged-in A12s
-
-          :construction: Not available yet. Jurassic Ninja installs a branch build through Jetpack Beta, so it needs the same registration.
-          EOF
-            fi
+            echo "#### WordPress Playground - runs in your browser"
 
             cat <<EOF
-
-          #### Option 3. WordPress Playground - runs in your browser
 
           :test_tube: [Open this build in WordPress Playground](${PLAYGROUND_URL}): a fresh store with WooCommerce set up, a sample product, and Google for WooCommerce on its Get started screen.
 
