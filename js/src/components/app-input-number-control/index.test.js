@@ -125,6 +125,66 @@ describe( 'AppInputNumberControl', () => {
 		expect( onBlur ).toHaveBeenCalledWith( expect.any( Object ), 1234.57 );
 	} );
 
+	describe.each( [ '.', ',', ' ' ] )(
+		'When the decimal and thousand separators are both "%s"',
+		( separator ) => {
+			const numberSettings = {
+				decimalSeparator: separator,
+				thousandSeparator: separator,
+			};
+
+			it.each( [
+				[ '1200', 1200 ],
+				[ '15000', 15000 ],
+			] )(
+				'Should keep the value of %s rather than reading its grouped form as a decimal',
+				async ( input, expected ) => {
+					const user = userEvent.setup();
+
+					render(
+						<ControlledInput
+							numberSettings={ {
+								...numberSettings,
+								precision: 0,
+							} }
+						/>
+					);
+
+					await user.clear( getInput() );
+					await user.type( getInput(), input );
+					await user.click( document.body );
+
+					expect( onChange ).toHaveBeenLastCalledWith( expected );
+					expect( onBlur ).toHaveBeenLastCalledWith(
+						expect.any( Object ),
+						expected
+					);
+					expect( getInput().value ).toBe( input );
+				}
+			);
+
+			it( 'Should keep the decimals when the precision is not 0', async () => {
+				const user = userEvent.setup();
+
+				render(
+					<ControlledInput
+						numberSettings={ { ...numberSettings, precision: 2 } }
+					/>
+				);
+
+				await user.clear( getInput() );
+				await user.type( getInput(), `1234${ separator }56` );
+				await user.click( document.body );
+
+				expect( onBlur ).toHaveBeenLastCalledWith(
+					expect.any( Object ),
+					1234.56
+				);
+				expect( getInput().value ).toBe( `1234${ separator }56` );
+			} );
+		}
+	);
+
 	it( 'Should treat the cleared input value as number 0 after losing focus', async () => {
 		const user = userEvent.setup();
 
