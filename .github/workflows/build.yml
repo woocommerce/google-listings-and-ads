@@ -251,7 +251,8 @@ jobs:
             echo "### Test the build"
             echo
 
-            # The options that rely on the Jetpack Beta Builder are only offered when it has this build.
+            # The comment always lists the three options. The two that rely on the Jetpack Beta Builder
+            # only get their instructions and link when it has this build; until then they say what is missing.
             if [ "$JETPACK_BETA" = "true" ]; then
               JURASSIC_NINJA_URL="https://jurassic.ninja/create/?jetpack-beta&nojetpack&woocommerce&woocommerce-import-sample-data&branches.google-listings-and-ads=$( jq -rn --arg ref "$PR_HEAD_REF" '$ref|@uri' )"
               cat <<EOF
@@ -260,19 +261,31 @@ jobs:
           - Install and activate [Jetpack Beta](https://jetpack.com/beta/#download-and-install).
           - Use this build by searching for PR number \`${PR_NUMBER}\` or branch name \`${PR_HEAD_REF}\` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=google-listings-and-ads
 
+          :information_source: This is your own site. Onboarding connects real WordPress.com and Google accounts, and the WordPress.com connection needs a site that is reachable from the internet.
+
           #### Option 2. Jurassic Ninja - available for logged-in A12s
 
           :warning: Log in at [jurassic.ninja](https://jurassic.ninja/) first. Without a login, the link below takes you to the Jurassic Ninja homepage and no site is created.
 
           :rocket: [Launch a JN site with this branch and sample products](${JURASSIC_NINJA_URL}) :rocket:
 
-          #### Option 3. WordPress Playground - runs in your browser
+          :information_source: The site is public and temporary. Onboarding connects real WordPress.com and Google accounts, so use test ones.
           EOF
             else
-              echo "#### WordPress Playground - runs in your browser"
+              cat <<EOF
+          #### Option 1. Jetpack Beta
+
+          :construction: Not available yet. Google for WooCommerce is not registered with the Jetpack Beta Builder, so Jetpack Beta cannot offer this build. It needs that registration, and its webhook secret in this repository as \`JETPACK_BETA_BUILDER_SECRET\`.
+
+          #### Option 2. Jurassic Ninja - available for logged-in A12s
+
+          :construction: Not available yet. Jurassic Ninja installs a branch build through Jetpack Beta, so it needs the same registration.
+          EOF
             fi
 
             cat <<EOF
+
+          #### Option 3. WordPress Playground - runs in your browser
 
           :test_tube: [Open this build in WordPress Playground](${PLAYGROUND_URL}): a fresh store with WooCommerce set up, a sample product, and Google for WooCommerce on its Get started screen.
 
