@@ -1435,6 +1435,28 @@ export function receiveCYOIncentives( cyoIncentives ) {
 	};
 }
 
+/**
+ * Applies an Ads credit offer to the connected Google Ads account, then marks it as applied,
+ * so the offer picker hides without fetching the incentives again.
+ *
+ * Errors aren't handled here, so the caller decides how to handle a failed apply.
+ *
+ * @param {string} id The ID of the Ads credit offer to apply.
+ * @return {Object} Redux action with type `TYPES.APPLY_CYO_INCENTIVE`.
+ * @throws Will throw an error if the request failed.
+ */
+export function* applyCYOIncentive( id ) {
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/ads/incentives`,
+		method: 'POST',
+		data: { id },
+	} );
+
+	return {
+		type: TYPES.APPLY_CYO_INCENTIVE,
+	};
+}
+
 export function* receiveGenAIMediaAssets( url, data, assetType ) {
 	if ( ! data?.items ) {
 		return {

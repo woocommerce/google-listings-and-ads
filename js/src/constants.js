@@ -26,6 +26,12 @@ export const GUIDE_NAMES = {
 	CAMPAIGN_CREATION_SUCCESS: 'campaign-creation-success',
 };
 
+/**
+ * The one-time query arg added to a redirect URL after an Ads credit offer was applied.
+ * Flows that end with a full page reload use it, since a notice created before the reload is lost.
+ */
+export const INCENTIVE_APPLIED_QUERY = { incentive: 'applied' };
+
 export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',

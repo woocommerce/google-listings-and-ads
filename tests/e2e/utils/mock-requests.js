@@ -604,9 +604,14 @@ export default class MockRequests {
 	 *
 	 * @param {Array} [incentives] Incentive items array. Omit to use the default three-tier set.
 	 * @param {number} [status=200]
+	 * @param {boolean} [hasAppliedIncentive=false] Whether an offer was already applied to the Ads account.
 	 * @return {Promise<void>}
 	 */
-	async fulfillCYOIncentives( incentives, status = 200 ) {
+	async fulfillCYOIncentives(
+		incentives,
+		status = 200,
+		hasAppliedIncentive = false
+	) {
 		const defaultIncentives = [
 			{
 				id: 'incentive-low-id',
@@ -654,6 +659,7 @@ export default class MockRequests {
 			termsAndConditionsUrl:
 				'https://ads.google.com/aw/campaignassistant',
 			incentives: incentives ?? defaultIncentives,
+			has_applied_incentive: hasAppliedIncentive,
 		};
 
 		await this.fulfillRequest(

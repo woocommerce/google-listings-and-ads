@@ -780,7 +780,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 12 ) )
+		$this->options->expects( $this->exactly( 13 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
@@ -792,15 +792,17 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE ],
 				[ OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE ],
 				[ OptionsInterface::ADS_ID ],
+				[ OptionsInterface::ADS_INCENTIVE_APPLIED ],
 				[ OptionsInterface::ADS_INCENTIVE_APPLY_ERROR ],
 				[ OptionsInterface::ADS_SETUP_COMPLETED_AT ],
 				[ OptionsInterface::CAMPAIGN_CONVERT_STATUS ]
 			);
 
-		$this->transients->expects( $this->exactly( 1 ) )
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
+				[ TransientsInterface::ADS_INCENTIVE_APPLIED_CHECK ],
 			);
 
 		$this->account->disconnect();

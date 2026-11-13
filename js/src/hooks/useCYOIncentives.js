@@ -41,6 +41,7 @@ const selectorName = 'getCYOIncentives';
 /**
  * @typedef {Object} CYOIncentivesPayload
  * @property {CYOIncentive[]|null} data The list of CYO incentives, or `null` if not yet fetched.
+ * @property {boolean} hasAppliedIncentive Whether an offer was already applied to the connected Google Ads account.
  * @property {boolean} hasFinishedResolution Whether the data fetching has finished.
  */
 
@@ -63,6 +64,7 @@ const useCYOIncentives = () => {
 			if ( ! isBillingCompleted ) {
 				return {
 					data: null,
+					hasAppliedIncentive: false,
 					hasFinishedResolution: hasResolvedBillingStatus,
 				};
 			}
@@ -76,6 +78,7 @@ const useCYOIncentives = () => {
 
 			return {
 				data: incentives,
+				hasAppliedIncentive: selector.hasAppliedCYOIncentive(),
 				hasFinishedResolution: hasResolvedIncentives,
 			};
 		},

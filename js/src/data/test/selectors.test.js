@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getNotifications } from '../selectors';
+import { getNotifications, hasAppliedCYOIncentive } from '../selectors';
 
 describe( 'getNotifications', () => {
 	it( 'returns state.notifications when present', () => {
@@ -21,5 +21,21 @@ describe( 'getNotifications', () => {
 
 	it( 'returns empty array when state.notifications is null', () => {
 		expect( getNotifications( { notifications: null } ) ).toEqual( [] );
+	} );
+} );
+
+describe( 'hasAppliedCYOIncentive', () => {
+	it( 'returns the flag from the incentives response', () => {
+		expect(
+			hasAppliedCYOIncentive( {
+				ads: { cyo_incentives: { has_applied_incentive: true } },
+			} )
+		).toBe( true );
+	} );
+
+	it( 'returns false when the incentives are not fetched yet', () => {
+		expect(
+			hasAppliedCYOIncentive( { ads: { cyo_incentives: {} } } )
+		).toBe( false );
 	} );
 } );

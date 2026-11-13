@@ -100,6 +100,9 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 		return function ( Request $request ) {
 			$incentives = $this->ads_incentives->fetch_incentives();
 
+			// Without offers the picker doesn't show, so skip asking Google whether one was applied.
+			$incentives['has_applied_incentive'] = ! empty( $incentives['incentives'] ) && $this->ads_incentives->has_applied_incentive();
+
 			return $this->prepare_item_for_response( $incentives, $request );
 		};
 	}
@@ -118,6 +121,12 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 				// Clear any stale flags from a previous failed attempt.
 				$this->options->delete( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR );
 				$this->options->delete( OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE );
+
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Applied the Ads credit offer (incentive ID: %s).', $incentive_id ),
+					__METHOD__
+				);
 
 				return new Response( $result );
 			} catch ( ExceptionWithResponseData $e ) {
@@ -240,6 +249,11 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 						],
 					],
 				],
+			],
+			'has_applied_incentive' => [
+				'type'        => 'boolean',
+				'description' => __( 'Whether an offer was already applied to the connected Google Ads account. Always false when no offers are returned.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
 			],
 		];
 	}
