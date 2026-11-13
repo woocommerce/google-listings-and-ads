@@ -117,7 +117,8 @@
 		},
 		"@wp-playground/storage": {
 			"isomorphic-git": "^1.38.6"
-		}
+		},
+		"minimatch@>=7.0.0 <11.0.1": "^11.0.1"
 	},
 	"scripts": {
 		"prearchive": "rm -rf $npm_package_name $npm_package_name.zip vendor && composer install --no-dev && composer dump-autoload -o",
