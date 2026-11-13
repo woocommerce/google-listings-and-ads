@@ -426,4 +426,83 @@ describe( 'CampaignAssetsForm', () => {
 			expect.any( Object )
 		);
 	} );
+
+	describe( 'campaign setup values', () => {
+		function renderForm( props ) {
+			const children = jest.fn();
+
+			const view = render(
+				<CampaignAssetsForm validate={ alwaysValid } { ...props }>
+					{ children }
+				</CampaignAssetsForm>
+			);
+
+			return { children, ...view };
+		}
+
+		function expectLastValuesToMatch( children, values ) {
+			expect( children ).toHaveBeenLastCalledWith(
+				expect.objectContaining( {
+					values: expect.objectContaining( values ),
+				} )
+			);
+		}
+
+		it( 'Should start a new campaign with the assets opt-in off', () => {
+			const { children } = renderForm();
+
+			expectLastValuesToMatch( children, {
+				includeCreativeAssets: false,
+			} );
+		} );
+
+		it( 'Should keep the values passed as the initial campaign', () => {
+			const { children } = renderForm( {
+				initialCampaign: {
+					campaignName: 'My campaign',
+					advertisingSource: 'page',
+					includeCreativeAssets: true,
+				},
+			} );
+
+			expectLastValuesToMatch( children, {
+				campaignName: 'My campaign',
+				advertisingSource: 'page',
+				includeCreativeAssets: true,
+			} );
+		} );
+
+		it( 'Should not reset the values when the asset group is reset', async () => {
+			const user = userEvent.setup();
+			const initialCampaign = {
+				campaignName: 'My campaign',
+				advertisingSource: 'page',
+				includeCreativeAssets: true,
+			};
+			const inspect = jest.fn();
+
+			render(
+				<CampaignAssetsForm
+					validate={ alwaysValid }
+					initialCampaign={ initialCampaign }
+				>
+					{ ( { adapter, values } ) => {
+						inspect( values );
+
+						return (
+							<button onClick={ adapter.resetAssetGroup }>
+								reset
+							</button>
+						);
+					} }
+				</CampaignAssetsForm>
+			);
+
+			await user.click( screen.getByRole( 'button', { name: 'reset' } ) );
+
+			expect( inspect ).toHaveBeenLastCalledWith(
+				expect.objectContaining( initialCampaign )
+			);
+		} );
+	} );
 } );
