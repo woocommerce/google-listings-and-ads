@@ -74,7 +74,7 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
 
 		$recommendations = [
-			'us-new' => self::TEST_RECOMMENDATION,
+			'us-new-product' => self::TEST_RECOMMENDATION,
 		];
 
 		$this->transients->expects( $this->once() )
@@ -82,14 +82,14 @@ class BudgetRecommendationsTest extends UnitTest {
 			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
 			->willReturn( $recommendations );
 
-		$this->assertEquals( $recommendations['us-new'], $this->recommendations->get_recommendations( [ 'US' ] ) );
+		$this->assertEquals( $recommendations['us-new-product'], $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 
 	public function test_get_recommendations_cache_key_uses_existing_for_advertisers_with_campaigns() {
 		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 3 );
 
 		$recommendations = [
-			'us-existing' => self::TEST_RECOMMENDATION,
+			'us-existing-product' => self::TEST_RECOMMENDATION,
 		];
 
 		$this->transients->expects( $this->once() )
@@ -97,7 +97,7 @@ class BudgetRecommendationsTest extends UnitTest {
 			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
 			->willReturn( $recommendations );
 
-		$this->assertEquals( $recommendations['us-existing'], $this->recommendations->get_recommendations( [ 'US' ] ) );
+		$this->assertEquals( $recommendations['us-existing-product'], $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 
 	public function test_get_recommendations_sends_is_new_customer_true_when_no_campaigns() {
@@ -308,8 +308,8 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
 
 		$cached = [
-			'us-new'      => self::TEST_RECOMMENDATION,
-			'us-new-page' => [ 'daily_budget' => 20 ],
+			'us-new-product' => self::TEST_RECOMMENDATION,
+			'us-new-page'    => [ 'daily_budget' => 20 ],
 		];
 
 		$this->transients->method( 'get' )
@@ -317,8 +317,8 @@ class BudgetRecommendationsTest extends UnitTest {
 			->willReturn( $cached );
 
 		$this->assertEquals( $cached['us-new-page'], $this->recommendations->get_recommendations( [ 'US' ], AdvertisingSource::PAGE ) );
-		$this->assertEquals( $cached['us-new'], $this->recommendations->get_recommendations( [ 'US' ], AdvertisingSource::PRODUCT ) );
-		$this->assertEquals( $cached['us-new'], $this->recommendations->get_recommendations( [ 'US' ] ) );
+		$this->assertEquals( $cached['us-new-product'], $this->recommendations->get_recommendations( [ 'US' ], AdvertisingSource::PRODUCT ) );
+		$this->assertEquals( $cached['us-new-product'], $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 
 	/**
@@ -360,17 +360,17 @@ class BudgetRecommendationsTest extends UnitTest {
 			'recommendations' => [ 'daily_budget' => 20 ],
 		];
 
-		$saved = $this->get_saved_budget_transient( AdvertisingSource::PAGE, [ 'us-existing' => $valid ] );
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PAGE, [ 'us-existing-product' => $valid ] );
 
-		$this->assertSame( [ 'us-existing', 'us-new-page' ], array_keys( $saved ) );
-		$this->assertSame( $valid, $saved['us-existing'] );
+		$this->assertSame( [ 'us-existing-product', 'us-new-page' ], array_keys( $saved ) );
+		$this->assertSame( $valid, $saved['us-existing-product'] );
 		$this->assertEquals( [ self::TEST_RECOMMENDATION ], $saved['us-new-page']['recommendations'] );
 	}
 
 	public function test_get_recommendations_saves_product_results_under_the_key_without_a_suffix() {
 		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, [] );
 
-		$this->assertSame( [ 'us-new' ], array_keys( $saved ) );
+		$this->assertSame( [ 'us-new-product' ], array_keys( $saved ) );
 	}
 
 	public function test_get_recommendations_drops_expired_and_unstamped_entries_when_saving() {
@@ -384,7 +384,7 @@ class BudgetRecommendationsTest extends UnitTest {
 
 		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, $cached );
 
-		$this->assertSame( [ 'us-new' ], array_keys( $saved ) );
+		$this->assertSame( [ 'us-new-product' ], array_keys( $saved ) );
 	}
 
 	public function test_get_recommendations_ignores_an_expired_entry() {
@@ -397,7 +397,7 @@ class BudgetRecommendationsTest extends UnitTest {
 			function ( string $name ) {
 				return TransientsInterface::ADS_BUDGET_RECOMMENDATIONS === $name
 					? [
-						'us-new' => [
+						'us-new-product' => [
 							'saved_at'        => time() - 13 * HOUR_IN_SECONDS,
 							'recommendations' => [ 'daily_budget' => 99 ],
 						],
@@ -419,7 +419,7 @@ class BudgetRecommendationsTest extends UnitTest {
 
 		$this->transients->method( 'get' )
 			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
-			->willReturn( [ 'us-new' => $entry ] );
+			->willReturn( [ 'us-new-product' => $entry ] );
 
 		$this->assertSame( $entry['recommendations'], $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}

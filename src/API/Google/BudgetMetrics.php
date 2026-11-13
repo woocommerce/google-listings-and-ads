@@ -70,7 +70,7 @@ class BudgetMetrics implements OptionsAwareInterface, TransientsAwareInterface {
 	public function get_metrics( float $budget, array $country_codes, string $advertising_source = AdvertisingSource::PRODUCT ): ?array {
 		$is_new_customer = 0 === $this->merchant_metrics->get_campaign_count();
 		$is_page         = AdvertisingSource::PAGE === $advertising_source;
-		$cache_key       = strtolower( join( '-', $country_codes ) . '-' . $budget ) . ( $is_new_customer ? '-new' : '-existing' ) . ( $is_page ? '-page' : '' );
+		$cache_key       = strtolower( join( '-', $country_codes ) . '-' . $budget ) . ( $is_new_customer ? '-new' : '-existing' ) . '-' . $advertising_source;
 		$transient       = $this->transients->get( TransientsInterface::ADS_BUDGET_METRICS );
 
 		// Check if we have the budget metrics cached in the transient.

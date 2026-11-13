@@ -69,7 +69,7 @@ class BudgetMetricsTest extends UnitTest {
 		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
 
 		$metrics = [
-			'us-12-new' => self::TEST_METRICS,
+			'us-12-new-product' => self::TEST_METRICS,
 		];
 
 		$this->transients->expects( $this->once() )
@@ -77,14 +77,14 @@ class BudgetMetricsTest extends UnitTest {
 			->with( TransientsInterface::ADS_BUDGET_METRICS )
 			->willReturn( $metrics );
 
-		$this->assertEquals( $metrics['us-12-new'], $this->metrics->get_metrics( 12, [ 'US' ] ) );
+		$this->assertEquals( $metrics['us-12-new-product'], $this->metrics->get_metrics( 12, [ 'US' ] ) );
 	}
 
 	public function test_get_metrics_cache_key_uses_existing_for_advertisers_with_campaigns() {
 		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 4 );
 
 		$metrics = [
-			'us-12-existing' => self::TEST_METRICS,
+			'us-12-existing-product' => self::TEST_METRICS,
 		];
 
 		$this->transients->expects( $this->once() )
@@ -92,7 +92,7 @@ class BudgetMetricsTest extends UnitTest {
 			->with( TransientsInterface::ADS_BUDGET_METRICS )
 			->willReturn( $metrics );
 
-		$this->assertEquals( $metrics['us-12-existing'], $this->metrics->get_metrics( 12, [ 'US' ] ) );
+		$this->assertEquals( $metrics['us-12-existing-product'], $this->metrics->get_metrics( 12, [ 'US' ] ) );
 	}
 
 	public function test_get_metrics_sends_is_new_customer_true_when_no_campaigns() {
@@ -311,8 +311,8 @@ class BudgetMetricsTest extends UnitTest {
 		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
 
 		$cached = [
-			'us-12-new'      => self::TEST_METRICS,
-			'us-12-new-page' => [
+			'us-12-new-product' => self::TEST_METRICS,
+			'us-12-new-page'    => [
 				'cost'              => 1,
 				'conversions'       => 2,
 				'conversions_value' => 3,
@@ -324,8 +324,8 @@ class BudgetMetricsTest extends UnitTest {
 			->willReturn( $cached );
 
 		$this->assertEquals( $cached['us-12-new-page'], $this->metrics->get_metrics( 12, [ 'US' ], AdvertisingSource::PAGE ) );
-		$this->assertEquals( $cached['us-12-new'], $this->metrics->get_metrics( 12, [ 'US' ], AdvertisingSource::PRODUCT ) );
-		$this->assertEquals( $cached['us-12-new'], $this->metrics->get_metrics( 12, [ 'US' ] ) );
+		$this->assertEquals( $cached['us-12-new-product'], $this->metrics->get_metrics( 12, [ 'US' ], AdvertisingSource::PRODUCT ) );
+		$this->assertEquals( $cached['us-12-new-product'], $this->metrics->get_metrics( 12, [ 'US' ] ) );
 	}
 
 	/**
@@ -369,14 +369,14 @@ class BudgetMetricsTest extends UnitTest {
 	}
 
 	public function test_get_metrics_saves_page_results_under_a_key_with_a_page_suffix_and_keeps_other_entries() {
-		$saved = $this->get_saved_budget_transient( AdvertisingSource::PAGE, [ 'us-12-new' => [ 'cost' => 1 ] ] );
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PAGE, [ 'us-12-new-product' => [ 'cost' => 1 ] ] );
 
-		$this->assertSame( [ 'us-12-new', 'us-12-new-page' ], array_keys( $saved ) );
+		$this->assertSame( [ 'us-12-new-product', 'us-12-new-page' ], array_keys( $saved ) );
 	}
 
 	public function test_get_metrics_saves_product_results_under_the_key_without_a_suffix() {
 		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, [] );
 
-		$this->assertSame( [ 'us-12-new' ], array_keys( $saved ) );
+		$this->assertSame( [ 'us-12-new-product' ], array_keys( $saved ) );
 	}
 }
