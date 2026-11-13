@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use DateTimeInterface;
 use WP;
+use WP_Term;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -89,7 +90,8 @@ class TopStorePagesService extends AbstractTopPagesService {
 	}
 
 	/**
-	 * Group the URLs of a post under its ID, and keep any other store URL on its own.
+	 * Group the URLs of a post under its ID, and those of a product category page under the category, and
+	 * keep any other store URL on its own.
 	 *
 	 * Products are searched for a former slug too, so an old product URL is left out
 	 * rather than kept as a page of its own.
@@ -102,6 +104,13 @@ class TopStorePagesService extends AbstractTopPagesService {
 		// Checked here as well as in the resolver, which returns 0 for both another host and an unresolved store URL.
 		if ( ! $this->resolver->is_store_url( $url ) ) {
 			return null;
+		}
+
+		// Checked before posts, since WordPress shows a category page at its URL rather than following a post's former slug there.
+		$category = $this->resolver->resolve_product_category( $url );
+
+		if ( null !== $category ) {
+			return 'product_cat:' . $category->term_id;
 		}
 
 		$post_id = $this->resolver->resolve_post_id( $url, get_post_types( [ 'public' => true ] ) );
@@ -122,9 +131,9 @@ class TopStorePagesService extends AbstractTopPagesService {
 	/**
 	 * Identify a page by its post ID, name and current URL.
 	 *
-	 * A post is named by its title, and a home page that isn't a post is named "Home page". Any other page,
-	 * or a post without a title, is named by its URL path and query string, so a plain-permalink archive
-	 * such as `/?product_cat=shoes` isn't just "/".
+	 * A post is named by its title, a product category page by the category's name, and a home page that isn't
+	 * a post is named "Home page". Any other page, or a post without a title, is named by its URL path and query
+	 * string, so a plain-permalink archive such as `/?post_type=product` isn't just "/".
 	 *
 	 * @param string $key Group key from {@see self::get_page_key()}.
 	 * @param string $url
@@ -140,6 +149,17 @@ class TopStorePagesService extends AbstractTopPagesService {
 			// The report shows plain text.
 			$name = html_entity_decode( wp_strip_all_tags( get_post_field( 'post_title', $post_id ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 			$url  = get_permalink( $post_id ) ?: $url;
+		}
+
+		if ( 0 === strpos( $key, 'product_cat:' ) ) {
+			$category = get_term( (int) substr( $key, 12 ), 'product_cat' );
+
+			if ( $category instanceof WP_Term ) {
+				// The stored name may hold HTML entities, such as `&amp;`, and the report shows plain text.
+				$name = html_entity_decode( wp_strip_all_tags( $category->name ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+				$link = get_term_link( $category );
+				$url  = is_string( $link ) ? $link : $url;
+			}
 		}
 
 		if ( '' === $name ) {

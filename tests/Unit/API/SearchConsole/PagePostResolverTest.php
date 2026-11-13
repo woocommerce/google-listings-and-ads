@@ -19,6 +19,12 @@ class PagePostResolverTest extends UnitTest {
 	/** @var PagePostResolver $resolver */
 	protected $resolver;
 
+	/** @var array|null The product category permalink structure before the test changed it. */
+	protected $product_category_permastruct = null;
+
+	/** @var bool Whether the test added the product category permalink structure. */
+	protected $added_product_category_permastruct = false;
+
 	public function setUp(): void {
 		parent::setUp();
 
@@ -28,12 +34,50 @@ class PagePostResolverTest extends UnitTest {
 		$this->resolver = new PagePostResolver();
 	}
 
+	public function tearDown(): void {
+		global $wp_rewrite;
+
+		if ( null !== $this->product_category_permastruct ) {
+			$wp_rewrite->extra_permastructs['product_cat'] = $this->product_category_permastruct;
+		} elseif ( $this->added_product_category_permastruct ) {
+			remove_permastruct( 'product_cat' );
+		}
+
+		parent::tearDown();
+	}
+
+	/**
+	 * Give product categories their `/product-category/<parent>/<slug>/` pages.
+	 *
+	 * A taxonomy only gets its permalink structure when it is registered while pretty permalinks are on,
+	 * and WooCommerce registers product categories earlier, so add it here and restore it in tearDown().
+	 */
+	protected function add_product_category_permastruct(): void {
+		global $wp_rewrite;
+
+		$this->product_category_permastruct       = $wp_rewrite->extra_permastructs['product_cat'] ?? null;
+		$this->added_product_category_permastruct = true;
+
+		add_permastruct( 'product_cat', 'product-category/%product_cat%', [ 'with_front' => false ] );
+	}
+
 	protected function create_page( string $slug ): int {
 		return $this->factory()->post->create(
 			[
 				'post_type'   => 'page',
 				'post_status' => 'publish',
 				'post_name'   => $slug,
+			]
+		);
+	}
+
+	protected function create_product_category( string $name, string $slug, int $parent_id = 0 ): int {
+		return $this->factory()->term->create(
+			[
+				'taxonomy' => 'product_cat',
+				'name'     => $name,
+				'slug'     => $slug,
+				'parent'   => $parent_id,
 			]
 		);
 	}
@@ -348,5 +392,80 @@ class PagePostResolverTest extends UnitTest {
 		$this->assertTrue( $this->resolver->is_store_url( str_replace( '://', '://www.', home_url( '/shop/' ) ) ) );
 		$this->assertFalse( $this->resolver->is_store_url( 'https://other.example/shop/' ) );
 		$this->assertFalse( $this->resolver->is_store_url( 'not a url' ) );
+	}
+
+	public function test_resolves_a_product_category_page_to_its_category() {
+		$this->add_product_category_permastruct();
+		$term_id = $this->create_product_category( 'Hats', 'hats' );
+
+		$this->assertSame( home_url( '/product-category/hats/' ), get_term_link( $term_id ) );
+		$this->assertSame( $term_id, $this->resolve_product_category_id( home_url( '/product-category/hats/' ) ) );
+		$this->assertSame( $term_id, $this->resolve_product_category_id( home_url( '/product-category/hats?orderby=price' ) ) );
+	}
+
+	public function test_resolves_a_child_product_category_only_at_its_own_page_path() {
+		$this->add_product_category_permastruct();
+		$parent_id = $this->create_product_category( 'Clothing', 'clothing' );
+		$child_id  = $this->create_product_category( 'Shirts', 'shirts', $parent_id );
+
+		$this->assertSame( $child_id, $this->resolve_product_category_id( home_url( '/product-category/clothing/shirts/' ) ) );
+		$this->assertSame( 0, $this->resolve_product_category_id( home_url( '/product-category/shoes/shirts/' ) ) );
+	}
+
+	public function test_does_not_resolve_a_url_that_only_ends_in_a_product_category_slug() {
+		$this->add_product_category_permastruct();
+		$this->create_product_category( 'Hats', 'hats' );
+
+		$this->assertSame( 0, $this->resolve_product_category_id( home_url( '/blog/hats/' ) ) );
+	}
+
+	public function test_resolves_a_plain_permalink_product_category_query_at_the_home_path() {
+		$parent_id = $this->create_product_category( 'Clothing', 'clothing' );
+		$child_id  = $this->create_product_category( 'Shirts', 'shirts', $parent_id );
+
+		$this->assertSame( $parent_id, $this->resolve_product_category_id( home_url( '/?product_cat=clothing' ) ) );
+		$this->assertSame( $child_id, $this->resolve_product_category_id( home_url( '/?product_cat=clothing/shirts' ) ) );
+		$this->assertSame( 0, $this->resolve_product_category_id( home_url( '/?product_cat=never-existed' ) ) );
+	}
+
+	public function test_does_not_resolve_a_query_that_also_names_a_post() {
+		$this->create_product_category( 'Hats', 'hats' );
+		$product = WC_Helper_Product::create_simple_product();
+		$slug    = get_post_field( 'post_name', $product->get_id() );
+
+		$this->assertSame( 0, $this->resolve_product_category_id( home_url( '/?product=' . $slug . '&product_cat=hats' ) ) );
+		$this->assertSame( 0, $this->resolve_product_category_id( home_url( '/?page_id=' . $this->create_page( 'about' ) . '&product_cat=hats' ) ) );
+	}
+
+	public function test_does_not_resolve_a_search_results_page_that_filters_on_a_product_category() {
+		$this->create_product_category( 'Hats', 'hats' );
+
+		$this->assertSame( 0, $this->resolve_product_category_id( home_url( '/?s=cap&product_cat=hats' ) ) );
+	}
+
+	public function test_does_not_resolve_a_blog_category_page() {
+		$term_id = $this->factory()->category->create( [ 'slug' => 'news' ] );
+
+		$this->assertSame( 0, $this->resolve_product_category_id( get_term_link( $term_id ) ) );
+	}
+
+	public function test_does_not_resolve_a_product_category_page_on_another_host() {
+		$this->add_product_category_permastruct();
+		$this->create_product_category( 'Hats', 'hats' );
+
+		$this->assertSame( 0, $this->resolve_product_category_id( 'https://other.example/product-category/hats/' ) );
+	}
+
+	/**
+	 * Get the ID of the product category a URL resolves to.
+	 *
+	 * @param string $url
+	 *
+	 * @return int The category ID, or 0 when the URL resolves to none.
+	 */
+	protected function resolve_product_category_id( string $url ): int {
+		$category = $this->resolver->resolve_product_category( $url );
+
+		return null === $category ? 0 : $category->term_id;
 	}
 }

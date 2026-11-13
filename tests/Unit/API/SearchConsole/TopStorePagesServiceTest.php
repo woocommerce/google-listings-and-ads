@@ -278,6 +278,89 @@ class TopStorePagesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_names_a_product_category_page_by_the_category_name() {
+		$term_id = $this->factory()->term->create(
+			[
+				'taxonomy' => 'product_cat',
+				'name'     => 'Hats &amp; Caps',
+			]
+		);
+		$url     = get_term_link( $term_id );
+
+		$result = $this->get_top_store_pages( [ $this->row( $url, 4 ) ] );
+
+		$this->assertSame(
+			[
+				'post_id' => null,
+				'name'    => 'Hats & Caps',
+				'url'     => $url,
+			],
+			array_intersect_key( $result[0], array_flip( [ 'post_id', 'name', 'url' ] ) )
+		);
+	}
+
+	public function test_combines_copies_of_a_product_category_page() {
+		$term_id = $this->factory()->term->create(
+			[
+				'taxonomy' => 'product_cat',
+				'name'     => 'Hats',
+			]
+		);
+		$url     = get_term_link( $term_id );
+
+		$result = $this->get_top_store_pages(
+			[
+				$this->row( $url, 4 ),
+				$this->row( add_query_arg( 'orderby', 'price', $url ), 2 ),
+			]
+		);
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( 'Hats', $result[0]['name'] );
+		$this->assertSame( 6, $result[0]['clicks'] );
+	}
+
+	public function test_names_a_search_results_page_that_filters_on_a_category_by_its_path_and_query() {
+		$this->factory()->term->create(
+			[
+				'taxonomy' => 'product_cat',
+				'name'     => 'Hats',
+				'slug'     => 'hats',
+			]
+		);
+
+		$result = $this->get_top_store_pages( [ $this->row( home_url( '/?s=cap&product_cat=hats' ), 3 ) ] );
+
+		$this->assertSame( '/?product_cat=hats&s=cap', $result[0]['name'] );
+	}
+
+	public function test_leaves_out_a_product_query_that_also_names_a_category() {
+		$this->factory()->term->create(
+			[
+				'taxonomy' => 'product_cat',
+				'name'     => 'Hats',
+				'slug'     => 'hats',
+			]
+		);
+		$product = WC_Helper_Product::create_simple_product();
+		$slug    = get_post_field( 'post_name', $product->get_id() );
+
+		$this->assertSame( [], $this->get_top_store_pages( [ $this->row( home_url( '/?product=' . $slug . '&product_cat=hats' ), 5 ) ] ) );
+	}
+
+	public function test_names_a_blog_category_page_by_its_path() {
+		$this->factory()->category->create(
+			[
+				'name' => 'News',
+				'slug' => 'news',
+			]
+		);
+
+		$result = $this->get_top_store_pages( [ $this->row( home_url( '/category/news/' ), 3 ) ] );
+
+		$this->assertSame( '/category/news/', $result[0]['name'] );
+	}
+
 	public function test_names_a_store_url_that_is_not_a_post_by_its_path_and_query() {
 		update_option( 'woocommerce_shop_page_id', -1 );
 
