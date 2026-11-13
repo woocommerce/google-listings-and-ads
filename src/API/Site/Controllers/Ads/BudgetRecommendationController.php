@@ -108,7 +108,18 @@ class BudgetRecommendationController extends BaseController implements Container
 			$country_codes = $request->get_param( 'country_codes' );
 			$currency      = $this->ads->get_ads_currency();
 
-			$advertising_source = AdvertisingSource::resolve( $request->get_param( 'advertising_source' ), $this->options->get_merchant_id() );
+			$merchant_id        = $this->options->get_merchant_id();
+			$advertising_source = AdvertisingSource::resolve( $request->get_param( 'advertising_source' ), $merchant_id );
+
+			if ( ! AdvertisingSource::is_allowed( $advertising_source, $merchant_id ) ) {
+				return new Response(
+					[
+						'code'    => 'rest_invalid_param',
+						'message' => __( 'A campaign that advertises products requires a connected Merchant Center account.', 'google-listings-and-ads' ),
+					],
+					400
+				);
+			}
 
 			if ( ! $currency ) {
 				return new Response(

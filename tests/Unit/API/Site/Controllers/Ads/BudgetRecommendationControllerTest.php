@@ -533,4 +533,20 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'fallback-database', $response->get_data()['source'] );
 		$this->assertEquals( 200, $response->get_status() );
 	}
+
+	public function test_get_budget_recommendation_rejects_product_without_merchant_center() {
+		$this->merchant_id = 0;
+
+		$this->budget_recommendations->expects( $this->never() )->method( 'get_recommendations' );
+
+		$params = [
+			'country_codes'      => [ 'GB' ],
+			'advertising_source' => AdvertisingSource::PRODUCT,
+		];
+
+		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $params );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
 }

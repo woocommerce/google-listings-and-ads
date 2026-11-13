@@ -36,4 +36,17 @@ class AdvertisingSourceTest extends UnitTest {
 		$this->assertSame( AdvertisingSource::PRODUCT, AdvertisingSource::resolve( null, 1234 ) );
 		$this->assertSame( AdvertisingSource::PAGE, AdvertisingSource::resolve( null, 0 ) );
 	}
+
+	public function test_is_allowed_rejects_product_without_merchant_center() {
+		$this->assertFalse( AdvertisingSource::is_allowed( AdvertisingSource::PRODUCT, 0 ) );
+	}
+
+	public function test_is_allowed_accepts_product_with_merchant_center() {
+		$this->assertTrue( AdvertisingSource::is_allowed( AdvertisingSource::PRODUCT, 1234 ) );
+	}
+
+	public function test_is_allowed_accepts_page_with_or_without_merchant_center() {
+		$this->assertTrue( AdvertisingSource::is_allowed( AdvertisingSource::PAGE, 1234 ) );
+		$this->assertTrue( AdvertisingSource::is_allowed( AdvertisingSource::PAGE, 0 ) );
+	}
 }

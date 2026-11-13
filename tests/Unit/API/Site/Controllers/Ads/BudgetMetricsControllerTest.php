@@ -249,4 +249,21 @@ class BudgetMetricsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 200, $response->get_status() );
 	}
+
+	public function test_get_budget_metrics_rejects_product_without_merchant_center() {
+		$this->merchant_id = 0;
+
+		$this->budget_metrics->expects( $this->never() )->method( 'get_metrics' );
+
+		$params = [
+			'country_codes'      => [ 'US' ],
+			'budget'             => 12,
+			'advertising_source' => AdvertisingSource::PRODUCT,
+		];
+
+		$response = $this->do_request( self::ROUTE_BUDGET_METRICS, 'GET', $params );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
 }

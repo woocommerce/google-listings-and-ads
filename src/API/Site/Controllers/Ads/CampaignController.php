@@ -174,7 +174,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 
 				$fields['advertising_source'] = AdvertisingSource::resolve( $fields['advertising_source'] ?? null, $merchant_id );
 
-				if ( AdvertisingSource::PRODUCT === $fields['advertising_source'] && $merchant_id <= 0 ) {
+				if ( ! AdvertisingSource::is_allowed( $fields['advertising_source'], $merchant_id ) ) {
 					return new Response(
 						[
 							'code'    => 'rest_invalid_param',
