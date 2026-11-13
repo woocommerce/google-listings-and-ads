@@ -708,6 +708,27 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 		}
 
+		case TYPES.REPLACE_GEN_AI_MEDIA_ASSET: {
+			const { url, assetType, sourceUrl, newUrl } = action;
+			const existingAssets =
+				state.gen_ai_assets?.[ url ]?.media?.[ assetType ] ?? [];
+			const sourceIndex = existingAssets.indexOf( sourceUrl );
+
+			// Source URL isn't in the store for this url/assetType — nothing to swap.
+			if ( sourceIndex === -1 ) {
+				return state;
+			}
+
+			const updatedAssets = [ ...existingAssets ];
+			updatedAssets[ sourceIndex ] = newUrl;
+
+			return setIn(
+				state,
+				[ 'gen_ai_assets', url, 'media', assetType ],
+				updatedAssets
+			);
+		}
+
 		case TYPES.RECEIVE_GEN_AI_TEXT_ASSETS: {
 			const { url, data, assetType } = action;
 			const existingText = state.gen_ai_assets?.[ url ]?.text ?? {};

@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ResponseFromExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use WP_Error;
 use WP_REST_Request as Request;
 use Exception;
 
@@ -28,6 +29,13 @@ class AssetGenerationController extends BaseController {
 	 * @var AdsAssetGenerationService
 	 */
 	protected $service;
+
+	/**
+	 * Maximum allowed length for the image generation prompt.
+	 *
+	 * @var int
+	 */
+	protected const MAX_PROMPT_LENGTH = 1500;
 
 	/**
 	 * AssetGenerationController constructor.
@@ -108,14 +116,30 @@ class AssetGenerationController extends BaseController {
 	 */
 	protected function get_generate_images_params(): array {
 		return [
-			'final_url' => [
+			'final_url'        => [
 				'description'       => __( 'The final URL for asset generation', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'default'           => '',
 				'sanitize_callback' => 'esc_url_raw',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'types'     => [
+			'prompt'           => [
+				'description'       => __( 'The prompt to use for freeform or recontext image generation', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => function ( $prompt, $request, $param ) {
+					return $this->sanitize_prompt( $prompt, (string) $param );
+				},
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'source_image_url' => [
+				'description'       => __( 'The source image URL to use for recontext image generation', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => 'esc_url_raw',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'types'            => [
 				'description'       => __( 'Asset types to generate', 'google-listings-and-ads' ),
 				'type'              => 'array',
 				'default'           => [],
@@ -129,6 +153,42 @@ class AssetGenerationController extends BaseController {
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
+	}
+
+	/**
+	 * Sanitize the image generation prompt.
+	 *
+	 * The prompt only goes to the Google Ads API and nothing outputs it as HTML, so this keeps
+	 * text in angle brackets instead of stripping it as a tag.
+	 *
+	 * A prompt with content that sanitizes to an empty string is an error, so the request
+	 * doesn't fall back to generating images from the final URL.
+	 *
+	 * @param mixed  $prompt The prompt from the request.
+	 * @param string $param  The parameter name.
+	 *
+	 * @return string|WP_Error The sanitized prompt, or an error when no usable text remains.
+	 */
+	protected function sanitize_prompt( $prompt, string $param ) {
+		if ( ! is_scalar( $prompt ) ) {
+			return '';
+		}
+
+		$raw    = (string) $prompt;
+		$prompt = wp_check_invalid_utf8( $raw );
+
+		// Keep tabs and line breaks, and remove other control characters.
+		$prompt = trim( (string) preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $prompt ) );
+
+		if ( '' === $prompt && '' !== trim( $raw ) ) {
+			return new WP_Error(
+				'invalid_prompt',
+				__( 'The prompt contains no valid text.', 'google-listings-and-ads' ),
+				[ 'param' => $param ]
+			);
+		}
+
+		return $prompt;
 	}
 
 	/**
@@ -172,11 +232,27 @@ class AssetGenerationController extends BaseController {
 			set_time_limit( 90 ); // AI image generation can take time.
 
 			try {
-				$final_url = $request->get_param( 'final_url' ) ?: $this->get_site_url();
-				$types     = $request->get_param( 'types' ) ?: [];
+				$final_url        = $request->get_param( 'final_url' ) ?: $this->get_site_url();
+				$prompt           = $request->get_param( 'prompt' ) ?: '';
+				$source_image_url = $request->get_param( 'source_image_url' ) ?: '';
+				$types            = $request->get_param( 'types' ) ?: [];
+
+				if ( mb_strlen( $prompt ) > self::MAX_PROMPT_LENGTH ) {
+					throw new Exception(
+						sprintf(
+							/* translators: %d: maximum number of characters allowed in the prompt. */
+							__( 'Prompt must be %d characters or fewer.', 'google-listings-and-ads' ),
+							self::MAX_PROMPT_LENGTH
+						)
+					);
+				}
 
 				// Call service with lowercase types.
-				$args = [ 'final_url' => $final_url ];
+				$args = [
+					'final_url'        => $final_url,
+					'prompt'           => $prompt,
+					'source_image_url' => $source_image_url,
+				];
 				if ( ! empty( $types ) ) {
 					$args['asset_field_types'] = $types;
 				}
