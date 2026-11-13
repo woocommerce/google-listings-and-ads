@@ -430,6 +430,27 @@ test.describe( 'Settings', () => {
 			await clearServiceBasedMerchant();
 		} );
 
+		test( 'should not show the Google Customer Reviews settings', async () => {
+			// The Audience section only renders once the Merchant Center
+			// connection has resolved as not connected, so waiting for it
+			// stops the checks below from passing on a page still loading.
+			await expect(
+				page.getByRole( 'heading', { name: 'Audience' } )
+			).toBeVisible();
+
+			await expect(
+				page.getByRole( 'heading', {
+					name: 'Google Customer Reviews',
+				} )
+			).toHaveCount( 0 );
+			await expect( settingsPage.getBadgeWidgetCheckbox() ).toHaveCount(
+				0
+			);
+			await expect(
+				settingsPage.getCollectReviewsCheckbox()
+			).toHaveCount( 0 );
+		} );
+
 		test( 'should disable YouTube on the Accounts tab until Merchant Center is connected', async () => {
 			await settingsPage.gotoAccounts();
 

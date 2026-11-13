@@ -7,8 +7,10 @@ import { expect, test } from '@playwright/test';
  * Internal dependencies
  */
 import {
+	api,
 	clearGCRNotificationsDismissed,
 	clearMerchantId,
+	createSimpleProduct,
 	saveMCSettings,
 	setMerchantId,
 } from '../../utils/api';
@@ -23,6 +25,15 @@ test.describe.configure( { mode: 'serial' } );
 const BADGE_WIDGET_SCRIPT_SRC =
 	'https://www.gstatic.com/shopping/merchant/merchantwidget.js';
 
+// The fake Merchant Center account ID set by the `gla-test/merchant-id` route.
+const TEST_MERCHANT_ID = 1234;
+
+// Stands in for Google's widget script, recording the arguments the plugin
+// passes to `merchantwidget.start()` so tests can assert on them.
+const BADGE_WIDGET_STUB = `window.merchantwidget = {
+	start: ( args ) => { window.__merchantWidgetArgs = args; },
+};`;
+
 /**
  * @type {import('@playwright/test').Page} page
  */
@@ -35,6 +46,7 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 	} );
 
 	test.afterAll( async () => {
+		await saveMCSettings( { gcr_badge_widget_position: 'bottom-right' } );
 		await clearMerchantId();
 		await clearGCRNotificationsDismissed();
 		await page.close();
@@ -130,5 +142,93 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 		await expect( page.locator( '#merchantWidgetScript' ) ).toHaveCount(
 			0
 		);
+	} );
+
+	test.describe( 'Widget arguments and page coverage', () => {
+		let productId = null;
+
+		test.beforeAll( async () => {
+			productId = await createSimpleProduct();
+			await page.route( BADGE_WIDGET_SCRIPT_SRC, ( route ) =>
+				route.fulfill( {
+					contentType: 'application/javascript',
+					body: BADGE_WIDGET_STUB,
+				} )
+			);
+			await saveMCSettings( {
+				gcr_badge_widget_enabled: true,
+				gcr_badge_widget_position: 'bottom-right',
+			} );
+			await page.goto( 'shop' );
+			await grantMarketingConsent( page );
+		} );
+
+		test.afterAll( async () => {
+			await api().delete( `products/${ productId }`, { force: true } );
+			await page.unroute( BADGE_WIDGET_SCRIPT_SRC );
+			await saveMCSettings( { gcr_badge_widget_enabled: false } );
+		} );
+
+		test( 'should start the widget with the connected Merchant ID and the bottom-right position', async () => {
+			await page.reload();
+
+			await page.waitForFunction( () => window.__merchantWidgetArgs );
+			expect(
+				await page.evaluate( () => window.__merchantWidgetArgs )
+			).toEqual( {
+				merchant_id: TEST_MERCHANT_ID,
+				position: 'RIGHT_BOTTOM',
+			} );
+		} );
+
+		test( 'should start the widget with the bottom-left position once the merchant chooses it', async () => {
+			await saveMCSettings( {
+				gcr_badge_widget_position: 'bottom-left',
+			} );
+			await page.reload();
+
+			await page.waitForFunction( () => window.__merchantWidgetArgs );
+			expect(
+				await page.evaluate( () => window.__merchantWidgetArgs )
+			).toEqual( {
+				merchant_id: TEST_MERCHANT_ID,
+				position: 'LEFT_BOTTOM',
+			} );
+		} );
+
+		for ( const [ label, getPath ] of [
+			[ 'the home page', () => '/' ],
+			[ 'the shop page', () => '/shop/' ],
+			[ 'a product page', () => `/?p=${ productId }` ],
+			[ 'a page that does not exist', () => '/no-such-page/' ],
+		] ) {
+			test( `should inject the widget script on ${ label }`, async () => {
+				await page.goto( getPath() );
+				await grantMarketingConsent( page );
+				await page.reload();
+
+				await expect(
+					page.locator( '#merchantWidgetScript' )
+				).toHaveAttribute( 'src', BADGE_WIDGET_SCRIPT_SRC );
+			} );
+		}
+
+		test( 'should not inject the widget script when no Merchant Center account is connected, and inject it again once one is', async () => {
+			await clearMerchantId();
+			await page.goto( 'shop' );
+			await grantMarketingConsent( page );
+			await page.reload();
+
+			await expect( page.locator( '#merchantWidgetScript' ) ).toHaveCount(
+				0
+			);
+
+			await setMerchantId();
+			await page.reload();
+
+			await expect(
+				page.locator( '#merchantWidgetScript' )
+			).toHaveAttribute( 'src', BADGE_WIDGET_SCRIPT_SRC );
+		} );
 	} );
 } );
