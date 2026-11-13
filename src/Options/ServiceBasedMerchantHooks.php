@@ -69,8 +69,9 @@ class ServiceBasedMerchantHooks implements Service, Registerable {
 	}
 
 	/**
-	 * When a product is restored from the trash and the store is currently
-	 * classified as service-based, reset the flag so it is recalculated.
+	 * When a physical product is restored from the trash and the store is currently
+	 * classified as service-based, record the switch to physical products and
+	 * reset the flag so it is recalculated.
 	 *
 	 * @param int $post_id Post ID.
 	 */
