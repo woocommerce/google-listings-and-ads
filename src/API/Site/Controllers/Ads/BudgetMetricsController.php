@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
@@ -11,6 +12,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -25,10 +28,11 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class BudgetMetricsController extends BaseController implements ContainerAwareInterface, ISO3166AwareInterface {
+class BudgetMetricsController extends BaseController implements ContainerAwareInterface, ISO3166AwareInterface, OptionsAwareInterface {
 
 	use ContainerAwareTrait;
 	use CountryCodeTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * @var Ads
@@ -71,15 +75,15 @@ class BudgetMetricsController extends BaseController implements ContainerAwareIn
 	 */
 	public function get_collection_params(): array {
 		return [
-			'context'       => $this->get_context_param( [ 'default' => 'view' ] ),
-			'budget'        => [
+			'context'            => $this->get_context_param( [ 'default' => 'view' ] ),
+			'budget'             => [
 				'description'       => __( 'Budget to fetch metrics for.', 'google-listings-and-ads' ),
 				'type'              => 'number',
 				'minimum'           => 0,
 				'sanitize_callback' => $this->get_sanitize_price_callback(),
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'country_codes' => [
+			'country_codes'      => [
 				'description'       => __( 'List of country codes to fetch metrics for.', 'google-listings-and-ads' ),
 				'type'              => 'array',
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
@@ -89,6 +93,13 @@ class BudgetMetricsController extends BaseController implements ContainerAwareIn
 				],
 				'required'          => true,
 				'minItems'          => 1,
+			],
+			'advertising_source' => [
+				'description'       => __( 'What the campaign advertises: the Merchant Center product feed or a page on the store. Defaults to the product feed when Merchant Center is connected, otherwise a page.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'enum'              => AdvertisingSource::values(),
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => false,
 			],
 		];
 	}
@@ -102,6 +113,19 @@ class BudgetMetricsController extends BaseController implements ContainerAwareIn
 			$budget        = $request->get_param( 'budget' );
 			$currency      = $this->ads->get_ads_currency();
 			$country       = reset( $country_codes );
+
+			$merchant_id        = $this->options->get_merchant_id();
+			$advertising_source = AdvertisingSource::resolve( $request->get_param( 'advertising_source' ), $merchant_id );
+
+			if ( ! AdvertisingSource::is_allowed( $advertising_source, $merchant_id ) ) {
+				return new Response(
+					[
+						'code'    => 'merchant_center_required',
+						'message' => __( 'A campaign that advertises products requires a connected Merchant Center account.', 'google-listings-and-ads' ),
+					],
+					400
+				);
+			}
 
 			if ( ! $currency ) {
 				return new Response(
@@ -117,7 +141,7 @@ class BudgetMetricsController extends BaseController implements ContainerAwareIn
 
 			// Fetch metrics from the Google Ads API.
 			$budget_metrics = $this->container->get( BudgetMetrics::class );
-			$metrics        = $budget_metrics->get_metrics( $budget, $country_codes );
+			$metrics        = $budget_metrics->get_metrics( $budget, $country_codes, $advertising_source );
 
 			if ( ! $metrics ) {
 				return new Response(

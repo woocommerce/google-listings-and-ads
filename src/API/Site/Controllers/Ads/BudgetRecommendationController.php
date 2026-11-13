@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
@@ -13,6 +14,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQue
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -29,10 +32,11 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class BudgetRecommendationController extends BaseController implements ContainerAwareInterface, ISO3166AwareInterface {
+class BudgetRecommendationController extends BaseController implements ContainerAwareInterface, ISO3166AwareInterface, OptionsAwareInterface {
 
 	use ContainerAwareTrait;
 	use CountryCodeTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * @var Ads
@@ -75,8 +79,8 @@ class BudgetRecommendationController extends BaseController implements Container
 	 */
 	public function get_collection_params(): array {
 		return [
-			'context'       => $this->get_context_param( [ 'default' => 'view' ] ),
-			'country_codes' => [
+			'context'            => $this->get_context_param( [ 'default' => 'view' ] ),
+			'country_codes'      => [
 				'type'              => 'array',
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_country_code_validate_callback(),
@@ -85,6 +89,13 @@ class BudgetRecommendationController extends BaseController implements Container
 				],
 				'required'          => true,
 				'minItems'          => 1,
+			],
+			'advertising_source' => [
+				'description'       => __( 'What the campaign advertises: the Merchant Center product feed or a page on the store. Defaults to the product feed when Merchant Center is connected, otherwise a page.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'enum'              => AdvertisingSource::values(),
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => false,
 			],
 		];
 	}
@@ -96,6 +107,19 @@ class BudgetRecommendationController extends BaseController implements Container
 		return function ( Request $request ) {
 			$country_codes = $request->get_param( 'country_codes' );
 			$currency      = $this->ads->get_ads_currency();
+
+			$merchant_id        = $this->options->get_merchant_id();
+			$advertising_source = AdvertisingSource::resolve( $request->get_param( 'advertising_source' ), $merchant_id );
+
+			if ( ! AdvertisingSource::is_allowed( $advertising_source, $merchant_id ) ) {
+				return new Response(
+					[
+						'code'    => 'merchant_center_required',
+						'message' => __( 'A campaign that advertises products requires a connected Merchant Center account.', 'google-listings-and-ads' ),
+					],
+					400
+				);
+			}
 
 			if ( ! $currency ) {
 				return new Response(
@@ -110,7 +134,7 @@ class BudgetRecommendationController extends BaseController implements Container
 
 			// Try to fetch recommendations from the Google Ads API.
 			$budget_recommendations = $this->container->get( BudgetRecommendations::class );
-			$recommendations        = $budget_recommendations->get_recommendations( $country_codes );
+			$recommendations        = $budget_recommendations->get_recommendations( $country_codes, $advertising_source );
 
 			// For the frontend side to track the source of the recommendations.
 			$source = 'google-ads-api';
@@ -132,7 +156,7 @@ class BudgetRecommendationController extends BaseController implements Container
 
 					// Fetch metrics from the API for the fallback budget (only when we are going to use the fallback).
 					$budget_metrics   = $this->container->get( BudgetMetrics::class );
-					$fallback_metrics = $budget_metrics->get_metrics( $fallback_budget, $country_codes );
+					$fallback_metrics = $budget_metrics->get_metrics( $fallback_budget, $country_codes, $advertising_source );
 					if ( $fallback_metrics ) {
 						$recommendations[0]['metrics'] = $fallback_metrics;
 					}

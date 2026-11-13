@@ -176,7 +176,9 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					);
 				}
 
-				if ( AdvertisingSource::PRODUCT === ( $fields['advertising_source'] ?? null ) && $this->options->get_merchant_id() <= 0 ) {
+				$advertising_source = $fields['advertising_source'] ?? null;
+
+				if ( null !== $advertising_source && ! AdvertisingSource::is_allowed( $advertising_source, $this->options->get_merchant_id() ) ) {
 					return new Response(
 						[
 							'code'    => 'merchant_center_required',

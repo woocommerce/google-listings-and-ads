@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -73,7 +74,7 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
 
 		$recommendations = [
-			'us-new' => self::TEST_RECOMMENDATION,
+			'us-new-product' => self::TEST_RECOMMENDATION,
 		];
 
 		$this->transients->expects( $this->once() )
@@ -81,14 +82,14 @@ class BudgetRecommendationsTest extends UnitTest {
 			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
 			->willReturn( $recommendations );
 
-		$this->assertEquals( $recommendations['us-new'], $this->recommendations->get_recommendations( [ 'US' ] ) );
+		$this->assertEquals( $recommendations['us-new-product'], $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 
 	public function test_get_recommendations_cache_key_uses_existing_for_advertisers_with_campaigns() {
 		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 3 );
 
 		$recommendations = [
-			'us-existing' => self::TEST_RECOMMENDATION,
+			'us-existing-product' => self::TEST_RECOMMENDATION,
 		];
 
 		$this->transients->expects( $this->once() )
@@ -96,7 +97,7 @@ class BudgetRecommendationsTest extends UnitTest {
 			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
 			->willReturn( $recommendations );
 
-		$this->assertEquals( $recommendations['us-existing'], $this->recommendations->get_recommendations( [ 'US' ] ) );
+		$this->assertEquals( $recommendations['us-existing-product'], $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 
 	public function test_get_recommendations_sends_is_new_customer_true_when_no_campaigns() {
@@ -252,5 +253,174 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->generate_recommendations_mock( $recommendations );
 
 		$this->assertEquals( $recommendations, $this->recommendations->get_recommendations( [ 'US' ] ) );
+	}
+
+	/**
+	 * Run the request and return it, so a test can inspect what was sent to Google Ads.
+	 *
+	 * @param string|null $advertising_source The advertising source to pass, or null to omit it.
+	 */
+	protected function capture_request( ?string $advertising_source ) {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+
+		$captured_request = null;
+		$this->recommendation_service->method( 'generateRecommendations' )
+			->willReturnCallback(
+				function ( $request ) use ( &$captured_request ) {
+					$captured_request = $request;
+					$response         = $this->createMock( GenerateRecommendationsResponse::class );
+					$response->method( 'getRecommendations' )->willReturn( [] );
+					return $response;
+				}
+			);
+
+		if ( null === $advertising_source ) {
+			$this->recommendations->get_recommendations( [ 'US' ] );
+		} else {
+			$this->recommendations->get_recommendations( [ 'US' ], $advertising_source );
+		}
+
+		$this->assertNotNull( $captured_request );
+		return $captured_request;
+	}
+
+	public function test_get_recommendations_omits_merchant_center_account_for_page() {
+		$request = $this->capture_request( AdvertisingSource::PAGE );
+
+		$this->assertEquals( 0, $request->getMerchantCenterAccountId() );
+	}
+
+	public function test_get_recommendations_includes_merchant_center_account_for_product() {
+		$request = $this->capture_request( AdvertisingSource::PRODUCT );
+
+		$this->assertEquals( self::TEST_MC_ID, $request->getMerchantCenterAccountId() );
+	}
+
+	public function test_get_recommendations_includes_merchant_center_account_without_advertising_source() {
+		$request = $this->capture_request( null );
+
+		$this->assertEquals( self::TEST_MC_ID, $request->getMerchantCenterAccountId() );
+	}
+
+	public function test_get_recommendations_cache_key_for_page_is_kept_apart_from_product() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$cached = [
+			'us-new-product' => self::TEST_RECOMMENDATION,
+			'us-new-page'    => [ 'daily_budget' => 20 ],
+		];
+
+		$this->transients->method( 'get' )
+			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
+			->willReturn( $cached );
+
+		$this->assertEquals( $cached['us-new-page'], $this->recommendations->get_recommendations( [ 'US' ], AdvertisingSource::PAGE ) );
+		$this->assertEquals( $cached['us-new-product'], $this->recommendations->get_recommendations( [ 'US' ], AdvertisingSource::PRODUCT ) );
+		$this->assertEquals( $cached['us-new-product'], $this->recommendations->get_recommendations( [ 'US' ] ) );
+	}
+
+	/**
+	 * Run a request with the given cached entries and return what was saved to the budget transient.
+	 *
+	 * @param string $advertising_source The advertising source to request.
+	 * @param array  $cached             Entries already in the budget transient.
+	 */
+	protected function get_saved_budget_transient( string $advertising_source, array $cached ): ?array {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+		$this->generate_recommendations_mock( [ self::TEST_RECOMMENDATION ] );
+
+		$this->transients->method( 'get' )->willReturnCallback(
+			function ( string $name ) use ( $cached ) {
+				return TransientsInterface::ADS_BUDGET_RECOMMENDATIONS === $name ? $cached : null;
+			}
+		);
+
+		$saved = null;
+		$this->transients->method( 'set' )->willReturnCallback(
+			function ( string $name, $value ) use ( &$saved ) {
+				if ( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS === $name ) {
+					$saved = $value;
+				}
+				return true;
+			}
+		);
+
+		$this->recommendations->get_recommendations( [ 'US' ], $advertising_source );
+
+		return $saved;
+	}
+
+	public function test_get_recommendations_saves_page_results_under_a_key_with_a_page_suffix_and_keeps_valid_entries() {
+		$valid = [
+			'saved_at'        => time() - HOUR_IN_SECONDS,
+			'recommendations' => [ 'daily_budget' => 20 ],
+		];
+
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PAGE, [ 'us-existing-product' => $valid ] );
+
+		$this->assertSame( [ 'us-existing-product', 'us-new-page' ], array_keys( $saved ) );
+		$this->assertSame( $valid, $saved['us-existing-product'] );
+		$this->assertEquals( [ self::TEST_RECOMMENDATION ], $saved['us-new-page']['recommendations'] );
+	}
+
+	public function test_get_recommendations_saves_product_results_under_the_key_without_a_suffix() {
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, [] );
+
+		$this->assertSame( [ 'us-new-product' ], array_keys( $saved ) );
+	}
+
+	public function test_get_recommendations_drops_expired_and_unstamped_entries_when_saving() {
+		$cached = [
+			'gb-new'      => [
+				'saved_at'        => time() - 13 * HOUR_IN_SECONDS,
+				'recommendations' => [ 'daily_budget' => 20 ],
+			],
+			'gb-existing' => [ 'daily_budget' => 30 ],
+		];
+
+		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, $cached );
+
+		$this->assertSame( [ 'us-new-product' ], array_keys( $saved ) );
+	}
+
+	public function test_get_recommendations_ignores_an_expired_entry() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+		$this->generate_recommendations_mock( [ self::TEST_RECOMMENDATION ] );
+
+		$this->transients->method( 'get' )->willReturnCallback(
+			function ( string $name ) {
+				return TransientsInterface::ADS_BUDGET_RECOMMENDATIONS === $name
+					? [
+						'us-new-product' => [
+							'saved_at'        => time() - 13 * HOUR_IN_SECONDS,
+							'recommendations' => [ 'daily_budget' => 99 ],
+						],
+					]
+					: null;
+			}
+		);
+
+		$this->assertEquals( [ self::TEST_RECOMMENDATION ], $this->recommendations->get_recommendations( [ 'US' ] ) );
+	}
+
+	public function test_get_recommendations_returns_a_valid_stamped_entry() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$entry = [
+			'saved_at'        => time() - HOUR_IN_SECONDS,
+			'recommendations' => [ self::TEST_RECOMMENDATION ],
+		];
+
+		$this->transients->method( 'get' )
+			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
+			->willReturn( [ 'us-new-product' => $entry ] );
+
+		$this->assertSame( $entry['recommendations'], $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 }
