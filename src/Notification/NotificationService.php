@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Throwable;
 use WP_User;
 
 defined( 'ABSPATH' ) || exit;
@@ -103,7 +104,15 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 				continue;
 			}
 
-			if ( ! $evaluator->should_show() ) {
+			// A notification is optional, so failing to evaluate one must never break the admin page.
+			try {
+				$should_show = $evaluator->should_show();
+			} catch ( Throwable $e ) {
+				do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+				$should_show = false;
+			}
+
+			if ( ! $should_show ) {
 				unset( $state );
 				continue;
 			}
