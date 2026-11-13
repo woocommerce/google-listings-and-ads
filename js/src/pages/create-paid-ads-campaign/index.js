@@ -22,7 +22,9 @@ import TopBar from '~/components/stepper/top-bar';
 import ContinueButton from '~/components/paid-ads/continue-button';
 import HelpIconButton from '~/components/help-icon-button';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
-import AdsCampaign from '~/components/paid-ads/ads-campaign';
+import CampaignSetup from '~/components/paid-ads/campaign-setup';
+import BudgetSection from '~/components/paid-ads/budget-section';
+import EuRegulationsSection from '~/components/paid-ads/eu-regulations-section';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '~/components/paid-ads/asset-group';
@@ -188,12 +190,7 @@ const CreatePaidAdsCampaign = () => {
 								'google-listings-and-ads'
 							),
 							content: (
-								<AdsCampaign
-									headerTitle={ __(
-										'Create your campaign',
-										'google-listings-and-ads'
-									) }
-									context={ eventContext }
+								<CampaignSetup
 									continueButton={ ( formContext ) => {
 										return (
 											<ContinueButton
@@ -206,7 +203,12 @@ const CreatePaidAdsCampaign = () => {
 											/>
 										);
 									} }
-								/>
+								>
+									<BudgetSection />
+									<EuRegulationsSection
+										context={ eventContext }
+									/>
+								</CampaignSetup>
 							),
 							onClick: handleStepperClick,
 						},
