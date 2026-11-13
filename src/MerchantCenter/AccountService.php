@@ -259,6 +259,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	public function disconnect() {
 		$this->options->delete( OptionsInterface::CONTACT_INFO_SETUP );
 		$this->options->delete( OptionsInterface::MAPI_DATA_SOURCES );
+		$this->options->delete( OptionsInterface::MAPI_FAILED_DATA_SOURCES );
 		$this->options->delete( OptionsInterface::MAPI_RECREATED_DATA_SOURCES );
 		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );

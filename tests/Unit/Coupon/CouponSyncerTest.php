@@ -2,6 +2,7 @@
 declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
@@ -11,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTrait;
@@ -116,6 +118,70 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 			did_action( 'woocommerce_gla_retry_update_coupons' )
 		);
 		$this->assert_coupon_has_errors( $coupon );
+	}
+
+	public function test_update_marks_coupon_invalid_and_cools_down_when_the_promotion_data_source_is_rejected() {
+		// Uses the real data source service, so the create rejection is stored and the second
+		// sync is failed from it without another create.
+		$client = $this->createMock( MerchantApiClient::class );
+		$client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->willReturn( [ 'dataSources' => [] ] );
+		$client->expects( $this->once() )
+			->method( 'post' )
+			->willThrowException(
+				new MerchantApiException(
+					400,
+					[
+						'error' => [
+							'message' => 'INVALID_STATE_PRIMARY_DATA_SOURCE_UPDATE',
+							'status'  => 'FAILED_PRECONDITION',
+						],
+					],
+					'post'
+				)
+			);
+
+		$stored  = [];
+		$options = $this->createMock( OptionsInterface::class );
+		$options->method( 'get_merchant_id' )->willReturn( 12345 );
+		$options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+
+		$data_sources = new MapiDataSourcesService( $client );
+		$data_sources->set_options_object( $options );
+
+		$this->validator->expects( $this->any() )
+			->method( 'validate' )
+			->willReturn( [] );
+		$this->promotions_service->expects( $this->never() )
+			->method( 'insert_promotion' );
+
+		$coupon        = $this->create_ready_to_sync_coupon();
+		$coupon_syncer = $this->get_coupon_syncer( [ 'data_sources' => $data_sources ] );
+
+		$coupon_syncer->update( $coupon );
+		$coupon_syncer->update( $coupon );
+
+		$reloaded_coupon = new WC_Coupon( $coupon->get_id() );
+		$this->assertEquals(
+			[ 400 => 'INVALID_STATE_PRIMARY_DATA_SOURCE_UPDATE' ],
+			$this->coupon_meta->get_errors( $reloaded_coupon )
+		);
+		$this->assertEquals(
+			SyncStatus::HAS_ERRORS,
+			$this->coupon_meta->get_sync_status( $reloaded_coupon )
+		);
+		$this->assertSame( 0, did_action( 'woocommerce_gla_retry_update_coupons' ) );
 	}
 
 	public function test_update_retries_once_with_a_re_resolved_promotion_data_source() {
