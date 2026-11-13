@@ -244,6 +244,34 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 		$this->assertEqualSets( $expected, $result );
 	}
 
+	public function test_stage_update_changes_only_the_product_in_memory() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_meta_handler->stage_update( $product, ProductMetaHandler::KEY_VISIBILITY, 'dont-sync-and-show' );
+
+		$this->assertEquals( 'dont-sync-and-show', $this->product_meta_handler->get_visibility( $product ) );
+		$this->assertEmpty( get_post_meta( $product->get_id(), '_wc_gla_visibility', true ) );
+
+		$product->save();
+
+		$this->assertEquals( 'dont-sync-and-show', get_post_meta( $product->get_id(), '_wc_gla_visibility', true ) );
+	}
+
+	public function test_stage_delete_changes_only_the_product_in_memory() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_meta_handler->update_visibility( $product, 'dont-sync-and-show' );
+
+		$this->product_meta_handler->stage_delete( $product, ProductMetaHandler::KEY_VISIBILITY );
+
+		$this->assertNull( $this->product_meta_handler->get_visibility( $product ) );
+		$this->assertEquals( 'dont-sync-and-show', get_post_meta( $product->get_id(), '_wc_gla_visibility', true ) );
+	}
+
+	public function test_stage_update_throws_exception_invalid_meta_key() {
+		$this->expectException( InvalidMeta::class );
+		$this->product_meta_handler->stage_update( WC_Helper_Product::create_simple_product(), 'invalid_key', 1 );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
