@@ -569,6 +569,20 @@ test.describe( 'Add paid campaign', () => {
 				);
 			} );
 
+			test( '"What do you want to advertise?" card shows with "My products" selected', async () => {
+				await expect(
+					page.getByText( 'What do you want to advertise?' )
+				).toBeVisible();
+				await expect(
+					page.getByRole( 'radio', { name: 'My products' } )
+				).toBeChecked();
+				await expect(
+					page.getByRole( 'radio', {
+						name: 'Another page on my store',
+					} )
+				).not.toBeChecked();
+			} );
+
 			test( 'Clicking the "Continue" button takes you to the "Optimize your campaign" step', async () => {
 				const continueButton = createCampaignPage.getContinueButton();
 				continueButton.click();
