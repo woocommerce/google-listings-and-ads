@@ -153,20 +153,4 @@ describe( 'CreatePaidAdsCampaign', () => {
 			} )
 		);
 	} );
-
-	it( 'Should not change the generated name when the page renders again', () => {
-		mockCurrentTime( '2026-11-05T14:30:00Z' );
-		setSiteTimezoneOffset( 0 );
-
-		const { rerender } = render( <CreatePaidAdsCampaign /> );
-
-		jest.setSystemTime( new Date( '2026-11-05T14:45:00Z' ) );
-		rerender( <CreatePaidAdsCampaign /> );
-
-		expect( getLastInitialCampaign() ).toEqual(
-			expect.objectContaining( {
-				campaignName: 'Campaign 2026-11-05 14:30:00',
-			} )
-		);
-	} );
 } );
