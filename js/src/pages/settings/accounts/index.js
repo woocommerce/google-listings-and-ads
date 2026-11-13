@@ -18,6 +18,7 @@ import GoogleAccountCard from './google-account-card';
 import GoogleMerchantCenterAccountCard from './merchant-center-account-card';
 import GoogleAdsAccountCard from './google-ads-account-card';
 import YouTubeAccountCard from './youtube-account-card';
+import GoogleBusinessProfileAccountCard from './google-business-profile-account-card';
 import AccountsGroup from './accounts-group';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useJetpackAccount from '~/hooks/useJetpackAccount';
@@ -25,9 +26,11 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
+	GOOGLE_BUSINESS_PROFILE_ACCOUNT,
 } from '../disconnect-modal';
 import './index.scss';
 
@@ -35,7 +38,7 @@ import './index.scss';
  * Accounts are disconnected from the Settings > Accounts subtab.
  *
  * @event gla_disconnected_accounts
- * @property {string} context (`all-accounts`|`youtube-account`) - indicate which accounts have been disconnected.
+ * @property {string} context (`all-accounts`|`youtube-account`|`google-business-profile-account`) - indicate which accounts have been disconnected.
  */
 
 /**
@@ -58,6 +61,8 @@ export default function Accounts() {
 		useGoogleAdsAccount();
 	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
 		useYouTubeAccount();
+	const { hasFinishedResolution: hasResolvedGoogleBusinessProfileAccount } =
+		useGoogleBusinessProfileAccount();
 
 	// Which disconnect modal is open, keyed by the disconnect target.
 	const [ openedModal, setOpenedModal ] = useState( null );
@@ -69,7 +74,8 @@ export default function Accounts() {
 		hasResolvedGoogleAccount &&
 		hasResolvedMCAccount &&
 		hasResolvedGoogleAdsAccount &&
-		hasResolvedYouTubeAccount
+		hasResolvedYouTubeAccount &&
+		hasResolvedGoogleBusinessProfileAccount
 	);
 
 	const handleDisconnected = () => {
@@ -87,6 +93,10 @@ export default function Accounts() {
 
 	const handleDisconnectYouTubeAccount = () => {
 		setOpenedModal( YOUTUBE_ACCOUNT );
+	};
+
+	const handleDisconnectGoogleBusinessProfileAccount = () => {
+		setOpenedModal( GOOGLE_BUSINESS_PROFILE_ACCOUNT );
 	};
 
 	if ( isLoading ) {
@@ -134,6 +144,12 @@ export default function Accounts() {
 			>
 				<YouTubeAccountCard
 					onDisconnect={ handleDisconnectYouTubeAccount }
+				/>
+				<CardDivider />
+				<GoogleBusinessProfileAccountCard
+					onDisconnect={
+						handleDisconnectGoogleBusinessProfileAccount
+					}
 				/>
 			</AccountsGroup>
 

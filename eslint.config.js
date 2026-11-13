@@ -79,6 +79,8 @@ module.exports = [
 				'@pmmmwh/react-refresh-webpack-plugin',
 				'react-transition-group',
 				'jquery',
+				'@wordpress/editor',
+				'@wordpress/plugins',
 			],
 			'import/resolver': { webpack: webpackResolver },
 		},

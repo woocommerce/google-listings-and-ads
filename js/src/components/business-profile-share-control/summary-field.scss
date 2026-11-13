@@ -1,0 +1,13 @@
+.gla-business-profile-summary-field {
+	width: 100%;
+}
+
+.gla-business-profile-summary-field__info-icon {
+	display: flex;
+	color: $gray-700;
+	cursor: help;
+
+	.gridicon {
+		fill: currentcolor;
+	}
+}

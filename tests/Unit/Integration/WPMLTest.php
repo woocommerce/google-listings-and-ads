@@ -316,6 +316,54 @@ class WPMLTest extends UnitTest {
 		$this->assertSame( '', $integration->get_post_language( 42 ) );
 	}
 
+	public function test_get_post_locale_returns_empty_when_not_active(): void {
+		$integration = $this->create_integration( false );
+
+		$this->assertSame( '', $integration->get_post_locale( 42 ) );
+	}
+
+	public function test_get_post_locale_returns_locale_from_filter(): void {
+		$integration = $this->create_integration( true );
+
+		add_filter(
+			'wpml_post_language_details',
+			function () {
+				return [
+					'language_code' => 'zh',
+					'locale'        => 'zh_TW',
+				];
+			}
+		);
+
+		$this->assertSame( 'zh_TW', $integration->get_post_locale( 42 ) );
+	}
+
+	public function test_get_post_locale_returns_empty_when_filter_returns_non_array(): void {
+		$integration = $this->create_integration( true );
+
+		add_filter(
+			'wpml_post_language_details',
+			function () {
+				return null;
+			}
+		);
+
+		$this->assertSame( '', $integration->get_post_locale( 42 ) );
+	}
+
+	public function test_get_post_locale_returns_empty_when_filter_missing_locale(): void {
+		$integration = $this->create_integration( true );
+
+		add_filter(
+			'wpml_post_language_details',
+			function () {
+				return [ 'language_code' => 'zh' ];
+			}
+		);
+
+		$this->assertSame( '', $integration->get_post_locale( 42 ) );
+	}
+
 	public function test_get_currencies_returns_empty_when_not_active(): void {
 		$integration = $this->create_integration( false );
 

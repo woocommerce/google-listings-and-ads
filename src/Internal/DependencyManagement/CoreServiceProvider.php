@@ -43,6 +43,18 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterfac
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\AccountManagementApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInformationApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostImageService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostDeleteTrigger;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostSyncNotice;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\ReviewsOptIn;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
@@ -112,6 +124,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetupTask;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\ActivatedEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\GenericEvents;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\BusinessProfileEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
@@ -154,7 +167,16 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		EstimatedDeliveryTimeResolver::class => true,
 		ReviewsOptIn::class                  => true,
 		BadgeWidget::class                   => true,
+		LocationService::class               => true,
+		BusinessProfileConnection::class     => true,
+		LocalPostImageService::class         => true,
+		LocalPostService::class              => true,
+		PostDeleteTrigger::class             => true,
+		PostPublishTrigger::class            => true,
+		PostSyncNotice::class                => true,
+		PostShareControl::class              => true,
 		ISOUtility::class                    => true,
+		BusinessProfileEvents::class         => true,
 		SiteVerificationEvents::class        => true,
 		OptionsInterface::class              => true,
 		TransientsInterface::class           => true,
@@ -293,6 +315,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountService::class, AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
 		$this->share_with_tags( YouTubeConnection::class );
+		$this->share( LocationService::class, AccountManagementApiClient::class, BusinessInformationApiClient::class, VerificationsApiClient::class );
+		$this->share( BusinessProfileConnection::class, LocationService::class );
+		$this->share_with_tags( LocalPostImageService::class );
+		$this->share_with_tags( LocalPostService::class, BusinessProfileApiClient::class, WP::class, ISOUtility::class, LocalPostImageService::class, LocationService::class, WPML::class );
+		$this->share_with_tags( PostDeleteTrigger::class, LocalPostService::class );
+		$this->share_with_tags( PostShareControl::class, AssetsHandlerInterface::class, LocalPostService::class, LocationService::class, OptionsInterface::class );
+		$this->share_with_tags( PostPublishTrigger::class, LocalPostService::class, LocationService::class );
+		$this->share_with_tags( PostSyncNotice::class, LocalPostService::class, PostPublishTrigger::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
@@ -372,6 +402,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Share other classes.
 		$this->share_with_tags( ActivatedEvents::class, $_SERVER );
+		$this->share_with_tags( BusinessProfileEvents::class );
 		$this->share_with_tags( GenericEvents::class );
 		$this->share_with_tags( SiteClaimEvents::class );
 		$this->share_with_tags( SiteVerificationEvents::class );
