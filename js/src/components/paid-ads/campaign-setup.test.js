@@ -8,7 +8,7 @@ import { screen, render } from '@testing-library/react';
  * Internal dependencies
  */
 import CampaignSetup from './campaign-setup';
-import CampaignAssetsForm from '../campaign-assets-form';
+import CampaignAssetsForm from './campaign-assets-form';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';

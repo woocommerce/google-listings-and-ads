@@ -5,7 +5,7 @@ import StepContent from '~/components/stepper/step-content';
 import StepContentFooter from '~/components/stepper/step-content-footer';
 import StepContentActions from '~/components/stepper/step-content-actions';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import Faqs from '../asset-group/faqs';
+import Faqs from './asset-group/faqs';
 
 /**
  * @typedef {import('~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
