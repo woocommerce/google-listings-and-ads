@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\OnboardingOrigin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
@@ -130,6 +131,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			20
 		);
 
+		add_action( 'admin_init', [ OnboardingOrigin::class, 'capture' ] );
 		add_action( 'admin_init', [ $this, 'privacy_policy' ] );
 	}
 
