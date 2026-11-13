@@ -12,7 +12,6 @@ import { setSettings } from '@wordpress/date';
 import CampaignAssetsForm from './campaign-assets-form';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
-import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 
 jest.mock( '~/hooks/useAdsCurrency', () =>
 	jest.fn().mockName( 'useAdsCurrency' )
@@ -20,10 +19,6 @@ jest.mock( '~/hooks/useAdsCurrency', () =>
 
 jest.mock( '~/hooks/useBudgetRecommendation', () =>
 	jest.fn().mockName( 'useBudgetRecommendation' )
-);
-
-jest.mock( '~/hooks/useGoogleMCAccount', () =>
-	jest.fn().mockName( 'useGoogleMCAccount' )
 );
 
 jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
@@ -49,11 +44,6 @@ describe( 'CampaignAssetsForm', () => {
 				high: { dailyBudget: 30 },
 				low: { dailyBudget: 5 },
 			},
-		} );
-
-		useGoogleMCAccount.mockReturnValue( {
-			hasFinishedResolution: true,
-			hasGoogleMCConnection: true,
 		} );
 	} );
 
@@ -506,86 +496,6 @@ describe( 'CampaignAssetsForm', () => {
 				campaignName: 'Campaign 2026-11-05 14:30:00',
 				includeCreativeAssets: false,
 			} );
-		} );
-
-		it( 'Should start the advertising source as product when Merchant Center is connected', () => {
-			const { children } = renderForm();
-
-			expectLastValuesToMatch( children, {
-				advertisingSource: 'product',
-			} );
-		} );
-
-		it( 'Should start the advertising source as page when Merchant Center is not connected', () => {
-			useGoogleMCAccount.mockReturnValue( {
-				hasFinishedResolution: true,
-				hasGoogleMCConnection: false,
-			} );
-
-			const { children } = renderForm();
-
-			expectLastValuesToMatch( children, { advertisingSource: 'page' } );
-		} );
-
-		it( 'Should wait for the Merchant Center account to resolve before rendering the form', () => {
-			useGoogleMCAccount.mockReturnValue( {
-				hasFinishedResolution: false,
-				hasGoogleMCConnection: false,
-			} );
-
-			const { children, rerender } = renderForm();
-
-			expect( children ).not.toHaveBeenCalled();
-
-			useGoogleMCAccount.mockReturnValue( {
-				hasFinishedResolution: true,
-				hasGoogleMCConnection: true,
-			} );
-
-			rerender(
-				<CampaignAssetsForm validate={ alwaysValid }>
-					{ children }
-				</CampaignAssetsForm>
-			);
-
-			expectLastValuesToMatch( children, {
-				advertisingSource: 'product',
-			} );
-			expect( children ).not.toHaveBeenCalledWith(
-				expect.objectContaining( {
-					values: expect.objectContaining( {
-						advertisingSource: 'page',
-					} ),
-				} )
-			);
-		} );
-
-		it( 'Should leave the advertising source unset when the Merchant Center account failed to load', () => {
-			useGoogleMCAccount.mockReturnValue( {
-				hasFinishedResolution: true,
-				isPreconditionReady: true,
-				googleMCAccount: null,
-				hasGoogleMCConnection: false,
-			} );
-
-			const { children } = renderForm();
-
-			expectLastValuesToMatch( children, {
-				advertisingSource: undefined,
-			} );
-		} );
-
-		it( 'Should not wait for the Merchant Center account when a starting source is passed', () => {
-			useGoogleMCAccount.mockReturnValue( {
-				hasFinishedResolution: false,
-				hasGoogleMCConnection: false,
-			} );
-
-			const { children } = renderForm( {
-				initialCampaign: { advertisingSource: 'page' },
-			} );
-
-			expectLastValuesToMatch( children, { advertisingSource: 'page' } );
 		} );
 
 		it( 'Should generate the default name in the site timezone', () => {

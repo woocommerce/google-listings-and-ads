@@ -6,7 +6,7 @@
  * @typedef {Object} CampaignFormValues
  * @property {number} amount The daily average cost amount.
  * @property {string} campaignName The campaign name.
- * @property {'product'|'page'} [advertisingSource] What the campaign advertises: the products from Merchant Center, or a page on the store. Unset when the Merchant Center account failed to load.
+ * @property {'product'|'page'} [advertisingSource] What the campaign advertises: the products from Merchant Center, or a page on the store. Only the campaign creation page sets it.
  * @property {boolean} includeCreativeAssets Whether the merchant opts in to adding their own text, images and videos.
  */
 

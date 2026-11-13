@@ -26,6 +26,7 @@ import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '~/components/paid-ads/asset-group';
 import {
+	ADVERTISING_SOURCE,
 	CAMPAIGN_STEP as STEP,
 	CAMPAIGN_STEP_NUMBER_MAP as STEP_NUMBER_MAP,
 } from '~/constants';
@@ -49,7 +50,10 @@ const dashboardURL = getDashboardUrl();
  */
 const CreatePaidAdsCampaign = () => {
 	useLayout( 'full-content' );
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const {
+		hasGoogleMCConnection,
+		hasFinishedResolution: hasResolvedMCAccount,
+	} = useGoogleMCAccount();
 	const [ step, setStep ] = useState( STEP.CAMPAIGN );
 	const createdCampaignIdRef = useRef( null );
 	const {
@@ -145,7 +149,7 @@ const CreatePaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedMCAccount ) {
 		return null;
 	}
 
@@ -160,6 +164,11 @@ const CreatePaidAdsCampaign = () => {
 				backHref={ dashboardURL }
 			/>
 			<CampaignAssetsForm
+				initialCampaign={ {
+					advertisingSource: hasGoogleMCConnection
+						? ADVERTISING_SOURCE.PRODUCT
+						: ADVERTISING_SOURCE.PAGE,
+				} }
 				countryCodes={ countryCodes }
 				onSubmit={ handleSubmit }
 			>
