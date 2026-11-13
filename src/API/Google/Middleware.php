@@ -4,6 +4,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\OnboardingOrigin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
@@ -334,7 +335,8 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			$result = $client->post(
 				$this->get_manager_url( $country . '/create-customer' ),
 				[
-					'body' => wp_json_encode(
+					'headers' => OnboardingOrigin::headers(),
+					'body'    => wp_json_encode(
 						[
 							'descriptive_name' => $this->new_account_name(),
 							'currency_code'    => get_woocommerce_currency(),
@@ -353,6 +355,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 				$id = $ads->parse_ads_id( $response['resourceName'] );
 				$ads->update_ads_id( $id );
 				$ads->use_store_currency();
+				OnboardingOrigin::clear();
 
 				$billing_url = $response['invitationLink'] ?? '';
 				$ads->update_billing_url( $billing_url );
@@ -393,7 +396,8 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			$result = $client->post(
 				$this->get_manager_url( 'link-customer' ),
 				[
-					'body' => wp_json_encode(
+					'headers' => OnboardingOrigin::headers(),
+					'body'    => wp_json_encode(
 						[
 							'client_customer' => $id,
 						]
@@ -410,6 +414,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 
 				$ads->update_ads_id( $id );
 				$ads->request_ads_currency();
+				OnboardingOrigin::clear();
 
 				return [ 'id' => $id ];
 			}
