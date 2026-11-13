@@ -448,6 +448,10 @@ class BatchProductHelper implements Service {
 					unset( $product_entry );
 
 					array_push( $entries, ...$product_entries );
+				} elseif ( ! empty( $applicable_labels ) ) {
+					// No insert will run for this product, so nothing else would clear the pending
+					// status it was given when its sync was queued.
+					$this->product_helper->mark_as_unchanged( $product );
 				}
 			} catch ( AccountReconnect $exception ) {
 				// An authentication failure is account-wide, not specific to this product. Rethrow to
