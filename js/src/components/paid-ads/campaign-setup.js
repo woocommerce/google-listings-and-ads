@@ -5,17 +5,16 @@ import StepContent from '~/components/stepper/step-content';
 import StepContentFooter from '~/components/stepper/step-content-footer';
 import StepContentActions from '~/components/stepper/step-content-actions';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import Faqs from '../asset-group/faqs';
+import Faqs from './asset-group/faqs';
 
 /**
  * @typedef {import('~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
  */
 
 /**
- * Renders the "Campaign setup" step: the given sections, then the "Continue" button, then the FAQs.
+ * Renders the first step of campaign management: the given sections, the "Continue" button and the FAQs.
  *
- * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
- * so it expects a `CampaignAssetsForm` to exist in its parents.
+ * It expects a `CampaignAssetsForm` to exist in its parents.
  *
  * @param {Object} props React props.
  * @param {JSX.Element} props.children The sections of the step.

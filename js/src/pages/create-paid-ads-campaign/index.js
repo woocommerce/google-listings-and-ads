@@ -19,21 +19,15 @@ import { getDashboardUrl } from '~/utils/urls';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '~/components/stepper/top-bar';
 import ContinueButton from '~/components/paid-ads/continue-button';
-import AppButton from '~/components/app-button';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import StepContent from '~/components/stepper/step-content';
-import StepContentFooter from '~/components/stepper/step-content-footer';
-import StepContentActions from '~/components/stepper/step-content-actions';
-import Faqs from '~/components/paid-ads/asset-group/faqs';
 import HelpIconButton from '~/components/help-icon-button';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import CampaignSetup from '~/components/paid-ads/campaign-setup';
 import BudgetSection from '~/components/paid-ads/budget-section';
 import EuRegulationsSection from '~/components/paid-ads/eu-regulations-section';
 import GenAIProgressCard from '~/components/paid-ads/gen-ai-progress/card';
-import {
+import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
-	ACTION_SUBMIT_CAMPAIGN_ONLY,
 } from '~/components/paid-ads/asset-group';
 import {
 	CAMPAIGN_STEP as STEP,
@@ -64,37 +58,6 @@ const GenAIProgressSection = () => {
 	}
 
 	return <GenAIProgressCard />;
-};
-
-/**
- * Renders the "Set your budget" step: the budget card, then the "Create campaign" button, then the FAQs.
- *
- * @return {JSX.Element} The rendered component.
- */
-const SetBudgetStep = () => {
-	const { isValidForm, handleSubmit, adapter } = useAdaptiveFormContext();
-	const { isSubmitting, isSubmitted } = adapter;
-
-	return (
-		<StepContent>
-			<BudgetSection />
-
-			<StepContentFooter>
-				<StepContentActions>
-					<AppButton
-						isPrimary
-						data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }
-						disabled={ ! isValidForm || isSubmitted }
-						loading={ isSubmitting }
-						onClick={ handleSubmit }
-					>
-						{ __( 'Create campaign', 'google-listings-and-ads' ) }
-					</AppButton>
-				</StepContentActions>
-				<Faqs />
-			</StepContentFooter>
-		</StepContent>
-	);
 };
 
 /**
@@ -243,6 +206,7 @@ const CreatePaidAdsCampaign = () => {
 										);
 									} }
 								>
+									<BudgetSection />
 									<EuRegulationsSection
 										context={ eventContext }
 									/>
@@ -257,7 +221,7 @@ const CreatePaidAdsCampaign = () => {
 								'Set your budget',
 								'google-listings-and-ads'
 							),
-							content: <SetBudgetStep />,
+							content: <AssetGroup />,
 						},
 					] }
 				/>

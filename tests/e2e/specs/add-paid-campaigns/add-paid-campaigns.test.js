@@ -344,11 +344,19 @@ test.describe( 'Add paid campaign', () => {
 				await setupAdsAccounts.clickContinue();
 				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 				await expect(
-					page.locator( '.gla-stepper-top-bar__title' )
-				).toHaveText( 'Create your campaign' );
+					page.getByRole( 'heading', {
+						name: 'Create your campaign',
+					} )
+				).toBeVisible();
 
 				await expect(
 					page.getByRole( 'heading', { name: 'Set your budget' } )
+				).toBeVisible();
+
+				await expect(
+					page.getByRole( 'link', {
+						name: 'See what your ads will look like.',
+					} )
 				).toBeVisible();
 			} );
 
