@@ -66,6 +66,7 @@ interface OptionsInterface {
 	public const WC_INSTALL_TIMESTAMP                      = 'wc_install_timestamp';
 	public const IS_SERVICE_BASED_MERCHANT                 = 'is_service_based_merchant';
 	public const SUPPORTED_PRODUCTS_CONFIRMED              = 'supported_products_confirmed';
+	public const SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT  = 'service_to_physical_products_switched_at';
 
 	public const VALID_OPTIONS = [
 		self::ADS_ACCOUNT_CURRENCY                      => true,
@@ -122,6 +123,7 @@ interface OptionsInterface {
 		self::WC_INSTALL_TIMESTAMP                      => true,
 		self::IS_SERVICE_BASED_MERCHANT                 => true,
 		self::SUPPORTED_PRODUCTS_CONFIRMED              => true,
+		self::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT  => true,
 	];
 
 	public const OPTION_TYPES = [
