@@ -30,7 +30,8 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 	 * Check if the store is service-based.
 	 *
 	 * If the option has not been calculated yet, it will be calculated automatically
-	 * based on whether the store has physical products.
+	 * based on whether the store has physical products. A recalculation that classes
+	 * the store as service-based also clears the recorded switch to physical products.
 	 *
 	 * @return bool True if service-based, false otherwise.
 	 */
@@ -45,6 +46,11 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 		if ( null === $option_value ) {
 			$service_based = ! $this->has_physical_products() ? 'yes' : 'no';
 			$this->options->update( OptionsInterface::IS_SERVICE_BASED_MERCHANT, $service_based );
+
+			if ( 'yes' === $service_based ) {
+				$this->clear_switch_to_physical_products();
+			}
+
 			return 'yes' === $service_based;
 		}
 
@@ -125,5 +131,29 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 	 */
 	public function reset_service_based_merchant_status(): void {
 		$this->options->delete( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
+	}
+
+	/**
+	 * Record when a service-based store first saved a product that needs shipping.
+	 *
+	 * Does nothing when a switch is already recorded, so the first switch is kept.
+	 *
+	 * @return void
+	 */
+	public function record_switch_to_physical_products(): void {
+		if ( $this->options->get( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT ) ) {
+			return;
+		}
+
+		$this->options->update( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT, time() );
+	}
+
+	/**
+	 * Clear the recorded switch from service-based to physical products.
+	 *
+	 * @return void
+	 */
+	public function clear_switch_to_physical_products(): void {
+		$this->options->delete( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT );
 	}
 }

@@ -92,6 +92,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -103,6 +104,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PAGE,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -135,6 +137,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -146,6 +149,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -160,6 +164,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-15',
 			],
 			[
@@ -171,6 +176,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'advertising_source'                    => AdvertisingSource::PRODUCT,
 				'start_date'                            => '2025-01-20',
 			],
 		];
@@ -216,11 +222,12 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
 			'start_date'                            => null,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 		] + array_diff_key( $campaign_data, [ 'label' => 'wc-web' ] );
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
+			->with( $campaign_data )
 			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
 
 		$this->expect_track_event(
@@ -259,11 +266,12 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'targeted_locations'                    => [ 'US', 'GB', 'TW' ],
 			'eu_political_advertising_confirmation' => false,
 			'start_date'                            => null,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
+			->with( $campaign_data )
 			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
 
 		$this->expect_track_event(
@@ -299,6 +307,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
 			'start_date'                            => null,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 		] + $campaign_data;
 
 		$this->ads_campaign->expects( $this->once() )
@@ -310,7 +319,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 					// Confirm name matches the datetime format.
 					$this->assertStringMatchesFormat( 'Campaign %d-%d-%d %d:%d:%d', $name, 'Name does not match' );
-					$this->assertEquals( $data, $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] );
+					$this->assertEquals( $data, $campaign_data );
 
 					return array_diff_key( $expected, [ 'start_date' => null ] );
 				}
@@ -319,6 +328,163 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
 		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_with_name_at_length_limit() {
+		$campaign_data = [
+			'name'               => str_repeat( 'a', 50 ),
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$expected = [
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'country'                               => self::BASE_COUNTRY,
+			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => null,
+			'advertising_source'                    => null,
+		] + $campaign_data;
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data )
+			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_with_name_over_length_limit() {
+		$campaign_data = [
+			'name'               => str_repeat( 'a', 51 ),
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$this->ads_campaign->expects( $this->never() )->method( 'create_campaign' );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): name', $response->get_data()['message'] );
+		$this->assertEquals( 'name must be at most 50 characters long.', $response->get_data()['data']['params']['name'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * @param string $name Blank campaign name.
+	 *
+	 * @dataProvider provide_blank_campaign_names
+	 */
+	public function test_create_campaign_with_blank_name_uses_generated_name( string $name ) {
+		$campaign_data = [
+			'name'               => $name,
+			'amount'             => 30,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->willReturnCallback(
+				function ( array $data ) {
+					$this->assertStringMatchesFormat( 'Campaign %d-%d-%d %d:%d:%d', $data['name'] );
+
+					return [
+						'id'                 => self::TEST_CAMPAIGN_ID,
+						'status'             => 'enabled',
+						'name'               => $data['name'],
+						'amount'             => 30,
+						'country'            => self::BASE_COUNTRY,
+						'targeted_locations' => [ 'US' ],
+					];
+				}
+			);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_keeps_name_zero() {
+		$campaign_data = [
+			'name'               => '0',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data )
+			->willReturn(
+				[
+					'id'                 => self::TEST_CAMPAIGN_ID,
+					'status'             => 'enabled',
+					'name'               => '0',
+					'amount'             => 20,
+					'country'            => self::BASE_COUNTRY,
+					'targeted_locations' => [ 'US' ],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_trims_name() {
+		$campaign_data = [
+			'name'               => '  New Campaign  ',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( array_merge( $campaign_data, [ 'name' => 'New Campaign' ] ) )
+			->willReturn(
+				[
+					'id'                 => self::TEST_CAMPAIGN_ID,
+					'status'             => 'enabled',
+					'name'               => 'New Campaign',
+					'amount'             => 20,
+					'country'            => self::BASE_COUNTRY,
+					'targeted_locations' => [ 'US' ],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_accepts_padded_name_that_fits_once_trimmed() {
+		$campaign_data = [
+			'name'               => '   ' . str_repeat( 'a', 48 ) . '   ',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( array_merge( $campaign_data, [ 'name' => str_repeat( 'a', 48 ) ] ) )
+			->willReturn(
+				[
+					'id'                 => self::TEST_CAMPAIGN_ID,
+					'status'             => 'enabled',
+					'name'               => str_repeat( 'a', 48 ),
+					'amount'             => 20,
+					'country'            => self::BASE_COUNTRY,
+					'targeted_locations' => [ 'US' ],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
@@ -419,11 +585,12 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'targeted_locations'                    => [ 'US', 'GB' ],
 			'eu_political_advertising_confirmation' => false,
 			'start_date'                            => null,
+			'advertising_source'                    => AdvertisingSource::PRODUCT,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
+			->with( $campaign_data )
 			->willReturn( $expected );
 
 		$this->expect_track_event(
@@ -459,6 +626,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [],
 			'eu_political_advertising_confirmation' => false,
+			'advertising_source'                    => AdvertisingSource::PAGE,
 			'start_date'                            => '2025-01-15',
 		];
 
@@ -474,6 +642,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertArrayHasKey( 'start_date', $data );
 		$this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}$/', $data['start_date'] );
+		$this->assertSame( AdvertisingSource::PAGE, $data['advertising_source'] );
 	}
 
 	public function test_get_campaign_returns_null_start_date_when_unavailable() {
@@ -550,31 +719,18 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		];
 	}
 
-	/**
-	 * @dataProvider provide_default_advertising_source_cases
-	 *
-	 * @param int    $merchant_id     The connected Merchant Center ID, or 0 when none is connected.
-	 * @param string $expected_source The advertising source the request should default to.
-	 */
-	public function test_create_campaign_defaults_the_advertising_source( int $merchant_id, string $expected_source ) {
-		$this->merchant_id = $merchant_id;
+	public function test_create_campaign_without_advertising_source_is_not_rejected_without_merchant_center() {
+		$this->merchant_id = 0;
 		$campaign_data     = $this->get_new_campaign_data();
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data + [ 'advertising_source' => $expected_source ] )
+			->with( $campaign_data )
 			->willReturn( $this->get_created_campaign_response( $campaign_data ) );
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
 		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function provide_default_advertising_source_cases(): array {
-		return [
-			'Merchant Center connected'     => [ self::MERCHANT_ID, AdvertisingSource::PRODUCT ],
-			'Merchant Center not connected' => [ 0, AdvertisingSource::PAGE ],
-		];
 	}
 
 	public function test_create_campaign_passes_a_page_advertising_source_with_merchant_center_connected() {
@@ -614,7 +770,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		);
 
 		$this->assertEquals( 400, $response->get_status() );
-		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'merchant_center_required', $response->get_data()['code'] );
 	}
 
 	public function test_edit_campaign_ignores_the_advertising_source() {
@@ -672,6 +828,101 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_campaign_name() {
+		$campaign_data = [
+			'name' => str_repeat( 'a', 50 ),
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, $campaign_data )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', $campaign_data );
+
+		$this->assertEquals( 'success', $response->get_data()['status'] );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_campaign_name_over_length_limit() {
+		$this->ads_campaign->expects( $this->never() )->method( 'edit_campaign' );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => str_repeat( 'a', 51 ) ] );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): name', $response->get_data()['message'] );
+		$this->assertEquals( 'name must be at most 50 characters long.', $response->get_data()['data']['params']['name'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_edit_campaign_name_zero() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, [ 'name' => '0' ] )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => '0' ] );
+
+		$this->assertEquals( 'success', $response->get_data()['status'] );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_campaign_trims_name() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, [ 'name' => 'Spring sale' ] )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => '  Spring sale  ' ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_campaign_accepts_padded_name_that_fits_once_trimmed() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, [ 'name' => str_repeat( 'a', 48 ) ] )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => '   ' . str_repeat( 'a', 48 ) . '   ' ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_campaign_rejects_padded_name_over_length_limit_once_trimmed() {
+		$this->ads_campaign->expects( $this->never() )->method( 'edit_campaign' );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => ' ' . str_repeat( 'a', 51 ) . ' ' ] );
+
+		$this->assertEquals( 'name must be at most 50 characters long.', $response->get_data()['data']['params']['name'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * @param string $name Blank campaign name.
+	 *
+	 * @dataProvider provide_blank_campaign_names
+	 */
+	public function test_edit_campaign_blank_name( string $name ) {
+		$this->ads_campaign->expects( $this->never() )->method( 'edit_campaign' );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', [ 'name' => $name ] );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): name', $response->get_data()['message'] );
+		$this->assertEquals( 'Campaign name cannot be empty.', $response->get_data()['data']['params']['name'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function provide_blank_campaign_names(): array {
+		return [
+			'empty'                    => [ '' ],
+			'only spaces'              => [ '   ' ],
+			'only non-breaking spaces' => [ "\u{00A0}\u{00A0}" ],
+			'only zero-width marks'    => [ "\u{200B}\u{FEFF}" ],
+		];
 	}
 
 	public function test_edit_campaign_country() {

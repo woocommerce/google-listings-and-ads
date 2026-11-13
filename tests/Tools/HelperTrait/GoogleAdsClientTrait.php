@@ -416,13 +416,19 @@ trait GoogleAdsClientTrait {
 	/**
 	 * Converts campaign data to a mocked GoogleAdsRow.
 	 *
-	 * @param array $data Campaign data to convert.
+	 * @param array $data Campaign data to convert. Use `merchant_id` to set the shopping setting's Merchant Center ID (defaults to a connected ID), or set it to null for a campaign without a shopping setting.
 	 *
 	 * @return GoogleAdsRow
 	 */
 	protected function generate_campaign_row_mock( array $data ): GoogleAdsRow {
-		$setting = $this->createMock( ShoppingSetting::class );
-		$setting->method( 'getFeedLabel' )->willReturn( $data['country'] );
+		$connected_merchant_id = 1234567890;
+		$merchant_id           = array_key_exists( 'merchant_id', $data ) ? $data['merchant_id'] : $connected_merchant_id;
+		$setting               = null;
+		if ( $merchant_id !== null ) {
+			$setting = $this->createMock( ShoppingSetting::class );
+			$setting->method( 'getFeedLabel' )->willReturn( $data['country'] );
+			$setting->method( 'getMerchantId' )->willReturn( $merchant_id );
+		}
 
 		$start_date = $data['start_date'] ?? null;
 		$campaign   = $this->createMock( Campaign::class );
