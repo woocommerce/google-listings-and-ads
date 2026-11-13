@@ -19,13 +19,11 @@ import { getDashboardUrl } from '~/utils/urls';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '~/components/stepper/top-bar';
 import ContinueButton from '~/components/paid-ads/continue-button';
-import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import HelpIconButton from '~/components/help-icon-button';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import CampaignSetup from '~/components/paid-ads/campaign-setup';
 import BudgetSection from '~/components/paid-ads/budget-section';
 import EuRegulationsSection from '~/components/paid-ads/eu-regulations-section';
-import GenAIProgressCard from '~/components/paid-ads/gen-ai-progress/card';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '~/components/paid-ads/asset-group';
@@ -44,21 +42,6 @@ import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationC
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
 const dashboardURL = getDashboardUrl();
-
-/**
- * Renders the Google AI progress card while the assets are being fetched.
- *
- * @return {JSX.Element|null} The rendered component, or `null` when the assets are not being fetched.
- */
-const GenAIProgressSection = () => {
-	const { adapter } = useAdaptiveFormContext();
-
-	if ( ! adapter.isFetchingAssets ) {
-		return null;
-	}
-
-	return <GenAIProgressCard />;
-};
 
 /**
  * Renders the campaign creation page.
@@ -210,7 +193,6 @@ const CreatePaidAdsCampaign = () => {
 									<EuRegulationsSection
 										context={ eventContext }
 									/>
-									<GenAIProgressSection />
 								</CampaignSetup>
 							),
 							onClick: handleStepperClick,
