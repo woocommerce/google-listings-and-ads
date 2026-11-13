@@ -60,7 +60,7 @@ jest.mock( '~/hooks/useRecommendedPMaxCampaign', () =>
 
 jest.mock( '~/utils/urls', () => ( {
 	getEditCampaignUrl: jest.fn(
-		( programId ) => `/edit/${ programId }/asset-group`
+		( programId ) => `/edit/${ programId }/setup`
 	),
 } ) );
 
@@ -180,7 +180,7 @@ describe( 'PMaxImproveAssetsBanner', () => {
 		);
 
 		expect( setMock ).toHaveBeenCalled();
-		expect( getEditCampaignUrl ).toHaveBeenCalledWith( 2, 'asset-group' );
-		expect( historyPush ).toHaveBeenCalledWith( '/edit/2/asset-group' );
+		expect( getEditCampaignUrl ).toHaveBeenCalledWith( 2, 'setup' );
+		expect( historyPush ).toHaveBeenCalledWith( '/edit/2/setup' );
 	} );
 } );

@@ -52,7 +52,7 @@ const dashboardURL = getDashboardUrl();
 const CreatePaidAdsCampaign = () => {
 	useLayout( 'full-content' );
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
-	const [ step, setStep ] = useState( STEP.CAMPAIGN );
+	const [ step, setStep ] = useState( STEP.SETUP );
 	const createdCampaignIdRef = useRef( null );
 	const {
 		createAdsCampaign,
@@ -169,9 +169,9 @@ const CreatePaidAdsCampaign = () => {
 					currentStep={ step }
 					steps={ [
 						{
-							key: STEP.CAMPAIGN,
+							key: STEP.SETUP,
 							label: __(
-								'Create campaign',
+								'Campaign setup',
 								'google-listings-and-ads'
 							),
 							content: (
@@ -182,7 +182,7 @@ const CreatePaidAdsCampaign = () => {
 												formProps={ formContext }
 												onClick={ () => {
 													handleContinueClick(
-														STEP.ASSET_GROUP
+														STEP.BUDGET
 													);
 												} }
 											/>
@@ -198,9 +198,9 @@ const CreatePaidAdsCampaign = () => {
 							onClick: handleStepperClick,
 						},
 						{
-							key: STEP.ASSET_GROUP,
+							key: STEP.BUDGET,
 							label: __(
-								'Optimize your campaign',
+								'Set your budget',
 								'google-listings-and-ads'
 							),
 							content: <AssetGroup />,

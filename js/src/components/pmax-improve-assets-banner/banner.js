@@ -85,10 +85,7 @@ const Banner = ( { onBannerDismissed } ) => {
 		} );
 
 		// Navigate to the edit campaign page for the PMAX campaign with the highest spending.
-		const editCampaignUrl = getEditCampaignUrl(
-			campaign_id,
-			'asset-group'
-		);
+		const editCampaignUrl = getEditCampaignUrl( campaign_id, 'setup' );
 		getHistory().push( editCampaignUrl );
 	};
 
