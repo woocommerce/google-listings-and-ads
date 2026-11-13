@@ -132,7 +132,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		if ( null === $url_matches ) {
 			$claimed_url_hash = $this->container->get( Merchant::class )->get_claimed_url_hash();
 			$site_url         = untrailingslashit( $this->get_site_url() );
-			$is_claimed_url   = $claimed_url_hash === md5( $site_url );
+			$is_claimed_url   = in_array( $claimed_url_hash, array_map( 'md5', $this->get_claimable_site_urls( $site_url ) ), true );
 			$url_matches      = apply_filters( 'woocommerce_gla_ready_for_syncing', $is_claimed_url ) ? 'yes' : 'no';
 			$transients->set( TransientsInterface::URL_MATCHES, $url_matches, HOUR_IN_SECONDS * 12 );
 
@@ -150,6 +150,37 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		}
 
 		return 'yes' === $url_matches;
+	}
+
+	/**
+	 * URLs the store may have claimed in Merchant Center. With WPML a store may have
+	 * onboarded from any language, so the home URL of every active language counts.
+	 * The list is the same on every request, so the cached result can't flip.
+	 *
+	 * @param string $site_url The site URL, already converted to the default language.
+	 *
+	 * @return string[]
+	 */
+	private function get_claimable_site_urls( string $site_url ): array {
+		$urls = [ $site_url ];
+
+		if ( ! $this->is_wpml_active() ) {
+			return $urls;
+		}
+
+		$languages = apply_filters( 'wpml_active_languages', null, [ 'skip_missing' => 0 ] );
+		if ( ! is_array( $languages ) ) {
+			return $urls;
+		}
+
+		foreach ( array_keys( $languages ) as $language ) {
+			$url = apply_filters( 'wpml_permalink', get_home_url(), $language );
+			if ( is_string( $url ) && '' !== $url ) {
+				$urls[] = untrailingslashit( $url );
+			}
+		}
+
+		return array_values( array_unique( $urls ) );
 	}
 
 	/**

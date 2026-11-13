@@ -366,6 +366,60 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->assertEquals( 0, did_action( 'woocommerce_gla_error' ) );
 	}
 
+	public function test_is_ready_for_syncing_when_another_language_url_is_claimed() {
+		$this->mock_jetpack_connection( true, true );
+		// The store onboarded from the German domain, so that URL is the one claimed.
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( md5( 'https://example.de' ) );
+		$this->options->method( 'get' )->willReturn( true );
+
+		// A request on the default-language domain.
+		add_filter(
+			'home_url',
+			function () {
+				return 'https://example.nl';
+			}
+		);
+		add_filter(
+			'wpml_default_language',
+			function () {
+				return 'nl';
+			}
+		);
+		add_filter(
+			'wpml_active_languages',
+			function () {
+				return [
+					'nl' => [ 'code' => 'nl' ],
+					'de' => [ 'code' => 'de' ],
+				];
+			}
+		);
+		add_filter(
+			'wpml_permalink',
+			function ( $url, $language ) {
+				return 'de' === $language ? 'https://example.de/' : 'https://example.nl/';
+			},
+			10,
+			2
+		);
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::URL_MATCHES, 'yes', HOUR_IN_SECONDS * 12 );
+
+		// phpcs:ignore Universal.Classes.RequireAnonClassParentheses.Missing
+		$mc_service = new class extends MerchantCenterService {
+			protected function is_wpml_active(): bool {
+				return true;
+			}
+		};
+		$mc_service->set_container( $this->container );
+		$mc_service->set_options_object( $this->options );
+
+		$this->assertTrue( $mc_service->is_ready_for_syncing() );
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_error' ) );
+	}
+
 	public function test_is_ready_for_syncing_logs_url_mismatch() {
 		$this->mock_jetpack_connection( true, true );
 		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( md5( 'https://claimed.test' ) );
