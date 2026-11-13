@@ -129,77 +129,77 @@ export default function GenerateWithPromptModal( {
 		);
 	};
 
-	return (
-		<AppModal
-			className="gla-generate-with-prompt-modal"
-			title={ __( 'Generate a new image', 'google-listings-and-ads' ) }
-			onRequestClose={ handleCancel }
-			shouldCloseOnClickOutside={ ! isGeneratingAssets }
-			buttons={
-				isGeneratingAssets
-					? []
-					: [
-							<AppButton
-								key="cancel"
-								onClick={ handleCancel }
-								isTertiary
-							>
-								{ __( 'Cancel', 'google-listings-and-ads' ) }
-							</AppButton>,
-							<AppButton
-								key="generate"
-								disabled={ ! canGenerate }
-								onClick={ handleGenerate }
-								eventName="gla_gen_ai_generate_with_prompt_modal_generate_button_click"
-								eventProps={ eventProps }
-								isPrimary
-							>
-								{ __( 'Generate', 'google-listings-and-ads' ) }
-							</AppButton>,
-						]
-			}
-		>
-			{ isGeneratingAssets && (
+	if ( isGeneratingAssets ) {
+		return (
+			<AppModal
+				key="progress"
+				className="gla-generate-with-prompt-modal"
+				contentLabel={ __(
+					'Generate a new image',
+					'google-listings-and-ads'
+				) }
+				onRequestClose={ handleCancel }
+			>
 				<GenAIProgress
 					title={ __(
 						'Generating asset',
 						'google-listings-and-ads'
 					) }
 				/>
-			) }
+			</AppModal>
+		);
+	}
 
-			{ ! isGeneratingAssets && (
-				<>
-					<p className="gla-generate-with-prompt-modal__description">
-						{ __(
-							"Describe the direction and style you'd like to generate.",
-							'google-listings-and-ads'
-						) }
-					</p>
+	return (
+		<AppModal
+			key="prompt"
+			className="gla-generate-with-prompt-modal"
+			title={ __( 'Generate a new image', 'google-listings-and-ads' ) }
+			onRequestClose={ handleCancel }
+			buttons={ [
+				<AppButton key="cancel" onClick={ handleCancel } isTertiary>
+					{ __( 'Cancel', 'google-listings-and-ads' ) }
+				</AppButton>,
+				<AppButton
+					key="generate"
+					disabled={ ! canGenerate }
+					onClick={ handleGenerate }
+					eventName="gla_gen_ai_generate_with_prompt_modal_generate_button_click"
+					eventProps={ eventProps }
+					isPrimary
+				>
+					{ __( 'Generate', 'google-listings-and-ads' ) }
+				</AppButton>,
+			] }
+		>
+			<p className="gla-generate-with-prompt-modal__description">
+				{ __(
+					"Describe the direction and style you'd like to generate.",
+					'google-listings-and-ads'
+				) }
+			</p>
 
-					{ hasError && (
-						<Notice status="error" isDismissible={ false }>
-							{ __(
-								'Something went wrong while generating the image. Please try again.',
-								'google-listings-and-ads'
-							) }
-						</Notice>
+			{ hasError && (
+				<Notice status="error" isDismissible={ false }>
+					{ __(
+						'Something went wrong while generating the image. Please try again.',
+						'google-listings-and-ads'
 					) }
-
-					<GenAIPromptControl
-						label={ __(
-							'Image generation prompt',
-							'google-listings-and-ads'
-						) }
-						placeholder={ __(
-							'Example: Generate an image of light grey canvas sneakers with soft studio lighting on an off-white background. Photorealistic, centred composition, matte texture.',
-							'google-listings-and-ads'
-						) }
-						value={ prompt }
-						onChange={ setPrompt }
-					/>
-				</>
+				</Notice>
 			) }
+
+			<GenAIPromptControl
+				label={ __(
+					'Image generation prompt',
+					'google-listings-and-ads'
+				) }
+				placeholder={ __(
+					'Example: Generate an image of light grey canvas sneakers with soft studio lighting on an off-white background. Photorealistic, centred composition, matte texture.',
+					'google-listings-and-ads'
+				) }
+				value={ prompt }
+				onChange={ setPrompt }
+			/>
 		</AppModal>
 	);
 }
