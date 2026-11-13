@@ -276,6 +276,10 @@ class ProductHelper implements Service {
 	 * The status is read from a fresh instance because mark_as_invalid() persists through one, so
 	 * the given product can still hold a pending status that has since been replaced.
 	 *
+	 * Unlike mark_as_synced(), errors are left in place. They can only be stale here when a feed
+	 * that was rejected is no longer applicable (e.g. its market was removed), and the next real
+	 * sync clears them.
+	 *
 	 * Note: If a product variation is cleared then the parent product is cleared as well, unless
 	 * another variation already moved the parent out of pending.
 	 *
