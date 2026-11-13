@@ -61,6 +61,16 @@ class PagePostResolverTest extends UnitTest {
 		add_permastruct( 'product_cat', 'product-category/%product_cat%', [ 'with_front' => false ] );
 	}
 
+	protected function create_page( string $slug ): int {
+		return $this->factory()->post->create(
+			[
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+				'post_name'   => $slug,
+			]
+		);
+	}
+
 	protected function create_product_category( string $name, string $slug, int $parent_id = 0 ): int {
 		return $this->factory()->term->create(
 			[
