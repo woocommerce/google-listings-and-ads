@@ -114,7 +114,7 @@ class BudgetRecommendationController extends BaseController implements Container
 			if ( ! AdvertisingSource::is_allowed( $advertising_source, $merchant_id ) ) {
 				return new Response(
 					[
-						'code'    => 'rest_invalid_param',
+						'code'    => 'merchant_center_required',
 						'message' => __( 'A campaign that advertises products requires a connected Merchant Center account.', 'google-listings-and-ads' ),
 					],
 					400
