@@ -1,5 +1,9 @@
-.gen-ai-progress {
+.gen-ai-progress,
+.gen-ai-progress-card {
 	--wp-components-color-foreground: #3858e9;
+}
+
+.gen-ai-progress {
 	text-align: center;
 	padding: $grid-unit-80 0;
 
