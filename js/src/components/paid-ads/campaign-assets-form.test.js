@@ -4,7 +4,6 @@
 import '@testing-library/jest-dom';
 import { screen, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { setSettings } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -45,10 +44,6 @@ describe( 'CampaignAssetsForm', () => {
 				low: { dailyBudget: 5 },
 			},
 		} );
-	} );
-
-	afterEach( () => {
-		jest.useRealTimers();
 	} );
 
 	it( 'Should extend adapter to meet the required states of ads campaign form', () => {
@@ -453,78 +448,11 @@ describe( 'CampaignAssetsForm', () => {
 			);
 		}
 
-		function mockCurrentTime( isoDateTime ) {
-			jest.useFakeTimers( {
-				now: new Date( isoDateTime ),
-				doNotFake: [
-					'setTimeout',
-					'clearTimeout',
-					'setInterval',
-					'clearInterval',
-					'setImmediate',
-					'clearImmediate',
-					'nextTick',
-					'queueMicrotask',
-					'requestAnimationFrame',
-					'cancelAnimationFrame',
-					'requestIdleCallback',
-					'cancelIdleCallback',
-					'performance',
-				],
-			} );
-		}
-
-		function setSiteTimezoneOffset( offset ) {
-			setSettings( {
-				l10n: { locale: 'en_US' },
-				formats: { datetime: 'Y-m-d H:i:s' },
-				timezone: { offset, string: '' },
-			} );
-		}
-
-		afterEach( () => {
-			setSiteTimezoneOffset( 0 );
-		} );
-
-		it( 'Should start a new campaign with a generated name and the assets opt-in off', () => {
-			mockCurrentTime( '2026-11-05T14:30:00Z' );
-			setSiteTimezoneOffset( 0 );
-
+		it( 'Should start a new campaign with the assets opt-in off', () => {
 			const { children } = renderForm();
 
 			expectLastValuesToMatch( children, {
-				campaignName: 'Campaign 2026-11-05 14:30:00',
 				includeCreativeAssets: false,
-			} );
-		} );
-
-		it( 'Should generate the default name in the site timezone', () => {
-			mockCurrentTime( '2026-11-05T20:30:00Z' );
-			setSiteTimezoneOffset( 9 );
-
-			const { children } = renderForm();
-
-			expectLastValuesToMatch( children, {
-				campaignName: 'Campaign 2026-11-06 05:30:00',
-			} );
-		} );
-
-		it( 'Should not change the default name when the form renders again', () => {
-			mockCurrentTime( '2026-11-05T14:30:00Z' );
-			setSiteTimezoneOffset( 0 );
-
-			const { children, rerender } = renderForm();
-
-			jest.setSystemTime( new Date( '2026-11-05T14:45:00Z' ) );
-
-			rerender(
-				<CampaignAssetsForm validate={ alwaysValid }>
-					{ children }
-				</CampaignAssetsForm>
-			);
-
-			expectLastValuesToMatch( children, {
-				campaignName: 'Campaign 2026-11-05 14:30:00',
 			} );
 		} );
 

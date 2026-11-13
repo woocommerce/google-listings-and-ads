@@ -2,8 +2,7 @@
  * External dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { __, sprintf } from '@wordpress/i18n';
-import { date } from '@wordpress/date';
+import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { useState, useMemo } from '@wordpress/element';
 import { isPlainObject } from 'lodash';
@@ -222,13 +221,6 @@ export default function CampaignAssetsForm( {
 	const { data: budgetRecommendationData, hasResolved } =
 		useBudgetRecommendation( countryCodes );
 	const { createNotice } = useDispatchCoreNotices();
-	const [ defaultCampaignName ] = useState( () => {
-		return sprintf(
-			/* translators: %s: current date time. */
-			__( 'Campaign %s', 'google-listings-and-ads' ),
-			date( 'Y-m-d H:i:s' )
-		);
-	} );
 
 	const budgetRecommendation = budgetRecommendationData || {};
 
@@ -410,7 +402,6 @@ export default function CampaignAssetsForm( {
 						level: 'recommended',
 						amount: selectedBudgetRecommendation.recommendedDailyBudget,
 						incentiveOffer: 'medium',
-						campaignName: defaultCampaignName,
 						includeCreativeAssets: false,
 					},
 					selectedBudgetRecommendation,

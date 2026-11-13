@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { date } from '@wordpress/date';
 import apiFetch from '@wordpress/api-fetch';
 import { Stepper } from '@woocommerce/components';
 import { useState, useRef } from '@wordpress/element';
@@ -55,6 +56,14 @@ const CreatePaidAdsCampaign = () => {
 		hasFinishedResolution: hasResolvedMCAccount,
 	} = useGoogleMCAccount();
 	const [ step, setStep ] = useState( STEP.CAMPAIGN );
+	// Generated once so the name doesn't change while the merchant fills in the form.
+	const [ defaultCampaignName ] = useState( () => {
+		return sprintf(
+			/* translators: %s: current date time. */
+			__( 'Campaign %s', 'google-listings-and-ads' ),
+			date( 'Y-m-d H:i:s' )
+		);
+	} );
 	const createdCampaignIdRef = useRef( null );
 	const {
 		createAdsCampaign,
@@ -165,6 +174,7 @@ const CreatePaidAdsCampaign = () => {
 			/>
 			<CampaignAssetsForm
 				initialCampaign={ {
+					campaignName: defaultCampaignName,
 					advertisingSource: hasGoogleMCConnection
 						? ADVERTISING_SOURCE.PRODUCT
 						: ADVERTISING_SOURCE.PAGE,
