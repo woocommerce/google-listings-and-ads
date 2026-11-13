@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { date } from '@wordpress/date';
 import apiFetch from '@wordpress/api-fetch';
 import { Stepper } from '@woocommerce/components';
 import { useState, useRef } from '@wordpress/element';
@@ -28,6 +29,7 @@ import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '~/components/paid-ads/asset-group';
 import {
+	ADVERTISING_SOURCE,
 	CAMPAIGN_STEP as STEP,
 	CAMPAIGN_STEP_NUMBER_MAP as STEP_NUMBER_MAP,
 } from '~/constants';
@@ -51,7 +53,10 @@ const dashboardURL = getDashboardUrl();
  */
 const CreatePaidAdsCampaign = () => {
 	useLayout( 'full-content' );
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const {
+		hasGoogleMCConnection,
+		hasFinishedResolution: hasResolvedMCAccount,
+	} = useGoogleMCAccount();
 	const [ step, setStep ] = useState( STEP.CAMPAIGN );
 	const createdCampaignIdRef = useRef( null );
 	const {
@@ -147,7 +152,7 @@ const CreatePaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedMCAccount ) {
 		return null;
 	}
 
@@ -162,6 +167,16 @@ const CreatePaidAdsCampaign = () => {
 				backHref={ dashboardURL }
 			/>
 			<CampaignAssetsForm
+				initialCampaign={ {
+					campaignName: sprintf(
+						/* translators: %s: current date time. */
+						__( 'Campaign %s', 'google-listings-and-ads' ),
+						date( 'Y-m-d H:i:s' )
+					),
+					advertisingSource: hasGoogleMCConnection
+						? ADVERTISING_SOURCE.PRODUCT
+						: ADVERTISING_SOURCE.PAGE,
+				} }
 				countryCodes={ countryCodes }
 				onSubmit={ handleSubmit }
 			>
