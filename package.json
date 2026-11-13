@@ -94,7 +94,7 @@
 		"react-router-dom": "^7.18.4",
 		"d3-scale": "^4.0.2",
 		"d3-scale-chromatic": "^3.0.0",
-		"qs": "^6.16.0",
+		"qs": "^6.16.1",
 		"colord": "^2.9.4",
 		"@babel/runtime": "^7.26.10",
 		"serialize-javascript": "^7.1.2",
