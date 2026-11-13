@@ -114,6 +114,9 @@
 		"@wordpress/i18n": "$@wordpress/i18n",
 		"js-yaml@3": {
 			"argparse": "^2.0.1"
+		},
+		"@wp-playground/storage": {
+			"isomorphic-git": "^1.38.6"
 		}
 	},
 	"scripts": {
