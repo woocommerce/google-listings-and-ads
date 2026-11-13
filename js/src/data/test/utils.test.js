@@ -77,6 +77,17 @@ describe( 'getReportQuery', () => {
 		} );
 	} );
 
+	it( 'should request daily intervals for the primary period only', () => {
+		for ( const category of [ 'programs', 'products' ] ) {
+			expect(
+				getReportQuery( category, 'paid', {}, 'primary' )
+			).toHaveProperty( 'interval', 'day' );
+			expect(
+				getReportQuery( category, 'paid', {}, 'secondary' )
+			).not.toHaveProperty( 'interval' );
+		}
+	} );
+
 	it( 'When the query does not contain `programs` or `products`, should have no `ids` field', () => {
 		forAnyCategoryAndDateReference( ( category, dateReference ) => {
 			const query = {};

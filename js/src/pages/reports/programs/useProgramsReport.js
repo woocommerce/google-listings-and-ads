@@ -28,6 +28,7 @@ const emptyData = {
 	campaigns: [],
 	intervals: [],
 	totals: {},
+	truncated: false,
 };
 /**
  * @type {import('~/data/selectors').ReportSchema}
@@ -131,6 +132,8 @@ export default function useProgramsReport() {
 				freeData.totals,
 				expectedFreeFields
 			),
+			// Only the paid (Ads) report can flag partial data.
+			truncated: Boolean( paidData.truncated ),
 		};
 	}, [ loaded, paid.data, free.data, expectedFreeFields ] );
 
