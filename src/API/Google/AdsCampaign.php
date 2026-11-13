@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V23\ResourceNames;
 use Google\Ads\GoogleAds\V23\Common\MaximizeConversionValue;
@@ -188,6 +189,17 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$this->map_grpc_code_to_http_status_code( $e ),
 				null,
 				[ 'errors' => $errors ]
+			);
+		} catch ( ClientExceptionInterface $e ) {
+			// A connection failure has no HTTP response, so gax rethrows it instead of creating an ApiException.
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), $e->getMessage() ),
+				503,
+				$e,
+				[ 'errors' => [ $e->getMessage() ] ]
 			);
 		}
 	}

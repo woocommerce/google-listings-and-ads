@@ -267,6 +267,49 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Clears the pending status of a product whose queued sync found nothing to send to Google,
+	 * because every feed's payload still matches its last successful sync.
+	 *
+	 * Only the status changes: synced_at has to keep recording the last real submission, because
+	 * expiry resubmission and the unchanged-product skip both depend on it.
+	 *
+	 * The status is read from a fresh instance because mark_as_invalid() persists through one, so
+	 * the given product can still hold a pending status that has since been replaced.
+	 *
+	 * Unlike mark_as_synced(), errors are left in place. They can only be stale here when a feed
+	 * that was rejected is no longer applicable (e.g. its market was removed), and the next real
+	 * sync clears them.
+	 *
+	 * Note: If a product variation is cleared then the parent product is cleared as well, unless
+	 * another variation already moved the parent out of pending.
+	 *
+	 * @param WC_Product $product
+	 */
+	public function mark_as_unchanged( WC_Product $product ) {
+		try {
+			$product = $this->get_wc_product( $product->get_id() );
+		} catch ( InvalidValue $exception ) {
+			return;
+		}
+
+		if ( SyncStatus::PENDING !== $this->meta_handler->get_sync_status( $product ) ) {
+			return;
+		}
+
+		$this->meta_handler->update_sync_status( $product, SyncStatus::SYNCED );
+
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
+			$this->mark_as_unchanged( $parent_product );
+		}
+	}
+
+	/**
 	 * Update empty (NOT EXIST) visibility meta values to SYNC_AND_SHOW.
 	 *
 	 * @param WC_Product $product
