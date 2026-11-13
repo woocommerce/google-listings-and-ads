@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
@@ -42,6 +43,15 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PagePostResolver;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PageProductResolver;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SitesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopStorePagesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\VerificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\ReviewsOptIn;
@@ -112,6 +122,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetupTask;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\ActivatedEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\GenericEvents;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SearchConsoleConnectionEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
@@ -156,6 +167,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		BadgeWidget::class                   => true,
 		ISOUtility::class                    => true,
 		SiteVerificationEvents::class        => true,
+		SearchConsoleConnectionEvents::class => true,
 		OptionsInterface::class              => true,
 		TransientsInterface::class           => true,
 		ReconnectWordPressNote::class        => true,
@@ -207,6 +219,13 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		OnboardingCompleted::class           => true,
 		ServiceBasedMerchantState::class     => true,
 		ServiceBasedMerchantHooks::class     => true,
+		SearchConsoleConnection::class       => true,
+		SitesService::class                  => true,
+		VerificationService::class           => true,
+		PagePostResolver::class              => true,
+		PageProductResolver::class           => true,
+		TopProductPagesService::class        => true,
+		TopStorePagesService::class          => true,
 	];
 
 	/**
@@ -293,6 +312,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountService::class, AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
 		$this->share_with_tags( YouTubeConnection::class );
+		$this->share( SitesService::class, SearchConsoleApiClient::class );
+		$this->share( SearchAnalyticsService::class, SearchConsoleApiClient::class );
+		$this->share( VerificationService::class, SiteVerification::class );
+		$this->share_with_tags( SearchConsoleConnection::class, SitesService::class, VerificationService::class );
+		$this->share( PagePostResolver::class );
+		$this->share( PageProductResolver::class, PagePostResolver::class, ProductHelper::class );
+		$this->share( TopProductPagesService::class, SearchAnalyticsService::class, PageProductResolver::class, ProductHelper::class, TransientsInterface::class );
+		$this->share( TopStorePagesService::class, SearchAnalyticsService::class, PagePostResolver::class, TransientsInterface::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
@@ -375,6 +402,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( GenericEvents::class );
 		$this->share_with_tags( SiteClaimEvents::class );
 		$this->share_with_tags( SiteVerificationEvents::class );
+		$this->share_with_tags( SearchConsoleConnectionEvents::class );
 
 		$this->conditionally_share_with_tags( InstallTimestamp::class );
 		$this->conditionally_share_with_tags( ClearProductStatsCache::class, MerchantStatuses::class );

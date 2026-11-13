@@ -2,6 +2,34 @@
 
 const config = require( './config' );
 
+/**
+ * Get the site URL of the Search Console property a Search Analytics request queries.
+ *
+ * @param {Object} request Hapi request.
+ * @return {string|null} The site's origin, such as `https://example.org`, or null when the path names no property.
+ */
+const getQueriedSiteUrl = ( request ) => {
+	const match = request.raw.req.url.match(
+		/\/sites\/([^/]+)\/searchAnalytics\//
+	);
+
+	if ( ! match ) {
+		return null;
+	}
+
+	const property = decodeURIComponent( match[ 1 ] );
+
+	if ( property.startsWith( 'sc-domain:' ) ) {
+		return `https://${ property.slice( 'sc-domain:'.length ) }`;
+	}
+
+	try {
+		return new URL( property ).origin;
+	} catch ( error ) {
+		return null;
+	}
+};
+
 module.exports.checkRequest = ( request, h ) => {
 	if ( config.logResponses ) {
 		// eslint-disable-next-line no-console
@@ -35,6 +63,28 @@ module.exports.checkRequest = ( request, h ) => {
 			}
 
 			return require( './mocks/ads/recommendations/campaign-budget.json' );
+		}
+	}
+
+	// Mock responses for the Merchant API accounts.reports.search, the call the plugin makes for
+	// the Merchant Center reports. Other views are sent on to the connect server.
+	// https://developers.google.com/merchant/api/reference/rest/reports_v1/accounts.reports/search
+	if ( request.params.path.includes( 'reports:search' ) ) {
+		const body = JSON.parse( request.payload );
+		if ( config.logResponses ) {
+			// eslint-disable-next-line no-console
+			console.log( 'Request query: ', '\n', body.query );
+		}
+
+		const query = body.query || '';
+
+		if ( query.includes( 'FROM product_performance_view' ) ) {
+			const file = query.includes( 'product_performance_view.offer_id' )
+				? 'products'
+				: 'programs';
+			const page = body.pageToken === 'pagetwo' ? '-pagetwo' : '';
+
+			return require( `./mocks/mc/reports/mapi/${ file }${ page }.json` );
 		}
 	}
 
@@ -116,6 +166,61 @@ module.exports.checkRequest = ( request, h ) => {
 
 			return response.updateErrors( body );
 		}
+	}
+
+	// Mock response for the Search Console searchAnalytics.query API. The Sites
+	// resource (list/create) is no longer mocked here: the plugin talks to Woo's
+	// confirmed real endpoint (google/webmasters/v3) directly now.
+	// https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+	//
+	// Routing and fixture caveats: see the "Search Console" section of tests/proxy/README.md.
+	if ( request.params.path.includes( 'searchAnalytics/query' ) ) {
+		const body = JSON.parse( request.payload );
+		const dimensions = body.dimensions || [];
+
+		const mockedSingleDimensions = [ 'date', 'query', 'page' ];
+		let file = 'aggregate';
+
+		if (
+			dimensions.length === 1 &&
+			mockedSingleDimensions.includes( dimensions[ 0 ] )
+		) {
+			file = dimensions[ 0 ];
+		} else if ( dimensions.length > 0 ) {
+			return h
+				.response( {
+					error: {
+						code: 501,
+						message: `Unmocked dimensions: ${ dimensions.join(
+							', '
+						) }`,
+						status: 'UNIMPLEMENTED',
+					},
+				} )
+				.code( 501 );
+		}
+
+		const fixture = require(
+			`./mocks/search-console/reports/${ file }.json`
+		);
+
+		if ( file !== 'page' ) {
+			return fixture;
+		}
+
+		// Serve the page URLs on the queried property's own site, so they match the test store.
+		const siteUrl = getQueriedSiteUrl( request );
+
+		if ( ! siteUrl ) {
+			return fixture;
+		}
+
+		return JSON.parse(
+			JSON.stringify( fixture ).replaceAll(
+				'https://example.com',
+				siteUrl
+			)
+		);
 	}
 
 	if (

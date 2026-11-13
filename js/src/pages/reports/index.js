@@ -3,10 +3,17 @@
  */
 import Programs from './programs';
 import Products from './products';
+import SearchConsole from './search-console';
 import getSelectedReportKey from '~/utils/getSelectedReportKey';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import AppSpinner from '~/components/app-spinner';
 import useReportsAvailability from '~/hooks/useReportsAvailability';
+
+const REPORTS = {
+	programs: Programs,
+	products: Products,
+	'search-console': SearchConsole,
+};
 
 const Reports = () => {
 	const reportKey = getSelectedReportKey();
@@ -17,10 +24,14 @@ const Reports = () => {
 		return <AppSpinner />;
 	}
 
+	// The Products report needs a product feed, which comes from Merchant Center.
+	const Report =
+		! hasMC && reportKey === 'products' ? Programs : REPORTS[ reportKey ];
+
 	return (
 		<>
 			<ExperienceRatingBanner />
-			{ hasMC && reportKey === 'products' ? <Products /> : <Programs /> }
+			<Report />
 		</>
 	);
 };
@@ -32,6 +43,8 @@ export default Reports;
  * @property {string} key Metric key.
  * @property {string} label Metric label to display.
  * @property {boolean} [isCurrency] Metric is a currency if true. Needed to adjust Chart's valueType => y-axis labels.
+ * @property {boolean} [reverseTrend] Whether a decrease is an improvement, which reverses the trend colours.
+ * @property {string} [labelTooltipText] Text of an info tooltip shown next to the metric's label.
  */
 
 /**

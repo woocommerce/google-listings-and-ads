@@ -15,9 +15,14 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import { getGetStartedUrl, redirectTo } from '~/utils/urls';
-import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from '../disconnect-modal';
+import {
+	ALL_ACCOUNTS,
+	YOUTUBE_ACCOUNT,
+	SEARCH_CONSOLE_ACCOUNT,
+} from '../disconnect-modal';
 
 jest.mock( '~/hooks/useAdminUrl', () => jest.fn().mockName( 'useAdminUrl' ) );
 jest.mock( '~/hooks/useJetpackAccount', () =>
@@ -34,6 +39,9 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 );
 jest.mock( '~/hooks/useYouTubeAccount', () =>
 	jest.fn().mockName( 'useYouTubeAccount' )
+);
+jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
+	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
 );
 jest.mock( '~/utils/tracks', () => ( {
 	queueRecordGlaEvent: jest.fn().mockName( 'queueRecordGlaEvent' ),
@@ -57,7 +65,7 @@ jest.mock(
 		}
 );
 jest.mock(
-	'./merchant-center-account-card',
+	'./google-merchant-center-account-card',
 	() =>
 		function MockMerchantCenterAccountCard() {
 			return <div>Merchant Center account</div>;
@@ -81,10 +89,25 @@ jest.mock(
 			);
 		}
 );
+jest.mock(
+	'./google-search-console-account-card',
+	() =>
+		function MockGoogleSearchConsoleAccountCard( { onDisconnect } ) {
+			return (
+				<div>
+					Google Search Console account
+					<button onClick={ onDisconnect }>
+						Disconnect Google Search Console account
+					</button>
+				</div>
+			);
+		}
+);
 jest.mock( '../disconnect-modal', () => ( {
 	__esModule: true,
 	ALL_ACCOUNTS: 'all-accounts',
 	YOUTUBE_ACCOUNT: 'youtube-account',
+	SEARCH_CONSOLE_ACCOUNT: 'search-console-account',
 	default: function MockDisconnectModal( {
 		disconnectTarget,
 		onDisconnected,
@@ -122,6 +145,17 @@ describe( 'Accounts', () => {
 		} );
 		useGoogleAdsAccount.mockReturnValue( { hasFinishedResolution: true } );
 		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: true } );
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+		} );
+	} );
+
+	it( 'always renders the Tracking and Site tools group', () => {
+		render( <Accounts /> );
+
+		expect(
+			screen.getByText( 'Google Search Console account' )
+		).toBeInTheDocument();
 	} );
 
 	it( 'shows a loading spinner until every account has resolved', () => {
@@ -170,6 +204,27 @@ describe( 'Accounts', () => {
 		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
 			'gla_disconnected_accounts',
 			{ context: YOUTUBE_ACCOUNT }
+		);
+		expect( redirectTo ).not.toHaveBeenCalled();
+	} );
+
+	it( 'tracks disconnecting the Google Search Console account without redirecting', async () => {
+		const user = userEvent.setup();
+
+		render( <Accounts /> );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Disconnect Google Search Console account',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'button', { name: 'Confirm disconnect' } )
+		);
+
+		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
+			'gla_disconnected_accounts',
+			{ context: SEARCH_CONSOLE_ACCOUNT }
 		);
 		expect( redirectTo ).not.toHaveBeenCalled();
 	} );

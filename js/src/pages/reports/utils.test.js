@@ -11,6 +11,7 @@ import {
 	aggregateIntervals,
 	sumToPerformance,
 	addBaseToPerformance,
+	getComparisonChartData,
 } from './utils';
 
 // Copied from https://github.com/woocommerce/woocommerce-admin/blob/b35156dcf17b44b3a81ea4b4528445b432917fd5/packages/navigation/src/test/index.js#L184-L221
@@ -303,5 +304,100 @@ describe( 'addBaseToPerformance', () => {
 				missingFreeListingsData: 2,
 			},
 		} );
+	} );
+} );
+
+describe( 'getComparisonChartData', () => {
+	const labels = { primary: 'This month', secondary: 'Last year' };
+
+	it( 'pairs each interval with the comparison interval at the same position', () => {
+		const intervals = [
+			{ interval: '2026-10-01', subtotals: { clicks: 3 } },
+			{ interval: '2026-10-02', subtotals: { clicks: 5 } },
+		];
+		const comparison = {
+			labels,
+			intervals: [
+				{ interval: '2025-10-01', subtotals: { clicks: 2 } },
+				{ interval: '2025-10-02', subtotals: { clicks: 4 } },
+			],
+		};
+
+		expect(
+			getComparisonChartData( intervals, comparison, 'clicks' )
+		).toEqual( [
+			{
+				date: '2026-10-01T00:00:00',
+				primary: {
+					label: 'This month',
+					value: 3,
+					labelDate: '2026-10-01T00:00:00',
+				},
+				secondary: {
+					label: 'Last year',
+					value: 2,
+					labelDate: '2025-10-01T00:00:00',
+				},
+			},
+			{
+				date: '2026-10-02T00:00:00',
+				primary: {
+					label: 'This month',
+					value: 5,
+					labelDate: '2026-10-02T00:00:00',
+				},
+				secondary: {
+					label: 'Last year',
+					value: 4,
+					labelDate: '2025-10-02T00:00:00',
+				},
+			},
+		] );
+	} );
+
+	it( 'plots a missing comparison point as 0, with no date', () => {
+		const intervals = [
+			{ interval: '2026-10-01', subtotals: { clicks: 3 } },
+			{ interval: '2026-10-02', subtotals: { clicks: 5 } },
+		];
+		const comparison = {
+			labels,
+			intervals: [ { interval: '2025-10-01', subtotals: { clicks: 2 } } ],
+		};
+
+		const [ , second ] = getComparisonChartData(
+			intervals,
+			comparison,
+			'clicks'
+		);
+
+		expect( second.secondary ).toEqual( {
+			label: 'Last year',
+			value: 0,
+			labelDate: undefined,
+		} );
+	} );
+
+	it( 'plots a metric that is missing from an interval as 0', () => {
+		const intervals = [ { interval: '2026-10-01', subtotals: {} } ];
+		const comparison = {
+			labels,
+			intervals: [ { interval: '2025-10-01', subtotals: {} } ],
+		};
+
+		const [ point ] = getComparisonChartData(
+			intervals,
+			comparison,
+			'clicks'
+		);
+
+		expect( point.primary.value ).toBe( 0 );
+		expect( point.secondary.value ).toBe( 0 );
+	} );
+
+	it( 'returns no points when there are no intervals', () => {
+		expect(
+			getComparisonChartData( [], { labels, intervals: [] }, 'clicks' )
+		).toEqual( [] );
 	} );
 } );

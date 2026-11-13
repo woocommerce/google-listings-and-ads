@@ -46,6 +46,8 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchYouTubeAccount,
+	fetchGoogleSearchConsoleAccount,
+	fetchGoogleSearchConsoleProperties,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -417,6 +419,98 @@ export function* getWCReportStats( reportType, query ) {
 			error,
 			__(
 				'There was an error loading report statistics.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getSearchConsoleQueriesReport( query ) {
+	const path = addQueryArgs(
+		`${ API_NAMESPACE }/search-console/reports/queries`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey( 'search-console', 'queries', query );
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading the top search queries.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getSearchConsoleOverviewReport( query ) {
+	const path = addQueryArgs(
+		`${ API_NAMESPACE }/search-console/reports/overview`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey( 'search-console', 'overview', query );
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading the organic search overview.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getSearchConsoleTopProductPages( query ) {
+	const path = addQueryArgs(
+		`${ API_NAMESPACE }/search-console/top-product-pages`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey(
+			'search-console',
+			'top-product-pages',
+			query
+		);
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading the top product pages.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getSearchConsoleTopStorePages( query ) {
+	const path = addQueryArgs(
+		`${ API_NAMESPACE }/search-console/top-store-pages`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey(
+			'search-console',
+			'top-store-pages',
+			query
+		);
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading the top store pages.',
 				'google-listings-and-ads'
 			)
 		);
@@ -869,6 +963,22 @@ getYouTubeAccount.shouldInvalidate = ( action ) => {
 		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
 		action.invalidateRelatedState
 	);
+};
+
+export function* getGoogleSearchConsoleAccount() {
+	yield fetchGoogleSearchConsoleAccount();
+}
+
+getGoogleSearchConsoleAccount.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_SEARCH_CONSOLE;
+};
+
+export function* getGoogleSearchConsoleProperties() {
+	yield fetchGoogleSearchConsoleProperties();
+}
+
+getGoogleSearchConsoleProperties.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_SEARCH_CONSOLE;
 };
 
 export function* getMarkets() {
