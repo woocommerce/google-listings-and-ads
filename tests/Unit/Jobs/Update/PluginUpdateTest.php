@@ -32,8 +32,9 @@ class PluginUpdateTest extends UnitTest {
 		$update_all_products = $this->createMock( UpdateAllProducts::class );
 		$update_all_products->expects( $this->once() )->method( 'schedule' );
 
-		// 3.7.3 is above the older 1.x entries, so only the 3.8.0 job fires: a store upgrading
-		// from the Content API era must re-sync every product to pick up Merchant API ids.
+		// 3.7.3 is above the older 1.x entries, so only the 3.8.0 and 3.10.2 entries match. Both
+		// ask for a full re-sync, which is scheduled once: a store upgrading from the Content API
+		// era must re-sync every product to pick up Merchant API ids.
 		$this->job_repository->expects( $this->once() )
 			->method( 'get' )
 			->with( UpdateAllProducts::class )
@@ -45,9 +46,23 @@ class PluginUpdateTest extends UnitTest {
 	public function test_upgrading_within_mapi_versions_does_not_reschedule_resync() {
 		// No-refire boundary guard, not fix verification: the fires-on-upgrade case is covered by
 		// test_upgrading_to_mapi_release_schedules_full_product_resync. This pins the gate at `<` so
-		// a store already on the Merchant API release (>= 3.8.0) never re-runs the re-sync.
+		// a store already past the latest re-sync entry (>= 3.10.2) never re-runs the re-sync.
 		$this->job_repository->expects( $this->never() )->method( 'get' );
 
-		$this->plugin_update->install( '3.8.0', '3.8.1' );
+		$this->plugin_update->install( '3.10.2', '3.10.3' );
+	}
+
+	public function test_upgrading_to_exchange_rate_fix_release_schedules_full_product_resync() {
+		$update_all_products = $this->createMock( UpdateAllProducts::class );
+		$update_all_products->expects( $this->once() )->method( 'schedule' );
+
+		// GOOWOO-1188: products marked invalid by the exchange-rate validation bug are excluded
+		// from the expiring-products resync, so the fix release re-syncs every product once.
+		$this->job_repository->expects( $this->once() )
+			->method( 'get' )
+			->with( UpdateAllProducts::class )
+			->willReturn( $update_all_products );
+
+		$this->plugin_update->install( '3.10.1', '3.10.2' );
 	}
 }

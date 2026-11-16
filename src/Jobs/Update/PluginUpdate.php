@@ -51,6 +51,11 @@ class PluginUpdate implements Service, InstallableInterface {
 		'3.8.0'  => [
 			UpdateAllProducts::class,
 		],
+		// GOOWOO-1188: products in exchange-rate secondary markets were marked invalid with a null
+		// price and are excluded from the expiring-products resync; re-sync them once.
+		'3.10.2' => [
+			UpdateAllProducts::class,
+		],
 	];
 
 	/**
@@ -60,11 +65,15 @@ class PluginUpdate implements Service, InstallableInterface {
 	 * @param string $new_version Current version after updating.
 	 */
 	public function install( string $old_version, string $new_version ): void {
+		$pending = [];
 		foreach ( $this->updates as $version => $jobs ) {
 			if ( version_compare( $old_version, $version, '<' ) ) {
-				$this->schedule_jobs( $jobs );
+				$pending = array_merge( $pending, $jobs );
 			}
 		}
+
+		// Several versions can ask for the same job (e.g. a full re-sync): run it once.
+		$this->schedule_jobs( array_values( array_unique( $pending ) ) );
 	}
 
 	/**

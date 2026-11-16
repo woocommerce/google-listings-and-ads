@@ -711,6 +711,48 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $this->product_helper->get_validation_errors( $product ) );
 	}
 
+	public function test_generate_mapi_update_entries_secondary_market_exchange_rate_ignored_with_several_non_store_currencies() {
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'price'         => 55.61,
+				'regular_price' => 55.61,
+			]
+		);
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( false );
+
+		// WPML converts into neither currency, and the single rate cannot describe both.
+		$this->wpml_converted_prices['CZK'] = null;
+		$this->wpml_converted_prices['EUR'] = null;
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'CZ' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'cz'      => [
+					'country'       => 'CZ',
+					'feed_label'    => 'CZ',
+					'language'      => [],
+					'currency'      => [ 'CZK', 'EUR' ],
+					'exchange_rate' => 5.6354,
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// Neither currency gets an entry priced with a rate meant for only one of them.
+		$this->assertSame( [ 'US' ], array_values( array_unique( array_column( $results, 'country' ) ) ) );
+	}
+
 	public function test_generate_mapi_update_entries_wpml_match_alternate_language_in_set() {
 		$product = WC_Helper_Product::create_simple_product();
 
