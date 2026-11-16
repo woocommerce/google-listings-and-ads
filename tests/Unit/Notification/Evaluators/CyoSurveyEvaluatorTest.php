@@ -104,12 +104,15 @@ class CyoSurveyEvaluatorTest extends UnitTest {
 	 * Mock a completed onboarding with the given stored completion value.
 	 *
 	 * @param mixed $completed_at Value stored in the onboarding_completed_at option.
+	 * @param array $site_state   Value stored in the notifications site state option.
 	 */
-	private function mock_onboarding( $completed_at ): void {
+	private function mock_onboarding( $completed_at, array $site_state = [] ): void {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( true );
-		$this->options->method( 'get' )
-			->with( OptionsInterface::ONBOARDING_COMPLETED_AT )
-			->willReturn( $completed_at );
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $name ) use ( $completed_at, $site_state ) {
+				return OptionsInterface::NOTIFICATIONS_SITE_STATE === $name ? $site_state : $completed_at;
+			}
+		);
 	}
 
 	/**
@@ -181,21 +184,20 @@ class CyoSurveyEvaluatorTest extends UnitTest {
 	 * AE3: 46 days after onboarding nothing shows; at exactly 60 days the matching survey shows.
 	 */
 	public function test_requires_sixty_days_since_onboarding() {
-		$now = self::ts( '2026-11-16T12:00:00Z' );
+		$now          = self::ts( '2026-11-16T12:00:00Z' );
+		$completed_at = $now - 46 * DAY_IN_SECONDS;
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( true );
-		$this->options->method( 'get' )
-			->with( OptionsInterface::ONBOARDING_COMPLETED_AT )
-			->willReturnOnConsecutiveCalls(
-				$now - 46 * DAY_IN_SECONDS,
-				$now - 46 * DAY_IN_SECONDS,
-				$now - 60 * DAY_IN_SECONDS,
-				$now - 60 * DAY_IN_SECONDS
-			);
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $name ) use ( &$completed_at ) {
+				return OptionsInterface::NOTIFICATIONS_SITE_STATE === $name ? [] : $completed_at;
+			}
+		);
 		$this->ads_service->method( 'is_setup_complete' )->willReturn( false );
 
 		$this->assertFalse( $this->no_spend_evaluator( $now )->should_show() );
 		$this->assertFalse( $this->spend_evaluator( $now )->should_show() );
 
+		$completed_at = $now - 60 * DAY_IN_SECONDS;
 		$this->assertTrue( $this->no_spend_evaluator( $now )->should_show() );
 		$this->assertFalse( $this->spend_evaluator( $now )->should_show() );
 	}
@@ -392,6 +394,51 @@ class CyoSurveyEvaluatorTest extends UnitTest {
 		delete_transient( NotificationCacheKeys::for_site( 'cyo-survey' ) );
 
 		$this->assertTrue( $this->spend_evaluator( $now )->should_show() );
+	}
+
+	/**
+	 * Dismissing either survey ends the ask: the other one never shows, whatever the spend status.
+	 *
+	 * @dataProvider dismissed_survey_provider
+	 *
+	 * @param string $dismissed_id
+	 * @param string $spend_status
+	 */
+	public function test_dismissing_either_survey_hides_both( string $dismissed_id, string $spend_status ) {
+		$now = self::ts( '2026-11-16T12:00:00Z' );
+		$this->mock_onboarding(
+			self::ts( '2026-06-01T00:00:00Z' ),
+			[ $dismissed_id => [ 'dismissed' => true ] ]
+		);
+		set_transient( NotificationCacheKeys::for_site( 'cyo-survey' ), $spend_status, HOUR_IN_SECONDS );
+		$this->ads_report->expects( $this->never() )->method( 'get_report_data' );
+
+		$this->assertFalse( $this->spend_evaluator( $now )->should_show() );
+		$this->assertFalse( $this->no_spend_evaluator( $now )->should_show() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function dismissed_survey_provider(): array {
+		return [
+			'long survey dismissed, status flips to no spend' => [ 'cyo-survey-spend', 'none' ],
+			'short survey dismissed, status flips to spend'   => [ 'cyo-survey-no-spend', 'spent' ],
+		];
+	}
+
+	public function test_snoozed_or_malformed_state_does_not_hide_survey() {
+		$now = self::ts( '2026-11-16T12:00:00Z' );
+		$this->mock_onboarding(
+			self::ts( '2026-06-01T00:00:00Z' ),
+			[
+				'cyo-survey-spend'    => 'dismissed',
+				'cyo-survey-no-spend' => [ 'snoozed_until' => $now + DAY_IN_SECONDS ],
+			]
+		);
+		$this->ads_service->method( 'is_setup_complete' )->willReturn( false );
+
+		$this->assertTrue( $this->no_spend_evaluator( $now )->should_show() );
 	}
 
 	public function test_both_evaluators_answer_from_shared_cache() {

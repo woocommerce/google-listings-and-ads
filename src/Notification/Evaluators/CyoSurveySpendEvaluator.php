@@ -20,7 +20,7 @@ class CyoSurveySpendEvaluator extends AbstractCyoSurveyEvaluator {
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'cyo-survey-spend';
+		return self::SPEND_SURVEY_ID;
 	}
 
 	/**

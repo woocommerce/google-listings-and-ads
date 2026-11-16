@@ -27,7 +27,8 @@ defined( 'ABSPATH' ) || exit;
  * whether they have Google Ads spend since onboarding; each subclass shows for one side.
  *
  * The spend status is cached once per store in a single transient that both subclasses read,
- * so they can never disagree and show both surveys at once.
+ * so they can never disagree and show both surveys at once. Dismissing either survey (including
+ * through its CTA) ends the ask for the store, so the other one never shows afterwards.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
@@ -35,6 +36,9 @@ abstract class AbstractCyoSurveyEvaluator implements SiteScopedNotificationEvalu
 
 	use AdsAwareTrait;
 	use OptionsAwareTrait;
+
+	protected const SPEND_SURVEY_ID    = 'cyo-survey-spend';
+	protected const NO_SPEND_SURVEY_ID = 'cyo-survey-no-spend';
 
 	protected const SPEND_STATUS_SPENT   = 'spent';
 	protected const SPEND_STATUS_NONE    = 'none';
@@ -96,6 +100,10 @@ abstract class AbstractCyoSurveyEvaluator implements SiteScopedNotificationEvalu
 			return false;
 		}
 
+		if ( $this->is_any_survey_dismissed() ) {
+			return false;
+		}
+
 		return $this->get_spend_status( $completed_at, $now ) === $this->get_spend_status_to_show();
 	}
 
@@ -140,6 +148,28 @@ abstract class AbstractCyoSurveyEvaluator implements SiteScopedNotificationEvalu
 		$completed_at = $this->options->get( OptionsInterface::ONBOARDING_COMPLETED_AT );
 
 		return is_numeric( $completed_at ) ? max( 0, (int) $completed_at ) : 0;
+	}
+
+	/**
+	 * Whether the store dismissed either survey. Reads the site-scoped state that
+	 * NotificationService::dismiss() writes, keyed by notification ID.
+	 *
+	 * @return bool
+	 */
+	private function is_any_survey_dismissed(): bool {
+		$state = $this->options->get( OptionsInterface::NOTIFICATIONS_SITE_STATE, [] );
+
+		if ( ! is_array( $state ) ) {
+			return false;
+		}
+
+		foreach ( [ self::SPEND_SURVEY_ID, self::NO_SPEND_SURVEY_ID ] as $id ) {
+			if ( is_array( $state[ $id ] ?? null ) && ! empty( $state[ $id ]['dismissed'] ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
