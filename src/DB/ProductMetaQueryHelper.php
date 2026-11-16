@@ -67,6 +67,47 @@ class ProductMetaQueryHelper implements Service {
 	}
 
 	/**
+	 * Count the products whose meta value for a given meta_key is one of the given values.
+	 *
+	 * A simple product counts by its own value. A variable product counts once when any of its
+	 * variations has a matching value; the value saved on the parent itself is ignored.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string   $meta_key The meta key to match.
+	 * @param string[] $values   The meta values to count.
+	 *
+	 * @return int|null The count, or null when the query fails.
+	 *
+	 * @throws InvalidMeta If the meta key isn't valid.
+	 */
+	public function count_products_by_value( string $meta_key, array $values ): ?int {
+		self::validate_meta_key( $meta_key );
+
+		if ( empty( $values ) ) {
+			return 0;
+		}
+
+		$placeholder = '(' . implode( ',', array_fill( 0, count( $values ), '%s' ) ) . ')';
+		$query       = "SELECT COUNT( DISTINCT IF( p.post_type = 'product_variation', p.post_parent, p.ID ) )
+			FROM %i m INNER JOIN %i p ON p.ID = m.post_id
+			WHERE m.meta_key = %s AND m.meta_value IN {$placeholder}
+			AND (
+				( p.post_type = 'product_variation' AND p.post_parent > 0 )
+				OR ( p.post_type = 'product' AND NOT EXISTS ( SELECT 1 FROM %i c WHERE c.post_parent = p.ID AND c.post_type = 'product_variation' ) )
+			)";
+		$args        = [ $this->wpdb->postmeta, $this->wpdb->posts, $this->prefix_meta_key( $meta_key ), ...$values, $this->wpdb->posts ];
+
+		// The IN-list placeholders are generated locally from the value count.
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		$count = $this->wpdb->get_var( $this->wpdb->prepare( $query, $args ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+		// COUNT always returns a row, so null means the query failed.
+		return null === $count ? null : (int) $count;
+	}
+
+	/**
 	 * Delete all values for a given meta_key.
 	 *
 	 * @since 2.6.4
