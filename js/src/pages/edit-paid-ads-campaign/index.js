@@ -50,13 +50,13 @@ function getCurrentStep( step ) {
 	if ( Object.values( STEP ).includes( step ) ) {
 		return step;
 	}
-	return STEP.CAMPAIGN;
+	return STEP.SETUP;
 }
 
 function isNotOurStep( location ) {
 	const allowList = new Set( [
-		getNewPath( { step: STEP.CAMPAIGN } ),
-		getNewPath( { step: STEP.ASSET_GROUP } ),
+		getNewPath( { step: STEP.SETUP } ),
+		getNewPath( { step: STEP.BUDGET } ),
 	] );
 	const destination = location.pathname + location.search;
 	return ! allowList.has( destination );
@@ -262,9 +262,9 @@ const EditPaidAdsCampaign = () => {
 					currentStep={ step }
 					steps={ [
 						{
-							key: STEP.CAMPAIGN,
+							key: STEP.SETUP,
 							label: __(
-								'Edit campaign',
+								'Campaign setup',
 								'google-listings-and-ads'
 							),
 							content: (
@@ -279,7 +279,7 @@ const EditPaidAdsCampaign = () => {
 											formProps={ formContext }
 											onClick={ () =>
 												handleContinueClick(
-													STEP.ASSET_GROUP
+													STEP.BUDGET
 												)
 											}
 										/>
@@ -289,9 +289,9 @@ const EditPaidAdsCampaign = () => {
 							onClick: handleStepperClick,
 						},
 						{
-							key: STEP.ASSET_GROUP,
+							key: STEP.BUDGET,
 							label: __(
-								'Optimize your campaign',
+								'Set your budget',
 								'google-listings-and-ads'
 							),
 							content: <AssetGroup campaign={ campaign } />,
