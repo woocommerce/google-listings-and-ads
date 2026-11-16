@@ -12,6 +12,7 @@ import Subsection from '~/components/subsection';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
 import AppInputControl from '~/components/app-input-control';
 import { CAMPAIGN_NAME_MAX_LENGTH } from '~/constants';
+import './index.scss';
 
 /**
  * Renders a card to view and edit the campaign name.
