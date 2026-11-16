@@ -27,7 +27,7 @@ const GenAIProgressCard = () => {
 						<img
 							className="gen-ai-progress-card__icon"
 							src={ GenAIIcon }
-							alt={ __( 'Google AI', 'google-listings-and-ads' ) }
+							alt=""
 							width={ 48 }
 							height={ 48 }
 						/>

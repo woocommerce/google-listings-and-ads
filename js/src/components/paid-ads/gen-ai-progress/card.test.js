@@ -44,11 +44,11 @@ describe( 'GenAIProgressCard', () => {
 
 	test( 'Renders the Google AI icon', () => {
 		mockAdapter( true );
-		render( <GenAIProgressCard /> );
+		const { container } = render( <GenAIProgressCard /> );
 
-		expect( screen.getByRole( 'img', { name: 'Google AI' } ) ).toHaveClass(
-			'gen-ai-progress-card__icon'
-		);
+		expect(
+			container.querySelector( '.gen-ai-progress-card__icon' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'Shows the Skip button while generating assets', () => {
