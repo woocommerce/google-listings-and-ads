@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class MerchantCenterAvailableEvaluator
  *
- * Fires when a store that onboarded as service-based has since added physical
+ * Fires when a store classed as service-based has since added physical
  * products, and Merchant Center is not connected yet.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
