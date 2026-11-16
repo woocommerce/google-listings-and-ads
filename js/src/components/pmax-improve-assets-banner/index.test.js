@@ -10,7 +10,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import { getEditCampaignUrl } from '~/utils/urls';
-import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
+import {
+	PREFERENCES_STORE_NAMESPACE,
+	DAY_IN_SECONDS,
+	CAMPAIGN_STEP,
+} from '~/constants';
 import PMaxImproveAssetsBanner from './index';
 import usePreference from '~/hooks/usePreference';
 import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
@@ -180,7 +184,10 @@ describe( 'PMaxImproveAssetsBanner', () => {
 		);
 
 		expect( setMock ).toHaveBeenCalled();
-		expect( getEditCampaignUrl ).toHaveBeenCalledWith( 2, 'setup' );
+		expect( getEditCampaignUrl ).toHaveBeenCalledWith(
+			2,
+			CAMPAIGN_STEP.SETUP
+		);
 		expect( historyPush ).toHaveBeenCalledWith( '/edit/2/setup' );
 	} );
 } );
