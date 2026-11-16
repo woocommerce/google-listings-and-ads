@@ -7,9 +7,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Exception;
 use Throwable;
@@ -33,24 +31,18 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 	/** @var LocalPostService */
 	protected $local_post_service;
 
-	/** @var LocationService */
-	protected $location_service;
-
 	/**
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param LocalPostService          $local_post_service
-	 * @param LocationService           $location_service
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
-		LocalPostService $local_post_service,
-		LocationService $location_service
+		LocalPostService $local_post_service
 	) {
 		parent::__construct( $action_scheduler, $monitor );
 		$this->local_post_service = $local_post_service;
-		$this->location_service   = $location_service;
 	}
 
 	/**
@@ -108,8 +100,8 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 	}
 
 	/**
-	 * Whether a post is still a genuine candidate to send -- published, a supported post type,
-	 * sharing still switched on, and a location still connected.
+	 * Whether a post is still a genuine candidate to send -- published, and still shareable (a
+	 * supported post type, sharing still switched on, and a location still connected).
 	 *
 	 * @param WP_Post|null $post
 	 *
@@ -120,15 +112,7 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 			return false;
 		}
 
-		if ( ! in_array( $post->post_type, LocalPostService::SUPPORTED_POST_TYPES, true ) ) {
-			return false;
-		}
-
-		if ( ! (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true ) ) {
-			return false;
-		}
-
-		return null !== $this->location_service->get_selected_location();
+		return $this->local_post_service->is_shareable( $post );
 	}
 
 	/**
@@ -173,11 +157,17 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 
 		$this->report_sync_failure( $failure );
 
-		// Callbacks on the exception action may expect an Exception, so report an Error by message.
-		if ( $failure instanceof Exception ) {
-			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
-		} else {
-			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+		try {
+			// Callbacks on the exception action may expect an Exception, so report an Error by message.
+			if ( $failure instanceof Exception ) {
+				do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+			} else {
+				do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+			}
+		} catch ( Throwable $error ) {
+			// A throwing listener here must not escape and reschedule the batch -- the send
+			// already failed, so replaying it would only retry it a second, redundant time.
+			$this->report_listener_error( $failure instanceof Exception ? 'woocommerce_gla_exception' : 'woocommerce_gla_error', $error );
 		}
 	}
 
