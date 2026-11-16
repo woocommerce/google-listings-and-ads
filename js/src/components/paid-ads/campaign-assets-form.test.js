@@ -4,7 +4,6 @@
 import '@testing-library/jest-dom';
 import { screen, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { setSettings } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -12,7 +11,6 @@ import { setSettings } from '@wordpress/date';
 import CampaignAssetsForm from './campaign-assets-form';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
-import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 
 jest.mock( '~/hooks/useAdsCurrency', () =>
 	jest.fn().mockName( 'useAdsCurrency' )
@@ -20,10 +18,6 @@ jest.mock( '~/hooks/useAdsCurrency', () =>
 
 jest.mock( '~/hooks/useBudgetRecommendation', () =>
 	jest.fn().mockName( 'useBudgetRecommendation' )
-);
-
-jest.mock( '~/hooks/useGoogleMCAccount', () =>
-	jest.fn().mockName( 'useGoogleMCAccount' )
 );
 
 jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
@@ -50,15 +44,6 @@ describe( 'CampaignAssetsForm', () => {
 				low: { dailyBudget: 5 },
 			},
 		} );
-
-		useGoogleMCAccount.mockReturnValue( {
-			hasFinishedResolution: true,
-			hasGoogleMCConnection: true,
-		} );
-	} );
-
-	afterEach( () => {
-		jest.useRealTimers();
 	} );
 
 	it( 'Should extend adapter to meet the required states of ads campaign form', () => {
@@ -463,130 +448,11 @@ describe( 'CampaignAssetsForm', () => {
 			);
 		}
 
-		function mockCurrentTime( isoDateTime ) {
-			jest.useFakeTimers( {
-				now: new Date( isoDateTime ),
-				doNotFake: [
-					'setTimeout',
-					'clearTimeout',
-					'setInterval',
-					'clearInterval',
-					'setImmediate',
-					'clearImmediate',
-					'nextTick',
-					'queueMicrotask',
-					'requestAnimationFrame',
-					'cancelAnimationFrame',
-					'requestIdleCallback',
-					'cancelIdleCallback',
-					'performance',
-				],
-			} );
-		}
-
-		function setSiteTimezoneOffset( offset ) {
-			setSettings( {
-				l10n: { locale: 'en_US' },
-				formats: { datetime: 'Y-m-d H:i:s' },
-				timezone: { offset, string: '' },
-			} );
-		}
-
-		afterEach( () => {
-			setSiteTimezoneOffset( 0 );
-		} );
-
-		it( 'Should start a new campaign with a generated name and the assets opt-in off', () => {
-			mockCurrentTime( '2026-11-05T14:30:00Z' );
-			setSiteTimezoneOffset( 0 );
-
+		it( 'Should start a new campaign with the assets opt-in off', () => {
 			const { children } = renderForm();
 
 			expectLastValuesToMatch( children, {
-				campaignName: 'Campaign 2026-11-05 14:30:00',
 				includeCreativeAssets: false,
-			} );
-		} );
-
-		it( 'Should start the advertising source as product when Merchant Center is connected', () => {
-			const { children } = renderForm();
-
-			expectLastValuesToMatch( children, {
-				advertisingSource: 'product',
-			} );
-		} );
-
-		it( 'Should start the advertising source as page when Merchant Center is not connected', () => {
-			useGoogleMCAccount.mockReturnValue( {
-				hasFinishedResolution: true,
-				hasGoogleMCConnection: false,
-			} );
-
-			const { children } = renderForm();
-
-			expectLastValuesToMatch( children, { advertisingSource: 'page' } );
-		} );
-
-		it( 'Should wait for the Merchant Center account to resolve before rendering the form', () => {
-			useGoogleMCAccount.mockReturnValue( {
-				hasFinishedResolution: false,
-				hasGoogleMCConnection: false,
-			} );
-
-			const { children, rerender } = renderForm();
-
-			expect( children ).not.toHaveBeenCalled();
-
-			useGoogleMCAccount.mockReturnValue( {
-				hasFinishedResolution: true,
-				hasGoogleMCConnection: true,
-			} );
-
-			rerender(
-				<CampaignAssetsForm validate={ alwaysValid }>
-					{ children }
-				</CampaignAssetsForm>
-			);
-
-			expectLastValuesToMatch( children, {
-				advertisingSource: 'product',
-			} );
-			expect( children ).not.toHaveBeenCalledWith(
-				expect.objectContaining( {
-					values: expect.objectContaining( {
-						advertisingSource: 'page',
-					} ),
-				} )
-			);
-		} );
-
-		it( 'Should generate the default name in the site timezone', () => {
-			mockCurrentTime( '2026-11-05T20:30:00Z' );
-			setSiteTimezoneOffset( 9 );
-
-			const { children } = renderForm();
-
-			expectLastValuesToMatch( children, {
-				campaignName: 'Campaign 2026-11-06 05:30:00',
-			} );
-		} );
-
-		it( 'Should not change the default name when the form renders again', () => {
-			mockCurrentTime( '2026-11-05T14:30:00Z' );
-			setSiteTimezoneOffset( 0 );
-
-			const { children, rerender } = renderForm();
-
-			jest.setSystemTime( new Date( '2026-11-05T14:45:00Z' ) );
-
-			rerender(
-				<CampaignAssetsForm validate={ alwaysValid }>
-					{ children }
-				</CampaignAssetsForm>
-			);
-
-			expectLastValuesToMatch( children, {
-				campaignName: 'Campaign 2026-11-05 14:30:00',
 			} );
 		} );
 

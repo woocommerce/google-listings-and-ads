@@ -10,6 +10,7 @@ import { useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import { getEditCampaignUrl } from '~/utils/urls';
+import { CAMPAIGN_STEP } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import AppButton from '~/components/app-button';
 import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
@@ -85,7 +86,10 @@ const Banner = ( { onBannerDismissed } ) => {
 		} );
 
 		// Navigate to the edit campaign page for the PMAX campaign with the highest spending.
-		const editCampaignUrl = getEditCampaignUrl( campaign_id, 'setup' );
+		const editCampaignUrl = getEditCampaignUrl(
+			campaign_id,
+			CAMPAIGN_STEP.SETUP
+		);
 		getHistory().push( editCampaignUrl );
 	};
 

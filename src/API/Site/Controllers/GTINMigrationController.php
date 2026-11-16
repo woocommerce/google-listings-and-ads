@@ -54,8 +54,9 @@ class GTINMigrationController extends BaseController {
 					'args'                => $this->get_schema_properties(),
 				],
 				[
-					'methods'  => TransportMethods::READABLE,
-					'callback' => $this->get_migration_status_callback(),
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_migration_status_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
