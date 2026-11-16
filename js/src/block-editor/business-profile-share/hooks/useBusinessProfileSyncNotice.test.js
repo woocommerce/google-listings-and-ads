@@ -16,9 +16,12 @@ jest.mock( '@wordpress/data', () => ( {
 
 jest.mock( '~/hooks/useDispatchCoreNotices', () => jest.fn() );
 
-const UNREACHABLE_NOTICE = {
-	status: 'error',
-	message:
+const UNREACHABLE_OUTCOME = {
+	outcome: 'request-failure',
+	message: '',
+	image_omitted: false,
+	display_status: 'error',
+	display_message:
 		"The post couldn't be published to Google Business Profile. Google couldn't be reached. Try again later.",
 };
 
@@ -29,13 +32,13 @@ const UNREACHABLE_NOTICE = {
  * @param {boolean} [state.isSaving] Whether a save is in progress.
  * @param {boolean} [state.isAutosaving] Whether the save in progress is an autosave.
  * @param {boolean} [state.didSaveSucceed] Whether the last save succeeded.
- * @param {Object|null} [state.notice] The saved post's notice field.
+ * @param {Object|null} [state.outcome] The saved post's sync outcome field.
  */
 function mockEditor( {
 	isSaving = false,
 	isAutosaving = false,
 	didSaveSucceed = true,
-	notice = null,
+	outcome = null,
 } = {} ) {
 	const editor = {
 		isSavingPost: () => {
@@ -48,7 +51,7 @@ function mockEditor( {
 			return didSaveSucceed;
 		},
 		getCurrentPost: () => {
-			return { gla_gbp_sync_notice: notice };
+			return { gla_gbp_sync_outcome: outcome };
 		},
 	};
 
@@ -81,13 +84,13 @@ describe( 'useBusinessProfileSyncNotice', () => {
 		rerender();
 	}
 
-	it( 'shows the notice as a snackbar that stays until closed after a save', () => {
-		saveWith( {}, { notice: UNREACHABLE_NOTICE } );
+	it( 'shows the outcome as a snackbar that stays until closed after a save', () => {
+		saveWith( {}, { outcome: UNREACHABLE_OUTCOME } );
 
 		expect( createNotice ).toHaveBeenCalledTimes( 1 );
 		expect( createNotice ).toHaveBeenCalledWith(
 			'error',
-			UNREACHABLE_NOTICE.message,
+			UNREACHABLE_OUTCOME.display_message,
 			{
 				id: 'gla-business-profile-sync-notice',
 				type: 'snackbar',
@@ -99,7 +102,12 @@ describe( 'useBusinessProfileSyncNotice', () => {
 	it( 'shows a warning with its own status', () => {
 		saveWith(
 			{},
-			{ notice: { status: 'warning', message: 'Profile unverified' } }
+			{
+				outcome: {
+					display_status: 'warning',
+					display_message: 'Profile unverified',
+				},
+			}
 		);
 
 		expect( createNotice ).toHaveBeenCalledWith(
@@ -110,27 +118,42 @@ describe( 'useBusinessProfileSyncNotice', () => {
 	} );
 
 	it( 'shows nothing when the editor loads, without a save', () => {
-		mockEditor( { notice: UNREACHABLE_NOTICE } );
+		mockEditor( { outcome: UNREACHABLE_OUTCOME } );
 
 		renderHook( () => useBusinessProfileSyncNotice() );
 
 		expect( createNotice ).not.toHaveBeenCalled();
 	} );
 
-	it( 'shows nothing when the save attempted no share', () => {
-		saveWith( {}, { notice: null } );
+	it( 'shows nothing when the post has never been sent', () => {
+		saveWith( {}, { outcome: null } );
+
+		expect( createNotice ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows nothing for a plain success, which has no display message', () => {
+		saveWith(
+			{},
+			{
+				outcome: {
+					outcome: 'success',
+					display_status: null,
+					display_message: null,
+				},
+			}
+		);
 
 		expect( createNotice ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows nothing after an autosave', () => {
-		saveWith( { isAutosaving: true }, { notice: UNREACHABLE_NOTICE } );
+		saveWith( { isAutosaving: true }, { outcome: UNREACHABLE_OUTCOME } );
 
 		expect( createNotice ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows nothing when the save failed', () => {
-		saveWith( {}, { didSaveSucceed: false, notice: UNREACHABLE_NOTICE } );
+		saveWith( {}, { didSaveSucceed: false, outcome: UNREACHABLE_OUTCOME } );
 
 		expect( createNotice ).not.toHaveBeenCalled();
 	} );

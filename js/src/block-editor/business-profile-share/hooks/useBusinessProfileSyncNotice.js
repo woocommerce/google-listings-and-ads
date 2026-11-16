@@ -8,7 +8,7 @@ import { useEffect, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import { SYNC_NOTICE_FIELD } from '../constants';
+import { SYNC_OUTCOME_FIELD } from '../constants';
 
 /**
  * ID of the snackbar, so a later save replaces it instead of adding another.
@@ -16,15 +16,16 @@ import { SYNC_NOTICE_FIELD } from '../constants';
 const NOTICE_ID = 'gla-business-profile-sync-notice';
 
 /**
- * Shows how a share to Google Business Profile went, as a snackbar that stays until the merchant
- * closes it, after a save that attempted the share. Loading or reloading the editor shows nothing.
+ * Shows a non-success outcome of the post's last attempt to reach Google Business Profile, as a
+ * snackbar that stays until the merchant closes it, after a save that attempted it. A plain
+ * success has no message to show. Loading or reloading the editor shows nothing.
  */
 export default function useBusinessProfileSyncNotice() {
 	const { createNotice } = useDispatchCoreNotices();
 	const wasSaving = useRef( false );
 	const wasAutosaving = useRef( false );
 
-	const { isSaving, isAutosaving, didSaveSucceed, notice } = useSelect(
+	const { isSaving, isAutosaving, didSaveSucceed, outcome } = useSelect(
 		( select ) => {
 			const {
 				isSavingPost,
@@ -37,7 +38,7 @@ export default function useBusinessProfileSyncNotice() {
 				isSaving: isSavingPost(),
 				isAutosaving: isAutosavingPost(),
 				didSaveSucceed: didPostSaveRequestSucceed(),
-				notice: getCurrentPost()?.[ SYNC_NOTICE_FIELD ] ?? null,
+				outcome: getCurrentPost()?.[ SYNC_OUTCOME_FIELD ] ?? null,
 			};
 		},
 		[]
@@ -56,14 +57,18 @@ export default function useBusinessProfileSyncNotice() {
 
 		wasSaving.current = false;
 
-		if ( wasAutosaving.current || ! didSaveSucceed || ! notice ) {
+		if (
+			wasAutosaving.current ||
+			! didSaveSucceed ||
+			! outcome?.display_message
+		) {
 			return;
 		}
 
-		createNotice( notice.status, notice.message, {
+		createNotice( outcome.display_status, outcome.display_message, {
 			id: NOTICE_ID,
 			type: 'snackbar',
 			explicitDismiss: true,
 		} );
-	}, [ isSaving, isAutosaving, didSaveSucceed, notice, createNotice ] );
+	}, [ isSaving, isAutosaving, didSaveSucceed, outcome, createNotice ] );
 }
