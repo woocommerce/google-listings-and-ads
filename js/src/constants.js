@@ -66,8 +66,8 @@ export const DEFAULT_SHIPPING_MAX_TIME = 5;
 
 // Stepper key related
 const campaignStepEntries = [
-	[ 'CAMPAIGN', 'campaign' ],
-	[ 'ASSET_GROUP', 'asset-group' ],
+	[ 'SETUP', 'setup' ],
+	[ 'BUDGET', 'budget' ],
 ];
 
 export const CAMPAIGN_STEP = Object.fromEntries( campaignStepEntries );
@@ -124,6 +124,11 @@ export const CATEGORIES_TO_SHOW_IN_TOOLTIP = 5;
 
 // Campaign related
 export const CAMPAIGN_TYPE_PMAX = 'performance_max';
+
+export const ADVERTISING_SOURCE = {
+	PRODUCT: 'product',
+	PAGE: 'page',
+};
 
 // Assets of Performance Max Campaign related
 export const ASSET_KEY = {

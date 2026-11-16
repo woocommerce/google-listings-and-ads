@@ -13,6 +13,7 @@ import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useAdminUrl from '~/hooks/useAdminUrl';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
@@ -22,6 +23,7 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import AppSpinner from '~/components/app-spinner';
 import {
+	ADVERTISING_SOURCE,
 	GOOGLE_ADS_BILLING_STATUS,
 	INCENTIVE_APPLIED_QUERY,
 } from '~/constants';
@@ -60,6 +62,10 @@ const SetupPaidAds = () => {
 	const { applyIncentive, loading: incentiveLoading } =
 		useApplyCYOIncentive();
 	const adminUrl = useAdminUrl();
+	const {
+		hasGoogleMCConnection,
+		hasFinishedResolution: hasResolvedMCAccount,
+	} = useGoogleMCAccount();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
@@ -146,12 +152,17 @@ const SetupPaidAds = () => {
 		} );
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedMCAccount ) {
 		return <AppSpinner />;
 	}
 
 	return (
 		<CampaignAssetsForm
+			initialCampaign={ {
+				advertisingSource: hasGoogleMCConnection
+					? ADVERTISING_SOURCE.PRODUCT
+					: ADVERTISING_SOURCE.PAGE,
+			} }
 			countryCodes={ countryCodes }
 			onSubmit={ handleSubmit }
 		>
