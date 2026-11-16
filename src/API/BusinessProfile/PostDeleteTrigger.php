@@ -5,7 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Exception;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteLocalPost;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -13,8 +14,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class PostDeleteTrigger
  *
- * Removes a post's Google Business Profile local post when the WordPress post is trashed or
- * permanently deleted, and resets its sharing state if later restored.
+ * Schedules the removal of a post's Google Business Profile local post when the WordPress post
+ * is trashed or permanently deleted, and resets its sharing state if later restored.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -23,6 +24,9 @@ class PostDeleteTrigger implements Service, Registerable {
 	/** @var LocalPostService */
 	private $local_post_service;
 
+	/** @var JobRepository */
+	private $job_repository;
+
 	/** @var array<int,array> Stored results captured before their trash/delete hook fires, keyed by post ID. */
 	private $pending_delete = [];
 
@@ -30,9 +34,11 @@ class PostDeleteTrigger implements Service, Registerable {
 	 * PostDeleteTrigger constructor.
 	 *
 	 * @param LocalPostService $local_post_service
+	 * @param JobRepository    $job_repository
 	 */
-	public function __construct( LocalPostService $local_post_service ) {
+	public function __construct( LocalPostService $local_post_service, JobRepository $job_repository ) {
 		$this->local_post_service = $local_post_service;
+		$this->job_repository     = $job_repository;
 	}
 
 	/**
@@ -65,7 +71,7 @@ class PostDeleteTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Delete the captured post's Google Business Profile local post.
+	 * Schedule the deletion of the captured post's Google Business Profile local post.
 	 *
 	 * @param int $post_id
 	 */
@@ -104,8 +110,8 @@ class PostDeleteTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Delete the Google Business Profile local post for a previously captured post, at most once
-	 * per request.
+	 * Schedule the Google Business Profile local post delete for a previously captured post, at
+	 * most once per request.
 	 *
 	 * @param int $post_id
 	 */
@@ -116,18 +122,21 @@ class PostDeleteTrigger implements Service, Registerable {
 		$result = $this->pending_delete[ $post_id ];
 		unset( $this->pending_delete[ $post_id ] );
 
-		try {
-			// TODO: move this to a background job -- a bulk trash or delete of several shared
-			// posts makes one synchronous Google call per post in the same admin request.
-			$this->local_post_service->delete( $post_id, $result );
-		} catch ( Exception $exception ) {
-			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
-		}
+		$this->job_repository->get( DeleteLocalPost::class )->schedule( [ $post_id, $result ] );
 	}
 
 	/**
-	 * Clear a restored post's sharing toggle and last sync outcome, unless its stored result is
-	 * still complete: the earlier delete failed, so the post is still live at Google.
+	 * Clear a restored post's last sync outcome always, and its sharing toggle too unless the
+	 * stored result is still complete.
+	 *
+	 * A still-complete result now means either a delete that genuinely failed, or one that's
+	 * simply still queued and hasn't run yet -- not cancelled on restore, matching the equivalent,
+	 * already-shipped coupon behavior. Either way `get_share_status()` (reading that same stored
+	 * result) already keeps a resend blocked for as long as the post genuinely still looks live,
+	 * so leaving the toggle and result alone here is safe. But the last sync outcome is cleared
+	 * regardless: leaving a stale "success" in place would separately block `sends_on_save()`
+	 * forever, even once the result does eventually clear -- a queued delete finally succeeding,
+	 * say -- stranding the post sharing-on with no further save ever able to retry it.
 	 *
 	 * @param int $post_id
 	 */
@@ -138,11 +147,12 @@ class PostDeleteTrigger implements Service, Registerable {
 
 		$result = $this->local_post_service->get_stored_result( $post_id );
 
+		delete_post_meta( $post_id, LocalPostService::SYNC_OUTCOME_META_KEY );
+
 		if ( LocalPostService::has_complete_result( $result ) ) {
 			return;
 		}
 
 		delete_post_meta( $post_id, PostShareControl::SHARE_META_KEY );
-		delete_post_meta( $post_id, LocalPostService::SYNC_OUTCOME_META_KEY );
 	}
 }
