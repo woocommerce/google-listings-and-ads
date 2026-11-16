@@ -177,4 +177,83 @@ class ServiceBasedMerchantHooksTest extends UnitTest {
 
 		wp_delete_post( $post_id, true );
 	}
+
+	public function test_handle_product_change_records_switch_when_physical_product_added_to_service_based_store() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->save();
+
+		$this->state->method( 'is_service_based_merchant' )->willReturn( true );
+		$this->state->expects( $this->once() )->method( 'record_switch_to_physical_products' );
+
+		$this->hooks->handle_product_change( $product->get_id(), $product );
+
+		$product->delete( true );
+	}
+
+	public function test_handle_product_change_records_switch_for_draft_physical_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->set_status( 'draft' );
+		$product->save();
+
+		$this->state->method( 'is_service_based_merchant' )->willReturn( true );
+		$this->state->expects( $this->once() )->method( 'record_switch_to_physical_products' );
+
+		$this->hooks->handle_product_change( $product->get_id(), $product );
+
+		$product->delete( true );
+	}
+
+	public function test_handle_product_change_does_not_record_switch_for_virtual_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( true );
+		$product->save();
+
+		$this->state->method( 'is_service_based_merchant' )->willReturn( true );
+		$this->state->expects( $this->never() )->method( 'record_switch_to_physical_products' );
+
+		$this->hooks->handle_product_change( $product->get_id(), $product );
+
+		$product->delete( true );
+	}
+
+	public function test_handle_product_change_does_not_record_switch_when_store_is_not_service_based() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->save();
+
+		// Product-based stores and stores that confirmed supported products both report false.
+		$this->state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->state->expects( $this->never() )->method( 'record_switch_to_physical_products' );
+
+		$this->hooks->handle_product_change( $product->get_id(), $product );
+
+		$product->delete( true );
+	}
+
+	public function test_handle_product_restore_records_switch_when_physical_product_restored_to_service_based_store() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->save();
+
+		$this->state->method( 'is_service_based_merchant' )->willReturn( true );
+		$this->state->expects( $this->once() )->method( 'record_switch_to_physical_products' );
+
+		$this->hooks->handle_product_restore( $product->get_id() );
+
+		$product->delete( true );
+	}
+
+	public function test_handle_product_removal_does_not_record_switch() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$this->state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->state->expects( $this->never() )->method( 'record_switch_to_physical_products' );
+
+		$this->hooks->handle_product_removal( $product->get_id() );
+
+		$product->delete( true );
+	}
 }

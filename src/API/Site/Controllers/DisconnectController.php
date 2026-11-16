@@ -81,10 +81,11 @@ class DisconnectController extends BaseController {
 				}
 			}
 
-			// Only reset on a full disconnect: the confirmation describes the store's catalog,
-			// so it should survive an MC-only disconnect or a Google account switch.
+			// Only reset on a full disconnect: the confirmation and the switch record describe
+			// the store's catalog, so they should survive an MC-only disconnect or a Google account switch.
 			if ( empty( $errors ) ) {
 				$this->service_based_merchant_state->reset_supported_products_confirmation();
+				$this->service_based_merchant_state->clear_switch_to_physical_products();
 			}
 
 			return new Response(

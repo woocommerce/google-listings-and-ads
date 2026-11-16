@@ -2,8 +2,7 @@
  * External dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { __, sprintf } from '@wordpress/i18n';
-import { date } from '@wordpress/date';
+import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { useState, useMemo } from '@wordpress/element';
 import { isPlainObject } from 'lodash';
@@ -12,7 +11,6 @@ import { isPlainObject } from 'lodash';
  * Internal dependencies
  */
 import {
-	ADVERTISING_SOURCE,
 	ASSET_GROUP_KEY,
 	ASSET_FORM_KEY,
 	GEN_AI_ASSET_TYPES,
@@ -22,7 +20,6 @@ import AppSpinner from '~/components/app-spinner';
 import validateCampaign from '~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '~/components/paid-ads/validateAssetGroup';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
-import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
@@ -197,7 +194,7 @@ function hasValidAIGeneratedAssets( assetKeys, data ) {
  *
  * @augments AdaptiveForm
  * @param {Object} props React props.
- * @param {Partial<CampaignFormValues>} props.initialCampaign Initial campaign values. Any value left out gets its default.
+ * @param {Partial<CampaignFormValues>} props.initialCampaign Initial campaign values.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
  * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations.
  */
@@ -224,17 +221,6 @@ export default function CampaignAssetsForm( {
 	const { data: budgetRecommendationData, hasResolved } =
 		useBudgetRecommendation( countryCodes );
 	const { createNotice } = useDispatchCoreNotices();
-	const {
-		hasGoogleMCConnection,
-		hasFinishedResolution: hasResolvedMCAccount,
-	} = useGoogleMCAccount();
-	const [ defaultCampaignName ] = useState( () => {
-		return sprintf(
-			/* translators: %s: current date time. */
-			__( 'Campaign %s', 'google-listings-and-ads' ),
-			date( 'Y-m-d H:i:s' )
-		);
-	} );
 
 	const budgetRecommendation = budgetRecommendationData || {};
 
@@ -251,11 +237,7 @@ export default function CampaignAssetsForm( {
 		hasFinishedResolution: hasResolvedRaiseBudgetRecommendations,
 	} = useRaiseBudgetRecommendations( campaignId );
 
-	if (
-		! hasResolved ||
-		! hasResolvedRaiseBudgetRecommendations ||
-		! hasResolvedMCAccount
-	) {
+	if ( ! hasResolved || ! hasResolvedRaiseBudgetRecommendations ) {
 		return <AppSpinner />;
 	}
 
@@ -420,10 +402,6 @@ export default function CampaignAssetsForm( {
 						level: 'recommended',
 						amount: selectedBudgetRecommendation.recommendedDailyBudget,
 						incentiveOffer: 'medium',
-						campaignName: defaultCampaignName,
-						advertisingSource: hasGoogleMCConnection
-							? ADVERTISING_SOURCE.PRODUCT
-							: ADVERTISING_SOURCE.PAGE,
 						includeCreativeAssets: false,
 					},
 					selectedBudgetRecommendation,

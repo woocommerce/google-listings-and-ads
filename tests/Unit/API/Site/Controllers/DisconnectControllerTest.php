@@ -108,6 +108,28 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 		$this->assertEmpty( $response->get_data()['errors'] );
 	}
 
+	public function test_disconnect_clears_switch_to_physical_products_when_all_services_disconnect(): void {
+		$this->register_service_disconnect_routes();
+
+		$this->service_based_merchant_state->expects( $this->once() )
+			->method( 'clear_switch_to_physical_products' );
+
+		$response = $this->do_request( self::ROUTE_CONNECTIONS, 'DELETE' );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_disconnect_keeps_switch_to_physical_products_when_a_service_fails_to_disconnect(): void {
+		$this->register_service_disconnect_routes( 'mc/connection' );
+
+		$this->service_based_merchant_state->expects( $this->never() )
+			->method( 'clear_switch_to_physical_products' );
+
+		$response = $this->do_request( self::ROUTE_CONNECTIONS, 'DELETE' );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_disconnect_keeps_supported_products_confirmation_when_a_service_fails_to_disconnect(): void {
 		$this->register_service_disconnect_routes( 'mc/connection' );
 

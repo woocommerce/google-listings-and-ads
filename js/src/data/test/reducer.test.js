@@ -1045,6 +1045,24 @@ describe( 'reducer', () => {
 
 			expect( state ).toHaveProperty( path, action.cyoIncentives );
 		} );
+
+		it( 'should mark an offer as applied and keep the offers', () => {
+			const incentives = [ { id: 123, offer: 'high' } ];
+			const originalState = prepareState( path, {
+				incentives,
+				has_applied_incentive: false,
+			} );
+
+			const state = reducer( originalState, {
+				type: TYPES.APPLY_CYO_INCENTIVE,
+			} );
+
+			expect( state ).toHaveProperty( path, {
+				incentives,
+				has_applied_incentive: true,
+			} );
+			expect( state ).not.toBe( originalState );
+		} );
 	} );
 
 	describe( 'Remaining actions simply update the data payload to the specific path of state and return the updated state', () => {

@@ -1,0 +1,14 @@
+.gen-ai-progress-card {
+	--wp-components-color-foreground: #{$gla-color-gen-ai-progress};
+	margin-bottom: var(--large-gap);
+
+	.gen-ai-progress-card__text {
+		color: $gray-700;
+		margin: 0;
+	}
+
+	.gen-ai-progress-card__bar {
+		height: $grid-unit-05;
+		width: 100%;
+	}
+}
