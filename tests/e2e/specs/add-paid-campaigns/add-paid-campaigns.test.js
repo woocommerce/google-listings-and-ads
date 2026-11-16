@@ -592,16 +592,9 @@ test.describe( 'Add paid campaign', () => {
 
 		test.describe( 'Create Campaign page', async () => {
 			test( 'Page header should be "Create your campaign"', async () => {
-				await expect(
-					page.getByRole( 'heading', {
-						name: 'Create your campaign',
-					} )
-				).toBeVisible();
-				await expect(
-					page.getByText(
-						'Performance Max campaigns are automatically optimized for you by Google.'
-					)
-				).toBeVisible();
+				await expect( createCampaignPage.getTopBarTitle() ).toHaveText(
+					'Create your campaign'
+				);
 			} );
 
 			test( 'Ads credit offer picker should be visible', async () => {
