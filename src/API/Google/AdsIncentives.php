@@ -83,7 +83,7 @@ class AdsIncentives implements OptionsAwareInterface {
 	 * A failed query counts as applied, so the offer picker hides, and isn't cached, so a short
 	 * Google outage doesn't hide the offer for the whole cache time.
 	 *
-	 * @since n.e.x.t
+	 * @since 3.10.1
 	 *
 	 * @return bool
 	 */
@@ -137,7 +137,7 @@ class AdsIncentives implements OptionsAwareInterface {
 	 * Store that an offer was applied to the connected Google Ads account, and clear any cached
 	 * "not applied" result.
 	 *
-	 * @since n.e.x.t
+	 * @since 3.10.1
 	 */
 	protected function mark_incentive_applied(): void {
 		$this->options->update( OptionsInterface::ADS_INCENTIVE_APPLIED, true );
