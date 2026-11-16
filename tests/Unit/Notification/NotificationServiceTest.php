@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -72,6 +73,35 @@ class NotificationServiceTest extends UnitTest {
 		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
 
 		$this->assertEquals( [ 'notification-a' ], $ids );
+	}
+
+	public function test_evaluator_exception_skips_notification_and_logs_it() {
+		$exception = new Exception( 'connection dropped' );
+		$failing   = $this->createMock( NotificationEvaluatorInterface::class );
+		$failing->method( 'get_id' )->willReturn( 'notification-b' );
+		$failing->method( 'get_priority' )->willReturn( 20 );
+		$failing->method( 'should_show' )->willThrowException( $exception );
+
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+				$failing,
+				$this->create_mocked_evaluator( 'notification-c', 30, true ),
+			]
+		);
+
+		$logged = null;
+		add_action(
+			'woocommerce_gla_exception',
+			function ( $e ) use ( &$logged ) {
+				$logged = $e;
+			}
+		);
+
+		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-a', 'notification-c' ], $ids );
+		$this->assertSame( $exception, $logged );
 	}
 
 	public function test_triggered_at_is_set_on_first_trigger_and_unchanged_afterwards() {

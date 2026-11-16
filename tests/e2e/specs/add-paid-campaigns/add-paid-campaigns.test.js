@@ -126,6 +126,8 @@ test.describe( 'Add paid campaign', () => {
 		} );
 		await setupBudgetPage.mockBudgetMetrics();
 		await setupBudgetPage.mockAdsIncentiveCredits();
+		await setupBudgetPage.fulfillCYOIncentives();
+		await setupBudgetPage.fulfillApplyCYOIncentive();
 		await setupBudgetPage.mockMCConnected();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
@@ -360,6 +362,12 @@ test.describe( 'Add paid campaign', () => {
 				).toBeVisible();
 			} );
 
+			test( 'Ads credit offer picker should be visible', async () => {
+				await expect(
+					page.getByText( 'Ads credit offer', { exact: true } )
+				).toBeVisible();
+			} );
+
 			test.describe( 'Preview product ad', () => {
 				test( 'Preview product ad should be visible', async () => {
 					await expect(
@@ -506,13 +514,23 @@ test.describe( 'Add paid campaign', () => {
 						[ 'US' ]
 					);
 
+				const incentiveApplyRequest = page.waitForRequest(
+					( request ) =>
+						/\/wc\/gla\/ads\/incentives\b/.test( request.url() ) &&
+						request.method() === 'POST'
+				);
+
 				await setupBudgetPage.getCreateCampaignButton().click();
+
+				expect(
+					( await incentiveApplyRequest ).postDataJSON()
+				).toMatchObject( { id: 'incentive-medium-id' } );
 
 				await campaignCreation;
 
-				//It should redirect to the dashboard page
+				//It should redirect to the dashboard page, with the arg for the Ads credit offer notice
 				await page.waitForURL(
-					'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success',
+					'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success&incentive=applied',
 					{
 						waitUntil: LOAD_STATE.DOM_CONTENT_LOADED,
 					}
@@ -543,6 +561,16 @@ test.describe( 'Add paid campaign', () => {
 					.click();
 
 				await expect( page.getByRole( 'dialog' ) ).not.toBeVisible();
+
+				// The Ads credit offer notice shows once the guide is closed.
+				await expect(
+					page
+						.locator( '.components-snackbar__content' )
+						.getByText(
+							'Your Ads credit offer is applied to your Google Ads account.'
+						)
+				).toBeVisible();
+				await expect( page ).not.toHaveURL( /incentive=applied/ );
 			} );
 		} );
 	} );
@@ -567,6 +595,12 @@ test.describe( 'Add paid campaign', () => {
 				await expect( createCampaignPage.getTopBarTitle() ).toHaveText(
 					'Create your campaign'
 				);
+			} );
+
+			test( 'Ads credit offer picker should be visible', async () => {
+				await expect(
+					page.getByText( 'Ads credit offer', { exact: true } )
+				).toBeVisible();
 			} );
 
 			test( 'Clicking the "Continue" button takes you to the "Optimize your campaign" step', async () => {
@@ -1108,6 +1142,37 @@ test.describe( 'Add paid campaign', () => {
 						} );
 					} );
 				} );
+			} );
+		} );
+
+		test.describe( 'Ads credit offer already applied', () => {
+			// The latest route handler runs first, so this replaces the "already applied" mock for later tests.
+			test.afterAll( async () => {
+				await createCampaignPage.fulfillCYOIncentives();
+			} );
+
+			test( 'Ads credit offer picker should be hidden once an offer was applied', async () => {
+				await createCampaignPage.fulfillCYOIncentives(
+					undefined,
+					200,
+					true
+				);
+				const incentivesResponse = page.waitForResponse(
+					( response ) =>
+						/\/wc\/gla\/ads\/incentives\b/.test( response.url() ) &&
+						response.request().method() === 'GET'
+				);
+				await createCampaignPage.goto();
+				await incentivesResponse;
+
+				await expect(
+					page.getByRole( 'heading', {
+						name: 'Create your campaign',
+					} )
+				).toBeVisible();
+				await expect(
+					page.getByText( 'Ads credit offer', { exact: true } )
+				).not.toBeVisible();
 			} );
 		} );
 	} );
