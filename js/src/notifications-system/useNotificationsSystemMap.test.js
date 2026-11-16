@@ -209,7 +209,7 @@ describe( 'useNotificationsSystemMap', () => {
 		[
 			'cyo-survey-spend',
 			'How did your Google Ads sign-up offer work for you?',
-			'You claimed an introductory offer when launching your campaigns. Take a quick 4-minute survey to help WooCommerce and Google improve future merchant incentives.',
+			'You may have claimed an introductory offer when launching your campaigns. Take a quick 4-minute survey to help WooCommerce and Google improve future merchant incentives.',
 			'Share your thoughts',
 			'https://forms.gle/RyGfPnPHEshzDvL88',
 		],

@@ -572,7 +572,7 @@ const useNotificationsSystemMap = () => {
 					'google-listings-and-ads'
 				),
 				description: __(
-					'You claimed an introductory offer when launching your campaigns. Take a quick 4-minute survey to help WooCommerce and Google improve future merchant incentives.',
+					'You may have claimed an introductory offer when launching your campaigns. Take a quick 4-minute survey to help WooCommerce and Google improve future merchant incentives.',
 					'google-listings-and-ads'
 				),
 				actions: [
