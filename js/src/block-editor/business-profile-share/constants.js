@@ -14,9 +14,10 @@ export const SUMMARY_META_KEY = '_wc_gla_gbp_summary';
 export const SHARE_STATUS_FIELD = 'gla_gbp_share_status';
 
 /**
- * Post REST field holding the notice for a share attempted while saving the post.
+ * Post REST field holding the outcome of the last attempt to share or remove the post, with a
+ * ready-to-display message and status for a non-success outcome.
  */
-export const SYNC_NOTICE_FIELD = 'gla_gbp_sync_notice';
+export const SYNC_OUTCOME_FIELD = 'gla_gbp_sync_outcome';
 
 /**
  * Tracking context for the block editor's Google Business Profile panel.
