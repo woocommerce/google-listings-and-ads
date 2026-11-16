@@ -19,6 +19,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -302,6 +304,19 @@ class AdsCampaignTest extends UnitTest {
 			);
 			$this->assertEquals( 503, $e->getCode() );
 		}
+	}
+
+	public function test_get_campaigns_connection_failure_throws_exception_with_response_data() {
+		// A dropped connection has no HTTP response, so gax rethrows the Guzzle exception as is.
+		$this->service_client->method( 'search' )->willThrowException(
+			new RequestException( 'cURL error 56: connection reset', new Request( 'POST', 'https://api.woocommerce.com' ) )
+		);
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 503 );
+		$this->expectExceptionMessage( 'Error retrieving campaigns: cURL error 56: connection reset' );
+
+		$this->campaign->get_campaigns();
 	}
 
 	public function test_get_campaign() {

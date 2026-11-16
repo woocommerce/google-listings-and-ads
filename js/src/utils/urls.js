@@ -206,3 +206,15 @@ export const addReferrerParams = ( href, referrerType, referrerId ) => {
 		referrer_id: referrerId,
 	} );
 };
+
+/**
+ * Navigates the current page to the given URL.
+ *
+ * It's a thin wrapper to make the navigation mockable in tests, as `window.location`
+ * can't be redefined in jsdom.
+ *
+ * @param {string} url The URL to navigate to.
+ */
+export const redirectTo = ( url ) => {
+	window.location.href = url;
+};

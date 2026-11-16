@@ -52,12 +52,10 @@ const PLUGINS = [
 const MultiLingualPluginPrompt = () => {
 	const { settings } = useSettings();
 
-	if (
-		! (
-			! glaData.isMultiLingualStore &&
-			settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL
-		)
-	) {
+	if ( ! (
+		! glaData.isMultiLingualStore &&
+		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL
+	) ) {
 		return null;
 	}
 

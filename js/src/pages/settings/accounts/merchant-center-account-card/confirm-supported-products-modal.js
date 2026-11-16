@@ -15,7 +15,7 @@ import useAdminUrl from '~/hooks/useAdminUrl';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { recordGlaEvent } from '~/utils/tracks';
-import { getAccountsSettingsUrl } from '~/utils/urls';
+import { getAccountsSettingsUrl, redirectTo } from '~/utils/urls';
 import {
 	SUPPORTED_PRODUCTS_CONTEXT,
 	SUPPORTED_PRODUCTS_POLICY_URL,
@@ -80,7 +80,7 @@ export default function ConfirmSupportedProductsModal( { onRequestClose } ) {
 				context: SUPPORTED_PRODUCTS_CONTEXT,
 			} );
 			// Full reload so glaData.serviceBasedMerchant is recomputed server-side.
-			window.location.href = adminUrl + getAccountsSettingsUrl();
+			redirectTo( adminUrl + getAccountsSettingsUrl() );
 		} catch ( error ) {
 			recordGlaEvent( 'gla_supported_products_confirmation', {
 				action: 'error',

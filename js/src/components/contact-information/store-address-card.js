@@ -126,7 +126,7 @@ const StoreAddressCard = () => {
 						{
 							link: settingsLink,
 						}
-				  )
+					)
 				: createInterpolateElement(
 						__(
 							'Your store address is required by Google for verification. This information won’t be public. Complete that in <link>WooCommerce settings</link> and update to review the changes.',
@@ -135,7 +135,7 @@ const StoreAddressCard = () => {
 						{
 							link: settingsLink,
 						}
-				  ) }
+					) }
 		</p>
 	);
 
@@ -180,7 +180,7 @@ export default StoreAddressCard;
  *
  * @param {Object} props React props
  * @param {string} props.editHref URL where Edit button should point to.
- * @param {JSX.Element} props.learnMore Link to be shown at the end of missing data message.
+ * @param {JSX.Element} props.learnMore Link element wrapped around the "Learn more" text at the end of missing data message. Its children are provided by the translatable message.
  * @return {JSX.Element} Filled AccountCard component.
  */
 export function StoreAddressCardPreview( { editHref, learnMore } ) {
@@ -209,14 +209,12 @@ export function StoreAddressCardPreview( { editHref, learnMore } ) {
 				'Please add your store address',
 				'google-listings-and-ads'
 			);
-			content = (
-				<>
-					{ __(
-						'Google requires the store address for all stores using Google Merchant Center. ',
-						'google-listings-and-ads'
-					) }
-					{ learnMore }
-				</>
+			content = createInterpolateElement(
+				__(
+					'Google requires the store address for all stores using Google Merchant Center. <link>Learn more</link>',
+					'google-listings-and-ads'
+				),
+				{ link: learnMore }
 			);
 		}
 	}
