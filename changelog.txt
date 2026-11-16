@@ -1,32 +1,27 @@
 *** Google for WooCommerce Changelog ***
 
 = 3.10.1 - 2026-11-16 =
-* Add - Add a "Test the build" comment to pull requests.
 * Add - Allow regional WPML language codes in Markets and align supported languages with Google Merchant Center.
-* Add - Enhance markets E2E tests.
-* Add - Event-level developer ID on all structured gtag ecommerce events.
-* Add - Offer the Ads credit picker when creating a campaign after onboarding, and hide it once an offer was applied.
+* Add - Offer the Google Ads credit picker when creating a campaign after onboarding, and hide it after an offer is applied.
 * Add - Show the Programs report with Google Ads campaign data to merchants without a Merchant Center account.
-* Add - Upgrade the JS packages and build tooling to the WordPress 6.9 baseline and resolve npm audit alerts.
-* Fix - 🤖 Generated with [Claude Code](https://claude.com/claude-code).
-* Fix - Allow scripts and styles to share an asset handle.
-* Fix - Bump WooCommerce "tested up to" version 11.3.
-* Fix - Clear the Pending sync status when a product edit doesn't change the data sent to Google.
-* Fix - Fatal error on front-end URLs containing "wp-json/" when Enhanced Conversions is enabled.
-* Fix - Feed issue counts (blocking account issues, disapproved products, products with error-level issues, products failing pre-sync validation, and synced products) to the tracker snapshot.
-* Fix - Fix the E2E gtag test for the single product add to cart event.
-* Fix - fix: update Google Ads credit offer copy.
-* Fix - Missing DataViews styles in markets tab.
-* Fix - Number inputs resetting amounts of 1,000 or more when the store's decimal and thousand separators match.
-* Fix - Preserve Google Ads purchase events when Woo Analytics tracking is unavailable and configure Ads before early block-theme tracking events.
-* Fix - Prevent a fatal error on wp-admin pages when the connection to the Google Ads API drops during the notification check.
-* Fix - Product sync failing with 'Destinations of the data source are invalid: ORGANIC_EXPERIENCES' for Merchant Center accounts that can't use free listings.
-* Fix - Require `manage_woocommerce` to read GTIN migration status via REST.
+* Fix - Clear the "Pending" sync status when a product edit doesn't change the data sent to Google.
+* Fix - Configure Google Ads before early tracking events fire on block themes.
+* Fix - Preserve Google Ads purchase events when WooCommerce Analytics tracking is unavailable.
+* Fix - Prevent a fatal error on front-end URLs containing "wp-json/" when Enhanced Conversions is enabled.
+* Fix - Prevent a fatal error on wp-admin pages when the Google Ads API connection drops during the notification check.
+* Fix - Prevent number inputs from resetting amounts of 1,000 or more when the store's decimal and thousand separators match.
+* Fix - Prevent product sync failures with "Destinations of the data source are invalid: ORGANIC_EXPERIENCES" for Merchant Center accounts that can't use free listings.
+* Fix - Restore missing styles in the Markets tab.
+* Fix - Restrict the GTIN migration status REST endpoint to users with the `manage_woocommerce` capability.
+* Fix - Show Google Ads account creation errors during onboarding and clear stale errors when switching account actions.
 * Fix - Stop resubmitting unchanged products that have a sale end date but no sale start date on every sync.
-* Fix - Surface Google Ads account creation errors to merchants during onboarding and clear stale errors when switching account actions.
+* Tweak - Add an event-level developer ID to all structured gtag ecommerce events.
+* Tweak - Add feed issue counts to the tracker snapshot: blocking account issues, disapproved products, products with error-level issues, products failing pre-sync validation, and synced products.
+* Tweak - Allow scripts and styles to share an asset handle.
+* Tweak - Bump WooCommerce "tested up to" version to 11.3.
 * Tweak - Remove leading and trailing spaces from admin strings so translators control spacing and word order.
-* Update - Update Google Ads credit offer copy in the WooCommerce Inbox notes.
-* Update - Update the WordPress.com logo on the account connection card.
+* Tweak - Update Google Ads credit offer copy, including the WooCommerce Inbox notes.
+* Tweak - Update the WordPress.com logo on the account connection card.
 
 = 3.10.0 - 2026-10-20 =
 * Add - Let merchants collect Google Customer Reviews after purchase and display their aggregate Google rating on the storefront.
