@@ -198,18 +198,10 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 						return null;
 					}
 
-					$outcome = $this->get_sync_outcome( (int) $post['id'] );
-
-					if ( null === $outcome ) {
-						return null;
-					}
-
-					$outcome['display_message'] = SyncNotice::for_outcome( $outcome )['message'] ?? null;
-
-					return $outcome;
+					return $this->get_sync_outcome_for_display( (int) $post['id'] );
 				},
 				'schema'       => [
-					'description' => __( 'The outcome of the last attempt to share this post to Google Business Profile, with the message Google returned, if any, and a ready-to-display message for a non-success outcome.', 'google-listings-and-ads' ),
+					'description' => __( 'The outcome of the last attempt to share this post to Google Business Profile, with the message Google returned, if any, and a ready-to-display message and status for a non-success outcome.', 'google-listings-and-ads' ),
 					'type'        => [ 'object', 'null' ],
 					'context'     => [ 'edit' ],
 					'readonly'    => true,
@@ -221,6 +213,10 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 						'message'         => [ 'type' => 'string' ],
 						'image_omitted'   => [ 'type' => 'boolean' ],
 						'display_message' => [ 'type' => [ 'string', 'null' ] ],
+						'display_status'  => [
+							'type' => [ 'string', 'null' ],
+							'enum' => [ SyncNotice::STATUS_ERROR, SyncNotice::STATUS_WARNING, null ],
+						],
 					],
 				],
 			]
@@ -281,6 +277,32 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			'message'       => (string) ( $stored['message'] ?? '' ),
 			'image_omitted' => (bool) ( $stored['image_omitted'] ?? false ),
 		];
+	}
+
+	/**
+	 * Get the outcome of a post's last attempt to reach Google, with a ready-to-display message
+	 * and status for a non-success outcome. The single source of truth for this -- every other
+	 * place that needs to show the merchant this outcome calls this instead of reading
+	 * {@see SyncNotice::for_outcome()} directly, so the two can't drift apart.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return array|null Shaped `{ outcome, message, image_omitted, display_message, display_status }`,
+	 *                    or null when the post has never been sent.
+	 */
+	public function get_sync_outcome_for_display( int $post_id ): ?array {
+		$outcome = $this->get_sync_outcome( $post_id );
+
+		if ( null === $outcome ) {
+			return null;
+		}
+
+		$notice = SyncNotice::for_outcome( $outcome );
+
+		$outcome['display_message'] = $notice['message'] ?? null;
+		$outcome['display_status']  = $notice['status'] ?? null;
+
+		return $outcome;
 	}
 
 	/**

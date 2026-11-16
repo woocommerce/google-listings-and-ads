@@ -1160,6 +1160,33 @@ class LocalPostServiceTest extends UnitTest {
 		$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
 	}
 
+	public function test_get_sync_outcome_for_display_is_null_for_a_post_never_sent() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->assertNull( $this->service->get_sync_outcome_for_display( $post->ID ) );
+	}
+
+	public function test_get_sync_outcome_for_display_includes_the_display_message_and_status_for_a_failure() {
+		$post = $this->factory()->post->create_and_get();
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::ACCOUNT_RESTRICTION, 'The profile is suspended.' );
+
+		$outcome = $this->service->get_sync_outcome_for_display( $post->ID );
+		$notice  = SyncNotice::for_outcome( [ 'outcome' => SyncOutcome::ACCOUNT_RESTRICTION ] );
+
+		$this->assertSame( $notice['message'], $outcome['display_message'] );
+		$this->assertSame( $notice['status'], $outcome['display_status'] );
+	}
+
+	public function test_get_sync_outcome_for_display_has_no_display_message_or_status_for_a_plain_success() {
+		$post = $this->factory()->post->create_and_get();
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS );
+
+		$outcome = $this->service->get_sync_outcome_for_display( $post->ID );
+
+		$this->assertNull( $outcome['display_message'] );
+		$this->assertNull( $outcome['display_status'] );
+	}
+
 	/**
 	 * @dataProvider data_provider_sync_outcomes
 	 *
@@ -1274,9 +1301,21 @@ class LocalPostServiceTest extends UnitTest {
 				'message'         => 'The profile is suspended.',
 				'image_omitted'   => false,
 				'display_message' => SyncNotice::for_outcome( [ 'outcome' => SyncOutcome::ACCOUNT_RESTRICTION ] )['message'],
+				'display_status'  => SyncNotice::for_outcome( [ 'outcome' => SyncOutcome::ACCOUNT_RESTRICTION ] )['status'],
 			],
 			$response->get_data()[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]
 		);
+	}
+
+	public function test_sync_outcome_field_display_status_is_warning_for_sent_pending_verification() {
+		$this->login_as_administrator();
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::SENT_PENDING_VERIFICATION );
+		$this->service->register_rest_fields();
+
+		$value = $this->get_sync_outcome_field_value( $post->ID );
+
+		$this->assertSame( SyncNotice::STATUS_WARNING, $value['display_status'] );
 	}
 
 	public function test_sync_outcome_field_display_message_is_null_for_a_queued_outcome() {
@@ -1288,6 +1327,7 @@ class LocalPostServiceTest extends UnitTest {
 		$value = $this->get_sync_outcome_field_value( $post->ID );
 
 		$this->assertNull( $value['display_message'] );
+		$this->assertNull( $value['display_status'] );
 	}
 
 	public function test_sync_outcome_field_display_message_is_null_for_a_plain_success() {
@@ -1299,6 +1339,7 @@ class LocalPostServiceTest extends UnitTest {
 		$value = $this->get_sync_outcome_field_value( $post->ID );
 
 		$this->assertNull( $value['display_message'] );
+		$this->assertNull( $value['display_status'] );
 	}
 
 	public function test_sync_outcome_field_is_absent_from_a_default_context_post_response() {
