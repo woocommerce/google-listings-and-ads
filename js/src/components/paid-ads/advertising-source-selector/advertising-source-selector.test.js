@@ -10,13 +10,11 @@ import userEvent from '@testing-library/user-event';
  */
 import AdvertisingSourceSelector from './advertising-source-selector';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import { ADVERTISING_SOURCE } from '~/constants';
 
 jest.mock( '~/components/adaptive-form', () => ( {
 	useAdaptiveFormContext: jest.fn(),
 } ) );
-jest.mock( '~/hooks/useGoogleMCAccount', () => jest.fn() );
 
 describe( 'AdvertisingSourceSelector', () => {
 	let onChange;
@@ -29,7 +27,6 @@ describe( 'AdvertisingSourceSelector', () => {
 				onChange,
 			} ),
 		} );
-		useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: true } );
 	} );
 
 	it( 'Shows the title, description and both choices with their text', () => {
@@ -76,13 +73,5 @@ describe( 'AdvertisingSourceSelector', () => {
 		);
 
 		expect( onChange ).toHaveBeenCalledWith( ADVERTISING_SOURCE.PAGE );
-	} );
-
-	it( 'Renders nothing without a Merchant Center connection', () => {
-		useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: false } );
-
-		const { container } = render( <AdvertisingSourceSelector /> );
-
-		expect( container ).toBeEmptyDOMElement();
 	} );
 } );

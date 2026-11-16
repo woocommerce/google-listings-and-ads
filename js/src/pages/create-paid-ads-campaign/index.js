@@ -239,7 +239,9 @@ const CreatePaidAdsCampaign = () => {
 										);
 									} }
 								>
-									<AdvertisingSourceSelector />
+									{ hasGoogleMCConnection && (
+										<AdvertisingSourceSelector />
+									) }
 									<BudgetSection />
 									<EuRegulationsSection
 										context={ eventContext }
