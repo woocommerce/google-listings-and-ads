@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
@@ -147,11 +148,37 @@ class MarketsController extends BaseController {
 		return function () {
 			return new Response(
 				[
-					'languages'  => $this->market_service->get_languages(),
+					'languages'  => $this->prepare_languages( $this->market_service->get_languages() ),
 					'currencies' => $this->market_service->get_currencies(),
 				]
 			);
 		};
+	}
+
+	/**
+	 * Adds Merchant Center support to each language, so the Markets UI validates languages
+	 * the same way products are synced. The language code itself is left untouched: markets
+	 * store the multilingual plugin's code (e.g. 'pt-pt') for product and URL matching.
+	 *
+	 * @param array $languages Languages from the multilingual integration.
+	 *
+	 * @return array<int, array{code: string, label: string, supported: bool, content_language: string|null}>
+	 */
+	protected function prepare_languages( array $languages ): array {
+		return array_map(
+			function ( $language ) {
+				$content_language = GoogleHelper::find_mc_content_language( (string) ( $language['code'] ?? '' ) );
+
+				return array_merge(
+					$language,
+					[
+						'supported'        => null !== $content_language,
+						'content_language' => $content_language,
+					]
+				);
+			},
+			$languages
+		);
 	}
 
 	/**
@@ -378,8 +405,16 @@ class MarketsController extends BaseController {
 						'items' => [
 							'type'       => 'object',
 							'properties' => [
-								'code'  => [ 'type' => 'string' ],
-								'label' => [ 'type' => 'string' ],
+								'code'             => [ 'type' => 'string' ],
+								'label'            => [ 'type' => 'string' ],
+								'supported'        => [
+									'description' => __( 'Whether Google Merchant Center supports the language.', 'google-listings-and-ads' ),
+									'type'        => 'boolean',
+								],
+								'content_language' => [
+									'description' => __( 'Merchant Center content language the code resolves to, or null when unsupported.', 'google-listings-and-ads' ),
+									'type'        => [ 'string', 'null' ],
+								],
 							],
 						],
 					],

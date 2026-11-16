@@ -15,6 +15,7 @@ import {
 	addBaseToPerformance,
 } from '../utils';
 import useUrlQuery from '~/hooks/useUrlQuery';
+import useReportsAvailability from '~/hooks/useReportsAvailability';
 import {
 	FREE_LISTINGS_PROGRAM_ID,
 	REPORT_PROGRAM_PARAM,
@@ -45,14 +46,16 @@ const emptyReport = {
  * @param  {Function} getReport Report selector.
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
+ * @param  {boolean} hasMC Whether Merchant Center is set up or connected. The `free` report needs it.
  *
- * @return {{free: ProgramsReportSchema, paid: ProgramsReportSchema}} The fetched programs reports, and a flag whether both were expected..
+ * @return {{free: ProgramsReportSchema, paid: ProgramsReportSchema}} The fetched programs reports. A report that isn't fetched is an empty one.
  */
-function getReports( getReport, query, dateReference ) {
+function getReports( getReport, query, dateReference, hasMC ) {
 	const queriedPrograms = getIdsFromQuery( query[ REPORT_PROGRAM_PARAM ] );
 	const containsFree =
-		queriedPrograms.length === 0 ||
-		queriedPrograms.includes( FREE_LISTINGS_PROGRAM_ID );
+		hasMC &&
+		( queriedPrograms.length === 0 ||
+			queriedPrograms.includes( FREE_LISTINGS_PROGRAM_ID ) );
 
 	const containsPaid =
 		queriedPrograms.length === 0 ||
@@ -92,12 +95,13 @@ function getReports( getReport, query, dateReference ) {
  */
 export default function useProgramsReport() {
 	const query = useUrlQuery();
+	const { hasMC } = useReportsAvailability();
 	const { paid, free } = useSelect(
 		( select ) => {
 			const { getReport } = select( STORE_KEY );
-			return getReports( getReport, query, 'primary' );
+			return getReports( getReport, query, 'primary', hasMC );
 		},
-		[ query ]
+		[ query, hasMC ]
 	);
 	const loaded = paid.loaded && free.loaded;
 	// Assume paid being a superset.
@@ -145,12 +149,13 @@ export default function useProgramsReport() {
  * @return {{loaded: boolean, data: PerformanceData}} Loaded flag, and eventually the fetched data.
  */
 function usePreviousTotals( query ) {
+	const { hasMC } = useReportsAvailability();
 	const { paid, free } = useSelect(
 		( select ) => {
 			const { getReport } = select( STORE_KEY );
-			return getReports( getReport, query, 'secondary' );
+			return getReports( getReport, query, 'secondary', hasMC );
 		},
-		[ query ]
+		[ query, hasMC ]
 	);
 	const loaded = paid.loaded && free.loaded;
 	const expectedFreeFields = free.reportQuery?.fields;

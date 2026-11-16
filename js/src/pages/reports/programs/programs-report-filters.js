@@ -15,6 +15,7 @@ import { getSetting } from '@woocommerce/settings';
 import { createProgramsFilterConfig } from './filterConfig';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
+import useReportsAvailability from '~/hooks/useReportsAvailability';
 import ReportFilters from '~/components/external/woocommerce/filters';
 import { recordGlaEvent } from '~/utils/tracks';
 
@@ -37,8 +38,9 @@ const getProgramsFilter = createProgramsFilterConfig();
 const ProgramsReportFilters = ( props ) => {
 	const { query, trackEventId } = props;
 	const queryCampaignAds = { exclude_removed: false };
+	const { hasMC } = useReportsAvailability();
 	const filtersConfig = [
-		getProgramsFilter( useAdsCampaigns( queryCampaignAds ) ),
+		getProgramsFilter( useAdsCampaigns( queryCampaignAds ), hasMC ),
 	];
 
 	const { period, compare, before, after } = getDateParamsFromQuery( query );

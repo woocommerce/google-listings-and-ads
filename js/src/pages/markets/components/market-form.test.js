@@ -13,6 +13,7 @@ import useSettings from '~/hooks/useSettings';
 import { useAppDispatch } from '~/data';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
+import useAvailableLanguagesCurrencies from '~/hooks/useAvailableLanguagesCurrencies';
 import { handleApiError } from '~/utils/handleError';
 import { SHIPPING_RATE_METHOD } from '~/constants';
 import { PRIMARY_MARKET_ID } from '../constants';
@@ -25,6 +26,13 @@ jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
 } ) );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
+jest.mock( '~/hooks/useAvailableLanguagesCurrencies', () =>
+	jest.fn( () => ( {
+		languages: [],
+		currencies: [],
+		hasFinishedResolution: true,
+	} ) )
+);
 
 let mockSubmittedValues = {
 	country: 'US',
@@ -591,5 +599,73 @@ describe( 'MarketForm handleChange', () => {
 		onChange( { name: 'flat_shipping_min_time', value: 3 } );
 
 		expect( mockSetValue ).not.toHaveBeenCalled();
+	} );
+} );
+
+describe( 'MarketForm validation', () => {
+	const languages = [
+		{
+			code: 'pt-pt',
+			label: 'Portuguese (Portugal)',
+			supported: true,
+			content_language: 'pt',
+		},
+		{
+			code: 'bg',
+			label: 'Bulgarian',
+			supported: false,
+			content_language: null,
+		},
+	];
+	const values = {
+		country: 'PT',
+		shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+		currency: [ 'EUR' ],
+	};
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+		global.glaData.isMultiLingualStore = true;
+		useAppDispatch.mockReturnValue( {} );
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				shipping_time: 'manual',
+			},
+		} );
+		useAvailableLanguagesCurrencies.mockReturnValue( {
+			languages,
+			currencies: [],
+			hasFinishedResolution: true,
+		} );
+	} );
+
+	afterEach( () => {
+		delete global.glaData.isMultiLingualStore;
+	} );
+
+	test( 'validates languages against the Merchant Center support reported by the back end', () => {
+		render( <MarketForm initialMarket={ {} } onSubmit={ () => {} } /> );
+
+		const { validate } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+
+		expect(
+			validate( { ...values, language: [ 'pt-pt' ] } ).language
+		).toBeUndefined();
+		expect( validate( { ...values, language: [ 'bg' ] } ).language ).toBe(
+			'The following languages are not supported by Google Merchant Center: Bulgarian'
+		);
+	} );
+
+	test( 'waits for the languages to resolve before rendering the form in a multilingual store', () => {
+		useAvailableLanguagesCurrencies.mockReturnValue( {
+			languages: null,
+			currencies: null,
+			hasFinishedResolution: false,
+		} );
+
+		render( <MarketForm initialMarket={ {} } onSubmit={ () => {} } /> );
+
+		expect( mockAdaptiveForm ).not.toHaveBeenCalled();
 	} );
 } );
