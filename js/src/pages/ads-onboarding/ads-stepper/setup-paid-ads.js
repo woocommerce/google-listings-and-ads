@@ -13,7 +13,7 @@ import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useAdminUrl from '~/hooks/useAdminUrl';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
@@ -62,7 +62,10 @@ const SetupPaidAds = () => {
 	const { applyIncentive, loading: incentiveLoading } =
 		useApplyCYOIncentive();
 	const adminUrl = useAdminUrl();
-	const serviceBasedMerchant = useServiceBasedMerchant();
+	const {
+		hasGoogleMCConnection,
+		hasFinishedResolution: hasResolvedMCAccount,
+	} = useGoogleMCAccount();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
@@ -149,16 +152,16 @@ const SetupPaidAds = () => {
 		} );
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedMCAccount ) {
 		return <AppSpinner />;
 	}
 
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ {
-				advertisingSource: serviceBasedMerchant
-					? ADVERTISING_SOURCE.PAGE
-					: ADVERTISING_SOURCE.PRODUCT,
+				advertisingSource: hasGoogleMCConnection
+					? ADVERTISING_SOURCE.PRODUCT
+					: ADVERTISING_SOURCE.PAGE,
 			} }
 			countryCodes={ countryCodes }
 			onSubmit={ handleSubmit }

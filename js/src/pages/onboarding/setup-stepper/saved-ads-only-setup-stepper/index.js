@@ -22,7 +22,11 @@ import AssetGroup from '~/components/paid-ads/asset-group';
 import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
 import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
-import { GUIDE_NAMES, INCENTIVE_APPLIED_QUERY } from '~/constants';
+import {
+	ADVERTISING_SOURCE,
+	GUIDE_NAMES,
+	INCENTIVE_APPLIED_QUERY,
+} from '~/constants';
 import { ADS_ONLY_STEP_NAME_KEY_MAP } from '../constants';
 import { getDashboardUrl } from '~/utils/urls';
 import {
@@ -216,6 +220,9 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 					),
 					content: (
 						<CampaignAssetsForm
+							initialCampaign={ {
+								advertisingSource: ADVERTISING_SOURCE.PAGE,
+							} }
 							onSubmit={ handleSubmit }
 							countryCodes={ countryCodes }
 						>

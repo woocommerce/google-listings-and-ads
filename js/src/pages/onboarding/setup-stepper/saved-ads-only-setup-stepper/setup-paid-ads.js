@@ -148,6 +148,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 	const paidAds = {
 		...clientSession.getCampaign(),
+		advertisingSource: ADVERTISING_SOURCE.PAGE,
 	};
 
 	if ( ! countryCodes ) {
@@ -185,10 +186,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ {
-				...paidAds,
-				advertisingSource: ADVERTISING_SOURCE.PAGE,
-			} }
+			initialCampaign={ paidAds }
 			countryCodes={ countryCodes }
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );

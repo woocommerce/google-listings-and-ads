@@ -11,7 +11,7 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import SetupPaidAds from './setup-paid-ads';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
@@ -34,7 +34,7 @@ jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () =>
 );
 jest.mock( '~/hooks/useAdsSetupCompleteCallback' );
 jest.mock( '~/hooks/useApplyCYOIncentive' );
-jest.mock( '~/hooks/useServiceBasedMerchant' );
+jest.mock( '~/hooks/useGoogleMCAccount' );
 jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes' );
 jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
@@ -106,7 +106,10 @@ describe( 'SetupPaidAds', () => {
 		useTargetAudienceFinalCountryCodes.mockReturnValue( {
 			data: [ 'US' ],
 		} );
-		useServiceBasedMerchant.mockReturnValue( false );
+		useGoogleMCAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+			hasGoogleMCConnection: true,
+		} );
 	} );
 
 	const submit = async () => {
@@ -198,8 +201,11 @@ describe( 'SetupPaidAds', () => {
 		);
 	} );
 
-	it( 'starts the campaign with the advertising source page for a service-based merchant', () => {
-		useServiceBasedMerchant.mockReturnValue( true );
+	it( 'starts the campaign with the advertising source page when Merchant Center is not connected', () => {
+		useGoogleMCAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+			hasGoogleMCConnection: false,
+		} );
 
 		render( <SetupPaidAds /> );
 
@@ -210,5 +216,16 @@ describe( 'SetupPaidAds', () => {
 				} ),
 			} )
 		);
+	} );
+
+	it( 'waits for the Merchant Center account to resolve before rendering the form', () => {
+		useGoogleMCAccount.mockReturnValue( {
+			hasFinishedResolution: false,
+			hasGoogleMCConnection: false,
+		} );
+
+		render( <SetupPaidAds /> );
+
+		expect( CampaignAssetsForm ).not.toHaveBeenCalled();
 	} );
 } );

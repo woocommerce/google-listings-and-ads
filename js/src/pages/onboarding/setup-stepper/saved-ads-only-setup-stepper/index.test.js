@@ -33,11 +33,8 @@ jest.mock(
 		( { children } ) =>
 			children
 );
-jest.mock(
-	'~/components/paid-ads/campaign-assets-form',
-	() =>
-		( { children } ) =>
-			children
+jest.mock( '~/components/paid-ads/campaign-assets-form', () =>
+	jest.fn( ( { children } ) => children )
 );
 jest.mock( '~/components/paid-ads/asset-group', () =>
 	jest.fn().mockName( 'AssetGroup' )
@@ -57,6 +54,7 @@ import SavedAdsOnlySetupStepper from '.';
 import SetupAccounts from './setup-accounts';
 import SetupPaidAds from './setup-paid-ads';
 import AssetGroup from '~/components/paid-ads/asset-group';
+import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import { getDashboardUrl } from '~/utils/urls';
 import { GUIDE_NAMES, INCENTIVE_APPLIED_QUERY } from '~/constants';
@@ -129,5 +127,17 @@ describe( 'SavedAdsOnlySetupStepper', () => {
 		expect( getDashboardUrl ).toHaveBeenCalledWith( {
 			guide: GUIDE_NAMES.SUBMISSION_SUCCESS,
 		} );
+	} );
+
+	it( 'Should start the "Create your campaign" step with the advertising source page', async () => {
+		render( <SavedAdsOnlySetupStepper savedStep="2" /> );
+
+		await applyOfferAndContinue();
+
+		expect( CampaignAssetsForm.mock.calls.at( -1 )[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				initialCampaign: { advertisingSource: 'page' },
+			} )
+		);
 	} );
 } );
