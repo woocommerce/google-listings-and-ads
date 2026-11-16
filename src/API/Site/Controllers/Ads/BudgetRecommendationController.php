@@ -37,6 +37,7 @@ class BudgetRecommendationController extends BaseController implements Container
 	use ContainerAwareTrait;
 	use CountryCodeTrait;
 	use OptionsAwareTrait;
+	use MerchantCenterRequiredResponseTrait;
 
 	/**
 	 * @var Ads
@@ -112,13 +113,7 @@ class BudgetRecommendationController extends BaseController implements Container
 			$advertising_source = AdvertisingSource::resolve( $request->get_param( 'advertising_source' ), $merchant_id );
 
 			if ( ! AdvertisingSource::is_allowed( $advertising_source, $merchant_id ) ) {
-				return new Response(
-					[
-						'code'    => 'merchant_center_required',
-						'message' => __( 'A campaign that advertises products requires a connected Merchant Center account.', 'google-listings-and-ads' ),
-					],
-					400
-				);
+				return $this->get_merchant_center_required_response();
 			}
 
 			if ( ! $currency ) {

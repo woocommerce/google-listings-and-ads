@@ -34,6 +34,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 
 	use CountryCodeTrait;
 	use OptionsAwareTrait;
+	use MerchantCenterRequiredResponseTrait;
 
 	/**
 	 * Maximum length of a campaign name sent to create or update a campaign.
@@ -179,13 +180,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				$advertising_source = $fields['advertising_source'] ?? null;
 
 				if ( null !== $advertising_source && ! AdvertisingSource::is_allowed( $advertising_source, $this->options->get_merchant_id() ) ) {
-					return new Response(
-						[
-							'code'    => 'merchant_center_required',
-							'message' => __( 'A campaign that advertises products requires a connected Merchant Center account.', 'google-listings-and-ads' ),
-						],
-						400
-					);
+					return $this->get_merchant_center_required_response();
 				}
 
 				$campaign = $this->ads_campaign->create_campaign( $fields );
