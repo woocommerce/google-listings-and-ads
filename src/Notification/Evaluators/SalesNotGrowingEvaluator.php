@@ -124,11 +124,11 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 					AND post_status IN ( $placeholders )";
 		}
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb and built %s placeholders.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- table names from $wpdb and built %s placeholders.
 		// The containing notification evaluator already caches its result; this aggregate query avoids loading order objects.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$date = $wpdb->get_var( $wpdb->prepare( $query, $statuses ) );
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
 		if ( empty( $date ) ) {
 			return null;
@@ -176,7 +176,7 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 					AND posts.post_date_gmt <= %s";
 		}
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb and built %s placeholders.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- table names from $wpdb and built %s placeholders.
 		// The containing notification evaluator already caches its result; this aggregate query avoids loading order objects.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$sum = $wpdb->get_var(
@@ -185,7 +185,7 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 				array_merge( $statuses, [ $start_sql, $end_sql ] )
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
 		return (float) $sum;
 	}
