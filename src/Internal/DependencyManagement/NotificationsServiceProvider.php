@@ -98,6 +98,6 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PausedCampaignEvaluator::class, AdsCampaign::class );
 		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class, AdsRecommendationsService::class );
 		$this->share_with_tags( RecommendationsAvailableEvaluator::class, AdsRecommendationsService::class, AdsCampaign::class );
-		$this->share_with_tags( SearchConsoleNotConnectedEvaluator::class, SearchConsoleConnection::class );
+		$this->share_with_tags( SearchConsoleNotConnectedEvaluator::class, SearchConsoleConnection::class, OnboardingCompleted::class );
 	}
 }
