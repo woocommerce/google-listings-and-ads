@@ -1,61 +1,192 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import SetupPaidAds from './setup-paid-ads';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
-import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
-import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
+import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
+import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import { recordGlaEvent } from '~/utils/tracks';
 
-jest.mock( '~/components/paid-ads/campaign-assets-form', () =>
-	jest.fn( () => null )
-);
-jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes', () =>
-	jest.fn().mockName( 'useTargetAudienceFinalCountryCodes' )
-);
+// A hash URL keeps jsdom from attempting a real navigation when the redirect sets `window.location.href`.
+jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.requireActual( '@woocommerce/navigation' ),
+	getNewPath: jest.fn().mockReturnValue( '#next' ),
+} ) );
 jest.mock( '~/hooks/useGoogleAdsAccountBillingStatus', () =>
-	jest.fn().mockName( 'useGoogleAdsAccountBillingStatus' )
+	jest.fn().mockReturnValue( { billingStatus: { status: 'approved' } } )
 );
-jest.mock( '~/hooks/useAdsSetupCompleteCallback', () =>
-	jest.fn().mockReturnValue( [ jest.fn() ] )
-);
-jest.mock( '~/hooks/useApplyCYOIncentive', () =>
-	jest.fn().mockReturnValue( { applyIncentive: jest.fn(), loading: false } )
+jest.mock( '~/hooks/useAdminUrl', () => jest.fn().mockReturnValue( '' ) );
+jest.mock( '~/hooks/useEventPropertiesFilter', () =>
+	jest.fn().mockReturnValue( ( props ) => props )
 );
 jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () =>
 	jest.fn().mockReturnValue( { handleError: jest.fn() } )
 );
-jest.mock( '~/hooks/useNavigateAwayPromptEffect', () => jest.fn() );
-jest.mock( '~/hooks/useEventPropertiesFilter', () => jest.fn() );
-jest.mock( '~/hooks/useServiceBasedMerchant', () =>
-	jest.fn().mockName( 'useServiceBasedMerchant' )
-);
-jest.mock( '~/hooks/useAdminUrl', () => jest.fn().mockReturnValue( '' ) );
-jest.mock( '~/data', () => ( {
-	useAppDispatch: jest.fn().mockReturnValue( {} ),
-} ) );
-jest.mock( '~/components/adaptive-form', () => ( {
-	useAdaptiveFormContext: jest.fn().mockReturnValue( {} ),
+jest.mock( '~/hooks/useAdsSetupCompleteCallback' );
+jest.mock( '~/hooks/useApplyCYOIncentive' );
+jest.mock( '~/hooks/useServiceBasedMerchant' );
+jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes' );
+jest.mock( '~/utils/tracks', () => ( {
+	...jest.requireActual( '~/utils/tracks' ),
+	recordGlaEvent: jest.fn(),
 } ) );
 
-describe( 'Ads onboarding SetupPaidAds', () => {
+jest.mock( '~/components/adaptive-form', () => ( {
+	useAdaptiveFormContext: jest.fn().mockReturnValue( {
+		isDirty: false,
+		adapter: { isSubmitted: false },
+	} ),
+} ) );
+jest.mock( '~/hooks/useNavigateAwayPromptEffect', () => jest.fn() );
+jest.mock( '~/components/paid-ads/budget-incentive-prompt', () =>
+	require( '@wordpress/element' ).forwardRef( () => null )
+);
+// Renders only the "Create campaign" button, with the form context it would receive.
+jest.mock(
+	'~/components/paid-ads/ads-campaign',
+	() => ( props ) =>
+		props.continueButton( {
+			isValidForm: true,
+			values: { dailyBudget: 50 },
+		} )
+);
+// Replaces the form with its children and a button that submits the given values, so the test drives `handleSubmit` directly.
+jest.mock( '~/components/paid-ads/campaign-assets-form', () =>
+	jest.fn( ( props ) => (
+		<>
+			{ props.children }
+			<button
+				onClick={ () =>
+					props.onSubmit( {
+						level: 'recommended',
+						dailyBudget: 50,
+						hasConfirmedEuPoliticalContent: false,
+						incentiveOffer: 'medium',
+					} )
+				}
+			>
+				Submit
+			</button>
+		</>
+	) )
+);
+
+describe( 'SetupPaidAds', () => {
+	let applyIncentive;
+	let handleSetupComplete;
+
 	beforeEach( () => {
-		CampaignAssetsForm.mockClear();
+		jest.clearAllMocks();
+
+		applyIncentive = jest.fn().mockResolvedValue( true );
+		handleSetupComplete = jest.fn( ( ...args ) => {
+			const onCompleted = args[ 3 ];
+			onCompleted();
+			return Promise.resolve();
+		} );
+
+		useApplyCYOIncentive.mockReturnValue( {
+			applyIncentive,
+			loading: false,
+		} );
+		useAdsSetupCompleteCallback.mockReturnValue( [
+			handleSetupComplete,
+			false,
+		] );
 		useTargetAudienceFinalCountryCodes.mockReturnValue( {
 			data: [ 'US' ],
-		} );
-		useGoogleAdsAccountBillingStatus.mockReturnValue( {
-			billingStatus: null,
 		} );
 		useServiceBasedMerchant.mockReturnValue( false );
 	} );
 
-	it( 'Should start the campaign with the advertising source product', () => {
+	const submit = async () => {
+		render( <SetupPaidAds /> );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Submit' } )
+		);
+		await waitFor( () => expect( handleSetupComplete ).toHaveBeenCalled() );
+	};
+
+	it( 'applies the offer and adds the query arg to the redirect when it applies', async () => {
+		await submit();
+
+		expect( applyIncentive ).toHaveBeenCalledWith( 'medium' );
+		expect( applyIncentive.mock.invocationCallOrder[ 0 ] ).toBeLessThan(
+			handleSetupComplete.mock.invocationCallOrder[ 0 ]
+		);
+		expect( getNewPath ).toHaveBeenCalledWith(
+			{ guide: 'campaign-creation-success', incentive: 'applied' },
+			'/google/dashboard'
+		);
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_campaign_with_cyo_incentive_selected',
+			{ context: 'setup-ads', level: 'medium' }
+		);
+	} );
+
+	it( 'still creates the campaign without the query arg when the offer fails to apply', async () => {
+		applyIncentive.mockResolvedValue( false );
+
+		await submit();
+
+		expect( getNewPath ).toHaveBeenCalledWith(
+			{ guide: 'campaign-creation-success' },
+			'/google/dashboard'
+		);
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_campaign_with_cyo_incentive_selected',
+			expect.anything()
+		);
+	} );
+
+	it( 'keeps the query arg when completing the setup is retried after a failure', async () => {
+		// Once an offer is applied, `applyIncentive` returns false on a later attempt.
+		applyIncentive.mockResolvedValueOnce( true ).mockResolvedValue( false );
+		handleSetupComplete.mockRejectedValueOnce( new Error( 'Failed' ) );
+
+		render( <SetupPaidAds /> );
+		const submitButton = screen.getByRole( 'button', { name: 'Submit' } );
+
+		await userEvent.click( submitButton );
+		await waitFor( () =>
+			expect( handleSetupComplete ).toHaveBeenCalledTimes( 1 )
+		);
+		expect( getNewPath ).not.toHaveBeenCalled();
+
+		await userEvent.click( submitButton );
+		await waitFor( () => expect( getNewPath ).toHaveBeenCalled() );
+
+		expect( applyIncentive ).toHaveBeenCalledTimes( 2 );
+		expect( getNewPath ).toHaveBeenCalledWith(
+			{ guide: 'campaign-creation-success', incentive: 'applied' },
+			'/google/dashboard'
+		);
+	} );
+
+	it( 'disables the "Create campaign" button while the offer is being applied', () => {
+		useApplyCYOIncentive.mockReturnValue( {
+			applyIncentive,
+			loading: true,
+		} );
+
+		render( <SetupPaidAds /> );
+
+		expect(
+			screen.getByRole( 'button', { name: /Create campaign/ } )
+		).toBeDisabled();
+	} );
+
+	it( 'starts the campaign with the advertising source product', () => {
 		render( <SetupPaidAds /> );
 
 		expect( CampaignAssetsForm.mock.calls.at( -1 )[ 0 ] ).toEqual(
@@ -67,7 +198,7 @@ describe( 'Ads onboarding SetupPaidAds', () => {
 		);
 	} );
 
-	it( 'Should start the campaign with the advertising source page for a service-based merchant', () => {
+	it( 'starts the campaign with the advertising source page for a service-based merchant', () => {
 		useServiceBasedMerchant.mockReturnValue( true );
 
 		render( <SetupPaidAds /> );

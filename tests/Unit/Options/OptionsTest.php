@@ -125,4 +125,9 @@ class OptionsTest extends UnitTest {
 		$this->assertArrayNotHasKey( self::PREFIXED_MARKETS, $storage );
 		$this->assertSame( [], $options->get( OptionsInterface::MARKETS, [] ) );
 	}
+
+	public function test_service_to_physical_products_switched_at_is_registered_as_valid_option(): void {
+		$this->assertArrayHasKey( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT, OptionsInterface::VALID_OPTIONS );
+		$this->assertContains( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT, Options::get_all_option_keys() );
+	}
 }

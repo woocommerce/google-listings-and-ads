@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V23\ResourceNames;
 use Google\Ads\GoogleAds\V23\Common\MaximizeConversionValue;
@@ -189,6 +190,17 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				null,
 				[ 'errors' => $errors ]
 			);
+		} catch ( ClientExceptionInterface $e ) {
+			// A connection failure has no HTTP response, so gax rethrows it instead of creating an ApiException.
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), $e->getMessage() ),
+				503,
+				$e,
+				[ 'errors' => [ $e->getMessage() ] ]
+			);
 		}
 	}
 
@@ -296,6 +308,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function create_campaign( array $params ): array {
+		$params['advertising_source'] ??= AdvertisingSource::get_default( $this->options->get_merchant_id() );
+
 		try {
 			$base_country = $this->container->get( WC::class )->get_base_country();
 
@@ -312,7 +326,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$budget_operations = [ $this->budget->create_operation( $params['name'], $params['amount'] ) ];
 
 			// Create campaign operations.
-			$campaign_operations = [ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'], $params['advertising_source'] ?? AdvertisingSource::PRODUCT ) ];
+			$campaign_operations = [ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'], $params['advertising_source'] ) ];
 
 			// Create asset group operations.
 			$ad_asset_group = $this->container->get( AdsAssetGroup::class );
@@ -409,7 +423,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$operations      = [];
 			$campaign_fields = [];
 
-			if ( ! empty( $params['name'] ) ) {
+			if ( isset( $params['name'] ) && '' !== $params['name'] ) {
 				$campaign_fields['name'] = $params['name'];
 			}
 
@@ -849,7 +863,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			];
 		}
 
-		// Read the Merchant Center ID stored on the campaign, not the plugin's current connection, so a later disconnect does not change the answer.
+		// Use the campaign's own Merchant Center ID, so a later disconnect doesn't change the source.
 		$data['advertising_source'] = $shopping && $shopping->getMerchantId() > 0 ? AdvertisingSource::PRODUCT : AdvertisingSource::PAGE;
 
 		return $data;

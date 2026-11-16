@@ -22,10 +22,16 @@ import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import AppSpinner from '~/components/app-spinner';
-import { ADVERTISING_SOURCE, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import {
+	ADVERTISING_SOURCE,
+	GOOGLE_ADS_BILLING_STATUS,
+	INCENTIVE_APPLIED_QUERY,
+} from '~/constants';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
+import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 
 const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
+const CONTEXT = 'setup-ads';
 
 function HookNavigateAwayPrompt() {
 	const { isDirty, adapter } = useAdaptiveFormContext();
@@ -46,11 +52,15 @@ function HookNavigateAwayPrompt() {
  * Renders the step to setup paid ads
  *
  * @fires gla_launch_paid_campaign_button_click on submit
+ * @fires gla_campaign_with_cyo_incentive_selected with `{ context: 'setup-ads', level: 'low' | 'medium' | 'high' }`
  */
 const SetupPaidAds = () => {
 	const budgetPromptRef = useRef();
+	const hasAppliedIncentiveRef = useRef( false );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
+	const { applyIncentive, loading: incentiveLoading } =
+		useApplyCYOIncentive();
 	const adminUrl = useAdminUrl();
 	const serviceBasedMerchant = useServiceBasedMerchant();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
@@ -81,14 +91,19 @@ const SetupPaidAds = () => {
 					! formContext.isValidForm ||
 					billingStatus?.status !== APPROVED
 				}
-				loading={ isSubmitting }
+				loading={ isSubmitting || incentiveLoading }
 				onClick={ handleClick }
 			/>
 		);
 	};
 
-	const handleSubmit = ( values ) => {
-		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
+	const handleSubmit = async ( values ) => {
+		const {
+			level,
+			dailyBudget,
+			hasConfirmedEuPoliticalContent,
+			incentiveOffer,
+		} = values;
 
 		recordGlaEvent(
 			'gla_launch_paid_campaign_button_click',
@@ -101,6 +116,18 @@ const SetupPaidAds = () => {
 			} )
 		);
 
+		// A failed apply doesn't block creating the campaign. Once an offer is applied, a later submit
+		// gets `false`, so keep the result for the redirect in case completing the setup is retried.
+		const hasAppliedIncentive = await applyIncentive( incentiveOffer );
+
+		if ( hasAppliedIncentive ) {
+			hasAppliedIncentiveRef.current = true;
+			recordGlaEvent( 'gla_campaign_with_cyo_incentive_selected', {
+				context: CONTEXT,
+				level: incentiveOffer,
+			} );
+		}
+
 		handleSetupComplete(
 			dailyBudget,
 			countryCodes,
@@ -108,7 +135,11 @@ const SetupPaidAds = () => {
 			() => {
 				// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
 				const nextPath = getNewPath(
-					{ guide: 'campaign-creation-success' },
+					{
+						guide: 'campaign-creation-success',
+						...( hasAppliedIncentiveRef.current &&
+							INCENTIVE_APPLIED_QUERY ),
+					},
 					'/google/dashboard'
 				);
 				window.location.href = adminUrl + nextPath;
@@ -138,7 +169,7 @@ const SetupPaidAds = () => {
 					'Create your campaign',
 					'google-listings-and-ads'
 				) }
-				context="setup-ads"
+				context={ CONTEXT }
 				continueButton={ renderSubmitButton }
 			/>
 			<BudgetIncentivePrompt

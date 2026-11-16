@@ -20,6 +20,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Google\Ads\GoogleAds\Util\V23\ResourceNames;
 use Google\Ads\GoogleAds\V23\Services\MutateCampaignResult;
@@ -316,6 +318,19 @@ class AdsCampaignTest extends UnitTest {
 		}
 	}
 
+	public function test_get_campaigns_connection_failure_throws_exception_with_response_data() {
+		// A dropped connection has no HTTP response, so gax rethrows the Guzzle exception as is.
+		$this->service_client->method( 'search' )->willThrowException(
+			new RequestException( 'cURL error 56: connection reset', new Request( 'POST', 'https://api.woocommerce.com' ) )
+		);
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 503 );
+		$this->expectExceptionMessage( 'Error retrieving campaigns: cURL error 56: connection reset' );
+
+		$this->campaign->get_campaigns();
+	}
+
 	public function test_get_campaign() {
 		$campaign_criterion_data = [
 			'campaign_id'         => self::TEST_CAMPAIGN_ID,
@@ -606,6 +621,7 @@ class AdsCampaignTest extends UnitTest {
 			'type'                                  => 'performance_max',
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
+			'advertising_source'                    => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->transients->expects( $this->exactly( 2 ) )
@@ -636,10 +652,11 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'advertising_source' => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->assertEquals(
@@ -743,6 +760,34 @@ class AdsCampaignTest extends UnitTest {
 		$this->assertEquals(
 			self::TEST_CAMPAIGN_ID,
 			$this->campaign->edit_campaign( self::TEST_CAMPAIGN_ID, $campaign_data )
+		);
+	}
+
+	public function test_edit_campaign_sends_name_zero() {
+		$campaign_result = $this->createMock( MutateCampaignResult::class );
+		$campaign_result->method( 'getResourceName' )->willReturn(
+			ResourceNames::forCampaign( $this->ads_id, self::TEST_CAMPAIGN_ID )
+		);
+
+		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+			[ ( new MutateOperationResponse() )->setCampaignResult( $campaign_result ) ]
+		);
+
+		$this->service_client->expects( $this->once() )
+			->method( 'mutate' )
+			->willReturnCallback(
+				function ( MutateGoogleAdsRequest $request ) use ( $response ) {
+					$campaign = $request->getMutateOperations()[0]->getCampaignOperation()->getUpdate();
+
+					$this->assertEquals( '0', $campaign->getName() );
+
+					return $response;
+				}
+			);
+
+		$this->assertEquals(
+			self::TEST_CAMPAIGN_ID,
+			$this->campaign->edit_campaign( self::TEST_CAMPAIGN_ID, [ 'name' => '0' ] )
 		);
 	}
 
@@ -1003,6 +1048,36 @@ class AdsCampaignTest extends UnitTest {
 		return $has_shopping_setting;
 	}
 
+	/**
+	 * @dataProvider provide_default_advertising_source_cases
+	 *
+	 * @param int    $merchant_id     The connected Merchant Center ID, or 0 when none is connected.
+	 * @param string $expected_source The advertising source the campaign should default to.
+	 */
+	public function test_create_campaign_defaults_the_advertising_source( int $merchant_id, string $expected_source ) {
+		$this->options->method( 'get_merchant_id' )->willReturn( $merchant_id );
+		$this->wc->method( 'get_base_country' )->willReturn( self::BASE_COUNTRY );
+		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$campaign = $this->campaign->create_campaign(
+			[
+				'name'                                  => 'New Campaign',
+				'amount'                                => 20,
+				'targeted_locations'                    => [ 'US' ],
+				'eu_political_advertising_confirmation' => false,
+			]
+		);
+
+		$this->assertSame( $expected_source, $campaign['advertising_source'] );
+	}
+
+	public function provide_default_advertising_source_cases(): array {
+		return [
+			'Merchant Center connected'     => [ 1234, AdvertisingSource::PRODUCT ],
+			'Merchant Center not connected' => [ 0, AdvertisingSource::PAGE ],
+		];
+	}
+
 	public function test_create_campaign_with_page_advertising_source_skips_shopping_setting_when_merchant_center_connected() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 
@@ -1041,10 +1116,11 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'advertising_source' => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->transients->expects( $this->exactly( 2 ) )
@@ -1122,10 +1198,11 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'advertising_source' => AdvertisingSource::PAGE,
 		] + $campaign_data;
 
 		$this->assertEquals(
