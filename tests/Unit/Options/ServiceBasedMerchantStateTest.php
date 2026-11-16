@@ -244,6 +244,24 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		}
 	}
 
+	public function test_has_switched_to_physical_products_when_switch_recorded() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT )
+			->willReturn( 1700000000 );
+
+		$this->assertTrue( $this->service_based_merchant_state->has_switched_to_physical_products() );
+	}
+
+	public function test_has_switched_to_physical_products_when_no_switch_recorded() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT )
+			->willReturn( null );
+
+		$this->assertFalse( $this->service_based_merchant_state->has_switched_to_physical_products() );
+	}
+
 	public function test_record_switch_to_physical_products_stores_timestamp_when_none_recorded() {
 		$this->options->expects( $this->once() )
 			->method( 'get' )
