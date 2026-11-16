@@ -19,6 +19,7 @@ interface OptionsInterface {
 	public const ADS_BILLING_URL                           = 'ads_billing_url';
 	public const ADS_HAS_UNCLAIMED_INCENTIVE               = 'ads_has_unclaimed_incentive';
 	public const ADS_ID                                    = 'ads_id';
+	public const ADS_INCENTIVE_APPLIED                     = 'ads_incentive_applied';
 	public const ADS_INCENTIVE_APPLY_ERROR                 = 'ads_incentive_apply_error';
 	public const ADS_CONVERSION_ACTION                     = 'ads_conversion_action';
 	public const ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    = 'ads_eu_political_declarations_complete';
@@ -66,6 +67,7 @@ interface OptionsInterface {
 	public const WC_INSTALL_TIMESTAMP                      = 'wc_install_timestamp';
 	public const IS_SERVICE_BASED_MERCHANT                 = 'is_service_based_merchant';
 	public const SUPPORTED_PRODUCTS_CONFIRMED              = 'supported_products_confirmed';
+	public const SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT  = 'service_to_physical_products_switched_at';
 
 	public const VALID_OPTIONS = [
 		self::ADS_ACCOUNT_CURRENCY                      => true,
@@ -75,6 +77,7 @@ interface OptionsInterface {
 		self::ADS_BILLING_URL                           => true,
 		self::ADS_HAS_UNCLAIMED_INCENTIVE               => true,
 		self::ADS_ID                                    => true,
+		self::ADS_INCENTIVE_APPLIED                     => true,
 		self::ADS_INCENTIVE_APPLY_ERROR                 => true,
 		self::ADS_CONVERSION_ACTION                     => true,
 		self::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    => true,
@@ -122,6 +125,7 @@ interface OptionsInterface {
 		self::WC_INSTALL_TIMESTAMP                      => true,
 		self::IS_SERVICE_BASED_MERCHANT                 => true,
 		self::SUPPORTED_PRODUCTS_CONFIRMED              => true,
+		self::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT  => true,
 	];
 
 	public const OPTION_TYPES = [

@@ -14,7 +14,8 @@ defined( 'ABSPATH' ) || exit;
  * Listens for product changes and resets the cached service-based merchant
  * flag so that it is recalculated on the next page load. This covers both
  * directions: service-based → product-based (physical product added) and
- * product-based → service-based (all physical products removed).
+ * product-based → service-based (all physical products removed). When a
+ * service-based store adds a physical product, the switch is also recorded.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
@@ -46,7 +47,8 @@ class ServiceBasedMerchantHooks implements Service, Registerable {
 
 	/**
 	 * When a physical product is created or updated and the store is currently
-	 * classified as service-based, reset the flag so it is recalculated.
+	 * classified as service-based, record the switch to physical products and
+	 * reset the flag so it is recalculated.
 	 *
 	 * @param int              $product_id Product ID.
 	 * @param \WC_Product|null $product    Product object (passed by WC on update, may be null on new).
@@ -61,13 +63,15 @@ class ServiceBasedMerchantHooks implements Service, Registerable {
 		}
 
 		if ( $product && $product->needs_shipping() ) {
+			$this->service_based_merchant_state->record_switch_to_physical_products();
 			$this->service_based_merchant_state->reset_service_based_merchant_status();
 		}
 	}
 
 	/**
-	 * When a product is restored from the trash and the store is currently
-	 * classified as service-based, reset the flag so it is recalculated.
+	 * When a physical product is restored from the trash and the store is currently
+	 * classified as service-based, record the switch to physical products and
+	 * reset the flag so it is recalculated.
 	 *
 	 * @param int $post_id Post ID.
 	 */

@@ -243,4 +243,98 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 			$product->delete( true );
 		}
 	}
+
+	public function test_record_switch_to_physical_products_stores_timestamp_when_none_recorded() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT )
+			->willReturn( null );
+
+		$before = time();
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT,
+				$this->callback(
+					function ( $value ) use ( $before ) {
+						return is_int( $value ) && $value >= $before && $value <= time();
+					}
+				)
+			);
+
+		$this->service_based_merchant_state->record_switch_to_physical_products();
+	}
+
+	public function test_record_switch_to_physical_products_keeps_existing_record() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT )
+			->willReturn( 1700000000 );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->service_based_merchant_state->record_switch_to_physical_products();
+	}
+
+	public function test_clear_switch_to_physical_products_deletes_record() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT );
+
+		$this->service_based_merchant_state->clear_switch_to_physical_products();
+	}
+
+	public function test_is_service_based_merchant_clears_switch_when_recalculated_as_service_based() {
+		$this->options->method( 'get' )->willReturn( null );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, 'yes' );
+
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT );
+
+		$this->assertTrue( $this->service_based_merchant_state->is_service_based_merchant() );
+	}
+
+	public function test_is_service_based_merchant_keeps_switch_when_recalculated_as_product_based() {
+		$physical_product = WC_Helper_Product::create_simple_product();
+		$physical_product->set_virtual( false );
+		$physical_product->save();
+
+		$this->options->method( 'get' )->willReturn( null );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, 'no' );
+
+		$this->options->expects( $this->never() )->method( 'delete' );
+
+		$this->assertFalse( $this->service_based_merchant_state->is_service_based_merchant() );
+
+		$physical_product->delete( true );
+	}
+
+	public function test_is_service_based_merchant_clears_switch_when_only_physical_product_is_a_draft() {
+		$draft_product = WC_Helper_Product::create_simple_product();
+		$draft_product->set_virtual( false );
+		$draft_product->set_status( 'draft' );
+		$draft_product->save();
+
+		$this->options->method( 'get' )->willReturn( null );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, 'yes' );
+
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT );
+
+		$this->assertTrue( $this->service_based_merchant_state->is_service_based_merchant() );
+
+		$draft_product->delete( true );
+	}
 }
