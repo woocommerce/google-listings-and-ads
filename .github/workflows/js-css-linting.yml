@@ -8,11 +8,13 @@ on:
     paths:
       - "**.js"
       - "**.scss"
+      - eslint-suppressions.json
       - .github/workflows/js-css-linting.yml
   pull_request:
     paths:
       - "**.js"
       - "**.scss"
+      - eslint-suppressions.json
       - .github/workflows/js-css-linting.yml
 
 concurrency:

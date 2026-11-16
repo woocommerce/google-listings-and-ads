@@ -153,6 +153,29 @@ module.exports = [
 		},
 	},
 	{
+		// Point new code to the WordPress Design System components that are
+		// recommended for use, and away from deprecated ones. Existing uses are
+		// recorded in `eslint-suppressions.json`, so only new ones fail. After fixing a
+		// suppressed file, run `npm run lint:js:prune-suppressions`.
+		//
+		// The `@wordpress` plugin registered above is the older copy that
+		// `@woocommerce/eslint-plugin` pins, whose list of recommended components is
+		// out of date. This takes the rule from the plugin's latest copy instead,
+		// under its own name.
+		// Ref: https://github.com/WordPress/gutenberg/blob/trunk/packages/eslint-plugin/docs/rules/use-recommended-components.md
+		plugins: {
+			wpds: {
+				rules: {
+					'use-recommended-components':
+						wordpress.rules[ 'use-recommended-components' ],
+				},
+			},
+		},
+		rules: {
+			'wpds/use-recommended-components': 'error',
+		},
+	},
+	{
 		files: [ '**/*.js', '**/*.cjs' ],
 		rules: {
 			// The `@typescript-eslint/no-var-requires` rule turned off for JS files by

@@ -14,10 +14,11 @@ module.exports = {
 		// Fix that `is-plain-obj@4.1.0` doesn't provide the CommonJS build, so it needs to be transformed.
 		// Matches every nested copy (e.g. under @woocommerce/components or @wordpress/core-data), not just one.
 		// `@wordpress/theme` (pulled in transitively via @wordpress/preferences -> @wordpress/ui) is ESM-only
-		// (no CJS build at all), so it needs to be transformed too.
+		// (no CJS build at all), so it needs to be transformed too, in every nested copy: the root copy is
+		// the 4.x one the design-system lint and build tools use, so older copies sit under other packages.
 		// `parsel-js` (pulled in via @wordpress/block-editor under @woocommerce/components) and `marked`
 		// (pulled in via @wordpress/blocks) are ESM-only too.
-		'<rootDir>/node_modules/(?!.*/node_modules/is-plain-obj/|d3-.*/|internmap/|@wordpress/theme/|parsel-js/|(?:.*/)?marked/)',
+		'<rootDir>/node_modules/(?!.*/node_modules/is-plain-obj/|d3-.*/|internmap/|(?:.*/)?@wordpress/theme/|parsel-js/|(?:.*/)?marked/)',
 	],
 	transform: {
 		'\\.[jt]sx?$': babelTransform,

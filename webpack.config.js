@@ -270,4 +270,35 @@ webpackConfig.module.rules.forEach( ( { test, use }, ruleIndex ) => {
 	}
 } );
 
+// Give every WordPress Design System token (`var(--wpds-*)`) in our styles its
+// fallback value at build time, so styles still work where no token stylesheet is
+// loaded. Stylelint's `plugin-wpds/no-token-fallback-values` rule rejects fallbacks
+// written by hand. The wp-scripts CSS, PCSS and SCSS rules share one PostCSS options
+// object, so the plugin is added once and covers all three.
+// Ref: https://github.com/WordPress/gutenberg/tree/trunk/packages/theme-build-tools
+const {
+	default: dsTokenFallbacks,
+} = require( '@wordpress/theme-build-tools/postcss-plugins/postcss-ds-token-fallbacks' );
+
+webpackConfig.module.rules.forEach( ( { use } ) => {
+	if ( ! Array.isArray( use ) ) {
+		return;
+	}
+	use.forEach( ( { loader, options } ) => {
+		const plugins = options?.postcssOptions?.plugins;
+		if (
+			/[\\/]postcss-loader[\\/]/.test( loader ) &&
+			Array.isArray( plugins ) &&
+			! plugins.some(
+				( plugin ) =>
+					plugin.postcssPlugin === 'postcss-ds-token-fallbacks'
+			)
+		) {
+			// Replace the array rather than mutating it: in development builds it is
+			// the `@wordpress/postcss-plugins-preset` module's own export.
+			options.postcssOptions.plugins = [ dsTokenFallbacks(), ...plugins ];
+		}
+	} );
+} );
+
 module.exports = webpackConfig;
