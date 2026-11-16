@@ -564,9 +564,11 @@ test.describe( 'Add paid campaign', () => {
 
 				// The Ads credit offer notice shows once the guide is closed.
 				await expect(
-					page.getByText(
-						'Your Ads credit offer is applied to your Google Ads account.'
-					)
+					page
+						.locator( '.components-snackbar__content' )
+						.getByText(
+							'Your Ads credit offer is applied to your Google Ads account.'
+						)
 				).toBeVisible();
 				await expect( page ).not.toHaveURL( /incentive=applied/ );
 			} );
