@@ -118,7 +118,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$this->parent_wc_product = $properties['parent_wc_product'] ?? null;
 		$this->wpml              = $properties['wpml'] ?? null;
 		$this->currency_override = $properties['currency_override'] ?? '';
-		$this->exchange_rate     = max( 0.0, (float) ( $properties['exchange_rate'] ?? 0.0 ) );
+		// A non-finite or non-positive rate converts nothing: treat it as unset.
+		$exchange_rate       = (float) ( $properties['exchange_rate'] ?? 0.0 );
+		$this->exchange_rate = is_finite( $exchange_rate ) && $exchange_rate > 0 ? $exchange_rate : 0.0;
 
 		$mapping_rules  = $properties['mapping_rules'] ?? [];
 		$gla_attributes = $properties['gla_attributes'] ?? [];

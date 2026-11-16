@@ -1428,7 +1428,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$factory_mock = $this->createMock( ProductFactory::class );
 		$factory_mock->method( 'create' )
 			->willReturnCallback(
-				function ( WC_Product $p, string $country, array $rules, string $feed_label, string $language, ?string $currency_override = null ) use ( $primary_adapter, $real_factory, $product, &$captured_secondary_args ) {
+				function ( WC_Product $p, string $country, array $rules, string $feed_label, string $language, ?string $currency_override = null, float $exchange_rate = 0.0 ) use ( $primary_adapter, $real_factory, $product, &$captured_secondary_args ) {
 					if ( 'US' === $country ) {
 						return $primary_adapter;
 					}
@@ -1437,8 +1437,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 						'feed_label'        => $feed_label,
 						'language'          => $language,
 						'currency_override' => $currency_override,
+						'exchange_rate'     => $exchange_rate,
 					];
-					return $real_factory->create( $product, $country, $rules, $feed_label, $language, $currency_override );
+					return $real_factory->create( $product, $country, $rules, $feed_label, $language, $currency_override, $exchange_rate );
 				}
 			);
 
@@ -1463,10 +1464,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'language'   => 'en',
 				],
 				'de'      => [
-					'country'    => 'DE',
-					'feed_label' => 'DE',
-					'language'   => [ 'de' ],
-					'currency'   => [ 'EUR' ],
+					'country'       => 'DE',
+					'feed_label'    => 'DE',
+					'language'      => [ 'de' ],
+					'currency'      => [ 'EUR' ],
+					'exchange_rate' => 0.75,
 				],
 			]
 		);
@@ -1477,6 +1479,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$helper->generate_mapi_update_entries( [ $product ] );
 
 		$this->assertSame( 'EUR', $captured_secondary_args['currency_override'] );
+		// The market's exchange rate reaches validation, not just the sync step.
+		$this->assertSame( 0.75, $captured_secondary_args['exchange_rate'] );
 	}
 
 	public function test_secondary_market_empty_currency_array_passes_empty_string() {
