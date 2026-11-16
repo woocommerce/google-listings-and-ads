@@ -95,8 +95,10 @@ jobs:
           php-version: "${{ matrix.php }}"
           coverage: "${{ env.generate_coverage == 'true' && 'xdebug' || 'none' }}"
 
-      - name: Prepare MySQL
-        uses: woocommerce/grow/prepare-mysql@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
+      - name: Start MySQL
+        run: |
+          sudo systemctl start mysql.service
+          mysql --version
 
       - name: Install svn (used for installing WP versions)
         run: sudo apt-get -y install subversion
@@ -139,8 +141,10 @@ jobs:
         with:
           php-version: "${{ inputs.php-version }}"
 
-      - name: Prepare MySQL
-        uses: woocommerce/grow/prepare-mysql@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
+      - name: Start MySQL
+        run: |
+          sudo systemctl start mysql.service
+          mysql --version
 
       - name: Install svn (used for installing WP versions)
         run: sudo apt-get -y install subversion

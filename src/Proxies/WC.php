@@ -252,9 +252,18 @@ class WC {
 	/**
 	 * Get the customer's shipping and billing info from the session.
 	 *
-	 * @return array
+	 * WooCommerce doesn't load the session on requests it treats as REST API requests,
+	 * which includes front-end requests with "wp-json/" anywhere in their URI.
+	 *
+	 * @return array An empty array if the session isn't loaded or has no customer.
 	 */
 	public function get_customer_details() {
-		return WCCore()->session->get( 'customer', [] );
+		$session = WCCore()->session;
+
+		if ( null === $session ) {
+			return [];
+		}
+
+		return $session->get( 'customer', [] );
 	}
 }
