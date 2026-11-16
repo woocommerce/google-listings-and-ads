@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import SetupPaidAds from './setup-paid-ads';
+import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 import { getProductFeedUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
@@ -66,23 +67,25 @@ jest.mock(
 		} )
 );
 // Replaces the form with its children and a button that submits the given values.
-jest.mock( '~/components/paid-ads/campaign-assets-form', () => ( props ) => (
-	<>
-		{ props.children }
-		<button
-			onClick={ () =>
-				props.onSubmit( {
-					level: 'recommended',
-					dailyBudget: 50,
-					hasConfirmedEuPoliticalContent: false,
-					incentiveOffer: 'medium',
-				} )
-			}
-		>
-			Submit
-		</button>
-	</>
-) );
+jest.mock( '~/components/paid-ads/campaign-assets-form', () =>
+	jest.fn( ( props ) => (
+		<>
+			{ props.children }
+			<button
+				onClick={ () =>
+					props.onSubmit( {
+						level: 'recommended',
+						dailyBudget: 50,
+						hasConfirmedEuPoliticalContent: false,
+						incentiveOffer: 'medium',
+					} )
+				}
+			>
+				Submit
+			</button>
+		</>
+	) )
+);
 
 describe( 'SetupPaidAds in onboarding', () => {
 	let applyIncentive;
@@ -162,5 +165,17 @@ describe( 'SetupPaidAds in onboarding', () => {
 			guide: 'submission-success',
 			incentive: 'applied',
 		} );
+	} );
+
+	it( 'starts the campaign with the advertising source product', () => {
+		render( <SetupPaidAds /> );
+
+		expect( CampaignAssetsForm.mock.calls.at( -1 )[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				initialCampaign: expect.objectContaining( {
+					advertisingSource: 'product',
+				} ),
+			} )
+		);
 	} );
 } );

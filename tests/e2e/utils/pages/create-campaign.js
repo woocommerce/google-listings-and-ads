@@ -57,6 +57,15 @@ export default class CreateCampaignPage extends MockRequests {
 	}
 
 	/**
+	 * Get the title in the top bar.
+	 *
+	 * @return {import('@playwright/test').Locator} Top bar title.
+	 */
+	getTopBarTitle() {
+		return this.page.locator( '.gla-stepper-top-bar__title' );
+	}
+
+	/**
 	 * Get the Continue button.
 	 *
 	 * @return {import('@playwright/test').Locator} Continue button.

@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import SetupPaidAds from './setup-paid-ads';
+import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 
 jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes', () =>
@@ -45,23 +46,25 @@ jest.mock(
 		} )
 );
 // Replaces the form with its children and a button that submits the given values.
-jest.mock( '~/components/paid-ads/campaign-assets-form', () => ( props ) => (
-	<>
-		{ props.children }
-		<button
-			onClick={ () =>
-				props.onSubmit( {
-					level: 'recommended',
-					dailyBudget: 50,
-					hasConfirmedEuPoliticalContent: false,
-					incentiveOffer: 'medium',
-				} )
-			}
-		>
-			Submit
-		</button>
-	</>
-) );
+jest.mock( '~/components/paid-ads/campaign-assets-form', () =>
+	jest.fn( ( props ) => (
+		<>
+			{ props.children }
+			<button
+				onClick={ () =>
+					props.onSubmit( {
+						level: 'recommended',
+						dailyBudget: 50,
+						hasConfirmedEuPoliticalContent: false,
+						incentiveOffer: 'medium',
+					} )
+				}
+			>
+				Submit
+			</button>
+		</>
+	) )
+);
 
 describe( 'SetupPaidAds in ads-only onboarding', () => {
 	let applyIncentive;
@@ -117,4 +120,16 @@ describe( 'SetupPaidAds in ads-only onboarding', () => {
 			);
 		}
 	);
+
+	it( 'starts the campaign with the advertising source page', () => {
+		render( <SetupPaidAds /> );
+
+		expect( CampaignAssetsForm.mock.calls.at( -1 )[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				initialCampaign: expect.objectContaining( {
+					advertisingSource: 'page',
+				} ),
+			} )
+		);
+	} );
 } );

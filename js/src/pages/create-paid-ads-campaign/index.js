@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { date } from '@wordpress/date';
 import apiFetch from '@wordpress/api-fetch';
 import { Stepper } from '@woocommerce/components';
 import { useState, useRef } from '@wordpress/element';
@@ -21,11 +22,14 @@ import TopBar from '~/components/stepper/top-bar';
 import ContinueButton from '~/components/paid-ads/continue-button';
 import HelpIconButton from '~/components/help-icon-button';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
-import AdsCampaign from '~/components/paid-ads/ads-campaign';
+import CampaignSetup from '~/components/paid-ads/campaign-setup';
+import BudgetSection from '~/components/paid-ads/budget-section';
+import EuRegulationsSection from '~/components/paid-ads/eu-regulations-section';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '~/components/paid-ads/asset-group';
 import {
+	ADVERTISING_SOURCE,
 	CAMPAIGN_STEP as STEP,
 	CAMPAIGN_STEP_NUMBER_MAP as STEP_NUMBER_MAP,
 } from '~/constants';
@@ -60,7 +64,10 @@ const dashboardURL = getDashboardUrl();
  */
 const CreatePaidAdsCampaign = () => {
 	useLayout( 'full-content' );
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const {
+		hasGoogleMCConnection,
+		hasFinishedResolution: hasResolvedMCAccount,
+	} = useGoogleMCAccount();
 	const [ step, setStep ] = useState( STEP.CAMPAIGN );
 	const createdCampaignIdRef = useRef( null );
 	const hasAppliedIncentiveRef = useRef( false );
@@ -179,7 +186,7 @@ const CreatePaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedMCAccount ) {
 		return null;
 	}
 
@@ -194,6 +201,16 @@ const CreatePaidAdsCampaign = () => {
 				backHref={ dashboardURL }
 			/>
 			<CampaignAssetsForm
+				initialCampaign={ {
+					campaignName: sprintf(
+						/* translators: %s: current date time. */
+						__( 'Campaign %s', 'google-listings-and-ads' ),
+						date( 'Y-m-d H:i:s' )
+					),
+					advertisingSource: hasGoogleMCConnection
+						? ADVERTISING_SOURCE.PRODUCT
+						: ADVERTISING_SOURCE.PAGE,
+				} }
 				countryCodes={ countryCodes }
 				onSubmit={ handleSubmit }
 			>
@@ -207,12 +224,7 @@ const CreatePaidAdsCampaign = () => {
 								'google-listings-and-ads'
 							),
 							content: (
-								<AdsCampaign
-									headerTitle={ __(
-										'Create your campaign',
-										'google-listings-and-ads'
-									) }
-									context={ eventContext }
+								<CampaignSetup
 									continueButton={ ( formContext ) => {
 										return (
 											<ContinueButton
@@ -225,7 +237,12 @@ const CreatePaidAdsCampaign = () => {
 											/>
 										);
 									} }
-								/>
+								>
+									<BudgetSection />
+									<EuRegulationsSection
+										context={ eventContext }
+									/>
+								</CampaignSetup>
 							),
 							onClick: handleStepperClick,
 						},

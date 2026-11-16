@@ -10,6 +10,8 @@ import { getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import SetupPaidAds from './setup-paid-ads';
+import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
@@ -32,6 +34,7 @@ jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () =>
 );
 jest.mock( '~/hooks/useAdsSetupCompleteCallback' );
 jest.mock( '~/hooks/useApplyCYOIncentive' );
+jest.mock( '~/hooks/useGoogleMCAccount' );
 jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes' );
 jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
@@ -58,23 +61,25 @@ jest.mock(
 		} )
 );
 // Replaces the form with its children and a button that submits the given values, so the test drives `handleSubmit` directly.
-jest.mock( '~/components/paid-ads/campaign-assets-form', () => ( props ) => (
-	<>
-		{ props.children }
-		<button
-			onClick={ () =>
-				props.onSubmit( {
-					level: 'recommended',
-					dailyBudget: 50,
-					hasConfirmedEuPoliticalContent: false,
-					incentiveOffer: 'medium',
-				} )
-			}
-		>
-			Submit
-		</button>
-	</>
-) );
+jest.mock( '~/components/paid-ads/campaign-assets-form', () =>
+	jest.fn( ( props ) => (
+		<>
+			{ props.children }
+			<button
+				onClick={ () =>
+					props.onSubmit( {
+						level: 'recommended',
+						dailyBudget: 50,
+						hasConfirmedEuPoliticalContent: false,
+						incentiveOffer: 'medium',
+					} )
+				}
+			>
+				Submit
+			</button>
+		</>
+	) )
+);
 
 describe( 'SetupPaidAds', () => {
 	let applyIncentive;
@@ -100,6 +105,10 @@ describe( 'SetupPaidAds', () => {
 		] );
 		useTargetAudienceFinalCountryCodes.mockReturnValue( {
 			data: [ 'US' ],
+		} );
+		useGoogleMCAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+			hasGoogleMCConnection: true,
 		} );
 	} );
 
@@ -178,5 +187,45 @@ describe( 'SetupPaidAds', () => {
 		expect(
 			screen.getByRole( 'button', { name: /Create campaign/ } )
 		).toBeDisabled();
+	} );
+
+	it( 'starts the campaign with the advertising source product', () => {
+		render( <SetupPaidAds /> );
+
+		expect( CampaignAssetsForm.mock.calls.at( -1 )[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				initialCampaign: expect.objectContaining( {
+					advertisingSource: 'product',
+				} ),
+			} )
+		);
+	} );
+
+	it( 'starts the campaign with the advertising source page when Merchant Center is not connected', () => {
+		useGoogleMCAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+			hasGoogleMCConnection: false,
+		} );
+
+		render( <SetupPaidAds /> );
+
+		expect( CampaignAssetsForm.mock.calls.at( -1 )[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				initialCampaign: expect.objectContaining( {
+					advertisingSource: 'page',
+				} ),
+			} )
+		);
+	} );
+
+	it( 'waits for the Merchant Center account to resolve before rendering the form', () => {
+		useGoogleMCAccount.mockReturnValue( {
+			hasFinishedResolution: false,
+			hasGoogleMCConnection: false,
+		} );
+
+		render( <SetupPaidAds /> );
+
+		expect( CampaignAssetsForm ).not.toHaveBeenCalled();
 	} );
 } );
