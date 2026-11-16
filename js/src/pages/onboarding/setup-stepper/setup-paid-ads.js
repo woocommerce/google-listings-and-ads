@@ -26,6 +26,7 @@ import {
 } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
 import {
+	ADVERTISING_SOURCE,
 	GUIDE_NAMES,
 	GOOGLE_ADS_BILLING_STATUS,
 	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
@@ -219,7 +220,10 @@ export default function SetupPaidAds() {
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ paidAds }
+			initialCampaign={ {
+				...paidAds,
+				advertisingSource: ADVERTISING_SOURCE.PRODUCT,
+			} }
 			countryCodes={ countryCodes }
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );

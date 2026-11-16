@@ -15,7 +15,7 @@ import AppButton from '~/components/app-button';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
-import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import { ADVERTISING_SOURCE, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_CONTINUE, ACTION_SKIP } from '../constants';
 import {
 	FILTER_BUDGET_RECOMMENDATIONS,
@@ -182,7 +182,10 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ paidAds }
+			initialCampaign={ {
+				...paidAds,
+				advertisingSource: ADVERTISING_SOURCE.PAGE,
+			} }
 			countryCodes={ countryCodes }
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );

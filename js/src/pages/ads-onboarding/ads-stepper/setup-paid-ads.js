@@ -21,7 +21,7 @@ import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import AppSpinner from '~/components/app-spinner';
-import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import { ADVERTISING_SOURCE, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
@@ -122,6 +122,9 @@ const SetupPaidAds = () => {
 
 	return (
 		<CampaignAssetsForm
+			initialCampaign={ {
+				advertisingSource: ADVERTISING_SOURCE.PRODUCT,
+			} }
 			countryCodes={ countryCodes }
 			onSubmit={ handleSubmit }
 		>
