@@ -12,7 +12,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import GenAIProgressCard from './card';
+import GenAIProgressCard from './gen-ai-progress-card';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 
 describe( 'GenAIProgressCard', () => {
