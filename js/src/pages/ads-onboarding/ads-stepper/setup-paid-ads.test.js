@@ -10,6 +10,7 @@ import SetupPaidAds from './setup-paid-ads';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 
 jest.mock( '~/components/paid-ads/campaign-assets-form', () =>
 	jest.fn( () => null )
@@ -31,6 +32,9 @@ jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () =>
 );
 jest.mock( '~/hooks/useNavigateAwayPromptEffect', () => jest.fn() );
 jest.mock( '~/hooks/useEventPropertiesFilter', () => jest.fn() );
+jest.mock( '~/hooks/useServiceBasedMerchant', () =>
+	jest.fn().mockName( 'useServiceBasedMerchant' )
+);
 jest.mock( '~/hooks/useAdminUrl', () => jest.fn().mockReturnValue( '' ) );
 jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn().mockReturnValue( {} ),
@@ -48,6 +52,7 @@ describe( 'Ads onboarding SetupPaidAds', () => {
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
 			billingStatus: null,
 		} );
+		useServiceBasedMerchant.mockReturnValue( false );
 	} );
 
 	it( 'Should start the campaign with the advertising source product', () => {
@@ -57,6 +62,20 @@ describe( 'Ads onboarding SetupPaidAds', () => {
 			expect.objectContaining( {
 				initialCampaign: expect.objectContaining( {
 					advertisingSource: 'product',
+				} ),
+			} )
+		);
+	} );
+
+	it( 'Should start the campaign with the advertising source page for a service-based merchant', () => {
+		useServiceBasedMerchant.mockReturnValue( true );
+
+		render( <SetupPaidAds /> );
+
+		expect( CampaignAssetsForm.mock.calls.at( -1 )[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				initialCampaign: expect.objectContaining( {
+					advertisingSource: 'page',
 				} ),
 			} )
 		);

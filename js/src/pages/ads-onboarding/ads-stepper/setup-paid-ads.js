@@ -13,6 +13,7 @@ import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useAdminUrl from '~/hooks/useAdminUrl';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
@@ -51,6 +52,7 @@ const SetupPaidAds = () => {
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
+	const serviceBasedMerchant = useServiceBasedMerchant();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
@@ -123,7 +125,9 @@ const SetupPaidAds = () => {
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ {
-				advertisingSource: ADVERTISING_SOURCE.PRODUCT,
+				advertisingSource: serviceBasedMerchant
+					? ADVERTISING_SOURCE.PAGE
+					: ADVERTISING_SOURCE.PRODUCT,
 			} }
 			countryCodes={ countryCodes }
 			onSubmit={ handleSubmit }
