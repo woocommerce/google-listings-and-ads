@@ -354,7 +354,7 @@ class BudgetRecommendationsTest extends UnitTest {
 		return $saved;
 	}
 
-	public function test_get_recommendations_saves_page_results_under_a_key_with_a_page_suffix_and_keeps_valid_entries() {
+	public function test_get_recommendations_saves_page_results_under_the_page_key_and_keeps_valid_entries() {
 		$valid = [
 			'saved_at'        => time() - HOUR_IN_SECONDS,
 			'recommendations' => [ 'daily_budget' => 20 ],
@@ -367,7 +367,7 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->assertEquals( [ self::TEST_RECOMMENDATION ], $saved['us-new-page']['recommendations'] );
 	}
 
-	public function test_get_recommendations_saves_product_results_under_the_key_without_a_suffix() {
+	public function test_get_recommendations_saves_product_results_under_the_product_key() {
 		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, [] );
 
 		$this->assertSame( [ 'us-new-product' ], array_keys( $saved ) );

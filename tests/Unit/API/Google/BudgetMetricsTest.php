@@ -368,13 +368,13 @@ class BudgetMetricsTest extends UnitTest {
 		return $saved;
 	}
 
-	public function test_get_metrics_saves_page_results_under_a_key_with_a_page_suffix_and_keeps_other_entries() {
+	public function test_get_metrics_saves_page_results_under_the_page_key_and_keeps_other_entries() {
 		$saved = $this->get_saved_budget_transient( AdvertisingSource::PAGE, [ 'us-12-new-product' => [ 'cost' => 1 ] ] );
 
 		$this->assertSame( [ 'us-12-new-product', 'us-12-new-page' ], array_keys( $saved ) );
 	}
 
-	public function test_get_metrics_saves_product_results_under_the_key_without_a_suffix() {
+	public function test_get_metrics_saves_product_results_under_the_product_key() {
 		$saved = $this->get_saved_budget_transient( AdvertisingSource::PRODUCT, [] );
 
 		$this->assertSame( [ 'us-12-new-product' ], array_keys( $saved ) );
