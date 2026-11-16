@@ -79,9 +79,10 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 		$is_page         = AdvertisingSource::PAGE === $advertising_source;
 		$cache_key       = strtolower( join( '-', $country_codes ) ) . ( $is_new_customer ? '-new' : '-existing' ) . '-' . $advertising_source;
 		$transient       = $this->transients->get( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS );
+		$now             = time();
 
 		// Check if we have the budget recommendations cached in the transient.
-		$cached = $this->get_cached_recommendations( $transient, $cache_key );
+		$cached = $this->get_cached_recommendations( $transient, $cache_key, $now );
 		if ( $cached ) {
 			return $cached;
 		}
@@ -130,9 +131,9 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 				$recommendations = $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
 
 				// Merge with the recommendations that are still valid.
-				$transient               = $this->remove_expired_recommendations( $transient );
+				$transient               = $this->remove_expired_recommendations( $transient, $now );
 				$transient[ $cache_key ] = [
-					'saved_at'        => time(),
+					'saved_at'        => $now,
 					'recommendations' => $recommendations,
 				];
 				$this->transients->set( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS, $transient, self::CACHE_LIFETIME );
@@ -152,10 +153,11 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	 *
 	 * @param mixed  $transient The value of the budget recommendations transient.
 	 * @param string $cache_key The cache key to look up.
+	 * @param int    $now       The current Unix timestamp.
 	 *
 	 * @return array|null
 	 */
-	protected function get_cached_recommendations( $transient, string $cache_key ): ?array {
+	protected function get_cached_recommendations( $transient, string $cache_key, int $now ): ?array {
 		$entry = is_array( $transient ) ? ( $transient[ $cache_key ] ?? null ) : null;
 
 		if ( empty( $entry ) ) {
@@ -166,25 +168,26 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 			return $entry;
 		}
 
-		return time() - $entry['saved_at'] < self::CACHE_LIFETIME ? $entry['recommendations'] : null;
+		return $now - $entry['saved_at'] < self::CACHE_LIFETIME ? $entry['recommendations'] : null;
 	}
 
 	/**
 	 * Keep only the saved recommendations that have not expired, so saving a new entry doesn't keep an old one alive.
 	 *
 	 * @param mixed $transient The value of the budget recommendations transient.
+	 * @param int   $now       The current Unix timestamp.
 	 *
 	 * @return array
 	 */
-	protected function remove_expired_recommendations( $transient ): array {
+	protected function remove_expired_recommendations( $transient, int $now ): array {
 		if ( ! is_array( $transient ) ) {
 			return [];
 		}
 
 		return array_filter(
 			$transient,
-			function ( $entry ) {
-				return isset( $entry['saved_at'] ) && time() - $entry['saved_at'] < self::CACHE_LIFETIME;
+			function ( $entry ) use ( $now ) {
+				return isset( $entry['saved_at'] ) && $now - $entry['saved_at'] < self::CACHE_LIFETIME;
 			}
 		);
 	}
