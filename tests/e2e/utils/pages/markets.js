@@ -42,6 +42,25 @@ export const SECONDARY_MARKET = {
 	},
 };
 
+export const TERTIARY_MARKET = {
+	id: 'de',
+	label: 'Germany',
+	countries: [ 'DE' ],
+	country: 'DE',
+	language: [ 'fr' ],
+	currency: [ 'EUR' ],
+	exchange_rate: null,
+	shipping: {
+		rate_type: 'flat',
+		time_type: 'flat',
+		flat_rate: 8,
+		free_shipping_threshold: null,
+		flat_time: 3,
+		flat_max_time: 10,
+		currency: 'EUR',
+	},
+};
+
 export const SHIPPING_RATES = [
 	{
 		country: 'US',
@@ -61,12 +80,36 @@ export const SHIPPING_TIMES = [
 
 export const LANGUAGES_CURRENCIES = {
 	languages: [
-		{ code: 'en', label: 'English' },
-		{ code: 'fr', label: 'French' },
+		{
+			code: 'en',
+			label: 'English',
+			supported: true,
+			content_language: 'en',
+		},
+		{
+			code: 'fr',
+			label: 'French',
+			supported: true,
+			content_language: 'fr',
+		},
+		// A regional WPML code whose base language Merchant Center supports.
+		{
+			code: 'pt-pt',
+			label: 'Portuguese (Portugal)',
+			supported: true,
+			content_language: 'pt',
+		},
+		// A language Merchant Center doesn't support.
+		{
+			code: 'bg',
+			label: 'Bulgarian',
+			supported: false,
+			content_language: null,
+		},
 	],
 	currencies: [
 		{ code: 'USD', languages: [ 'en' ] },
-		{ code: 'EUR', languages: [ 'fr' ] },
+		{ code: 'EUR', languages: [ 'fr', 'pt-pt', 'bg' ] },
 	],
 };
 
@@ -127,6 +170,42 @@ export default class MarketsPage extends MockRequests {
 			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fmarkets',
 			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
 		);
+	}
+
+	/**
+	 * Mock the markets list and reload the page, waiting for it to load.
+	 *
+	 * @param {Array}   markets
+	 * @param {Object}  [options]
+	 * @param {boolean} [options.waitForLanguagesCurrencies=false] Also wait for the
+	 *   languages and currencies request. Only set where the page makes it on load.
+	 * @return {Promise<void>}
+	 */
+	async reloadWithMarkets(
+		markets,
+		{ waitForLanguagesCurrencies = false } = {}
+	) {
+		await this.fulfillMarkets( markets );
+
+		const responses = [
+			this.page.waitForResponse(
+				( response ) =>
+					/\/wc\/gla\/mc\/markets(?!\/)/.test( response.url() ) &&
+					response.request().method() === 'GET'
+			),
+		];
+
+		if ( waitForLanguagesCurrencies ) {
+			responses.push(
+				this.page.waitForResponse(
+					/\/wc\/gla\/mc\/markets\/languages-currencies\b/
+				)
+			);
+		}
+
+		await this.goto();
+		await this.waitForMarketsTable();
+		await Promise.all( responses );
 	}
 
 	/**
@@ -482,6 +561,18 @@ export default class MarketsPage extends MockRequests {
 		return ( container || this.page ).locator(
 			'.gla-shipping-info-notice'
 		);
+	}
+
+	/**
+	 * Get the snackbar containing the given text.
+	 *
+	 * @param {string} text
+	 * @return {import('@playwright/test').Locator} Snackbar locator.
+	 */
+	getSnackbar( text ) {
+		return this.page
+			.locator( '.components-snackbar__content' )
+			.filter( { hasText: text } );
 	}
 
 	/**

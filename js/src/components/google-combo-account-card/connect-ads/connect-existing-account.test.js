@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
  */
 import ConnectExistingAccount from './connect-existing-account';
 import { useAppDispatch } from '~/data';
+import { ERROR_SLOTS } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
@@ -172,6 +173,42 @@ describe( 'ConnectExistingAccount', () => {
 			expect( connectGoogleAdsAccount ).toHaveBeenCalledTimes( 1 );
 			expect( fetchGoogleAdsAccountStatus ).toHaveBeenCalledTimes( 1 );
 			expect( refetchGoogleAdsAccount ).toHaveBeenCalledTimes( 1 );
+		} );
+	} );
+
+	describe( 'Initial with the disconnected state', () => {
+		beforeEach( () => {
+			useGoogleAdsAccount.mockReturnValue( {
+				hasFinishedResolution: true,
+				hasGoogleAdsConnection: false,
+				googleAdsAccount: { id: 0 },
+				refetchGoogleAdsAccount: jest.fn(),
+			} );
+
+			useGoogleAdsAccountReady.mockReturnValue( {
+				isGoogleAdsReady: false,
+				isLinkedToMerchantCenter: false,
+			} );
+		} );
+
+		it( 'Should clear the connection error slot and call onCreateClick when clicking "Or, create a new Google Ads account"', async () => {
+			const user = userEvent.setup();
+			const onCreateClick = jest.fn().mockName( 'onCreateClick' );
+
+			render(
+				<ConnectExistingAccount onCreateClick={ onCreateClick } />
+			);
+
+			await user.click(
+				screen.getByRole( 'button', {
+					name: 'Or, create a new Google Ads account',
+				} )
+			);
+
+			expect( clearDetailedErrorBySlots ).toHaveBeenCalledWith( [
+				ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+			] );
+			expect( onCreateClick ).toHaveBeenCalledTimes( 1 );
 		} );
 	} );
 } );
