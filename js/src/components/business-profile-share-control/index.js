@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 import { ExternalLink, Flex, ToggleControl } from '@wordpress/components';
 
 /**
@@ -11,6 +12,7 @@ import { recordGlaEvent } from '~/utils/tracks';
 import { buildSummary } from './utils/summaryText';
 import SummaryField from './summary-field';
 import GenerateFromPostButton from './generate-from-post-button';
+import ConfirmUnshareModal from './confirm-unshare-modal';
 import './index.scss';
 
 /**
@@ -62,13 +64,35 @@ export default function BusinessProfileShareControl( {
 	searchUrl,
 	isShared = false,
 } ) {
-	const handleShareEnabledChange = ( nextIsShareEnabled ) => {
+	const [ showUnshareConfirm, setShowUnshareConfirm ] = useState( false );
+
+	const changeShareEnabled = ( nextIsShareEnabled ) => {
 		recordGlaEvent( 'gla_google_business_profile_share_toggle_click', {
 			context,
 			status: nextIsShareEnabled ? 'on' : 'off',
 			is_shared: isShared,
 		} );
 		onShareEnabledChange( nextIsShareEnabled );
+	};
+
+	const handleShareEnabledChange = ( nextIsShareEnabled ) => {
+		// Turning off sharing on a post that's never been shared removes nothing from Google, so
+		// it needs no confirmation.
+		if ( ! nextIsShareEnabled && isShared ) {
+			setShowUnshareConfirm( true );
+			return;
+		}
+
+		changeShareEnabled( nextIsShareEnabled );
+	};
+
+	const handleConfirmUnshare = () => {
+		setShowUnshareConfirm( false );
+		changeShareEnabled( false );
+	};
+
+	const handleCancelUnshare = () => {
+		setShowUnshareConfirm( false );
 	};
 
 	const handleGenerate = () => {
@@ -102,49 +126,57 @@ export default function BusinessProfileShareControl( {
 			);
 
 	return (
-		<Flex
-			className="gla-business-profile-share-control"
-			direction="column"
-			gap={ 4 }
-		>
-			<ToggleControl
-				label={ __(
-					'Share on my Business Profile',
-					'google-listings-and-ads'
-				) }
-				help={ help }
-				checked={ isShareEnabled }
-				onChange={ handleShareEnabledChange }
-				__nextHasNoMarginBottom
-			/>
-			{ searchUrl && (
-				<ExternalLink
-					href={ searchUrl }
-					onClick={ handleViewOnGoogleClick }
-				>
-					{ __(
-						'View on Google Business Profile',
+		<>
+			<Flex
+				className="gla-business-profile-share-control"
+				direction="column"
+				gap={ 4 }
+			>
+				<ToggleControl
+					label={ __(
+						'Share on my Business Profile',
 						'google-listings-and-ads'
 					) }
-				</ExternalLink>
+					help={ help }
+					checked={ isShareEnabled }
+					onChange={ handleShareEnabledChange }
+					__nextHasNoMarginBottom
+				/>
+				{ searchUrl && (
+					<ExternalLink
+						href={ searchUrl }
+						onClick={ handleViewOnGoogleClick }
+					>
+						{ __(
+							'View on Google Business Profile',
+							'google-listings-and-ads'
+						) }
+					</ExternalLink>
+				) }
+				{ isShareEnabled && (
+					<Flex
+						className="gla-business-profile-share-control__summary"
+						direction="column"
+						align="flex-start"
+						gap={ 4 }
+					>
+						<SummaryField
+							value={ summary }
+							onChange={ onSummaryChange }
+						/>
+						<GenerateFromPostButton
+							summary={ summary }
+							onGenerate={ handleGenerate }
+						/>
+					</Flex>
+				) }
+			</Flex>
+			{ showUnshareConfirm && (
+				<ConfirmUnshareModal
+					onConfirm={ handleConfirmUnshare }
+					onRequestClose={ handleCancelUnshare }
+				/>
 			) }
-			{ isShareEnabled && (
-				<Flex
-					className="gla-business-profile-share-control__summary"
-					direction="column"
-					align="flex-start"
-					gap={ 4 }
-				>
-					<SummaryField
-						value={ summary }
-						onChange={ onSummaryChange }
-					/>
-					<GenerateFromPostButton
-						summary={ summary }
-						onGenerate={ handleGenerate }
-					/>
-				</Flex>
-			) }
-		</Flex>
+		</>
 	);
 }

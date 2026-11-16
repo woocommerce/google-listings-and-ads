@@ -109,7 +109,32 @@ describe( 'BusinessProfileShareControl', () => {
 		);
 	} );
 
-	it( 'records turning sharing off on a post already shared', async () => {
+	it( 'reports turning the toggle off straight away on a post that was never shared', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl( {
+			isShareEnabled: true,
+			isShared: false,
+		} );
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_share_toggle_click',
+			{
+				context: 'business-profile-share-panel',
+				status: 'off',
+				is_shared: false,
+			}
+		);
+		expect( onShareEnabledChange ).toHaveBeenCalledWith( false );
+		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'asks to confirm before turning sharing off on a post already shared', async () => {
 		const user = userEvent.setup();
 		const { onShareEnabledChange } = renderControl( {
 			context: 'business-profile-share-meta-box',
@@ -123,6 +148,30 @@ describe( 'BusinessProfileShareControl', () => {
 			} )
 		);
 
+		expect(
+			screen.getByRole( 'dialog', { name: 'Turn off sharing?' } )
+		).toBeInTheDocument();
+		expect( recordGlaEvent ).not.toHaveBeenCalled();
+		expect( onShareEnabledChange ).not.toHaveBeenCalled();
+	} );
+
+	it( 'records and reports turning sharing off once the merchant confirms', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl( {
+			context: 'business-profile-share-meta-box',
+			isShareEnabled: true,
+			isShared: true,
+		} );
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'button', { name: 'Turn off sharing' } )
+		);
+
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_google_business_profile_share_toggle_click',
 			{
@@ -132,6 +181,31 @@ describe( 'BusinessProfileShareControl', () => {
 			}
 		);
 		expect( onShareEnabledChange ).toHaveBeenCalledWith( false );
+		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'leaves sharing on when the merchant cancels', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl( {
+			isShareEnabled: true,
+			isShared: true,
+		} );
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+		expect( recordGlaEvent ).not.toHaveBeenCalled();
+		expect( onShareEnabledChange ).not.toHaveBeenCalled();
+		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).toBeChecked();
 	} );
 
 	it( 'shows the field and "Generate from post" while sharing is on', () => {
