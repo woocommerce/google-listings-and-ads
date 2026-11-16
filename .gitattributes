@@ -34,3 +34,4 @@ wordpress_org_assets export-ignore
 .nvmrc export-ignore
 .jsdocrc.json export-ignore
 .wp-env.json export-ignore
+eslint-suppressions.json export-ignore

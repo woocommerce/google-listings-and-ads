@@ -1,0 +1,547 @@
+{
+  "js/src/components/analytics-overview-promo/promo-actions.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/components/analytics-overview-promo/promo-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/components/app-input-control/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/app-notice/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/app-radio-content-control/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/app-standalone-toggle-control/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/app-tooltip/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/connected-icon-label/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/components/countries-time-input/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/components/countries-time-input/min-max-shipping-times.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/components/detailed-error/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/components/different-currency-notice.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/experience-rating-banner/banner.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/external/woocommerce/compare-filter/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/components/google-ads-account-card/connect-ads/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/google-ads-account-card/connected-google-ads-account-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/google-ads-account-card/google-ads-account-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/google-ads-account-card/terms-modal/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/google-combo-account-card/connect-google-combo-account-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/google-combo-account-card/connected-ads-account-detail.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/google-mc-account-card/reclaim-url-card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/components/google-mc-account-card/switch-url-card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/google-mc-account-card/terms-modal/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/gtin-migration-banner/gtin-migration-banner.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/order-value-condition-section/offer-free-shipping-checkbox.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/paid-ads/ads-campaign/paid-ads-features-section.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/components/paid-ads/asset-group/asset-group-editor/asset-group-images-section.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/components/paid-ads/asset-group/asset-group-editor/youtube-video-selector/youtube-video-input-control.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/components/paid-ads/asset-group/asset-group-header/asset-group-header.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/paid-ads/assetSpecs.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/paid-ads/billing-card/billing-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/components/paid-ads/budget-incentive-prompt.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/paid-ads/budget-section/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/paid-ads/budget-setup/budget-radio-control.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/paid-ads/budget-setup/budget-setup-header.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/paid-ads/budget-setup/low-budget-notice.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/components/paid-ads/campaign-preview/campaign-preview-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/components/paid-ads/campaign-preview/mockup-search.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/paid-ads/eu-regulations-section/eu-political-content-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/components/paid-ads/gen-ai-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 5
+    }
+  },
+  "js/src/components/paid-ads/gen-ai-progress/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/pmax-improve-assets-banner/banner.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/raise-budget-recommendation-banner/banner.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/components/section/card/body.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/section/card/footer.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/section/card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/section/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/tree-select-control/options.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/components/unclaimed-incentive-notice/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/meta-boxes/channel-visibility/channel-visibility-settings.js": {
+    "wpds/use-recommended-components": {
+      "count": 5
+    }
+  },
+  "js/src/meta-boxes/channel-visibility/google-ads-promo.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/meta-boxes/channel-visibility/promo-cta.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/meta-boxes/order-attribution/google-ads-promo.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/notifications-system/notification-skeleton.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/notifications-system/notification.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/notifications-system/woo-marketing-notifications-slot/components/notifications-panel/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 5
+    }
+  },
+  "js/src/pages/attribute-mapping/attribute-mapping-sync.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/attribute-mapping/attribute-mapping-table.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/pages/dashboard/all-programs-table-card/budget-recommendation-badge.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/dashboard/all-programs-table-card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/dashboard/summary-section/paid-features/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/pages/dashboard/summary-section/summary-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/get-started/benefits-card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/pages/get-started/customer-quotes-card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/pages/get-started/features-card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/pages/get-started/get-started-card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/pages/get-started/get-started-with-hero-card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 4
+    }
+  },
+  "js/src/pages/get-started/unsupported-notices/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/markets/components/add-market-modal/multilingual-plugin-prompt/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 5
+    }
+  },
+  "js/src/pages/markets/components/market-fields/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/markets/components/market-fields/locale-section/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/markets/components/market-fields/shipping-section/shipping-info-notice/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/markets/components/market-fields/shipping-section/shipping-rate-controls/free-shipping-threshold-field.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/markets/components/market-fields/shipping-section/shipping-times-input.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/markets/components/markets-dashboard/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/markets/components/markets-dashboard/multilingual-flat-shipping-notice/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/markets/components/markets-header/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/pages/markets/utils/getShippingRateLabel.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/onboarding/setup-stepper/setup-listings.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey.js": {
+    "wpds/use-recommended-components": {
+      "count": 3
+    }
+  },
+  "js/src/pages/price-benchmark/banner/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/price-benchmark/change-price-modal/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/price-benchmark/faq-link.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/price-benchmark/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/product-feed/issues-table-card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/product-feed/issues-table-card/issues-table.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/product-feed/product-feed-table-card/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 5
+    }
+  },
+  "js/src/pages/product-feed/product-statistics/create-campaign-notice.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/product-feed/product-statistics/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 5
+    }
+  },
+  "js/src/pages/product-feed/product-statistics/status-box/status.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/product-feed/review-request/review-request-modal.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/product-feed/review-request/review-request-notice.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/reports/compare-table-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/settings/accounts/google-ads-account-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/settings/accounts/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/settings/accounts/merchant-center-account-card/connected-account-detail.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/settings/accounts/merchant-center-account-card/service-based-content.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/settings/accounts/youtube-account-card/connected-youtube-account-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/settings/accounts/youtube-account-card/indicator.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/settings/disconnect-modal/confirm-modal.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/settings/edit-store-address.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/settings/enhanced-conversions/setup-enhanced-conversions.js": {
+    "wpds/use-recommended-components": {
+      "count": 1
+    }
+  },
+  "js/src/pages/settings/google-customer-reviews/index.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  },
+  "js/src/pages/settings/reconnect-google-account/disconnect-google-account-card.js": {
+    "wpds/use-recommended-components": {
+      "count": 2
+    }
+  }
+}
