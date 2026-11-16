@@ -46,9 +46,7 @@ describe( 'GenAIProgressCard', () => {
 		mockAdapter( true );
 		const { container } = render( <GenAIProgressCard /> );
 
-		expect(
-			container.querySelector( '.gen-ai-progress-card__icon' )
-		).toBeInTheDocument();
+		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
 	} );
 
 	test( 'Shows the Skip button while generating assets', () => {

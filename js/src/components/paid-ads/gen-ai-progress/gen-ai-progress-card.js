@@ -25,7 +25,6 @@ const GenAIProgressCard = () => {
 				<Flex align="flex-start" gap={ 4 }>
 					<FlexItem>
 						<img
-							className="gen-ai-progress-card__icon"
 							src={ GenAIIcon }
 							alt=""
 							width={ 48 }
@@ -52,10 +51,7 @@ const GenAIProgressCard = () => {
 
 							<ProgressBar className="gen-ai-progress-card__bar" />
 
-							<Flex
-								className="gen-ai-progress-card__actions"
-								justify="flex-end"
-							>
+							<Flex justify="flex-end">
 								<SkipButton />
 							</Flex>
 						</Flex>
