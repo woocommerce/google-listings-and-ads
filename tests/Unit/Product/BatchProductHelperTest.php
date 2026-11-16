@@ -640,6 +640,77 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( '92000000', $attributes['price']['amountMicros'] );
 	}
 
+	public function test_generate_mapi_update_entries_secondary_market_exchange_rate_passes_validation() {
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'price'         => 55.61,
+				'regular_price' => 55.61,
+			]
+		);
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( false );
+
+		// WPML cannot convert into CZK, so only the market's exchange rate can price the entry.
+		$this->wpml_converted_prices['CZK'] = null;
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'CZ' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'cz'      => [
+					'country'       => 'CZ',
+					'feed_label'    => 'CZ',
+					'language'      => [],
+					'currency'      => [ 'CZK' ],
+					'exchange_rate' => 5.6354,
+				],
+			]
+		);
+
+		// Fail validation exactly as the price NotNull constraint does when the adapter has no price.
+		$validated_cz = [];
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturnCallback(
+			function ( WCProductAdapter $adapter ) use ( &$validated_cz ) {
+				if ( 0 === strpos( (string) $adapter->getFeedLabel(), 'CZ' ) ) {
+					$validated_cz[] = $adapter->getPrice();
+				}
+
+				if ( null !== $adapter->getPrice() ) {
+					return new ConstraintViolationList();
+				}
+
+				return new ConstraintViolationList(
+					[ new ConstraintViolation( 'This value should not be null.', null, [], $adapter, 'price', null ) ]
+				);
+			}
+		);
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// The CZ entry was validated with the rate-converted price (55.61 x 5.6354) and was emitted.
+		$this->assertCount( 1, $validated_cz );
+		$this->assertSame( 'CZK', $validated_cz[0]->getCurrency() );
+		$this->assertEqualsWithDelta( 313.38, $validated_cz[0]->getValue(), 0.01 );
+
+		$secondary = array_values(
+			array_filter(
+				$results,
+				static function ( array $entry ): bool {
+					return 'CZ' === $entry['country'];
+				}
+			)
+		);
+		$this->assertCount( 1, $secondary );
+		$this->assertSame( 'CZK', $secondary[0]['input']->get_attributes()['price']['currencyCode'] );
+		$this->assertEmpty( $this->product_helper->get_validation_errors( $product ) );
+	}
+
 	public function test_generate_mapi_update_entries_wpml_match_alternate_language_in_set() {
 		$product = WC_Helper_Product::create_simple_product();
 

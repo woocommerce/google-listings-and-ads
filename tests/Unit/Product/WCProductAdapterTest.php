@@ -1987,6 +1987,178 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( 10, $adapted_product->getPrice()->getValue() );
 	}
 
+	public function test_currency_override_uses_exchange_rate_when_wpml_returns_null() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 55.61,
+				'regular_price' => 55.61,
+			]
+		);
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
+		$wpml->method( 'get_product_sale_price_in_currency' )->willReturn( null );
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $product,
+				'targetCountry'     => 'CZ',
+				'wpml'              => $wpml,
+				'currency_override' => 'CZK',
+				'exchange_rate'     => 5.6354,
+			]
+		);
+
+		$this->assertEquals( 'CZK', $adapted_product->getPrice()->getCurrency() );
+		$this->assertEqualsWithDelta( 313.38, $adapted_product->getPrice()->getValue(), 0.01 );
+		$this->assertNull( $adapted_product->getSalePrice() );
+	}
+
+	public function test_currency_override_uses_exchange_rate_without_wpml_instance() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 10,
+				'regular_price' => 10,
+			]
+		);
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $product,
+				'targetCountry'     => 'DE',
+				'currency_override' => 'EUR',
+				'exchange_rate'     => 0.5,
+			]
+		);
+
+		$this->assertEquals( 'EUR', $adapted_product->getPrice()->getCurrency() );
+		$this->assertEquals( 5.0, $adapted_product->getPrice()->getValue() );
+	}
+
+	public function test_currency_override_prefers_wpml_price_over_exchange_rate() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 10,
+				'regular_price' => 10,
+			]
+		);
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( 8.0 );
+		$wpml->method( 'get_product_sale_price_in_currency' )->willReturn( null );
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $product,
+				'targetCountry'     => 'FR',
+				'wpml'              => $wpml,
+				'currency_override' => 'EUR',
+				'exchange_rate'     => 0.5,
+			]
+		);
+
+		$this->assertEquals( 8.0, $adapted_product->getPrice()->getValue() );
+	}
+
+	public function test_currency_override_uses_exchange_rate_for_sale_price() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 8,
+				'regular_price' => 10,
+				'sale_price'    => 8,
+			]
+		);
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
+		$wpml->method( 'get_product_sale_price_in_currency' )->willReturn( null );
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $product,
+				'targetCountry'     => 'DE',
+				'wpml'              => $wpml,
+				'currency_override' => 'EUR',
+				'exchange_rate'     => 0.5,
+			]
+		);
+
+		$this->assertEquals( 5.0, $adapted_product->getPrice()->getValue() );
+		$this->assertEquals( 'EUR', $adapted_product->getSalePrice()->getCurrency() );
+		$this->assertEquals( 4.0, $adapted_product->getSalePrice()->getValue() );
+	}
+
+	public function test_currency_override_exchange_rate_skips_expired_sale() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 10,
+				'regular_price' => 10,
+				'sale_price'    => 8,
+			]
+		);
+		// Not saved, so WooCommerce does not clear the expired sale on its own.
+		$product->set_date_on_sale_to( strtotime( '-1 day' ) );
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $product,
+				'targetCountry'     => 'DE',
+				'currency_override' => 'EUR',
+				'exchange_rate'     => 0.5,
+			]
+		);
+
+		$this->assertEquals( 5.0, $adapted_product->getPrice()->getValue() );
+		$this->assertNull( $adapted_product->getSalePrice() );
+	}
+
+	public function test_currency_override_exchange_rate_leaves_price_unset_without_regular_price() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => '',
+				'regular_price' => '',
+			]
+		);
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $product,
+				'targetCountry'     => 'DE',
+				'currency_override' => 'EUR',
+				'exchange_rate'     => 0.5,
+			]
+		);
+
+		$this->assertNull( $adapted_product->getPrice() );
+	}
+
+	public function test_exchange_rate_ignored_without_currency_override() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 10,
+				'regular_price' => 10,
+			]
+		);
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+				'exchange_rate' => 0.5,
+			]
+		);
+
+		$this->assertEquals( get_woocommerce_currency(), $adapted_product->getPrice()->getCurrency() );
+		$this->assertEquals( 10, $adapted_product->getPrice()->getValue() );
+	}
+
 	public function test_no_currency_override_uses_store_currency() {
 		$product = WC_Helper_Product::create_simple_product(
 			false,

@@ -502,8 +502,8 @@ class BatchProductHelper implements Service {
 			);
 		}
 
-		// A configured exchange rate converts any product's price at sync time, so it keeps a
-		// currency's entries flowing when WPML cannot convert for this product.
+		// A configured exchange rate converts any product's price (for validation and at sync
+		// time), so it keeps a currency's entries flowing when WPML cannot convert for this product.
 		$market_exchange_rate = self::extract_exchange_rate( $market );
 
 		foreach ( $currencies as $market_currency ) {
@@ -526,7 +526,7 @@ class BatchProductHelper implements Service {
 			$currency_override = get_woocommerce_currency() === $market_currency ? '' : $market_currency;
 
 			$validation = $this->validate_product(
-				$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $currency_override )
+				$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $currency_override, $market_exchange_rate )
 			);
 			if ( $validation instanceof BatchInvalidProductEntry ) {
 				$this->mark_as_invalid( $validation );
