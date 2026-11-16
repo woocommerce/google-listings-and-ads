@@ -11,9 +11,4 @@
 		height: $grid-unit-05;
 		width: 100%;
 	}
-
-	// Keep the space of the skip button when it is hidden.
-	.gen-ai-progress-card__actions {
-		min-height: $gla-size-control-height;
-	}
 }
