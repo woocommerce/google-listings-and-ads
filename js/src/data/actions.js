@@ -61,6 +61,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string} name Campaign name.
  * @property {'enabled'|'paused'|'removed'} status Campaign is currently running, has been paused or removed.
  * @property {number} amount Amount of daily budget for running ads.
+ * @property {'product'|'page'} [advertising_source] What the campaign advertises: the products from Merchant Center, or a page on the store.
  * @property {CountryCode} country The sales country of this campaign.
  *   Please note that this is a targeting country for advertising,
  *   but it is NOT set up via the location-based method.
@@ -1432,6 +1433,28 @@ export function receiveCYOIncentives( cyoIncentives ) {
 	return {
 		type: TYPES.RECEIVE_CYO_INCENTIVES,
 		cyoIncentives,
+	};
+}
+
+/**
+ * Applies an Ads credit offer to the connected Google Ads account, then marks it as applied,
+ * so the offer picker hides without fetching the incentives again.
+ *
+ * Errors aren't handled here, so the caller decides how to handle a failed apply.
+ *
+ * @param {string} id The ID of the Ads credit offer to apply.
+ * @return {Object} Redux action with type `TYPES.APPLY_CYO_INCENTIVE`.
+ * @throws Will throw an error if the request failed.
+ */
+export function* applyCYOIncentive( id ) {
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/ads/incentives`,
+		method: 'POST',
+		data: { id },
+	} );
+
+	return {
+		type: TYPES.APPLY_CYO_INCENTIVE,
 	};
 }
 

@@ -15,7 +15,7 @@ import AppButton from '~/components/app-button';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
-import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import { ADVERTISING_SOURCE, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_CONTINUE, ACTION_SKIP } from '../constants';
 import {
 	FILTER_BUDGET_RECOMMENDATIONS,
@@ -51,8 +51,8 @@ import AppSpinner from '~/components/app-spinner';
  * @fires gla_ads_only_onboarding_with_paid_ads_continue_button_click
  *
  * @param {Object} props
- * @param {Function} props.onSubmit Callback fired when the user submits the paid ads creation form. Passes dailyBudget and hasConfirmedEuPoliticalContent.
- * @param {Function} props.onSkip Callback fired when the user chooses to skip creating paid ads.
+ * @param {Function} props.onSubmit Callback fired when the user submits the paid ads creation form. Passes dailyBudget, hasConfirmedEuPoliticalContent, and hasAppliedIncentive.
+ * @param {Function} props.onSkip Callback fired when the user chooses to skip creating paid ads. Passes hasAppliedIncentive.
  */
 export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const budgetPromptRef = useRef();
@@ -68,11 +68,12 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const skipCreatePaidAds = async ( incentiveOffer ) => {
-		setCompleting( ACTION_SKIP );
+	// A failed apply doesn't block the setup. Once an offer is applied, a later attempt
+	// gets `false`, so it isn't applied twice.
+	const applySelectedIncentive = async ( incentiveOffer ) => {
+		const hasAppliedIncentive = await applyIncentive( incentiveOffer );
 
-		const applied = await applyIncentive( incentiveOffer );
-		if ( applied ) {
+		if ( hasAppliedIncentive ) {
 			recordGlaEvent(
 				'gla_ads_only_onboarding_with_cyo_incentive_selected',
 				{
@@ -82,7 +83,16 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 			);
 		}
 
-		onSkip();
+		return hasAppliedIncentive;
+	};
+
+	const skipCreatePaidAds = async ( incentiveOffer ) => {
+		setCompleting( ACTION_SKIP );
+
+		const hasAppliedIncentive =
+			await applySelectedIncentive( incentiveOffer );
+
+		onSkip( { hasAppliedIncentive } );
 	};
 
 	const createSkipButton = ( formContext ) => {
@@ -138,6 +148,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 	const paidAds = {
 		...clientSession.getCampaign(),
+		advertisingSource: ADVERTISING_SOURCE.PAGE,
 	};
 
 	if ( ! countryCodes ) {
@@ -154,16 +165,8 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 		setCompleting( ACTION_CONTINUE );
 
-		const applied = await applyIncentive( incentiveOffer );
-		if ( applied ) {
-			recordGlaEvent(
-				'gla_ads_only_onboarding_with_cyo_incentive_selected',
-				{
-					context: CONTEXT_ADS_ONLY_ONBOARDING,
-					level: incentiveOffer,
-				}
-			);
-		}
+		const hasAppliedIncentive =
+			await applySelectedIncentive( incentiveOffer );
 
 		recordGlaEvent(
 			'gla_ads_only_onboarding_with_paid_ads_continue_button_click',
@@ -177,6 +180,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		onSubmit( {
 			dailyBudget,
 			hasConfirmedEuPoliticalContent,
+			hasAppliedIncentive,
 		} );
 	};
 

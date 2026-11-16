@@ -26,6 +26,12 @@ export const GUIDE_NAMES = {
 	CAMPAIGN_CREATION_SUCCESS: 'campaign-creation-success',
 };
 
+/**
+ * The one-time query arg added to a redirect URL after an Ads credit offer was applied.
+ * Flows that end with a full page reload use it, since a notice created before the reload is lost.
+ */
+export const INCENTIVE_APPLIED_QUERY = { incentive: 'applied' };
+
 export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',
@@ -118,6 +124,11 @@ export const CATEGORIES_TO_SHOW_IN_TOOLTIP = 5;
 
 // Campaign related
 export const CAMPAIGN_TYPE_PMAX = 'performance_max';
+
+export const ADVERTISING_SOURCE = {
+	PRODUCT: 'product',
+	PAGE: 'page',
+};
 
 // Assets of Performance Max Campaign related
 export const ASSET_KEY = {
