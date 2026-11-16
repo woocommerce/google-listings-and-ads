@@ -50,4 +50,35 @@ class AccountReconnect extends ExceptionWithResponseData {
 			]
 		);
 	}
+
+	/**
+	 * Create a new instance of the exception when the connected Google account has no access to the
+	 * Merchant Center account. The Google account stays connected.
+	 *
+	 * Uses the GOOGLE_DISCONNECTED code so the admin pages redirect to the Google account
+	 * reconnect page, where the merchant can connect a different account or disconnect.
+	 *
+	 * @return static
+	 */
+	public static function google_account_no_access(): AccountReconnect {
+		return new static(
+			__( 'Your Google account doesn\'t have access to the Google Merchant Center account.', 'google-listings-and-ads' ),
+			401,
+			null,
+			[
+				'status' => 401,
+				'code'   => 'GOOGLE_DISCONNECTED',
+				'reason' => 'GOOGLE_NO_ACCESS',
+			]
+		);
+	}
+
+	/**
+	 * Whether the exception says the connected Google account has no access to the Merchant Center account.
+	 *
+	 * @return bool
+	 */
+	public function is_google_account_no_access(): bool {
+		return 'GOOGLE_NO_ACCESS' === ( $this->get_response_data()['reason'] ?? '' );
+	}
 }

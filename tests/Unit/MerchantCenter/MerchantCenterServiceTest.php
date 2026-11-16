@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantAccessCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
@@ -52,6 +53,9 @@ class MerchantCenterServiceTest extends UnitTest {
 
 	/** @var MockObject|JetpackAuthCircuitBreaker $circuit_breaker */
 	protected $circuit_breaker;
+
+	/** @var MockObject|MerchantAccessCircuitBreaker $merchant_access_breaker */
+	protected $merchant_access_breaker;
 
 	/** @var MockObject|Manager $manager */
 	protected $manager;
@@ -102,23 +106,24 @@ class MerchantCenterServiceTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->address_utility        = $this->createMock( AddressUtility::class );
-		$this->ads_service            = $this->createMock( AdsService::class );
-		$this->contact_information    = $this->createMock( ContactInformation::class );
-		$this->google_helper          = $this->createMock( GoogleHelper::class );
-		$this->circuit_breaker        = $this->createMock( JetpackAuthCircuitBreaker::class );
-		$this->manager                = $this->createMock( Manager::class );
-		$this->merchant               = $this->createMock( Merchant::class );
-		$this->merchant_account_state = $this->createMock( MerchantAccountState::class );
-		$this->merchant_statuses      = $this->createMock( MerchantStatuses::class );
-		$this->settings               = $this->createMock( Settings::class );
-		$this->shipping_rate_query    = $this->createMock( ShippingRateQuery::class );
-		$this->shipping_time_query    = $this->createMock( ShippingTimeQuery::class );
-		$this->target_audience        = $this->createMock( TargetAudience::class );
-		$this->transients             = $this->createMock( TransientsInterface::class );
-		$this->wc                     = $this->createMock( WC::class );
-		$this->wp                     = $this->createMock( WP::class );
-		$this->options                = $this->createMock( OptionsInterface::class );
+		$this->address_utility         = $this->createMock( AddressUtility::class );
+		$this->ads_service             = $this->createMock( AdsService::class );
+		$this->contact_information     = $this->createMock( ContactInformation::class );
+		$this->google_helper           = $this->createMock( GoogleHelper::class );
+		$this->circuit_breaker         = $this->createMock( JetpackAuthCircuitBreaker::class );
+		$this->merchant_access_breaker = $this->createMock( MerchantAccessCircuitBreaker::class );
+		$this->manager                 = $this->createMock( Manager::class );
+		$this->merchant                = $this->createMock( Merchant::class );
+		$this->merchant_account_state  = $this->createMock( MerchantAccountState::class );
+		$this->merchant_statuses       = $this->createMock( MerchantStatuses::class );
+		$this->settings                = $this->createMock( Settings::class );
+		$this->shipping_rate_query     = $this->createMock( ShippingRateQuery::class );
+		$this->shipping_time_query     = $this->createMock( ShippingTimeQuery::class );
+		$this->target_audience         = $this->createMock( TargetAudience::class );
+		$this->transients              = $this->createMock( TransientsInterface::class );
+		$this->wc                      = $this->createMock( WC::class );
+		$this->wp                      = $this->createMock( WP::class );
+		$this->options                 = $this->createMock( OptionsInterface::class );
 
 		$this->container = new Container();
 		$this->container->addShared( AddressUtility::class, $this->address_utility );
@@ -126,6 +131,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->container->addShared( ContactInformation::class, $this->contact_information );
 		$this->container->addShared( GoogleHelper::class, $this->google_helper );
 		$this->container->addShared( JetpackAuthCircuitBreaker::class, $this->circuit_breaker );
+		$this->container->addShared( MerchantAccessCircuitBreaker::class, $this->merchant_access_breaker );
 		$this->container->addShared( Manager::class, $this->manager );
 		$this->container->addShared( Merchant::class, $this->merchant );
 		$this->container->addShared( MerchantAccountState::class, $this->merchant_account_state );
@@ -342,6 +348,25 @@ class MerchantCenterServiceTest extends UnitTest {
 				true,
 				self::TEST_SETUP_COMPLETED
 			);
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+	}
+
+	public function test_is_ready_for_syncing_while_merchant_access_paused() {
+		$this->mock_jetpack_connection( true, true );
+		$this->merchant_access_breaker->method( 'is_open' )->willReturn( true );
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::GOOGLE_CONNECTED, false ],
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ]
+			)
+			->willReturnOnConsecutiveCalls(
+				true,
+				self::TEST_SETUP_COMPLETED
+			);
+
+		$this->merchant->expects( $this->never() )->method( 'get_claimed_url_hash' );
+		$this->transients->expects( $this->never() )->method( 'get' );
 
 		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
 	}

@@ -146,6 +146,19 @@ class Ads implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	public function has_access( string $email ): bool {
+		return true === $this->check_access( $email );
+	}
+
+	/**
+	 * Check if we have access to the ads account, telling a missing permission apart
+	 * from an error that doesn't say anything about access.
+	 *
+	 * @param string $email Email address of the connected account.
+	 *
+	 * @return bool|null True with admin access, false without it, null when the query failed
+	 *                   for another reason (for example a timeout or a server error).
+	 */
+	public function check_access( string $email ): ?bool {
 		$ads_id = $this->options->get_ads_id();
 
 		try {
@@ -162,6 +175,10 @@ class Ads implements OptionsAwareInterface {
 			}
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			// PERMISSION_DENIED also covers errors unrelated to this user, such as a disabled
+			// account (CUSTOMER_NOT_ENABLED). Only USER_PERMISSION_DENIED means no access.
+			return $this->has_api_exception_error( $e, 'USER_PERMISSION_DENIED' ) ? false : null;
 		}
 
 		return false;

@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleC
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantAccessCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
@@ -185,6 +186,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		PolicyComplianceCheck::class         => true,
 		ContactInformation::class            => true,
 		MerchantCenterService::class         => true,
+		MerchantAccessCircuitBreaker::class  => true,
 		MarketService::class                 => true,
 		TargetAudience::class                => true,
 		MerchantAccountState::class          => true,
@@ -252,6 +254,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
+		$this->share_with_tags( MerchantAccessCircuitBreaker::class );
 
 		$this->getContainer()
 			->inflector( MerchantCenterAwareInterface::class )

@@ -13,11 +13,13 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { handleApiError } from '~/utils/handleError';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
+import { API_RESPONSE_CODES, glaData } from '~/constants';
 import {
 	getDashboardUrl,
 	getProductFeedUrl,
@@ -26,6 +28,7 @@ import {
 	getWCTrackingSettingsUrl,
 	getOnboardingUrl,
 	getWCCouponsUrl,
+	getReconnectAccountUrl,
 } from '~/utils/urls';
 
 const TERMS_URL =
@@ -62,6 +65,9 @@ const settingsUrl = getSettingsUrl();
 const wcTrackingSettingsUrl = getWCTrackingSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
 const wcCouponsUrl = getWCCouponsUrl();
+const reconnectGoogleAccountUrl = getReconnectAccountUrl(
+	API_RESPONSE_CODES.GOOGLE_DISCONNECTED
+);
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
@@ -254,6 +260,13 @@ const STATIC_MAP = {
 const useNotificationsSystemMap = () => {
 	const { hasGoogleMCConnection, hasFinishedResolution } =
 		useGoogleMCAccount();
+	const {
+		google,
+		hasFinishedResolution: hasFinishedGoogleAccountResolution,
+	} = useGoogleAccount();
+	const googleAccountEmail = google?.email;
+	// A store that set up Google Ads only has no product sync to mention.
+	const isAdsOnlyStore = ! glaData.mcSetupComplete;
 	const { saveSettings } = useSettings();
 	const [ processingNotificationId, setProcessingNotificationId ] =
 		useState( null );
@@ -363,6 +376,60 @@ const useNotificationsSystemMap = () => {
 
 	const dynamicMap = useMemo( () => {
 		return {
+			'google-account-disconnected': {
+				title: __(
+					'Reconnect your Google account',
+					'google-listings-and-ads'
+				),
+				description: isAdsOnlyStore
+					? __(
+							'Your Google account was disconnected from this store. Campaign management has stopped. Reconnect your Google account to restart it.',
+							'google-listings-and-ads'
+						)
+					: __(
+							'Your Google account was disconnected from this store. Product sync and campaign management have stopped. Reconnect your Google account to restart them.',
+							'google-listings-and-ads'
+						),
+				actions: [
+					{
+						id: 'reconnect-google-account',
+						href: reconnectGoogleAccountUrl,
+						children: __(
+							'Reconnect account',
+							'google-listings-and-ads'
+						),
+					},
+				],
+			},
+			'google-account-no-access': {
+				isReady: hasFinishedGoogleAccountResolution,
+				title: __(
+					"Your Google account doesn't have access",
+					'google-listings-and-ads'
+				),
+				description: createInterpolateElement(
+					isAdsOnlyStore
+						? __(
+								"The Google account connected to this store, <email />, doesn't have access to the store's Google Ads account. Campaign management won't work until you connect a Google account that has access, or disconnect your accounts.",
+								'google-listings-and-ads'
+							)
+						: __(
+								"The Google account connected to this store, <email />, doesn't have access to the store's Google Merchant Center and/or Google Ads account. Product sync and campaign management won't work until you connect a Google account that has access, or disconnect your accounts.",
+								'google-listings-and-ads'
+							),
+					{ email: <strong>{ googleAccountEmail }</strong> }
+				),
+				actions: [
+					{
+						id: 'reconnect-google-account',
+						href: reconnectGoogleAccountUrl,
+						children: __(
+							'Reconnect account',
+							'google-listings-and-ads'
+						),
+					},
+				],
+			},
 			'google-customer-reviews-collect-reviews': {
 				title: __(
 					'Collect Google Reviews after purchase',
@@ -572,6 +639,9 @@ const useNotificationsSystemMap = () => {
 	}, [
 		hasFinishedResolution,
 		hasGoogleMCConnection,
+		hasFinishedGoogleAccountResolution,
+		googleAccountEmail,
+		isAdsOnlyStore,
 		processingNotificationId,
 		handleCollectGoogleCustomerReviewsClick,
 		handleGoogleCustomerReviewsBadgeWidgetClick,
