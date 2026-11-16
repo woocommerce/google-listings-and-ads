@@ -10,7 +10,6 @@ import { Flex, FlexBlock, FlexItem, ProgressBar } from '@wordpress/components';
 import Section from '~/components/section';
 import GenAIIcon from '~/images/pmax-assets-improvements/gen-ai-progress-card.svg';
 import SkipButton from './skip-button';
-import './index.scss';
 import './card.scss';
 
 /**
