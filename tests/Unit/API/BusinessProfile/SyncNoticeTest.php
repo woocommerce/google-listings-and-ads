@@ -69,6 +69,12 @@ class SyncNoticeTest extends UnitTest {
 				SyncNotice::STATUS_ERROR,
 				'The post no longer exists on Google Business Profile.',
 			],
+			'unshare failure'                              => [
+				SyncOutcome::UNSHARE_FAILURE,
+				false,
+				SyncNotice::STATUS_ERROR,
+				'This post couldn\'t be removed from Google Business Profile. It\'s still shown there. Update the post to try again.',
+			],
 			'sent, pending verification'                   => [
 				SyncOutcome::SENT_PENDING_VERIFICATION,
 				false,

@@ -217,16 +217,6 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 	}
 
 	/**
-	 * Report a sync hook callback that threw, so it can't break the job.
-	 *
-	 * @param string    $hook  The hook whose callback threw.
-	 * @param Throwable $error
-	 */
-	private function report_listener_error( string $hook, Throwable $error ): void {
-		do_action( 'woocommerce_gla_error', sprintf( 'A %s callback threw: %s', $hook, $error->getMessage() ), __METHOD__ );
-	}
-
-	/**
 	 * Get Google's error status from a failed send, such as `INVALID_ARGUMENT`.
 	 *
 	 * @param Throwable $failure

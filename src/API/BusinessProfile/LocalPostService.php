@@ -240,6 +240,42 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Whether sharing was just switched off on a post that's still live on Google -- i.e. it
+	 * needs to be removed.
+	 *
+	 * @param WP_Post $post
+	 *
+	 * @return bool
+	 */
+	public function should_unshare( WP_Post $post ): bool {
+		if ( (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true ) ) {
+			return false;
+		}
+
+		return self::has_complete_result( $this->get_stored_result( $post->ID ) );
+	}
+
+	/**
+	 * Whether a post scheduled for removal should still be removed, re-checked at the time the
+	 * job runs since sharing can be switched back on between scheduling and running: a post
+	 * that's no longer published (trashed, permanently deleted) is always removed regardless of
+	 * its sharing toggle; a still-published post is only removed while sharing remains off.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return bool
+	 */
+	public function should_remove_from_business_profile( int $post_id ): bool {
+		$post = get_post( $post_id );
+
+		if ( ! $post instanceof WP_Post || 'publish' !== $post->post_status ) {
+			return true;
+		}
+
+		return ! (bool) get_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+	}
+
+	/**
 	 * Get whether a post has been shared, and its `searchUrl` once Google provides one, from the
 	 * stored result.
 	 *

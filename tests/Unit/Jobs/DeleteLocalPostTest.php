@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
@@ -55,6 +56,7 @@ class DeleteLocalPostTest extends UnitTest {
 		$this->action_scheduler   = $this->createMock( ActionSchedulerInterface::class );
 		$this->monitor            = $this->createMock( ActionSchedulerJobMonitor::class );
 		$this->local_post_service = $this->createMock( LocalPostService::class );
+		$this->local_post_service->method( 'should_remove_from_business_profile' )->willReturn( true );
 
 		$this->job = new DeleteLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service );
 	}
@@ -111,19 +113,65 @@ class DeleteLocalPostTest extends UnitTest {
 		$this->job->handle_process_items_action( [ 123, $this->result ] );
 	}
 
-	public function test_a_delete_failure_propagates_uncaught_so_actionscheduler_can_reschedule_it() {
-		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
-
-		$this->expectException( Exception::class );
+	/**
+	 * The race this guards against: sharing was switched back on between scheduling the removal
+	 * and this job running, so the post is genuinely still meant to stay shared.
+	 */
+	public function test_process_items_skips_a_post_that_should_no_longer_be_removed() {
+		$this->local_post_service = $this->createMock( LocalPostService::class );
+		$this->local_post_service->method( 'should_remove_from_business_profile' )->willReturn( false );
+		$this->local_post_service->expects( $this->never() )->method( 'delete' );
+		$this->job = new DeleteLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service );
 
 		$this->job->process_items( [ 123, $this->result ] );
 	}
 
-	public function test_handle_process_items_action_reschedules_and_rethrows_on_a_delete_failure() {
-		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
-		$this->action_scheduler->expects( $this->once() )->method( 'schedule_immediate' );
+	public function test_process_items_clears_a_stale_outcome_from_an_earlier_failed_attempt_on_success() {
+		$this->local_post_service->expects( $this->once() )->method( 'clear_sync_outcome' )->with( 123 );
 
-		$this->expectException( Exception::class );
+		$this->job->process_items( [ 123, $this->result ] );
+	}
+
+	public function test_process_items_records_a_failed_removal_instead_of_letting_it_propagate() {
+		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( 123, SyncOutcome::UNSHARE_FAILURE, '' );
+		$this->local_post_service->expects( $this->never() )->method( 'clear_sync_outcome' );
+
+		$this->job->process_items( [ 123, $this->result ] );
+	}
+
+	public function test_a_throwing_exception_listener_in_record_failure_does_not_break_processing() {
+		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
+
+		add_action(
+			'woocommerce_gla_exception',
+			function () {
+				throw new Exception( 'Listener failed.' );
+			}
+		);
+
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( 123, SyncOutcome::UNSHARE_FAILURE, '' );
+
+		$logged = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( string $message ) use ( &$logged ) {
+				$logged[] = $message;
+			}
+		);
+
+		$this->job->process_items( [ 123, $this->result ] );
+
+		$this->assertSame( [ 'A woocommerce_gla_exception callback threw: Listener failed.' ], $logged );
+	}
+
+	public function test_handle_process_items_action_does_not_reschedule_on_a_failed_removal() {
+		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
+		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
 
 		$this->job->handle_process_items_action( [ 123, $this->result ] );
 	}

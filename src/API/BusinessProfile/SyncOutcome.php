@@ -45,6 +45,9 @@ final class SyncOutcome {
 	/** @var string The linked Google post no longer exists. */
 	public const NOT_FOUND = 'not-found';
 
+	/** @var string Google didn't accept a request to remove the post; it's still live there. */
+	public const UNSHARE_FAILURE = 'unshare-failure';
+
 	/** @var string[] Outcomes that saving the post again retries. */
 	public const FAILURES = [
 		self::REQUEST_FAILURE,
@@ -64,6 +67,7 @@ final class SyncOutcome {
 		self::ACCOUNT_RESTRICTION,
 		self::ACCOUNT_DISCONNECTED,
 		self::NOT_FOUND,
+		self::UNSHARE_FAILURE,
 	];
 
 	/** @var string Google's error reason for a post refused because of the account or profile's condition. */

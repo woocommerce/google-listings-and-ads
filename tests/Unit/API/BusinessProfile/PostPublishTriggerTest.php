@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishT
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SendLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -34,6 +35,9 @@ class PostPublishTriggerTest extends UnitTest {
 
 	/** @var MockObject|SendLocalPost $send_local_post_job */
 	protected $send_local_post_job;
+
+	/** @var MockObject|DeleteLocalPost $delete_local_post_job */
+	protected $delete_local_post_job;
 
 	/** @var MockObject|JobRepository $job_repository */
 	protected $job_repository;
@@ -63,14 +67,18 @@ class PostPublishTriggerTest extends UnitTest {
 				'search_url' => '',
 			]
 		);
+		// Nothing to unshare by default -- the dedicated tests below set this up explicitly.
+		$this->local_post_service->method( 'should_unshare' )->willReturn( false );
 
 		// Still needed for register_share_meta()'s own PostShareControl, not for the trigger.
 		$this->location_service = $this->createMock( LocationService::class );
 		$this->location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
 
-		$this->send_local_post_job = $this->createMock( SendLocalPost::class );
-		$this->job_repository      = $this->createMock( JobRepository::class );
+		$this->send_local_post_job   = $this->createMock( SendLocalPost::class );
+		$this->delete_local_post_job = $this->createMock( DeleteLocalPost::class );
+		$this->job_repository        = $this->createMock( JobRepository::class );
 		$this->job_repository->method( 'get' )->with( SendLocalPost::class )->willReturn( $this->send_local_post_job );
+		$this->job_repository->method( 'get' )->with( DeleteLocalPost::class )->willReturn( $this->delete_local_post_job );
 
 		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
 	}
@@ -141,6 +149,55 @@ class PostPublishTriggerTest extends UnitTest {
 
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_schedules_removal_when_sharing_is_switched_off_on_an_already_shared_post() {
+		$result = [
+			'account_id'     => '111',
+			'location_id'    => '222',
+			'google_post_id' => '333',
+		];
+		$this->local_post_service->method( 'should_unshare' )->willReturn( true );
+		$this->local_post_service->method( 'get_stored_result' )->willReturn( $result );
+		$post        = $this->create_post_with_status( 'publish' );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
+		$this->delete_local_post_job->expects( $this->once() )->method( 'schedule' )->with( [ $post->ID, $result ] );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_schedules_removal_only_once_even_when_the_hook_fires_more_than_once_for_one_save() {
+		$this->local_post_service->method( 'should_unshare' )->willReturn( true );
+		$this->local_post_service->method( 'get_stored_result' )->willReturn( [] );
+		$post        = $this->create_post_with_status( 'publish' );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->delete_local_post_job->expects( $this->once() )->method( 'schedule' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * Same race `sends_on_save()` already guards against -- the block editor's own follow-up
+	 * meta-box-loader request would otherwise schedule a second removal for the same save.
+	 */
+	public function test_does_not_schedule_removal_during_the_block_editors_follow_up_meta_box_save() {
+		$this->local_post_service->method( 'should_unshare' )->willReturn( true );
+		$this->local_post_service->method( 'get_stored_result' )->willReturn( [] );
+		$post        = $this->create_post_with_status( 'publish' );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->delete_local_post_job->expects( $this->never() )->method( 'schedule' );
+
+		$_GET['meta-box-loader'] = '1';
+		try {
+			$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+		} finally {
+			unset( $_GET['meta-box-loader'] );
+		}
 	}
 
 	/**

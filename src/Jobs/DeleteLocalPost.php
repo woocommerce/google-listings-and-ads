@@ -5,13 +5,18 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
+use Exception;
+use Throwable;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class DeleteLocalPost
  *
- * Deletes a WordPress post's Google Business Profile local post in the background.
+ * Deletes a WordPress post's Google Business Profile local post in the background, re-checking it
+ * should still be removed before doing so. Records a failure as the post's sync outcome so the
+ * editor can tell the merchant it's still on Google, instead of propagating it uncaught.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
@@ -65,16 +70,52 @@ class DeleteLocalPost extends AbstractActionSchedulerJob {
 	}
 
 	/**
-	 * Delete the post's Google Business Profile local post -- the same call the trigger used to
-	 * make inline. Any failure propagates uncaught: {@see LocalPostService::delete()} already
-	 * reports it via `woocommerce_gla_exception` before rethrowing, and letting it keep
-	 * propagating lets ActionScheduler's own reschedule-and-log see it too.
+	 * Delete the post's Google Business Profile local post, after confirming it should still be
+	 * removed -- sharing can be switched back on between scheduling and running, for a post this
+	 * delete was scheduled for because its toggle was off, not because it was trashed or deleted.
 	 *
 	 * @param array $args The WordPress post ID and its captured stored result.
 	 */
 	public function process_items( $args ) {
 		[ $post_id, $result ] = $args;
 
-		$this->local_post_service->delete( $post_id, $result );
+		if ( ! $this->local_post_service->should_remove_from_business_profile( $post_id ) ) {
+			return;
+		}
+
+		try {
+			$this->local_post_service->delete( $post_id, $result );
+		} catch ( Throwable $failure ) {
+			$this->record_failure( $post_id, $failure );
+			return;
+		}
+
+		// A prior attempt may have failed and left a stored outcome behind for the editor to show.
+		$this->local_post_service->clear_sync_outcome( $post_id );
+	}
+
+	/**
+	 * Store a failed removal's outcome, so the editor keeps showing the post as shared, with a
+	 * message, rather than leave the merchant thinking it's gone when it's still on Google.
+	 *
+	 * @param int       $post_id
+	 * @param Throwable $failure
+	 */
+	private function record_failure( int $post_id, Throwable $failure ): void {
+		$message = SyncOutcome::for_failure( $failure )['message'];
+		$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::UNSHARE_FAILURE, $message );
+
+		try {
+			// Callbacks on the exception action may expect an Exception, so report an Error by message.
+			if ( $failure instanceof Exception ) {
+				do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+			} else {
+				do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+			}
+		} catch ( Throwable $error ) {
+			// A throwing listener here must not escape and reschedule the batch -- the removal
+			// already failed, so replaying it would only retry it a second, redundant time.
+			$this->report_listener_error( $failure instanceof Exception ? 'woocommerce_gla_exception' : 'woocommerce_gla_error', $error );
+		}
 	}
 }
