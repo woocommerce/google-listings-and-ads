@@ -14,7 +14,7 @@ A secondary market can carry a fixed `exchange_rate` so its products keep syncin
 
 `Skipping product (ID: 11) for market cz currency CZK because it does not pass validation: {"errors":["[price] This value should not be null."]}`
 
-Affects every WPML store where WPML can't convert, and every store without WPML that relies on a rate-only secondary market. The merchant in the ticket has 575+ skips across CZ/SK/DE. Products marked invalid also drop out of the periodic resync until the error meta is cleared (that clears itself once a sync succeeds).
+Affects every WPML store where WPML can't convert, and every store without WPML that relies on a rate-only secondary market. Products marked invalid also drop out of the periodic resync until the error meta is cleared, which only happens after a successful sync.
 
 ## Requirements
 

@@ -753,6 +753,61 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( [ 'US' ], array_values( array_unique( array_column( $results, 'country' ) ) ) );
 	}
 
+	public function test_generate_mapi_update_entries_several_non_store_currencies_keep_wpml_converted_entries() {
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'price'         => 55.61,
+				'regular_price' => 55.61,
+			]
+		);
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( false );
+
+		// WPML converts CZK but not EUR: ignoring the rate must only drop the EUR entry.
+		$this->wpml_converted_prices['CZK'] = 313.0;
+		$this->wpml_converted_prices['EUR'] = null;
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'CZ' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'cz'      => [
+					'country'       => 'CZ',
+					'feed_label'    => 'CZ',
+					'language'      => [],
+					'currency'      => [ 'CZK', 'EUR' ],
+					'exchange_rate' => 5.6354,
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		$secondary_currencies = array_map(
+			static function ( array $entry ): string {
+				return $entry['input']->get_attributes()['price']['currencyCode'];
+			},
+			array_values(
+				array_filter(
+					$results,
+					static function ( array $entry ): bool {
+						return 'CZ' === $entry['country'];
+					}
+				)
+			)
+		);
+
+		$this->assertSame( [ 'CZK' ], $secondary_currencies );
+	}
+
 	public function test_generate_mapi_update_entries_wpml_match_alternate_language_in_set() {
 		$product = WC_Helper_Product::create_simple_product();
 
