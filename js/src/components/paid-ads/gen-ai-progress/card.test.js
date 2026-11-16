@@ -32,7 +32,7 @@ describe( 'GenAIProgressCard', () => {
 		const card = container.querySelector( '.gen-ai-progress-card' );
 		expect( card ).toHaveClass( 'components-card' );
 		expect(
-			screen.getByRole( 'heading', { name: 'Google AI suggestions' } )
+			screen.getByText( 'Google AI suggestions' )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText(

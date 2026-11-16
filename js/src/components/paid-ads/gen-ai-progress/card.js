@@ -36,12 +36,12 @@ const GenAIProgressCard = () => {
 					<FlexBlock>
 						<Flex direction="column" align="stretch" gap={ 4 }>
 							<div>
-								<h2 className="gen-ai-progress-card__title">
+								<Section.Card.Title>
 									{ __(
 										'Google AI suggestions',
 										'google-listings-and-ads'
 									) }
-								</h2>
+								</Section.Card.Title>
 								<p className="gen-ai-progress-card__text">
 									{ __(
 										'Google AI is analyzing your campaign’s URL to automatically generate your ad assets',
