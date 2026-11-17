@@ -208,8 +208,9 @@ class PostShareControl implements Service, Registerable {
 
 	/**
 	 * Get the state of a post the Classic Editor meta box needs: its saved share choice and text,
-	 * and its share status. "Generate from post" reads the editor's live content directly in JS, so
-	 * this never needs the post's title or excerpt.
+	 * its share status, and the outcome of its last attempt to reach Google, if any. "Generate
+	 * from post" reads the editor's live content directly in JS, so this never needs the post's
+	 * title or excerpt.
 	 *
 	 * @param WP_Post $post The post being edited.
 	 *
@@ -217,12 +218,15 @@ class PostShareControl implements Service, Registerable {
 	 */
 	protected function get_post_data( WP_Post $post ): array {
 		$share_status = $this->local_post_service->get_share_status( $post->ID );
+		$outcome      = $this->local_post_service->get_sync_outcome_for_display( $post->ID );
 
 		return [
 			'isShareEnabled' => (bool) get_post_meta( $post->ID, self::SHARE_META_KEY, true ),
 			'summary'        => (string) get_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, true ),
 			'isShared'       => $share_status['is_shared'],
 			'searchUrl'      => $share_status['search_url'],
+			'displayMessage' => $outcome['display_message'] ?? null,
+			'displayStatus'  => $outcome['display_status'] ?? null,
 		];
 	}
 

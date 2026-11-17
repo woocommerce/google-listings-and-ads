@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useState } from '@wordpress/element';
+import { Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -16,6 +17,8 @@ import getLiveClassicPostContent from './getLiveClassicPostContent';
  * @property {string} summary The text sent to Google.
  * @property {boolean} isShared Whether the post has already been shared to Google.
  * @property {string} searchUrl The post's link on Google, once Google provides one.
+ * @property {?string} displayMessage A ready-to-display message for a non-success outcome of the post's last attempt to reach Google, or null.
+ * @property {?string} displayStatus The message's severity ("error" or "warning"), or null.
  */
 
 /**
@@ -38,9 +41,20 @@ export default function BusinessProfileShareMetaBox( {
 } ) {
 	const [ isShareEnabled, setShareEnabled ] = useState( post.isShareEnabled );
 	const [ summary, setSummary ] = useState( post.summary );
+	const [ showNotice, setShowNotice ] = useState(
+		Boolean( post.displayMessage )
+	);
 
 	return (
 		<>
+			{ showNotice && (
+				<Notice
+					status={ post.displayStatus }
+					onRemove={ () => setShowNotice( false ) }
+				>
+					{ post.displayMessage }
+				</Notice>
+			) }
 			<BusinessProfileShareControl
 				context={ BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT }
 				locationName={ location.title || location.address }

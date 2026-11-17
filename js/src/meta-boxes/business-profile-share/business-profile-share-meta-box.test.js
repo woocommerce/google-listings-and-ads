@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -25,6 +25,8 @@ const savedPost = {
 	summary: '',
 	isShared: false,
 	searchUrl: '',
+	displayMessage: null,
+	displayStatus: null,
 };
 
 /**
@@ -264,6 +266,39 @@ describe( 'BusinessProfileShareMetaBox', () => {
 			'href',
 			'https://local.google.com/place?id=1&use=posts'
 		);
+	} );
+
+	it( 'shows a non-success outcome as a dismissible notice', async () => {
+		const user = userEvent.setup();
+		const form = renderMetaBox( {
+			displayMessage:
+				"This post couldn't be removed from Google Business Profile. It's still shown there. Update the post to try again.",
+			displayStatus: 'error',
+		} );
+
+		expect(
+			within( form ).getByText(
+				"This post couldn't be removed from Google Business Profile. It's still shown there. Update the post to try again."
+			)
+		).toBeInTheDocument();
+
+		await user.click(
+			within( form ).getByRole( 'button', { name: 'Close' } )
+		);
+
+		expect(
+			within( form ).queryByText(
+				"This post couldn't be removed from Google Business Profile. It's still shown there. Update the post to try again."
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'shows nothing when the last outcome has no display message', () => {
+		const form = renderMetaBox();
+
+		expect(
+			within( form ).queryByRole( 'button', { name: 'Close' } )
+		).not.toBeInTheDocument();
 	} );
 
 	it( "falls back to the location's address when it has no name", () => {
