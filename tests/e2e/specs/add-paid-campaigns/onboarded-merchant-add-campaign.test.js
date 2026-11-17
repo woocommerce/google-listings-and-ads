@@ -34,9 +34,13 @@ let setupAdsAccounts;
 let setupBudgetPage;
 let optimizeCampaignPage;
 
+const ASSETS_OPT_IN_NOTICE =
+	'If you also sell services, your ads in this campaign will mainly show your products rather than your services. Google recommends promoting your services in a separate campaign.';
+
 const SCENARIOS = [
 	{
 		name: 'When merchant account is connected',
+		hasMerchantCenter: true,
 		setupMerchant: noop,
 		clearMerchant: async () => {
 			await clearOnboardedMerchant();
@@ -47,6 +51,7 @@ const SCENARIOS = [
 	},
 	{
 		name: 'For ads only setup',
+		hasMerchantCenter: false,
 		setupMerchant: async () => {
 			await clearCompleteMCSetup();
 			await setServiceBasedMerchant();
@@ -116,6 +121,7 @@ test.describe( 'Post onboarding campaign setup', () => {
 	SCENARIOS.forEach(
 		( {
 			name,
+			hasMerchantCenter,
 			setupMerchant,
 			clearMerchant,
 			campaignId,
@@ -168,6 +174,32 @@ test.describe( 'Post onboarding campaign setup', () => {
 					).toBeEnabled();
 
 					await openCampaignCreationFlow( page, dashboardPage );
+
+					await test.step( 'Text, images and videos opt-in card', async () => {
+						const optInCheckbox = page.getByRole( 'checkbox', {
+							name: 'Add text, images, and videos',
+						} );
+
+						if ( ! hasMerchantCenter ) {
+							await expect( optInCheckbox ).toHaveCount( 0 );
+							return;
+						}
+
+						// `Notice` also announces its text in a hidden screen reader region, so match the notice element itself.
+						const notice = page.locator( '.components-notice', {
+							hasText: ASSETS_OPT_IN_NOTICE,
+						} );
+
+						await expect( optInCheckbox ).not.toBeChecked();
+						await expect( notice ).toBeHidden();
+
+						await optInCheckbox.check();
+						await expect( notice ).toBeVisible();
+
+						await optInCheckbox.uncheck();
+						await expect( notice ).toBeHidden();
+					} );
+
 					await optimizeCampaign(
 						page,
 						setupAdsAccounts,
