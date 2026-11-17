@@ -225,9 +225,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Whether a post can be shared to Google Business Profile: a location is connected, it's a
-	 * supported post type, and its sharing toggle is on. The single source of truth for this --
-	 * both the publish trigger and the background send job need the same answer, and previously
-	 * repeated the same three checks independently.
+	 * supported post type, and its sharing toggle is on.
 	 *
 	 * @param WP_Post $post
 	 *
@@ -280,10 +278,8 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Get the outcome of a post's last attempt to reach Google, with a ready-to-display message
-	 * and status for a non-success outcome. The single source of truth for this -- every other
-	 * place that needs to show the merchant this outcome calls this instead of reading
-	 * {@see SyncNotice::for_outcome()} directly, so the two can't drift apart.
+	 * Get a post's sync outcome, with a ready-to-display message and status for a non-success
+	 * outcome.
 	 *
 	 * @param int $post_id
 	 *
@@ -477,6 +473,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 * Disconnecting promises the merchant that posts they already shared stay on Google, and
 	 * clearing the result lets the merchant share the post again after a later reconnect.
 	 *
+	 * A genuine failure fires `woocommerce_gla_exception` before rethrowing, so a caller that
+	 * can't catch it directly -- a deferred job included -- still gets it reported.
+	 *
 	 * @param int        $post_id
 	 * @param array|null $result The stored account/location/post-ID triple, if already known to
 	 *                           the caller. Read from post meta when omitted.
@@ -508,8 +507,12 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			$google_status = $exception->get_response_body()['error']['status'] ?? '';
 
 			if ( 404 !== $exception->get_http_status() || 'NOT_FOUND' !== $google_status ) {
+				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 				throw $exception;
 			}
+		} catch ( Exception $failure ) {
+			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+			throw $failure;
 		}
 
 		delete_post_meta( $post_id, self::RESULT_META_KEY );

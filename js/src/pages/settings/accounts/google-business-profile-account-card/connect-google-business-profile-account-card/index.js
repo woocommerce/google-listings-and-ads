@@ -3,7 +3,7 @@
  */
 import useGoogleBusinessProfileLocations from '../hooks/useGoogleBusinessProfileLocations';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
-import { CONNECTION_ERROR_SLOTS } from '../hooks/useConnectGoogleBusinessProfileLocation';
+import { CONNECTION_ERROR_SLOTS } from '../constants';
 import ConnectionErrorCard from './connection-error-card';
 import LoadingLocationsCard from './loading-locations-card';
 import LocationsErrorCard from './locations-error-card';
