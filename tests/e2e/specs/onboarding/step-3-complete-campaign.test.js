@@ -535,7 +535,10 @@ test.describe( 'Complete your campaign', () => {
 				test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
 					await page.keyboard.press( 'Escape' );
 					await page
-						.getByRole( 'tab', { name: 'Dashboard' } )
+						.getByRole( 'navigation', {
+							name: 'Google for WooCommerce sections',
+						} )
+						.getByRole( 'link', { name: 'Dashboard' } )
 						.click();
 					const { addPaidCampaignButton, createCampaignButton } =
 						dashboardPage;

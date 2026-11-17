@@ -12,7 +12,8 @@ import AppSpinner from '~/components/app-spinner';
 import useDataViewsScript from '~/hooks/useDataViewsScript';
 import Banner from './banner';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
-import MainTabNav from '~/components/main-tab-nav';
+import MainPageHeader from '~/components/main-page-header';
+import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import PriceBenchmarkSuggestions from './price-benchmark-suggestions';
 import ProductComparisonChart from './product-comparison-chart';
 import './index.scss';
@@ -22,8 +23,9 @@ const PriceBenchmark = () => {
 
 	return (
 		<div className="gla-price-benchmark">
+			<MainPageHeader />
 			<ExperienceRatingBanner />
-			<MainTabNav />
+			<GtinMigrationBanner />
 			<Banner />
 			<ProductComparisonChart />
 

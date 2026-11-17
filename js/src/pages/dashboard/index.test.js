@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getQuery } from '@woocommerce/navigation';
 
@@ -123,6 +123,24 @@ describe( 'Dashboard', () => {
 			).toContainElement(
 				screen.getByRole( 'link', { name: 'Dashboard' } )
 			);
+		} );
+
+		test( 'Should render the date range and Add campaign in the page header', () => {
+			render( <Dashboard /> );
+
+			const header = screen
+				.getByRole( 'heading', {
+					level: 1,
+					name: 'Google for WooCommerce',
+				} )
+				.closest( '.gla-main-page-header' );
+
+			expect(
+				within( header ).getByRole( 'button', { name: 'Add campaign' } )
+			).toBeInTheDocument();
+			expect(
+				within( header ).getByText( 'Date range' )
+			).toBeInTheDocument();
 		} );
 
 		test( 'Should render the GTIN migration banner when the migration is ready', () => {

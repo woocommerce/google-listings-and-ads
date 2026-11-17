@@ -18,7 +18,8 @@ import useMetricsWithFormatter from '../useMetricsWithFormatter';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import AppSpinner from '~/components/app-spinner';
 import DifferentCurrencyNotice from '~/components/different-currency-notice';
-import MainTabNav from '~/components/main-tab-nav';
+import MainPageHeader from '~/components/main-page-header';
+import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import ProductsReportFilters from './products-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
@@ -121,8 +122,9 @@ const ProductsReportPage = () => {
 
 	return (
 		<>
+			<MainPageHeader />
 			<DifferentCurrencyNotice context="reports-products" />
-			<MainTabNav />
+			<GtinMigrationBanner />
 			<ReportsNavigation />
 			{ loaded ? (
 				<ProductsReport hasPaidSource={ hasPaidSource } />

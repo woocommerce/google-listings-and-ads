@@ -64,8 +64,12 @@ test.describe( 'Product Feed Page', () => {
 
 			await productFeedPage.goto();
 			await expect(
-				page.getByRole( 'heading', { level: 1, name: 'Product Feed' } )
-			).toBeVisible();
+				page
+					.getByRole( 'navigation', {
+						name: 'Google for WooCommerce sections',
+					} )
+					.getByRole( 'link', { name: 'Product Feed' } )
+			).toHaveAttribute( 'aria-current', 'page' );
 
 			await expect(
 				page.getByRole( 'heading', {

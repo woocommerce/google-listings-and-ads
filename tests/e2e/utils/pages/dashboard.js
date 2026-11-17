@@ -24,12 +24,9 @@ export default class DashboardPage extends MockRequests {
 		this.createCampaignButton = this.paidFeatures.locator( 'button', {
 			hasText: 'Create Campaign',
 		} );
-		this.addPaidCampaignButton = this.page.locator(
-			'.gla-all-programs-table-card button',
-			{
-				hasText: 'Add campaign',
-			}
-		);
+		this.addPaidCampaignButton = this.page
+			.locator( '.gla-main-page-header' )
+			.getByRole( 'button', { name: 'Add campaign' } );
 	}
 
 	/**

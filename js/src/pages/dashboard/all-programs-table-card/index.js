@@ -20,7 +20,6 @@ import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AppSpinner from '~/components/app-spinner';
 import { FREE_LISTINGS_PROGRAM_ID, CAMPAIGN_TYPE_PMAX } from '~/constants';
-import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
 import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
@@ -297,11 +296,6 @@ const AllProgramsTableCard = ( props ) => {
 		<AppTableCard
 			className={ PROGRAMS_TABLE_CARD_CLASS_NAME }
 			title={ __( 'Programs', 'google-listings-and-ads' ) }
-			actions={
-				<AddPaidCampaignButton
-					eventProps={ { context: 'programs-table-card' } }
-				/>
-			}
 			headers={ headers }
 			rowKey={ ( cells ) => cells[ 0 ].id }
 			rows={ data.map( ( el ) => {

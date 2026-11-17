@@ -19,7 +19,8 @@ import SettingsNav, { getSelectedSection } from './settings-nav';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
-import MainTabNav from '~/components/main-tab-nav';
+import MainPageHeader from '~/components/main-page-header';
+import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import GoogleCustomerReviewsSettings from './google-customer-reviews';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
@@ -84,11 +85,17 @@ const Settings = () => {
 		case subpaths.reconnectWPComAccount:
 			return (
 				<div className={ pageClassName }>
+					<MainPageHeader />
 					<ReconnectWPComAccount />
 				</div>
 			);
 		case subpaths.reconnectGoogleAccount:
-			return <ReconnectGoogleAccount />;
+			return (
+				<>
+					<MainPageHeader />
+					<ReconnectGoogleAccount />
+				</>
+			);
 		case subpaths.editStoreAddress:
 			return <EditStoreAddress />;
 		default:
@@ -101,8 +108,9 @@ const Settings = () => {
 
 	return (
 		<div className={ pageClassName }>
+			<MainPageHeader />
 			<ExperienceRatingBanner />
-			<MainTabNav />
+			<GtinMigrationBanner />
 			<SettingsNav />
 			{ selectedSection === SETTINGS_SECTIONS.ACCOUNTS ? (
 				<Accounts />

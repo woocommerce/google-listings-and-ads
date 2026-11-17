@@ -9,7 +9,8 @@ import { __ } from '@wordpress/i18n';
 import Section from '~/components/section';
 import AttributeMappingDescription from './attribute-mapping-description';
 import AttributeMappingTable from './attribute-mapping-table';
-import MainTabNav from '~/components/main-tab-nav';
+import MainPageHeader from '~/components/main-page-header';
+import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import './index.scss';
 
@@ -21,8 +22,9 @@ import './index.scss';
 const AttributeMapping = () => {
 	return (
 		<div className="gla-attribute-mapping">
+			<MainPageHeader />
 			<ExperienceRatingBanner />
-			<MainTabNav />
+			<GtinMigrationBanner />
 			<Section
 				title={ __( 'Manage attributes', 'google-listings-and-ads' ) }
 				description={ <AttributeMappingDescription /> }

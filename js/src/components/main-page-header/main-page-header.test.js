@@ -8,6 +8,10 @@ import { getPath, getHistory } from '@woocommerce/navigation';
 
 jest.mock( '~/hooks/useGoogleMCAccount' );
 jest.mock( '~/hooks/useMenuEffect' );
+jest.mock( '@woocommerce/settings', () => ( {
+	getSetting: ( name, fallback ) =>
+		( { siteTitle: 'My Store &amp; Co' } )[ name ] ?? fallback,
+} ) );
 jest.mock( '@woocommerce/navigation', () => {
 	const history = { push: jest.fn() };
 	return {
@@ -139,6 +143,24 @@ describe( 'MainPageHeader', () => {
 
 		expect( getHistory().push ).toHaveBeenCalledWith(
 			'admin.php?page=wc-admin&path=/google/markets'
+		);
+	} );
+
+	it( 'renders the given page actions in the header', () => {
+		render( <MainPageHeader actions={ <button>Add campaign</button> } /> );
+
+		expect(
+			screen.getByRole( 'button', { name: 'Add campaign' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'sets the browser tab title for the current section', () => {
+		getPath.mockReturnValue( '/google/settings' );
+
+		render( <MainPageHeader /> );
+
+		expect( document.title ).toBe(
+			'Settings ‹ Google for WooCommerce ‹ Marketing ‹ WooCommerce ‹ My Store & Co — WooCommerce'
 		);
 	} );
 

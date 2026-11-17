@@ -34,7 +34,8 @@ jest.mock( '~/data', () => ( {
 		.mockReturnValue( { saveTargetAudience: jest.fn() } ),
 } ) );
 
-jest.mock( '~/components/main-tab-nav', () => () => null );
+jest.mock( '~/components/main-page-header', () => () => null );
+jest.mock( '~/components/gtin-migration-banner', () => () => null );
 jest.mock( '~/components/experience-rating-banner', () => () => null );
 jest.mock( '~/components/target-audience-section', () => () => null );
 jest.mock( '~/components/contact-information', () => ( {

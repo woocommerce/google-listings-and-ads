@@ -51,8 +51,12 @@ test.describe( 'Settings', () => {
 
 			test( 'should show the "Enhanced Conversion" setting card', async () => {
 				await expect(
-					page.getByRole( 'heading', { name: 'Settings' } )
-				).toBeVisible();
+					page
+						.getByRole( 'navigation', {
+							name: 'Google for WooCommerce sections',
+						} )
+						.getByRole( 'link', { name: 'Settings' } )
+				).toHaveAttribute( 'aria-current', 'page' );
 				await expect(
 					page.getByRole( 'heading', {
 						name: 'Improve conversion accuracy',
@@ -117,8 +121,12 @@ test.describe( 'Settings', () => {
 
 			test( 'should show the "Enhanced Conversion" setting card', async () => {
 				await expect(
-					page.getByRole( 'heading', { name: 'Settings' } )
-				).toBeVisible();
+					page
+						.getByRole( 'navigation', {
+							name: 'Google for WooCommerce sections',
+						} )
+						.getByRole( 'link', { name: 'Settings' } )
+				).toHaveAttribute( 'aria-current', 'page' );
 				await expect(
 					page.getByRole( 'heading', {
 						name: 'Improve conversion accuracy',

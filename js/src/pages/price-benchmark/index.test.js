@@ -20,9 +20,11 @@ jest.mock( '~/components/experience-rating-banner', () =>
 	jest.fn( () => <div data-testid="experience-rating-banner" /> )
 );
 
-jest.mock( '~/components/main-tab-nav', () =>
-	jest.fn( () => <div data-testid="main-tab-nav" /> )
+jest.mock( '~/components/main-page-header', () =>
+	jest.fn( () => <div data-testid="main-page-header" /> )
 );
+
+jest.mock( '~/components/gtin-migration-banner', () => () => null );
 
 jest.mock( './product-comparison-chart', () =>
 	jest.fn( () => <div data-testid="product-comparison-chart" /> )
