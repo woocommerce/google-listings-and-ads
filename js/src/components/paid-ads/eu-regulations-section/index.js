@@ -6,8 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import useTargetAudience from '~/hooks/useTargetAudience';
-import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
+import useHasEuTargetCountry from './useHasEuTargetCountry';
 import EuPoliticalContentCard from './eu-political-content-card';
 import Section from '~/components/section';
 
@@ -19,29 +18,10 @@ import Section from '~/components/section';
  * @param {'setup-ads'|'create-ads'|'edit-ads'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 const EuRegulationsSection = ( { context } ) => {
-	const {
-		data: { continents },
-		hasFinishedResolution: hasResolvedCountriesAndContinents,
-	} = useAppSelectDispatch( 'getMCCountriesAndContinents' );
-	const { data, hasFinishedResolution: hasResolvedTargetAudience } =
-		useTargetAudience();
+	const { hasFinishedResolution, hasEuTargetCountry } =
+		useHasEuTargetCountry();
 
-	if ( ! hasResolvedCountriesAndContinents || ! hasResolvedTargetAudience ) {
-		return null;
-	}
-
-	const { countries } = data;
-
-	if ( ! countries.length ) {
-		return null;
-	}
-
-	const euCountries = continents.EU.countries || [];
-	const isAnyEUCountrySelected = countries.some( ( countryCode ) =>
-		euCountries.includes( countryCode )
-	);
-
-	if ( ! isAnyEUCountrySelected ) {
+	if ( ! hasFinishedResolution || ! hasEuTargetCountry ) {
 		return null;
 	}
 
