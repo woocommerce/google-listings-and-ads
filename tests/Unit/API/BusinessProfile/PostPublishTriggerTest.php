@@ -77,8 +77,14 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->send_local_post_job   = $this->createMock( SendLocalPost::class );
 		$this->delete_local_post_job = $this->createMock( DeleteLocalPost::class );
 		$this->job_repository        = $this->createMock( JobRepository::class );
-		$this->job_repository->method( 'get' )->with( SendLocalPost::class )->willReturn( $this->send_local_post_job );
-		$this->job_repository->method( 'get' )->with( DeleteLocalPost::class )->willReturn( $this->delete_local_post_job );
+		// willReturnMap(), not two separate with()/willReturn() stubs -- the latter doesn't
+		// combine per-argument, the second call replaces the first regardless of argument.
+		$this->job_repository->method( 'get' )->willReturnMap(
+			[
+				[ SendLocalPost::class, $this->send_local_post_job ],
+				[ DeleteLocalPost::class, $this->delete_local_post_job ],
+			]
+		);
 
 		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
 	}
@@ -151,14 +157,31 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}
 
+	/**
+	 * A fresh mock is needed, not a re-stub of setUp()'s shared one -- method()->willReturn()
+	 * keeps whichever stub was configured first, same as the is_shareable() tests below.
+	 *
+	 * @param array $stored_result The stored result `get_stored_result()` returns.
+	 *
+	 * @return MockObject|LocalPostService
+	 */
+	private function mock_local_post_service_that_should_unshare( array $stored_result = [] ) {
+		$local_post_service = $this->createMock( LocalPostService::class );
+		$local_post_service->method( 'should_unshare' )->willReturn( true );
+		$local_post_service->method( 'get_stored_result' )->willReturn( $stored_result );
+
+		return $local_post_service;
+	}
+
 	public function test_schedules_removal_when_sharing_is_switched_off_on_an_already_shared_post() {
-		$result = [
+		$result                   = [
 			'account_id'     => '111',
 			'location_id'    => '222',
 			'google_post_id' => '333',
 		];
-		$this->local_post_service->method( 'should_unshare' )->willReturn( true );
-		$this->local_post_service->method( 'get_stored_result' )->willReturn( $result );
+		$this->local_post_service = $this->mock_local_post_service_that_should_unshare( $result );
+		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
 		$post        = $this->create_post_with_status( 'publish' );
 		$post_before = $this->create_post_with_status( 'publish' );
 
@@ -169,8 +192,9 @@ class PostPublishTriggerTest extends UnitTest {
 	}
 
 	public function test_schedules_removal_only_once_even_when_the_hook_fires_more_than_once_for_one_save() {
-		$this->local_post_service->method( 'should_unshare' )->willReturn( true );
-		$this->local_post_service->method( 'get_stored_result' )->willReturn( [] );
+		$this->local_post_service = $this->mock_local_post_service_that_should_unshare();
+		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
 		$post        = $this->create_post_with_status( 'publish' );
 		$post_before = $this->create_post_with_status( 'publish' );
 
@@ -185,8 +209,9 @@ class PostPublishTriggerTest extends UnitTest {
 	 * meta-box-loader request would otherwise schedule a second removal for the same save.
 	 */
 	public function test_does_not_schedule_removal_during_the_block_editors_follow_up_meta_box_save() {
-		$this->local_post_service->method( 'should_unshare' )->willReturn( true );
-		$this->local_post_service->method( 'get_stored_result' )->willReturn( [] );
+		$this->local_post_service = $this->mock_local_post_service_that_should_unshare();
+		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
 		$post        = $this->create_post_with_status( 'publish' );
 		$post_before = $this->create_post_with_status( 'publish' );
 
