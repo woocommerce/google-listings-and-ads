@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -9,7 +10,6 @@ import { __ } from '@wordpress/i18n';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
-import VerticalGapLayout from '~/components/vertical-gap-layout';
 import AppInputControl from '~/components/app-input-control';
 import { CAMPAIGN_NAME_MAX_LENGTH } from '~/constants';
 import './index.scss';
@@ -27,8 +27,8 @@ export default function CampaignNameSection() {
 	return (
 		<Section.Card className="gla-campaign-name-section">
 			<Section.Card.Body padding="medium">
-				<VerticalGapLayout size="medium">
-					<div>
+				<Flex direction="column" gap={ 4 }>
+					<FlexItem>
 						<Section.Card.Title>
 							{ __( 'Campaign name', 'google-listings-and-ads' ) }
 						</Section.Card.Title>
@@ -38,7 +38,7 @@ export default function CampaignNameSection() {
 								'google-listings-and-ads'
 							) }
 						</Subsection.Subtitle>
-					</div>
+					</FlexItem>
 					<AppInputControl
 						{ ...getInputProps( 'campaignName' ) }
 						label={ __(
@@ -49,7 +49,7 @@ export default function CampaignNameSection() {
 						kindCharacterCount="google-ads"
 						hideLabelFromVision
 					/>
-				</VerticalGapLayout>
+				</Flex>
 			</Section.Card.Body>
 		</Section.Card>
 	);
