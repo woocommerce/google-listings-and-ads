@@ -126,7 +126,7 @@ const Faqs = () => {
 					'google-listings-and-ads'
 				),
 				answer: __(
-					'Yes! It’s designed specifically for service providers ({give_examples}, etc.). It treats your "Services" as the offer and optimizes for leads or appointments.',
+					'Yes! It’s designed specifically for service providers. It treats your "Services" as the offer and optimizes for leads or appointments.',
 					'google-listings-and-ads'
 				),
 			},
