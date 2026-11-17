@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\BatchedActionSchedulerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
@@ -78,6 +79,9 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	/**
 	 * Register a service.
 	 *
+	 * The retry runs after the installer's admin_init callback (default priority), so an
+	 * upgrade's own attempt always comes first in the same request.
+	 *
 	 * @since x.x.x
 	 */
 	public function register(): void {
@@ -85,7 +89,8 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 			'admin_init',
 			function () {
 				$this->retry_pending_jobs();
-			}
+			},
+			20
 		);
 	}
 
@@ -151,25 +156,19 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 * Schedules a list of jobs, tracking those that can't be scheduled yet.
 	 *
 	 * Each job is attempted at most once, even when several versions ask for it. A job that
-	 * can't be scheduled is stored with the time of the attempt, to be retried later. Nothing
-	 * is kept when Merchant Center setup isn't complete: no products were synced that need
-	 * migrating, and completing setup runs a full sync.
+	 * can't be scheduled is kept pending with the time of the attempt, to be retried later.
+	 *
+	 * Nothing is kept when Merchant Center setup isn't complete. A full disconnect already
+	 * cleared what was synced (and the pending jobs, see AccountService::disconnect()), and
+	 * completing setup again queues a full sync. Like any sync, that one only runs once the
+	 * store is ready to sync.
 	 *
 	 * @param array $jobs List of jobs
 	 */
 	protected function schedule_jobs( array $jobs ): void {
 		$jobs           = array_values( array_unique( $jobs ) );
-		$pending        = $this->get_pending_jobs();
 		$setup_complete = $this->merchant_center->is_setup_complete();
-		$now            = time();
-
-		// Stamp the pending jobs about to be attempted first, so a concurrent admin request
-		// sees them as not due and doesn't schedule them a second time.
-		$updated = $pending;
-		foreach ( array_intersect( $jobs, array_keys( $pending ) ) as $job ) {
-			$updated[ $job ] = $now;
-		}
-		$this->save_pending_jobs( $updated );
+		$pending        = $this->stamp_pending_jobs( $jobs );
 
 		foreach ( $jobs as $job ) {
 			try {
@@ -177,60 +176,158 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 			} catch ( JobException $e ) {
 				// The job doesn't exist (anymore), so retrying it can't succeed.
 				do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
-				unset( $updated[ $job ] );
+				unset( $pending[ $job ] );
 				continue;
 			}
 
-			if ( $scheduled ) {
-				if ( isset( $updated[ $job ] ) ) {
-					$this->log( sprintf( 'Upgrade job %s was scheduled after waiting for the store to be ready to sync.', $job ) );
-				}
-				unset( $updated[ $job ] );
-			} elseif ( $setup_complete ) {
-				if ( ! isset( $updated[ $job ] ) ) {
-					$this->log( sprintf( 'Upgrade job %s could not be scheduled yet (the store is not ready to sync, or the job is already running). It will be retried from admin pages, at most once an hour.', $job ) );
-				}
-				$updated[ $job ] = $now;
-			}
+			$pending = $scheduled
+				? $this->mark_scheduled( $job, $pending )
+				: $this->mark_deferred( $job, $pending, $setup_complete );
 		}
 
-		if ( ! $setup_complete && ! empty( $updated ) ) {
-			$this->log( sprintf( 'Discarded pending upgrade jobs because Merchant Center setup is not complete: %s.', implode( ', ', array_keys( $updated ) ) ) );
-			$updated = [];
+		if ( ! $setup_complete ) {
+			$pending = $this->discard_pending_jobs( $pending );
 		}
 
-		$this->save_pending_jobs( $updated );
+		$this->save_pending_jobs( $pending );
+	}
+
+	/**
+	 * Stamp the pending jobs about to be attempted with the time of this attempt, and save them
+	 * before attempting anything, so a concurrent admin request sees them as not due.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string[] $jobs Job class names about to be attempted.
+	 *
+	 * @return int[] The pending jobs, with the stamped ones updated.
+	 */
+	protected function stamp_pending_jobs( array $jobs ): array {
+		$pending = $this->get_pending_jobs();
+		foreach ( array_intersect( $jobs, array_keys( $pending ) ) as $job ) {
+			$pending[ $job ] = time();
+		}
+
+		$this->save_pending_jobs( $pending );
+
+		return $pending;
+	}
+
+	/**
+	 * Remove a job that was scheduled from the pending jobs.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $job     Job class name.
+	 * @param int[]  $pending Pending jobs.
+	 *
+	 * @return int[] The pending jobs without this one.
+	 */
+	protected function mark_scheduled( string $job, array $pending ): array {
+		if ( isset( $pending[ $job ] ) ) {
+			$this->log( sprintf( 'Upgrade job %s was scheduled after waiting for the store to be ready to sync.', $job ), __METHOD__ );
+			unset( $pending[ $job ] );
+		}
+
+		return $pending;
+	}
+
+	/**
+	 * Keep a job that couldn't be scheduled yet as pending, stamped with this attempt.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $job            Job class name.
+	 * @param int[]  $pending        Pending jobs.
+	 * @param bool   $setup_complete Whether Merchant Center setup is complete.
+	 *
+	 * @return int[] The pending jobs, including this one when setup is complete.
+	 */
+	protected function mark_deferred( string $job, array $pending, bool $setup_complete ): array {
+		if ( ! $setup_complete ) {
+			return $pending;
+		}
+
+		if ( ! isset( $pending[ $job ] ) ) {
+			$this->log( sprintf( 'Upgrade job %s could not be scheduled yet (the store is not ready to sync, or the job is already running). It will be retried from admin pages, at most once an hour.', $job ), __METHOD__ );
+		}
+		$pending[ $job ] = time();
+
+		return $pending;
+	}
+
+	/**
+	 * Discard the pending jobs, for a store whose Merchant Center setup isn't complete.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int[] $pending Pending jobs.
+	 *
+	 * @return int[] No pending jobs.
+	 */
+	protected function discard_pending_jobs( array $pending ): array {
+		if ( ! empty( $pending ) ) {
+			$this->log( sprintf( 'Discarded pending upgrade jobs because Merchant Center setup is not complete: %s.', implode( ', ', array_keys( $pending ) ) ), __METHOD__ );
+		}
+
+		return [];
 	}
 
 	/**
 	 * Schedule a single job if it can be scheduled now.
 	 *
 	 * `schedule()` silently does nothing when the job can't be scheduled, so ask the job first
-	 * through `can_schedule()`. The `null` args match the job running with any arguments: a job
-	 * that is already running is retried once it finishes, so the update still runs in full on
-	 * the new version.
+	 * through `can_schedule()`. The `null` args match the job running with any arguments.
 	 *
 	 * @since x.x.x
 	 *
 	 * @param string $job Job class name.
 	 *
-	 * @return bool Whether the job was scheduled. A job that isn't an Action Scheduler job
-	 *              can't report this, so it is scheduled and treated as scheduled.
+	 * @return bool Whether the update's work is now queued: the job was scheduled, or a run that
+	 *              will process everything with the current code is already queued. A job that
+	 *              isn't an Action Scheduler job can't say whether it can be scheduled, so it is
+	 *              not scheduled here, and is reported as done so it isn't kept pending forever.
 	 *
 	 * @throws JobException If the job doesn't exist.
 	 */
 	protected function schedule_job( string $job ): bool {
 		$job = $this->job_repository->get( $job );
 
-		if ( $job instanceof ActionSchedulerJobInterface ) {
-			if ( ! $job->can_schedule( null ) ) {
-				return false;
-			}
-
-			$job->schedule();
+		if ( ! $job instanceof ActionSchedulerJobInterface ) {
+			return true;
 		}
 
-		return true;
+		if ( $job->can_schedule( null ) ) {
+			$job->schedule();
+			return true;
+		}
+
+		return $this->is_queued_from_first_batch( $job );
+	}
+
+	/**
+	 * Whether a run of the job is queued that hasn't processed any batch yet.
+	 *
+	 * Such a run, e.g. one queued by a concurrent request running the same upgrade, processes
+	 * every item with the current code, so it does the update's work. A run already past its
+	 * first batch may have started before the upgrade, so the job stays pending and runs in
+	 * full once that run finishes.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param ActionSchedulerJobInterface $job The job.
+	 *
+	 * @return bool
+	 */
+	protected function is_queued_from_first_batch( ActionSchedulerJobInterface $job ): bool {
+		// Batched jobs start every run at batch 1 (see AbstractBatchedActionSchedulerJob::schedule()).
+		if ( ! $job instanceof BatchedActionSchedulerJobInterface || ! $this->merchant_center->is_ready_for_syncing() ) {
+			return false;
+		}
+
+		// The store is ready, so the job can't be scheduled only because a run is queued: check
+		// whether that run is still at its first batch.
+		return ! $job->can_schedule( [ 1 ] );
 	}
 
 	/**
@@ -282,8 +379,9 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 * Log a message about the upgrade jobs.
 	 *
 	 * @param string $message
+	 * @param string $method  The method logging the message.
 	 */
-	protected function log( string $message ): void {
-		do_action( 'woocommerce_gla_debug_message', $message, __CLASS__ );
+	protected function log( string $message, string $method ): void {
+		do_action( 'woocommerce_gla_debug_message', $message, $method );
 	}
 }
