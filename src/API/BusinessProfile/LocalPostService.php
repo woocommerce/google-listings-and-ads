@@ -225,9 +225,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Whether a post can be shared to Google Business Profile: a location is connected, it's a
-	 * supported post type, and its sharing toggle is on. The single source of truth for this --
-	 * both the publish trigger and the background send job need the same answer, and previously
-	 * repeated the same three checks independently.
+	 * supported post type, and its sharing toggle is on.
 	 *
 	 * @param WP_Post $post
 	 *
@@ -280,10 +278,8 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Get the outcome of a post's last attempt to reach Google, with a ready-to-display message
-	 * and status for a non-success outcome. The single source of truth for this -- every other
-	 * place that needs to show the merchant this outcome calls this instead of reading
-	 * {@see SyncNotice::for_outcome()} directly, so the two can't drift apart.
+	 * Get a post's sync outcome, with a ready-to-display message and status for a non-success
+	 * outcome.
 	 *
 	 * @param int $post_id
 	 *
