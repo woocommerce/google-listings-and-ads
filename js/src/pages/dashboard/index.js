@@ -11,7 +11,8 @@ import { getNewPath, getQuery, getHistory } from '@woocommerce/navigation';
  */
 import AppButton from '~/components/app-button';
 import DifferentCurrencyNotice from '~/components/different-currency-notice';
-import MainTabNav from '~/components/main-tab-nav';
+import MainPageHeader from '~/components/main-page-header';
+import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import CustomerEffortScorePrompt from '~/components/customer-effort-score-prompt';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummarySection from './summary-section';
@@ -106,11 +107,12 @@ const Dashboard = () => {
 	return (
 		<>
 			<div className="gla-dashboard">
+				<MainPageHeader />
 				<UnclaimedIncentiveNotice />
 				<PMaxImproveAssetsBanner />
 				<ExperienceRatingBanner />
 				<DifferentCurrencyNotice context="dashboard" />
-				<MainTabNav />
+				<GtinMigrationBanner />
 				<RaiseBudgetRecommendationBanner />
 				{ hasGoogleMCConnection && <YouTubeShoppingTour /> }
 				<div className="gla-dashboard__filter">

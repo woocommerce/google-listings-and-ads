@@ -33,12 +33,16 @@ export default class DashboardPage extends MockRequests {
 	}
 
 	/**
-	 * Get the visible tab titles from the main navigation.
+	 * Get the visible section link titles from the page header navigation.
 	 *
 	 * @return {Promise<string[]>} An array of tab titles in display order.
 	 */
 	async getTabTitles() {
-		const tabs = this.page.locator( '.app-tab-nav [role="tab"]' );
+		const tabs = this.page
+			.getByRole( 'navigation', {
+				name: 'Google for WooCommerce sections',
+			} )
+			.getByRole( 'link' );
 		try {
 			await tabs.first().waitFor( { state: 'visible' } );
 		} catch ( e ) {
