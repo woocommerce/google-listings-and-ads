@@ -102,8 +102,13 @@ class DeleteLocalPost extends AbstractActionSchedulerJob {
 	 * @param Throwable $failure
 	 */
 	private function record_failure( int $post_id, Throwable $failure ): void {
-		$message = SyncOutcome::for_failure( $failure )['message'];
-		$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::UNSHARE_FAILURE, $message );
+		$result = SyncOutcome::for_failure( $failure );
+		// A lost Google grant needs reconnecting, not just a resave -- keep that distinct from
+		// the generic removal failure instead of collapsing it to the same, less useful message.
+		$outcome = SyncOutcome::ACCOUNT_DISCONNECTED === $result['outcome']
+			? SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED
+			: SyncOutcome::UNSHARE_FAILURE;
+		$this->local_post_service->set_sync_outcome( $post_id, $outcome, $result['message'] );
 
 		try {
 			// Callbacks on the exception action may expect an Exception, so report an Error by message.

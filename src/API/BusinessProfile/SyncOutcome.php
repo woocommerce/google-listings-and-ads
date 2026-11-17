@@ -48,6 +48,9 @@ final class SyncOutcome {
 	/** @var string Google didn't accept a request to remove the post; it's still live there. */
 	public const UNSHARE_FAILURE = 'unshare-failure';
 
+	/** @var string Same as UNSHARE_FAILURE, but the store lost its Google grant -- reconnecting is what the merchant needs to do, not just saving the post again. */
+	public const UNSHARE_ACCOUNT_DISCONNECTED = 'unshare-account-disconnected';
+
 	/** @var string[] Outcomes that saving the post again retries. */
 	public const FAILURES = [
 		self::REQUEST_FAILURE,
@@ -68,6 +71,7 @@ final class SyncOutcome {
 		self::ACCOUNT_DISCONNECTED,
 		self::NOT_FOUND,
 		self::UNSHARE_FAILURE,
+		self::UNSHARE_ACCOUNT_DISCONNECTED,
 	];
 
 	/** @var string Google's error reason for a post refused because of the account or profile's condition. */

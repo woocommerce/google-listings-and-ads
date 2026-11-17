@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
@@ -138,6 +139,19 @@ class DeleteLocalPostTest extends UnitTest {
 			->method( 'set_sync_outcome' )
 			->with( 123, SyncOutcome::UNSHARE_FAILURE, '' );
 		$this->local_post_service->expects( $this->never() )->method( 'clear_sync_outcome' );
+
+		$this->job->process_items( [ 123, $this->result ] );
+	}
+
+	/**
+	 * A lost Google grant needs reconnecting, not just a resave -- it must stay distinct from the
+	 * generic `UNSHARE_FAILURE` outcome so the editor can tell the merchant the right thing to do.
+	 */
+	public function test_process_items_records_an_account_disconnected_outcome_for_a_lost_google_grant() {
+		$this->local_post_service->method( 'delete' )->willThrowException( AccountReconnect::google_disconnected() );
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( 123, SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED, '' );
 
 		$this->job->process_items( [ 123, $this->result ] );
 	}

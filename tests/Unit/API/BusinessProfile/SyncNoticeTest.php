@@ -75,6 +75,12 @@ class SyncNoticeTest extends UnitTest {
 				SyncNotice::STATUS_ERROR,
 				'This post couldn\'t be removed from Google Business Profile. It\'s still shown there. Update the post to try again.',
 			],
+			'unshare failure, account disconnected'        => [
+				SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED,
+				false,
+				SyncNotice::STATUS_ERROR,
+				'This post couldn\'t be removed from Google Business Profile. Reconnect your Google account, then update the post to try again.',
+			],
 			'sent, pending verification'                   => [
 				SyncOutcome::SENT_PENDING_VERIFICATION,
 				false,
