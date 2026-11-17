@@ -96,17 +96,12 @@ const Dashboard = () => {
 			<div className="gla-dashboard">
 				<MainPageHeader
 					actions={
-						<>
-							<AppDateRangeFilterPicker
-								trackEventReportId={ trackEventReportId }
-							/>
-							<AddPaidCampaignButton
-								isSmall={ false }
-								isSecondary={ false }
-								isPrimary
-								eventProps={ { context: 'dashboard-header' } }
-							/>
-						</>
+						<AddPaidCampaignButton
+							isSmall={ false }
+							isSecondary={ false }
+							isPrimary
+							eventProps={ { context: 'dashboard-header' } }
+						/>
 					}
 				/>
 				<UnclaimedIncentiveNotice />
@@ -116,6 +111,11 @@ const Dashboard = () => {
 				<GtinMigrationBanner />
 				<RaiseBudgetRecommendationBanner />
 				{ hasGoogleMCConnection && <YouTubeShoppingTour /> }
+				<div className="gla-dashboard__filter">
+					<AppDateRangeFilterPicker
+						trackEventReportId={ trackEventReportId }
+					/>
+				</div>
 				<div className="gla-dashboard__performance">
 					<SummarySection />
 				</div>

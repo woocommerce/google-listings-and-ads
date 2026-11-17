@@ -125,7 +125,7 @@ describe( 'Dashboard', () => {
 			);
 		} );
 
-		test( 'Should render the date range and Add campaign in the page header', () => {
+		test( 'Should render Add campaign in the page header and the date range below it', () => {
 			render( <Dashboard /> );
 
 			const header = screen
@@ -138,9 +138,10 @@ describe( 'Dashboard', () => {
 			expect(
 				within( header ).getByRole( 'button', { name: 'Add campaign' } )
 			).toBeInTheDocument();
+			expect( screen.getByText( 'Date range' ) ).toBeInTheDocument();
 			expect(
-				within( header ).getByText( 'Date range' )
-			).toBeInTheDocument();
+				within( header ).queryByText( 'Date range' )
+			).not.toBeInTheDocument();
 		} );
 
 		test( 'Should render the GTIN migration banner when the migration is ready', () => {
