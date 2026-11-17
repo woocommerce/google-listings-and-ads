@@ -11,7 +11,9 @@ import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
 import { ADVERTISING_SOURCE } from '~/constants';
-import './advertising-source-selector.scss';
+import './index.scss';
+
+const TITLE = __( 'What do you want to advertise?', 'google-listings-and-ads' );
 
 const OPTIONS = [
 	{
@@ -51,12 +53,7 @@ export default function AdvertisingSourceSelector() {
 	return (
 		<Section.Card className="gla-advertising-source-selector">
 			<Section.Card.Body>
-				<Section.Card.Title>
-					{ __(
-						'What do you want to advertise?',
-						'google-listings-and-ads'
-					) }
-				</Section.Card.Title>
+				<Section.Card.Title>{ TITLE }</Section.Card.Title>
 				<Subsection.Subtitle>
 					{ __(
 						'Choose between your products or a page from your store.',
@@ -64,9 +61,11 @@ export default function AdvertisingSourceSelector() {
 					) }
 				</Subsection.Subtitle>
 				<RadioControl
+					label={ TITLE }
 					options={ OPTIONS }
 					selected={ value }
 					{ ...radioProps }
+					hideLabelFromVision
 				/>
 			</Section.Card.Body>
 		</Section.Card>
