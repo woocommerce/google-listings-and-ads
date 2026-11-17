@@ -24,7 +24,7 @@ import HelpIconButton from '~/components/help-icon-button';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import CampaignSetup from '~/components/paid-ads/campaign-setup';
 import BudgetSection from '~/components/paid-ads/budget-section';
-import EuRegulationsSection from '~/components/paid-ads/eu-regulations-section';
+import EuRegulationsCard from '~/components/paid-ads/eu-regulations-section/eu-regulations-card';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '~/components/paid-ads/asset-group';
@@ -239,7 +239,7 @@ const CreatePaidAdsCampaign = () => {
 									} }
 								>
 									<BudgetSection />
-									<EuRegulationsSection
+									<EuRegulationsCard
 										context={ eventContext }
 									/>
 								</CampaignSetup>
