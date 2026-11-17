@@ -35,7 +35,7 @@ describe( 'EuRegulationsCard', () => {
 		);
 
 		const card = container.querySelector( '.gla-eu-regulations-card' );
-		const titles = card.querySelectorAll( '.gla-section-card-title' );
+		const titles = card.querySelectorAll( '.gla-subsection-title' );
 		expect( card ).toHaveClass( 'components-card' );
 		expect( titles ).toHaveLength( 1 );
 		expect( titles[ 0 ] ).toHaveTextContent( 'EU regulations' );

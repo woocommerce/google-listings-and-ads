@@ -1,13 +1,3 @@
-.gla-eu-regulations-card {
-	.gla-section-card-title {
-		margin-bottom: $grid-unit-10;
-	}
-
-	.gla-subsection-subtitle {
-		margin-bottom: 0;
-	}
-}
-
 // Keep the gap to the next item in the step, which the shared `.components-card` margin reset removes.
 .gla-admin-page .components-card.gla-eu-regulations-card {
 	margin-bottom: var(--large-gap);

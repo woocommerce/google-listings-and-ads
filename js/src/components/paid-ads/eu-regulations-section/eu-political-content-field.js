@@ -3,13 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { CheckboxControl, Notice } from '@wordpress/components';
+import { CheckboxControl, Flex, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import VerticalGapLayout from '~/components/vertical-gap-layout';
 import AppDocumentationLink from '~/components/app-documentation-link';
 
 /**
@@ -26,7 +25,7 @@ const EuPoliticalContentField = ( { context } ) => {
 	const inputProps = getInputProps( 'hasConfirmedEuPoliticalContent' );
 
 	return (
-		<VerticalGapLayout size="large">
+		<Flex direction="column" align="stretch" gap={ 6 }>
 			<CheckboxControl
 				{ ...inputProps }
 				label={ createInterpolateElement(
@@ -58,7 +57,7 @@ const EuPoliticalContentField = ( { context } ) => {
 					) }
 				</Notice>
 			) }
-		</VerticalGapLayout>
+		</Flex>
 	);
 };
 
