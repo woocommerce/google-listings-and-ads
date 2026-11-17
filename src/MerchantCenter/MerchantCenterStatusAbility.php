@@ -85,12 +85,12 @@ class MerchantCenterStatusAbility implements Service, Registerable, AbilityDefin
 				'properties' => [
 					'connected'      => [ 'type' => 'boolean' ],
 					'setup_status'   => [ 'type' => 'string' ],
-					'setup_step'     => [ 'anyOf' => [ [ 'type' => 'string' ], [ 'type' => 'null' ] ] ],
+					'setup_step'     => [ 'type' => 'string' ],
 					'loading'        => [
 						'type'        => 'boolean',
 						'description' => __( 'Whether a refresh is running. Ask again later for the statistics.', 'google-listings-and-ads' ),
 					],
-					'statistics'     => [ 'anyOf' => [ [ 'type' => 'object' ], [ 'type' => 'null' ] ] ],
+					'statistics'     => [ 'type' => 'object' ],
 					'account_issues' => [
 						'type'  => 'array',
 						'items' => [ 'type' => 'object' ],
@@ -128,11 +128,12 @@ class MerchantCenterStatusAbility implements Service, Registerable, AbilityDefin
 		$status = [
 			'connected'      => $this->merchant_center->is_connected(),
 			'setup_status'   => $setup['status'],
-			'setup_step'     => $setup['step'] ?? null,
 			'loading'        => false,
-			'statistics'     => null,
 			'account_issues' => [],
 		];
+		if ( isset( $setup['step'] ) ) {
+			$status['setup_step'] = $setup['step'];
+		}
 
 		if ( ! $status['connected'] ) {
 			return $status;
@@ -152,8 +153,10 @@ class MerchantCenterStatusAbility implements Service, Registerable, AbilityDefin
 		}
 
 		$status['loading']        = ! empty( $statistics['loading'] ) || ! empty( $issues['loading'] );
-		$status['statistics']     = $statistics['statistics'] ?? null;
 		$status['account_issues'] = $issues['issues'];
+		if ( isset( $statistics['statistics'] ) ) {
+			$status['statistics'] = $statistics['statistics'];
+		}
 
 		return $status;
 	}
