@@ -18,7 +18,7 @@ const OPTIONS = [
 		value: ADVERTISING_SOURCE.PRODUCT,
 		label: __( 'My products', 'google-listings-and-ads' ),
 		description: __(
-			"This campaign will use information from the product feed you've synced with Google Merchant Center.",
+			'This campaign will use information from the product feed you’ve synced with Google Merchant Center.',
 			'google-listings-and-ads'
 		),
 	},
@@ -59,15 +59,14 @@ export default function AdvertisingSourceSelector() {
 				</Section.Card.Title>
 				<Subsection.Subtitle>
 					{ __(
-						'Your products synced to Merchant Center, or a page from your store.',
+						'Choose between your products or a page from your store.',
 						'google-listings-and-ads'
 					) }
 				</Subsection.Subtitle>
 				<RadioControl
-					{ ...radioProps }
-					className="gla-advertising-source-selector__options"
 					options={ OPTIONS }
 					selected={ value }
+					{ ...radioProps }
 				/>
 			</Section.Card.Body>
 		</Section.Card>
