@@ -20,6 +20,10 @@ import useNumberFormat from '~/hooks/useNumberFormat';
  * It also respects the `decimalSeparator` and `thousandSeparator` in the store's settings.
  * You can pass in custom settings via the `settings` props.
  *
+ * When both separators are the same character, the formatted value could not be parsed back
+ * because thousands would read as decimals, e.g. `"1.200"` as 1.2. The number is formatted
+ * without thousand separators in that case, e.g. `"1200"`.
+ *
  * @param {Object} props Props that will be passed to AppInputControl.
  * @param {number} props.value Value of number type.
  * @param {(value: number) => void} props.onChange onChange callback with value of number type.
@@ -38,8 +42,14 @@ const AppInputNumberControl = ( props ) => {
 		onBlur = () => {},
 		...rest
 	} = props;
-	const numberSettings = useStoreNumberSettings( settings );
-	const numberFormat = useNumberFormat( settings );
+	const storeNumberSettings = useStoreNumberSettings( settings );
+	const { decimalSeparator, thousandSeparator } = storeNumberSettings;
+	const numberSettings = {
+		...storeNumberSettings,
+		thousandSeparator:
+			thousandSeparator === decimalSeparator ? '' : thousandSeparator,
+	};
+	const numberFormat = useNumberFormat( numberSettings );
 
 	// The `InputControl` in `@wordpress/components` doesn't take into account the context
 	// in which the `value` of a controlled component is updated via `onBlur`, resulting in
