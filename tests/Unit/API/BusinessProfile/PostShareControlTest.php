@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostIma
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncNotice;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -304,6 +306,8 @@ class PostShareControlTest extends UnitTest {
 				'summary'        => 'My text',
 				'isShared'       => true,
 				'searchUrl'      => 'https://local.google.com/place?id=1&use=posts',
+				'displayMessage' => null,
+				'displayStatus'  => null,
 			],
 			$business_profile_data['businessProfilePost']
 		);
@@ -317,6 +321,26 @@ class PostShareControlTest extends UnitTest {
 				'adsId'   => null,
 			],
 			$gla_data['initialWpData']
+		);
+	}
+
+	public function test_passes_the_display_message_and_status_of_a_failed_sync_outcome() {
+		$this->mock_connected_location();
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
+		$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::REQUEST_FAILURE );
+		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service, $this->options );
+		$control->register();
+		$this->set_classic_editor_screen( 'post' );
+		do_action( 'admin_enqueue_scripts' );
+
+		$post_data = $this->get_inline_script_data( 'gla-business-profile-share-meta-box', 'glaBusinessProfileData' )['businessProfilePost'];
+
+		$this->assertSame( SyncNotice::STATUS_ERROR, $post_data['displayStatus'] );
+		$this->assertSame(
+			"The post couldn't be published to Google Business Profile. Google couldn't be reached. Update the post to try again.",
+			$post_data['displayMessage']
 		);
 	}
 
@@ -334,6 +358,8 @@ class PostShareControlTest extends UnitTest {
 		$this->assertFalse( $data['businessProfilePost']['isShareEnabled'] );
 		$this->assertFalse( $data['businessProfilePost']['isShared'] );
 		$this->assertSame( '', $data['businessProfilePost']['searchUrl'] );
+		$this->assertNull( $data['businessProfilePost']['displayMessage'] );
+		$this->assertNull( $data['businessProfilePost']['displayStatus'] );
 	}
 
 	public function test_does_not_enqueue_assets_outside_the_post_editor() {

@@ -198,24 +198,43 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 						return null;
 					}
 
-					return $this->get_sync_outcome( (int) $post['id'] );
+					return $this->get_sync_outcome_for_display( (int) $post['id'] );
 				},
 				'schema'       => [
-					'description' => __( 'The outcome of the last attempt to share this post to Google Business Profile, with the message Google returned, if any.', 'google-listings-and-ads' ),
+					'description' => __( 'The outcome of the last attempt to share this post to Google Business Profile, with the message Google returned, if any, and a ready-to-display message and status for a non-success outcome.', 'google-listings-and-ads' ),
 					'type'        => [ 'object', 'null' ],
 					'context'     => [ 'edit' ],
 					'readonly'    => true,
 					'properties'  => [
-						'outcome'       => [
+						'outcome'         => [
 							'type' => 'string',
 							'enum' => SyncOutcome::ALL,
 						],
-						'message'       => [ 'type' => 'string' ],
-						'image_omitted' => [ 'type' => 'boolean' ],
+						'message'         => [ 'type' => 'string' ],
+						'image_omitted'   => [ 'type' => 'boolean' ],
+						'display_message' => [ 'type' => [ 'string', 'null' ] ],
+						'display_status'  => [
+							'type' => [ 'string', 'null' ],
+							'enum' => [ SyncNotice::STATUS_ERROR, SyncNotice::STATUS_WARNING, null ],
+						],
 					],
 				],
 			]
 		);
+	}
+
+	/**
+	 * Whether a post can be shared to Google Business Profile: a location is connected, it's a
+	 * supported post type, and its sharing toggle is on.
+	 *
+	 * @param WP_Post $post
+	 *
+	 * @return bool
+	 */
+	public function is_shareable( WP_Post $post ): bool {
+		return null !== $this->location_service->get_selected_location()
+			&& in_array( $post->post_type, self::SUPPORTED_POST_TYPES, true )
+			&& (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
 	}
 
 	/**
@@ -259,6 +278,30 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Get a post's sync outcome, with a ready-to-display message and status for a non-success
+	 * outcome.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return array|null Shaped `{ outcome, message, image_omitted, display_message, display_status }`,
+	 *                    or null when the post has never been sent.
+	 */
+	public function get_sync_outcome_for_display( int $post_id ): ?array {
+		$outcome = $this->get_sync_outcome( $post_id );
+
+		if ( null === $outcome ) {
+			return null;
+		}
+
+		$notice = SyncNotice::for_outcome( $outcome );
+
+		$outcome['display_message'] = $notice['message'] ?? null;
+		$outcome['display_status']  = $notice['status'] ?? null;
+
+		return $outcome;
+	}
+
+	/**
 	 * Store the outcome of a post's attempt to reach Google, replacing the previous one.
 	 *
 	 * @param int    $post_id
@@ -285,6 +328,15 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				]
 			)
 		);
+	}
+
+	/**
+	 * Clear a post's stored sync outcome, so it reads as never attempted.
+	 *
+	 * @param int $post_id
+	 */
+	public function clear_sync_outcome( int $post_id ): void {
+		delete_post_meta( $post_id, self::SYNC_OUTCOME_META_KEY );
 	}
 
 	/**
