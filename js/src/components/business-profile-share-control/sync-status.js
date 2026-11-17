@@ -2,11 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex, Notice, Spinner } from '@wordpress/components';
+import { Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import LoadingLabel from '~/components/loading-label';
 import { SYNC_OUTCOME_QUEUED } from './constants';
 
 /**
@@ -25,15 +26,12 @@ import { SYNC_OUTCOME_QUEUED } from './constants';
 export default function SyncStatus( { syncOutcome } ) {
 	if ( syncOutcome?.outcome === SYNC_OUTCOME_QUEUED ) {
 		return (
-			<Flex justify="flex-start" gap={ 2 }>
-				<Spinner />
-				<span>
-					{ __(
-						'Sending to Google Business Profile…',
-						'google-listings-and-ads'
-					) }
-				</span>
-			</Flex>
+			<LoadingLabel
+				text={ __(
+					'Sending to Google Business Profile…',
+					'google-listings-and-ads'
+				) }
+			/>
 		);
 	}
 
