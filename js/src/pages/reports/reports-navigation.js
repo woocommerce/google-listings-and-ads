@@ -9,6 +9,7 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import AppSubNav from '~/components/app-sub-nav';
 import getSelectedReportKey from '~/utils/getSelectedReportKey';
+import useReportsAvailability from '~/hooks/useReportsAvailability';
 
 const tabs = [
 	{
@@ -24,9 +25,19 @@ const tabs = [
 ];
 
 const ReportsNavigation = () => {
-	const reportKey = getSelectedReportKey();
+	const { hasMC } = useReportsAvailability();
 
-	return <AppSubNav tabs={ tabs } selectedKey={ reportKey } />;
+	// The Products report needs a product feed, which comes from Merchant Center.
+	if ( ! hasMC ) {
+		return (
+			<AppSubNav
+				tabs={ tabs.filter( ( { key } ) => key !== 'products' ) }
+				selectedKey="programs"
+			/>
+		);
+	}
+
+	return <AppSubNav tabs={ tabs } selectedKey={ getSelectedReportKey() } />;
 };
 
 export default ReportsNavigation;

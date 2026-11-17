@@ -26,6 +26,12 @@ class AccountController extends BaseController {
 	/** Query arg naming the account card to scroll into view on Settings > Accounts. */
 	protected const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
 
+	/**
+	 * Query arg naming which service's connect flow an OAuth return URL belongs to, with this
+	 * service's ID as the value.
+	 */
+	protected const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
+
 	/** This service's ID as a query arg value. */
 	protected const SERVICE_ID = 'business-profile';
 
@@ -82,7 +88,8 @@ class AccountController extends BaseController {
 	 * Get the callback function for the connection request.
 	 *
 	 * Tags the return URL with `focus-account-card=business-profile`, so the card scrolls
-	 * into view on return.
+	 * into view on return, and with `google-service=business-profile`, so the card knows the
+	 * merchant just came back from this flow's Google permission screen.
 	 *
 	 * @return callable
 	 */
@@ -95,7 +102,8 @@ class AccountController extends BaseController {
 					'url' => $this->connection->connect(
 						add_query_arg(
 							[
-								self::FOCUS_ACCOUNT_CARD_PARAM => self::SERVICE_ID,
+								self::FOCUS_ACCOUNT_CARD_PARAM   => self::SERVICE_ID,
+								self::GOOGLE_SERVICE_OAUTH_PARAM => self::SERVICE_ID,
 							],
 							admin_url( 'admin.php?page=wc-admin&path=/google/settings&section=accounts' )
 						),

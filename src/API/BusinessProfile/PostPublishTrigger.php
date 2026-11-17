@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SendLocalPost;
+use Exception;
+use Throwable;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -123,8 +125,8 @@ class PostPublishTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Schedule the post to be sent to Google Business Profile, when it's shareable, it isn't
-	 * already shared, and it hasn't already been scheduled during this request.
+	 * Schedule the post to be sent to Google Business Profile, when it's shareable, it hasn't
+	 * already reached Google, and it hasn't already been scheduled during this request.
 	 *
 	 * @param WP_Post $post
 	 */
@@ -137,13 +139,34 @@ class PostPublishTrigger implements Service, Registerable {
 			return;
 		}
 
+		$last = $this->local_post_service->get_sync_outcome( $post->ID );
+
+		if ( null !== $last && SyncOutcome::QUEUED !== $last['outcome'] && ! in_array( $last['outcome'], SyncOutcome::FAILURES, true ) ) {
+			// Already reached Google without a stored result -- accepted with no usable post ID,
+			// say -- so sending again would create a duplicate. sends_on_save() already gives a
+			// resave this same protection; this covers the path that skips it, a status
+			// round-trip (unpublish then republish) landing here directly.
+			return;
+		}
+
 		if ( isset( $this->handled_in_request[ $post->ID ] ) ) {
 			return;
 		}
 		$this->handled_in_request[ $post->ID ] = true;
 
 		$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::QUEUED );
-		$this->job_repository->get( SendLocalPost::class )->schedule( [ [ $post->ID ] ] );
+
+		try {
+			$this->job_repository->get( SendLocalPost::class )->schedule( [ [ $post->ID ] ] );
+		} catch ( Throwable $failure ) {
+			// The post's own publish must never break on scheduling. The queued outcome stays
+			// behind with no job, so the next save schedules it again.
+			if ( $failure instanceof Exception ) {
+				do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+			} else {
+				do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+			}
+		}
 	}
 
 	/**

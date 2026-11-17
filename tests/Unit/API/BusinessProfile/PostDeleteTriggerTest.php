@@ -21,8 +21,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
+use Error;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 use Throwable;
 use WP_Post;
 
@@ -94,6 +96,34 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->delete_local_post_job->expects( $this->once() )->method( 'schedule' )->with( [ $post->ID, $this->stored_result( $post->ID ) ] );
 
 		wp_delete_post( $post->ID, true );
+	}
+
+	public function test_does_not_propagate_an_exception_from_scheduling_and_reports_it() {
+		$post = $this->create_synced_post();
+
+		$this->delete_local_post_job->method( 'schedule' )->willThrowException( new RuntimeException( 'Error saving action.' ) );
+
+		$this->assertInstanceOf( WP_Post::class, wp_trash_post( $post->ID ) );
+		$this->assertSame( 'trash', get_post_status( $post->ID ) );
+		$this->assertSame( 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_does_not_propagate_an_error_from_scheduling_and_reports_it_by_message() {
+		$post = $this->create_synced_post();
+
+		$this->delete_local_post_job->method( 'schedule' )->willThrowException( new Error( 'Scheduler unavailable.' ) );
+
+		$messages = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$messages ) {
+				$messages[] = $message;
+			}
+		);
+
+		wp_trash_post( $post->ID );
+
+		$this->assertSame( [ 'Scheduler unavailable.' ], $messages );
 	}
 
 	public function test_does_not_schedule_a_delete_for_a_post_with_an_incomplete_stored_result() {

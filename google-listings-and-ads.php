@@ -12,8 +12,8 @@
  * Requires PHP: 7.4
  * Requires PHP Architecture: 64 bits
  * Requires Plugins: woocommerce
- * WC requires at least: 11.0
- * WC tested up to: 11.2
+ * WC requires at least: 11.1
+ * WC tested up to: 11.3
  * Woo:
  *
  * License: GPLv3
@@ -35,7 +35,7 @@ defined( 'ABSPATH' ) || exit;
 
 define( 'WC_GLA_VERSION', '3.10.0' ); // WRCS: DEFINED_VERSION.
 define( 'WC_GLA_MIN_PHP_VER', '7.4' );
-define( 'WC_GLA_MIN_WC_VER', '11.0' );
+define( 'WC_GLA_MIN_WC_VER', '11.1' );
 
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';

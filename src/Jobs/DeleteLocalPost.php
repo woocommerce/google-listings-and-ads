@@ -76,7 +76,7 @@ class DeleteLocalPost extends AbstractActionSchedulerJob {
 	 *
 	 * @param array $args The WordPress post ID and its captured stored result.
 	 */
-	public function process_items( $args ) {
+	public function process_items( array $args ) {
 		[ $post_id, $result ] = $args;
 
 		if ( ! $this->local_post_service->should_remove_from_business_profile( $post_id ) ) {

@@ -3,11 +3,14 @@
  */
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
+import { useEffect, useState } from '@wordpress/element';
+import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { API_NAMESPACE } from '~/data/constants';
+import { GOOGLE_SERVICE, GOOGLE_SERVICE_OAUTH_PARAM } from '~/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { handleApiError } from '~/utils/handleError';
@@ -28,6 +31,50 @@ import {
  */
 
 /**
+ * Renders the card's notice: what "Connect" grants, or that access wasn't granted on a return
+ * from Google.
+ *
+ * @param {Object} props Component props.
+ * @param {boolean} props.isAccessNotGranted Whether the merchant came back from Google without granting access.
+ * @return {JSX.Element} The notice.
+ */
+const AccessNoticeDetail = ( { isAccessNotGranted } ) => {
+	if ( isAccessNotGranted ) {
+		return (
+			<NoticeDetail
+				status="error"
+				title={ __(
+					"Google Business Profile access wasn't granted",
+					'google-listings-and-ads'
+				) }
+				body={
+					<p>
+						{ __(
+							'Click Connect to try again, and allow access when Google asks.',
+							'google-listings-and-ads'
+						) }
+					</p>
+				}
+			/>
+		);
+	}
+
+	return (
+		<NoticeDetail
+			status="info"
+			body={
+				<p>
+					{ __(
+						'By connecting you are granting Google Business Profile access.',
+						'google-listings-and-ads'
+					) }
+				</p>
+			}
+		/>
+	);
+};
+
+/**
  * Renders the account card shown when the connected Google Account doesn't yet carry the
  * Google Business Profile scope. "Connect" requests a connect URL granting that scope and
  * redirects the browser to it, returning here once granted.
@@ -38,6 +85,26 @@ import {
  */
 const AllowAccessGoogleBusinessProfileAccountCard = () => {
 	const { google } = useGoogleAccount();
+
+	// Kept from the first render: once the effect below removes the query arg, later renders can't read it.
+	const [ isAccessNotGranted ] = useState( () => {
+		return (
+			getQuery()?.[ GOOGLE_SERVICE_OAUTH_PARAM ] ===
+			GOOGLE_SERVICE.BUSINESS_PROFILE
+		);
+	} );
+
+	useEffect( () => {
+		if ( ! isAccessNotGranted ) {
+			return;
+		}
+
+		getHistory().replace(
+			getNewPath( {
+				[ GOOGLE_SERVICE_OAUTH_PARAM ]: undefined,
+			} )
+		);
+	}, [ isAccessNotGranted ] );
 
 	const [ fetchGoogleBusinessProfileConnect, { loading, data } ] =
 		useApiFetchCallback( {
@@ -86,17 +153,7 @@ const AllowAccessGoogleBusinessProfileAccountCard = () => {
 				</AppButton>
 			}
 			detail={
-				<NoticeDetail
-					status="info"
-					body={
-						<p>
-							{ __(
-								'By connecting you are granting Google Business Profile access.',
-								'google-listings-and-ads'
-							) }
-						</p>
-					}
-				/>
+				<AccessNoticeDetail isAccessNotGranted={ isAccessNotGranted } />
 			}
 			expandedDetail
 		/>
