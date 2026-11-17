@@ -10,26 +10,26 @@ import userEvent from '@testing-library/user-event';
  */
 import AdaptiveForm from '~/components/adaptive-form';
 import validateCampaign from '~/components/paid-ads/validateCampaign';
-import CampaignNameSection from '.';
+import CampaignNameCard from '.';
 
 const validate = ( values ) =>
 	validateCampaign( values, { formatAmount: jest.fn() } );
 
-function renderCampaignNameSection( campaignName, onChange = jest.fn() ) {
+function renderCampaignNameCard( campaignName, onChange = jest.fn() ) {
 	return render(
 		<AdaptiveForm
 			initialValues={ { campaignName, level: 'recommended' } }
 			validate={ validate }
 			onChange={ onChange }
 		>
-			<CampaignNameSection />
+			<CampaignNameCard />
 		</AdaptiveForm>
 	);
 }
 
-describe( 'CampaignNameSection', () => {
+describe( 'CampaignNameCard', () => {
 	it( 'Should render the title and help text', () => {
-		renderCampaignNameSection( 'Campaign 2026-11-05 14:30:00' );
+		renderCampaignNameCard( 'Campaign 2026-11-05 14:30:00' );
 
 		expect(
 			screen.getByText( 'Campaign name', {
@@ -45,7 +45,7 @@ describe( 'CampaignNameSection', () => {
 
 	it( "Should show the form's campaign name and update it on typing", async () => {
 		const onChange = jest.fn();
-		renderCampaignNameSection( 'Campaign 2026-11-05 14:30:00', onChange );
+		renderCampaignNameCard( 'Campaign 2026-11-05 14:30:00', onChange );
 
 		const input = screen.getByRole( 'textbox', { name: 'Campaign name' } );
 		expect( input ).toHaveValue( 'Campaign 2026-11-05 14:30:00' );
@@ -62,13 +62,13 @@ describe( 'CampaignNameSection', () => {
 	} );
 
 	it( 'Should show the character counter', () => {
-		renderCampaignNameSection( 'Holiday kitchen sale' );
+		renderCampaignNameCard( 'Holiday kitchen sale' );
 
 		expect( screen.getByText( '20/50 characters' ) ).toBeInTheDocument();
 	} );
 
 	it( 'Should show an error when the name is over 50 characters', async () => {
-		renderCampaignNameSection( '' );
+		renderCampaignNameCard( '' );
 
 		const input = screen.getByRole( 'textbox', { name: 'Campaign name' } );
 		await userEvent.type( input, 'a'.repeat( 51 ) );

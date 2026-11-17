@@ -23,7 +23,7 @@ import ContinueButton from '~/components/paid-ads/continue-button';
 import HelpIconButton from '~/components/help-icon-button';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import CampaignSetup from '~/components/paid-ads/campaign-setup';
-import CampaignNameSection from '~/components/paid-ads/campaign-name-section';
+import CampaignNameCard from '~/components/paid-ads/campaign-name-card';
 import BudgetSection from '~/components/paid-ads/budget-section';
 import EuRegulationsSection from '~/components/paid-ads/eu-regulations-section';
 import AssetGroup, {
@@ -239,7 +239,7 @@ const CreatePaidAdsCampaign = () => {
 										);
 									} }
 								>
-									<CampaignNameSection />
+									<CampaignNameCard />
 									<BudgetSection />
 									<EuRegulationsSection
 										context={ eventContext }

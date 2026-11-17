@@ -21,11 +21,11 @@ import './index.scss';
  *
  * @return {JSX.Element} The rendered component.
  */
-export default function CampaignNameSection() {
+export default function CampaignNameCard() {
 	const { getInputProps } = useAdaptiveFormContext();
 
 	return (
-		<Section.Card className="gla-campaign-name-section">
+		<Section.Card className="gla-campaign-name-card">
 			<Section.Card.Body padding="medium">
 				<Flex direction="column" gap={ 4 }>
 					<FlexItem>
