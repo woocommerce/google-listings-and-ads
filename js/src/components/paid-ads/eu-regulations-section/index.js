@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import useHasEuTargetCountry from './useHasEuTargetCountry';
+import useHasEuTargetCountry from '~/hooks/useHasEuTargetCountry';
 import EuPoliticalContentCard from './eu-political-content-card';
 import Section from '~/components/section';
 

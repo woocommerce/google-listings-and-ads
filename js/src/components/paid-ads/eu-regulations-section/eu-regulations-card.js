@@ -9,7 +9,7 @@ import { Flex, FlexBlock } from '@wordpress/components';
  */
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
-import useHasEuTargetCountry from './useHasEuTargetCountry';
+import useHasEuTargetCountry from '~/hooks/useHasEuTargetCountry';
 import EuPoliticalContentField from './eu-political-content-field';
 import './eu-regulations-card.scss';
 

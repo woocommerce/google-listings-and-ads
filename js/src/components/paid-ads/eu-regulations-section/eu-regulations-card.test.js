@@ -9,7 +9,7 @@ jest.mock( '~/components/adaptive-form', () => ( {
 			} ),
 		} ),
 } ) );
-jest.mock( './useHasEuTargetCountry' );
+jest.mock( '~/hooks/useHasEuTargetCountry' );
 
 /**
  * External dependencies
@@ -20,7 +20,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import useHasEuTargetCountry from './useHasEuTargetCountry';
+import useHasEuTargetCountry from '~/hooks/useHasEuTargetCountry';
 import EuRegulationsCard from './eu-regulations-card';
 
 describe( 'EuRegulationsCard', () => {

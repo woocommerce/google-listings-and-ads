@@ -11,7 +11,7 @@ import { renderHook } from '@testing-library/react';
  */
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import useTargetAudience from '~/hooks/useTargetAudience';
-import useHasEuTargetCountry from './useHasEuTargetCountry';
+import useHasEuTargetCountry from '~/hooks/useHasEuTargetCountry';
 
 describe( 'useHasEuTargetCountry', () => {
 	function mockData( { countries, hasFinishedResolution = true } ) {
