@@ -7,6 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SendLocalPost;
+use Exception;
+use Throwable;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -125,6 +127,17 @@ class PostPublishTrigger implements Service, Registerable {
 		$this->sent_in_request[ $post->ID ] = true;
 
 		$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::QUEUED );
-		$this->job_repository->get( SendLocalPost::class )->schedule( [ [ $post->ID ] ] );
+
+		try {
+			$this->job_repository->get( SendLocalPost::class )->schedule( [ [ $post->ID ] ] );
+		} catch ( Throwable $failure ) {
+			// The post's own publish must never break on scheduling. The queued outcome stays
+			// behind with no job, so the next save schedules it again.
+			if ( $failure instanceof Exception ) {
+				do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+			} else {
+				do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+			}
+		}
 	}
 }

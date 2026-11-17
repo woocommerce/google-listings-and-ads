@@ -13,7 +13,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SendLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Error;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 use WP_Post;
 use WP_REST_Request;
 
@@ -380,6 +382,37 @@ class PostPublishTriggerTest extends UnitTest {
 		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
 		$request->set_body_params( [ 'title' => 'Edited title' ] );
 		rest_do_request( $request );
+	}
+
+	public function test_does_not_propagate_an_exception_from_scheduling_and_reports_it() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+		$exception   = new RuntimeException( 'Error saving action.' );
+
+		$this->send_local_post_job->method( 'schedule' )->willThrowException( $exception );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_does_not_propagate_an_error_from_scheduling_and_reports_it_by_message() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->send_local_post_job->method( 'schedule' )->willThrowException( new Error( 'Scheduler unavailable.' ) );
+
+		$messages = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$messages ) {
+				$messages[] = $message;
+			}
+		);
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( [ 'Scheduler unavailable.' ], $messages );
 	}
 
 	public function test_publishing_a_shared_post_succeeds_without_waiting_on_google() {
