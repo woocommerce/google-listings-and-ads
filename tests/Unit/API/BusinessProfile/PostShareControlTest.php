@@ -102,6 +102,7 @@ class PostShareControlTest extends UnitTest {
 		// blocks that json_decode() can't parse.
 		wp_deregister_script( 'gla-business-profile-share' );
 		wp_deregister_script( 'gla-business-profile-share-meta-box' );
+		wp_dequeue_script( 'heartbeat' );
 
 		unregister_meta_key( 'post', PostShareControl::SHARE_META_KEY, 'post' );
 		unset( $GLOBALS['post'] );
@@ -113,6 +114,77 @@ class PostShareControlTest extends UnitTest {
 		$this->control->register();
 
 		$this->assertSame( 10, has_action( 'init', [ $this->control, 'register_post_meta' ] ) );
+	}
+
+	public function test_register_adds_the_sync_status_to_heartbeat() {
+		$this->control->register();
+
+		$this->assertSame( 10, has_filter( 'heartbeat_received', [ $this->control, 'add_sync_status_to_heartbeat' ] ) );
+	}
+
+	public function test_heartbeat_returns_the_send_status_of_a_post_the_user_can_edit() {
+		$post_id = $this->factory()->post->create();
+		$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::CONTENT_REJECTION, 'Rejected.' );
+
+		$response = $this->control->add_sync_status_to_heartbeat(
+			[ 'existing' => 'value' ],
+			[ PostShareControl::HEARTBEAT_SYNC_STATUS_KEY => (string) $post_id ]
+		);
+
+		$this->assertSame( 'value', $response['existing'] );
+		$this->assertSame(
+			[
+				'syncOutcome' => $this->local_post_service->get_sync_outcome_for_display( $post_id ),
+				'shareStatus' => [
+					'is_shared'  => false,
+					'search_url' => '',
+				],
+			],
+			$response[ PostShareControl::HEARTBEAT_SYNC_STATUS_KEY ]
+		);
+		$this->assertSame( SyncOutcome::CONTENT_REJECTION, $response[ PostShareControl::HEARTBEAT_SYNC_STATUS_KEY ]['syncOutcome']['outcome'] );
+		$this->assertSame( SyncNotice::STATUS_ERROR, $response[ PostShareControl::HEARTBEAT_SYNC_STATUS_KEY ]['syncOutcome']['display_status'] );
+	}
+
+	public function test_heartbeat_returns_a_never_sent_post_without_a_sync_outcome() {
+		$post_id = $this->factory()->post->create();
+
+		$response = $this->control->add_sync_status_to_heartbeat(
+			[],
+			[ PostShareControl::HEARTBEAT_SYNC_STATUS_KEY => $post_id ]
+		);
+
+		$this->assertNull( $response[ PostShareControl::HEARTBEAT_SYNC_STATUS_KEY ]['syncOutcome'] );
+	}
+
+	public function test_heartbeat_is_unchanged_when_no_post_is_asked_for() {
+		$response = $this->control->add_sync_status_to_heartbeat( [ 'existing' => 'value' ], [ 'other' => 1 ] );
+
+		$this->assertSame( [ 'existing' => 'value' ], $response );
+	}
+
+	public function test_heartbeat_is_unchanged_for_a_post_the_user_cannot_edit() {
+		$post_id = $this->factory()->post->create();
+		$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::QUEUED );
+		wp_set_current_user( $this->factory()->user->create( [ 'role' => 'subscriber' ] ) );
+
+		$response = $this->control->add_sync_status_to_heartbeat(
+			[],
+			[ PostShareControl::HEARTBEAT_SYNC_STATUS_KEY => $post_id ]
+		);
+
+		$this->assertSame( [], $response );
+	}
+
+	public function test_enqueues_heartbeat_for_the_editor_scripts() {
+		$this->mock_connected_location();
+		wp_dequeue_script( 'heartbeat' );
+
+		$this->control->register();
+		$this->set_block_editor_screen( 'post' );
+		do_action( 'admin_enqueue_scripts' );
+
+		$this->assertTrue( wp_script_is( 'heartbeat', 'enqueued' ) );
 	}
 
 	public function test_registers_the_share_meta_as_a_rest_visible_boolean_off_by_default() {
@@ -302,11 +374,13 @@ class PostShareControlTest extends UnitTest {
 
 		$this->assertSame(
 			[
+				'postId'         => $post_id,
 				'isShareEnabled' => true,
 				'summary'        => 'My text',
-				'isShared'       => true,
-				'searchUrl'      => 'https://local.google.com/place?id=1&use=posts',
-				'restPath'       => "/wp/v2/posts/{$post_id}",
+				'shareStatus'    => [
+					'is_shared'  => true,
+					'search_url' => 'https://local.google.com/place?id=1&use=posts',
+				],
 				'syncOutcome'    => null,
 			],
 			$business_profile_data['businessProfilePost']
@@ -336,8 +410,13 @@ class PostShareControlTest extends UnitTest {
 		$data = $this->get_inline_script_data( 'gla-business-profile-share-meta-box', 'glaBusinessProfileData' );
 
 		$this->assertFalse( $data['businessProfilePost']['isShareEnabled'] );
-		$this->assertFalse( $data['businessProfilePost']['isShared'] );
-		$this->assertSame( '', $data['businessProfilePost']['searchUrl'] );
+		$this->assertSame(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			],
+			$data['businessProfilePost']['shareStatus']
+		);
 		$this->assertNull( $data['businessProfilePost']['syncOutcome'] );
 	}
 

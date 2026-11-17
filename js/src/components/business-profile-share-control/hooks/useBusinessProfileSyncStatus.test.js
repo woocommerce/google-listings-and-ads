@@ -1,19 +1,15 @@
 /**
  * External dependencies
  */
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
+import { doAction, hasAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
  */
 import useBusinessProfileSyncStatus from './useBusinessProfileSyncStatus';
-import useBoundedPolling from './useBoundedPolling';
 
-jest.mock( './useBoundedPolling', () =>
-	jest.fn().mockName( 'useBoundedPolling' )
-);
-
-const REST_PATH = '/wp/v2/posts/123';
+const POST_ID = 123;
 
 const queued = {
 	outcome: 'queued',
@@ -34,133 +30,156 @@ const shared = {
 	search_url: 'https://local.google.com/place?id=1&use=posts',
 };
 
-describe( 'useBusinessProfileSyncStatus', () => {
-	let start;
+/**
+ * Runs a Heartbeat request the way `heartbeat.js` does, and returns the data the request sent.
+ *
+ * @param {Object} [response] The Heartbeat response.
+ * @return {Object} The data sent with the request.
+ */
+function beat( response = {} ) {
+	const data = {};
 
-	/**
-	 * Sets what the mocked `useBoundedPolling` reports.
-	 *
-	 * @param {Object} [state] The polling state.
-	 */
-	const mockPolling = ( state = {} ) => {
-		useBoundedPolling.mockReturnValue( {
-			start,
-			data: undefined,
-			hasReachedMaxAttempts: false,
-			...state,
-		} );
-	};
-
-	beforeEach( () => {
-		jest.clearAllMocks();
-		start = jest.fn().mockName( 'start' );
-		mockPolling();
+	act( () => {
+		doAction( 'heartbeat.send', data );
+		doAction( 'heartbeat.tick', response );
 	} );
 
-	it( "returns the editor's status and doesn't check when the send isn't queued", () => {
+	return data;
+}
+
+/**
+ * Builds a Heartbeat response carrying a post's send status.
+ *
+ * @param {Object|null} syncOutcome The post's sync outcome.
+ * @param {Object} shareStatus The post's share status.
+ * @return {Object} The response.
+ */
+function statusResponse( syncOutcome, shareStatus ) {
+	return { gla_gbp_sync_status: { syncOutcome, shareStatus } };
+}
+
+/**
+ * Lets the timer for the first check after a save run.
+ */
+function runFirstCheckTimer() {
+	act( () => {
+		jest.advanceTimersByTime( 3000 );
+	} );
+}
+
+describe( 'useBusinessProfileSyncStatus', () => {
+	beforeEach( () => {
+		jest.useFakeTimers();
+		window.wp = {
+			heartbeat: { connectNow: jest.fn().mockName( 'connectNow' ) },
+		};
+	} );
+
+	afterEach( () => {
+		jest.useRealTimers();
+		delete window.wp;
+	} );
+
+	it( "returns the editor's status and doesn't ask Heartbeat when the send isn't queued", () => {
 		const { result } = renderHook( () =>
 			useBusinessProfileSyncStatus( {
-				restPath: REST_PATH,
+				postId: POST_ID,
 				syncOutcome: rejected,
 				shareStatus: shared,
 			} )
 		);
 
-		expect( start ).not.toHaveBeenCalled();
+		runFirstCheckTimer();
+
+		expect( window.wp.heartbeat.connectNow ).not.toHaveBeenCalled();
+		expect( beat() ).toEqual( {} );
 		expect( result.current ).toEqual( {
 			syncOutcome: rejected,
 			isShared: true,
 			searchUrl: shared.search_url,
-			isChecking: false,
 		} );
 	} );
 
-	it( 'checks the share fields in the edit context while the send is queued', () => {
+	it( "asks for the post's status on Heartbeat requests while the send is queued, starting 3 seconds after the save", () => {
 		const { result } = renderHook( () =>
 			useBusinessProfileSyncStatus( {
-				restPath: REST_PATH,
+				postId: POST_ID,
 				syncOutcome: queued,
 				shareStatus: notShared,
 			} )
 		);
 
-		expect( start ).toHaveBeenCalledTimes( 1 );
-		expect( useBoundedPolling ).toHaveBeenCalledWith( {
-			path: '/wp/v2/posts/123?context=edit&_fields=gla_gbp_sync_outcome%2Cgla_gbp_share_status',
-			intervalSeconds: 5,
-			maxAttempts: 18,
-			isDone: expect.any( Function ),
+		act( () => {
+			jest.advanceTimersByTime( 2999 );
 		} );
+		expect( window.wp.heartbeat.connectNow ).not.toHaveBeenCalled();
+
+		act( () => {
+			jest.advanceTimersByTime( 1 );
+		} );
+		expect( window.wp.heartbeat.connectNow ).toHaveBeenCalledTimes( 1 );
+		expect( beat() ).toEqual( { gla_gbp_sync_status: POST_ID } );
 		expect( result.current.syncOutcome ).toBe( queued );
-		expect( result.current.isChecking ).toBe( true );
 	} );
 
-	it( 'stops checking once the send settles', () => {
+	it( 'keeps asking while Heartbeat reports the send as still queued', () => {
 		renderHook( () =>
 			useBusinessProfileSyncStatus( {
-				restPath: REST_PATH,
+				postId: POST_ID,
 				syncOutcome: queued,
 				shareStatus: notShared,
 			} )
 		);
 
-		const { isDone } = useBoundedPolling.mock.calls[ 0 ][ 0 ];
+		beat( statusResponse( queued, notShared ) );
 
-		expect( isDone( { gla_gbp_sync_outcome: queued } ) ).toBe( false );
-		expect( isDone( { gla_gbp_sync_outcome: rejected } ) ).toBe( true );
-		expect( isDone( { gla_gbp_sync_outcome: null } ) ).toBe( true );
+		expect( beat() ).toEqual( { gla_gbp_sync_status: POST_ID } );
+		runFirstCheckTimer();
+		expect( window.wp.heartbeat.connectNow ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'returns the checked outcome and link once the send settles', () => {
-		const { result, rerender } = renderHook( () =>
+	it( 'returns the outcome and link from Heartbeat once the send settles, and stops asking', () => {
+		const { result } = renderHook( () =>
 			useBusinessProfileSyncStatus( {
-				restPath: REST_PATH,
+				postId: POST_ID,
 				syncOutcome: queued,
 				shareStatus: notShared,
 			} )
 		);
 
-		mockPolling( {
-			data: {
-				gla_gbp_sync_outcome: { outcome: 'success' },
-				gla_gbp_share_status: shared,
-			},
-		} );
-		rerender();
+		beat( statusResponse( { outcome: 'success' }, shared ) );
 
 		expect( result.current ).toEqual( {
 			syncOutcome: { outcome: 'success' },
 			isShared: true,
 			searchUrl: shared.search_url,
-			isChecking: false,
 		} );
+		expect( beat() ).toEqual( {} );
+		expect(
+			hasAction(
+				'heartbeat.tick',
+				'google-listings-and-ads/business-profile-sync-status'
+			)
+		).toBe( false );
 	} );
 
-	it( 'keeps the queued outcome, without checking, once the checks run out', () => {
-		const { result, rerender } = renderHook( () =>
+	it( "ignores Heartbeat responses without the post's status", () => {
+		const { result } = renderHook( () =>
 			useBusinessProfileSyncStatus( {
-				restPath: REST_PATH,
+				postId: POST_ID,
 				syncOutcome: queued,
 				shareStatus: notShared,
 			} )
 		);
 
-		mockPolling( {
-			data: {
-				gla_gbp_sync_outcome: queued,
-				gla_gbp_share_status: notShared,
-			},
-			hasReachedMaxAttempts: true,
-		} );
-		rerender();
+		beat( { 'wp-refresh-post-lock': {} } );
 
-		expect( result.current.syncOutcome ).toEqual( queued );
-		expect( result.current.isChecking ).toBe( false );
+		expect( result.current.syncOutcome ).toBe( queued );
 	} );
 
-	it( "uses a later save's own outcome, not data checked for an earlier one", () => {
+	it( "uses a later save's own outcome, not a status returned for an earlier one", () => {
 		let props = {
-			restPath: REST_PATH,
+			postId: POST_ID,
 			syncOutcome: queued,
 			shareStatus: notShared,
 			savedAt: '2026-11-11T16:42:44',
@@ -169,12 +188,7 @@ describe( 'useBusinessProfileSyncStatus', () => {
 			useBusinessProfileSyncStatus( props )
 		);
 
-		mockPolling( {
-			data: {
-				gla_gbp_sync_outcome: { outcome: 'success' },
-				gla_gbp_share_status: shared,
-			},
-		} );
+		beat( statusResponse( { outcome: 'success' }, shared ) );
 		props = {
 			...props,
 			syncOutcome: rejected,
@@ -186,11 +200,9 @@ describe( 'useBusinessProfileSyncStatus', () => {
 		expect( result.current.isShared ).toBe( false );
 	} );
 
-	it( 'checks again after a save that queues another send, even with the same queued outcome', () => {
-		// The editor's data store keeps the same object for a value that didn't change, so a
-		// post queued both before and after a save hands back the very same outcome object.
+	it( 'asks again after a save that queues another send', () => {
 		let props = {
-			restPath: REST_PATH,
+			postId: POST_ID,
 			syncOutcome: queued,
 			shareStatus: notShared,
 			savedAt: '2026-11-11T16:42:44',
@@ -199,37 +211,76 @@ describe( 'useBusinessProfileSyncStatus', () => {
 			useBusinessProfileSyncStatus( props )
 		);
 
-		mockPolling( {
-			data: {
-				gla_gbp_sync_outcome: rejected,
-				gla_gbp_share_status: notShared,
-			},
-		} );
-		rerender();
+		beat( statusResponse( rejected, notShared ) );
 		expect( result.current.syncOutcome ).toBe( rejected );
 
-		// Like the real `useBoundedPolling`, starting a new round clears the previous round's data.
-		start.mockImplementation( () => {
-			mockPolling();
-		} );
 		props = { ...props, savedAt: '2026-11-11T16:45:05' };
 		rerender();
 
-		expect( start ).toHaveBeenCalledTimes( 2 );
 		expect( result.current.syncOutcome ).toBe( queued );
-		expect( result.current.isChecking ).toBe( true );
+		runFirstCheckTimer();
+		expect( window.wp.heartbeat.connectNow ).toHaveBeenCalledTimes( 1 );
+		expect( beat() ).toEqual( { gla_gbp_sync_status: POST_ID } );
 	} );
 
-	it( "doesn't check without the post's REST route", () => {
-		const { result } = renderHook( () =>
+	it( "doesn't send the early check once the send settles before it", () => {
+		renderHook( () =>
 			useBusinessProfileSyncStatus( {
-				restPath: null,
+				postId: POST_ID,
 				syncOutcome: queued,
 				shareStatus: notShared,
 			} )
 		);
 
-		expect( start ).not.toHaveBeenCalled();
-		expect( result.current.isChecking ).toBe( false );
+		beat( statusResponse( { outcome: 'success' }, shared ) );
+		runFirstCheckTimer();
+
+		expect( window.wp.heartbeat.connectNow ).not.toHaveBeenCalled();
+	} );
+
+	it( 'stops asking, and drops the early check, when unmounted', () => {
+		const { unmount } = renderHook( () =>
+			useBusinessProfileSyncStatus( {
+				postId: POST_ID,
+				syncOutcome: queued,
+				shareStatus: notShared,
+			} )
+		);
+
+		unmount();
+		runFirstCheckTimer();
+
+		expect( beat() ).toEqual( {} );
+		expect( window.wp.heartbeat.connectNow ).not.toHaveBeenCalled();
+	} );
+
+	it( "doesn't ask without the post's ID", () => {
+		renderHook( () =>
+			useBusinessProfileSyncStatus( {
+				postId: 0,
+				syncOutcome: queued,
+				shareStatus: notShared,
+			} )
+		);
+
+		runFirstCheckTimer();
+
+		expect( window.wp.heartbeat.connectNow ).not.toHaveBeenCalled();
+		expect( beat() ).toEqual( {} );
+	} );
+
+	it( "keeps the editor's queued outcome where Heartbeat isn't loaded", () => {
+		delete window.wp;
+
+		const { result } = renderHook( () =>
+			useBusinessProfileSyncStatus( {
+				postId: POST_ID,
+				syncOutcome: queued,
+				shareStatus: notShared,
+			} )
+		);
+
+		expect( beat() ).toEqual( {} );
+		expect( result.current.syncOutcome ).toBe( queued );
 	} );
 } );

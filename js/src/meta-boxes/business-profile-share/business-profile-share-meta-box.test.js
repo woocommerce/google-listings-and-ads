@@ -2,23 +2,19 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { doAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
  */
 import BusinessProfileShareMetaBox from './business-profile-share-meta-box';
 import { recordGlaEvent } from '~/utils/tracks';
-import useBoundedPolling from '~/components/business-profile-share-control/hooks/useBoundedPolling';
 
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
-jest.mock(
-	'~/components/business-profile-share-control/hooks/useBoundedPolling',
-	() => jest.fn().mockName( 'useBoundedPolling' )
-);
 
 const location = {
 	title: 'Trailmark Athletics',
@@ -26,13 +22,29 @@ const location = {
 };
 
 const savedPost = {
+	postId: 123,
 	isShareEnabled: false,
 	summary: '',
-	isShared: false,
-	searchUrl: '',
-	restPath: '/wp/v2/posts/123',
+	shareStatus: { is_shared: false, search_url: '' },
 	syncOutcome: null,
 };
+
+/**
+ * Runs a Heartbeat request the way `heartbeat.js` does, and returns the data the request sent.
+ *
+ * @param {Object} [response] The Heartbeat response.
+ * @return {Object} The data sent with the request.
+ */
+function beat( response = {} ) {
+	const data = {};
+
+	act( () => {
+		doAction( 'heartbeat.send', data );
+		doAction( 'heartbeat.tick', response );
+	} );
+
+	return data;
+}
 
 /**
  * Sets up the page's title field and main content editor the way the Classic Editor screen does,
@@ -105,22 +117,18 @@ function getSubmittedValue( form, name ) {
 }
 
 describe( 'BusinessProfileShareMetaBox', () => {
-	let start;
-
 	beforeEach( () => {
 		recordGlaEvent.mockClear();
-		start = jest.fn().mockName( 'start' );
-		useBoundedPolling.mockReturnValue( {
-			start,
-			data: undefined,
-			hasReachedMaxAttempts: false,
-		} );
+		window.wp = {
+			heartbeat: { connectNow: jest.fn().mockName( 'connectNow' ) },
+		};
 	} );
 
 	afterEach( () => {
 		document.getElementById( 'title' )?.remove();
 		document.getElementById( 'content' )?.remove();
 		delete window.tinymce;
+		delete window.wp;
 	} );
 
 	it( 'shows the toggle off by default, naming the connected location, with no field', () => {
@@ -262,8 +270,10 @@ describe( 'BusinessProfileShareMetaBox', () => {
 
 	it( "explains that changes aren't sent to Google and links to the post on a shared post", () => {
 		renderMetaBox( {
-			isShared: true,
-			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+			shareStatus: {
+				is_shared: true,
+				search_url: 'https://local.google.com/place?id=1&use=posts',
+			},
 		} );
 
 		expect(
@@ -298,42 +308,47 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'checks on a queued send and says the post is on its way', () => {
+	it( 'asks Heartbeat about a queued send and says the post is on its way', () => {
+		jest.useFakeTimers();
 		renderMetaBox( { syncOutcome: { outcome: 'queued' } } );
 
-		expect( start ).toHaveBeenCalledTimes( 1 );
-		expect( useBoundedPolling.mock.calls[ 0 ][ 0 ].path ).toMatch(
-			/^\/wp\/v2\/posts\/123\?/
-		);
+		act( () => {
+			jest.advanceTimersByTime( 3000 );
+		} );
+		jest.useRealTimers();
+
+		expect( window.wp.heartbeat.connectNow ).toHaveBeenCalledTimes( 1 );
+		expect( beat() ).toEqual( { gla_gbp_sync_status: 123 } );
 		expect(
 			screen.getByText( 'Sending to Google Business Profile…' )
 		).toBeInTheDocument();
 	} );
 
-	it( "shows a failed send's message once the send settles", () => {
-		useBoundedPolling.mockReturnValue( {
-			start,
-			data: {
-				gla_gbp_sync_outcome: {
+	it( "shows a failed send's message once Heartbeat reports the send settled", () => {
+		renderMetaBox( { syncOutcome: { outcome: 'queued' } } );
+
+		beat( {
+			gla_gbp_sync_status: {
+				syncOutcome: {
 					outcome: 'request-failure',
 					display_message: 'Google couldn’t be reached.',
 					display_status: 'error',
 				},
-				gla_gbp_share_status: { is_shared: false, search_url: '' },
+				shareStatus: { is_shared: false, search_url: '' },
 			},
-			hasReachedMaxAttempts: false,
 		} );
-
-		renderMetaBox( { syncOutcome: { outcome: 'queued' } } );
 
 		expect(
 			screen.getByText( 'Google couldn’t be reached.', {
 				selector: '.components-notice__content',
 			} )
 		).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Sending to Google Business Profile…' )
+		).not.toBeInTheDocument();
 	} );
 
-	it( "shows a saved failure's message on load without checking", () => {
+	it( "shows a saved failure's message on load without asking Heartbeat", () => {
 		renderMetaBox( {
 			syncOutcome: {
 				outcome: 'content-rejection',
@@ -342,7 +357,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 			},
 		} );
 
-		expect( start ).not.toHaveBeenCalled();
+		expect( beat() ).toEqual( {} );
 		expect(
 			screen.getByText( 'This update was rejected by Google.', {
 				selector: '.components-notice__content',

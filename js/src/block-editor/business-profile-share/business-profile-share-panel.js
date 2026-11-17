@@ -10,9 +10,9 @@ import { useRegistry } from '@wordpress/data';
  */
 import { glaBusinessProfileData } from '~/constants';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
+import useBlockEditorSyncStatus from './hooks/useBlockEditorSyncStatus';
 import getBodyTextFromBlocks from './utils/getBodyTextFromBlocks';
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
-import useBusinessProfileSyncStatus from '~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus';
 import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from './constants';
 
 /**
@@ -23,23 +23,9 @@ import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from './constants';
  * @return {JSX.Element|null} The panel, or `null` when no location is connected.
  */
 export default function BusinessProfileSharePanel() {
-	const {
-		isShareEnabled,
-		summary,
-		shareStatus,
-		syncOutcome: savedSyncOutcome,
-		restPath,
-		savedAt,
-		setShareEnabled,
-		setSummary,
-	} = useBusinessProfileSharePost();
-	const { syncOutcome, isShared, searchUrl, isChecking } =
-		useBusinessProfileSyncStatus( {
-			restPath,
-			syncOutcome: savedSyncOutcome,
-			shareStatus,
-			savedAt,
-		} );
+	const { isShareEnabled, summary, setShareEnabled, setSummary } =
+		useBusinessProfileSharePost();
+	const { syncOutcome, isShared, searchUrl } = useBlockEditorSyncStatus();
 	const registry = useRegistry();
 
 	const location = glaBusinessProfileData?.businessProfileLocation;
@@ -76,7 +62,6 @@ export default function BusinessProfileSharePanel() {
 				searchUrl={ searchUrl }
 				isShared={ isShared }
 				syncOutcome={ syncOutcome }
-				isCheckingSync={ isChecking }
 			/>
 		</PluginDocumentSettingPanel>
 	);

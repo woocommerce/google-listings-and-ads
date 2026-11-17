@@ -15,7 +15,7 @@ import {
  */
 import BusinessProfileSharePanel from './business-profile-share-panel';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
-import useBusinessProfileSyncStatus from '~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus';
+import useBlockEditorSyncStatus from './hooks/useBlockEditorSyncStatus';
 import { glaBusinessProfileData } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 
@@ -40,9 +40,8 @@ jest.mock( '~/utils/tracks', () => ( {
 jest.mock( './hooks/useBusinessProfileSharePost', () =>
 	jest.fn().mockName( 'useBusinessProfileSharePost' )
 );
-jest.mock(
-	'~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus',
-	() => jest.fn().mockName( 'useBusinessProfileSyncStatus' )
+jest.mock( './hooks/useBlockEditorSyncStatus', () =>
+	jest.fn().mockName( 'useBlockEditorSyncStatus' )
 );
 
 /**
@@ -54,10 +53,6 @@ function mockPost( overrides = {} ) {
 	useBusinessProfileSharePost.mockReturnValue( {
 		isShareEnabled: false,
 		summary: '',
-		shareStatus: null,
-		syncOutcome: null,
-		restPath: '/wp/v2/posts/240',
-		savedAt: '2026-11-11T16:42:44',
 		setShareEnabled: jest.fn(),
 		setSummary: jest.fn(),
 		...overrides,
@@ -70,11 +65,10 @@ function mockPost( overrides = {} ) {
  * @param {Object} [overrides] Values to override.
  */
 function mockSyncStatus( overrides = {} ) {
-	useBusinessProfileSyncStatus.mockReturnValue( {
+	useBlockEditorSyncStatus.mockReturnValue( {
 		syncOutcome: null,
 		isShared: false,
 		searchUrl: '',
-		isChecking: false,
 		...overrides,
 	} );
 }
@@ -268,26 +262,16 @@ describe( 'BusinessProfileSharePanel', () => {
 		expect( getBlocks ).not.toHaveBeenCalled();
 	} );
 
-	it( "keeps the saved post's send status current, and shows it", () => {
+	it( "shows the post's current send status", () => {
 		glaBusinessProfileData.businessProfileLocation = {
 			title: 'Trailmark Athletics',
 		};
-		const savedSyncOutcome = { outcome: 'queued' };
-		const shareStatus = { is_shared: false, search_url: '' };
-		mockPost( { syncOutcome: savedSyncOutcome, shareStatus } );
-		mockSyncStatus( {
-			syncOutcome: savedSyncOutcome,
-			isChecking: true,
-		} );
+		mockPost();
+		mockSyncStatus( { syncOutcome: { outcome: 'queued' } } );
 
 		renderPanel();
 
-		expect( useBusinessProfileSyncStatus ).toHaveBeenCalledWith( {
-			restPath: '/wp/v2/posts/240',
-			syncOutcome: savedSyncOutcome,
-			shareStatus,
-			savedAt: '2026-11-11T16:42:44',
-		} );
+		expect( useBlockEditorSyncStatus ).toHaveBeenCalledWith();
 		expect(
 			screen.getByText( 'Sending to Google Business Profile…' )
 		).toBeInTheDocument();

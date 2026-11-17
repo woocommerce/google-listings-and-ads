@@ -15,6 +15,10 @@ import SyncStatus from './sync-status';
 import './index.scss';
 
 /**
+ * @typedef {import('./types').SyncOutcome} SyncOutcome
+ */
+
+/**
  * Turning the "Share on my Business Profile" toggle on or off.
  *
  * @event gla_google_business_profile_share_toggle_click
@@ -47,8 +51,7 @@ import './index.scss';
  * @param {() => {title: string, body: string}} props.getLivePostContent Returns the post's title and body right now, including unsaved edits, as plain text.
  * @param {string} [props.searchUrl] The post's link on Google, once Google provides one.
  * @param {boolean} [props.isShared] Whether the post has already been shared to Google.
- * @param {import('./hooks/useBusinessProfileSyncStatus').SyncOutcome|null} [props.syncOutcome] The post's latest sync outcome.
- * @param {boolean} [props.isCheckingSync] Whether a queued send is still being checked on.
+ * @param {SyncOutcome|null} [props.syncOutcome] The post's latest sync outcome.
  * @return {JSX.Element} The controls.
  *
  * @fires gla_google_business_profile_share_toggle_click with `{ context, status, is_shared }`.
@@ -65,7 +68,6 @@ export default function BusinessProfileShareControl( {
 	searchUrl,
 	isShared = false,
 	syncOutcome = null,
-	isCheckingSync = false,
 } ) {
 	const handleShareEnabledChange = ( nextIsShareEnabled ) => {
 		recordGlaEvent( 'gla_google_business_profile_share_toggle_click', {
@@ -122,10 +124,7 @@ export default function BusinessProfileShareControl( {
 				onChange={ handleShareEnabledChange }
 				__nextHasNoMarginBottom
 			/>
-			<SyncStatus
-				syncOutcome={ syncOutcome }
-				isChecking={ isCheckingSync }
-			/>
+			<SyncStatus syncOutcome={ syncOutcome } />
 			{ searchUrl && (
 				<ExternalLink
 					href={ searchUrl }

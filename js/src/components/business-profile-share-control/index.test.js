@@ -230,11 +230,10 @@ describe( 'BusinessProfileShareControl', () => {
 		);
 	} );
 
-	it( 'says a queued post is on its way while it is checked on', () => {
+	it( 'says a queued post is on its way', () => {
 		renderControl( {
 			isShareEnabled: true,
 			syncOutcome: { outcome: 'queued' },
-			isCheckingSync: true,
 		} );
 
 		expect(

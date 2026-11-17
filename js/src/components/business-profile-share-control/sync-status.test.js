@@ -12,29 +12,15 @@ import SyncStatus from './sync-status';
 const SENDING_TEXT = 'Sending to Google Business Profile…';
 
 describe( 'SyncStatus', () => {
-	it( 'says the post is on its way, with a spinner, while a queued send is being checked', () => {
+	it( 'says the post is on its way, with a spinner, while the send is queued', () => {
 		const { container } = render(
-			<SyncStatus syncOutcome={ { outcome: 'queued' } } isChecking />
+			<SyncStatus syncOutcome={ { outcome: 'queued' } } />
 		);
 
 		expect( screen.getByText( SENDING_TEXT ) ).toBeInTheDocument();
 		expect(
 			container.querySelector( '.components-spinner' )
 		).toBeInTheDocument();
-	} );
-
-	it( 'keeps saying the post is on its way, without a spinner, once checking stops', () => {
-		const { container } = render(
-			<SyncStatus
-				syncOutcome={ { outcome: 'queued' } }
-				isChecking={ false }
-			/>
-		);
-
-		expect( screen.getByText( SENDING_TEXT ) ).toBeInTheDocument();
-		expect(
-			container.querySelector( '.components-spinner' )
-		).not.toBeInTheDocument();
 	} );
 
 	it.each( [ 'error', 'warning' ] )(
@@ -47,7 +33,6 @@ describe( 'SyncStatus', () => {
 						display_message: 'Your profile is unverified.',
 						display_status: status,
 					} }
-					isChecking={ false }
 				/>
 			);
 
@@ -69,7 +54,6 @@ describe( 'SyncStatus', () => {
 					outcome: 'request-failure',
 					display_message: 'Google couldn’t be reached.',
 				} }
-				isChecking={ false }
 			/>
 		);
 
@@ -83,7 +67,7 @@ describe( 'SyncStatus', () => {
 		[ 'shared with nothing to report', { outcome: 'success' } ],
 	] )( 'renders nothing for a post %s', ( label, syncOutcome ) => {
 		const { container } = render(
-			<SyncStatus syncOutcome={ syncOutcome } isChecking={ false } />
+			<SyncStatus syncOutcome={ syncOutcome } />
 		);
 
 		expect( container ).toBeEmptyDOMElement();
