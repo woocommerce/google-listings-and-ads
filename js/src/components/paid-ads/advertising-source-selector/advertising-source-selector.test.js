@@ -37,13 +37,13 @@ describe( 'AdvertisingSourceSelector', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				'Your products synced to Merchant Center, or a page from your store.'
+				'Choose between your products or a page from your store.'
 			)
 		).toBeInTheDocument();
 		expect( screen.getByLabelText( 'My products' ) ).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				"This campaign will use information from the product feed you've synced with Google Merchant Center."
+				'This campaign will use information from the product feed you’ve synced with Google Merchant Center.'
 			)
 		).toBeInTheDocument();
 		expect(
