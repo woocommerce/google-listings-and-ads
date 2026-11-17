@@ -396,7 +396,7 @@ class PluginUpdateTest extends UnitTest {
 	}
 
 	public function test_retry_attempts_only_the_jobs_that_are_due() {
-		$recent = time() - 60;
+		$recent                                = time() - 60;
 		$this->stored_options[ self::PENDING ] = [
 			CleanupProductTargetCountriesJob::class => $recent,
 			UpdateAllProducts::class                => time() - HOUR_IN_SECONDS - 1,
