@@ -309,8 +309,8 @@ class CyoSurveyEvaluatorTest extends UnitTest {
 	}
 
 	/**
-	 * AE6: a failed report hides both surveys, caches "unknown" for 15 minutes, and is not retried
-	 * inside that window by either evaluator.
+	 * AE6: a failed report hides both surveys, is reported through woocommerce_gla_exception,
+	 * caches "unknown" for an hour, and is not retried inside that window by either evaluator.
 	 *
 	 * @dataProvider report_failure_provider
 	 *
@@ -332,11 +332,25 @@ class CyoSurveyEvaluatorTest extends UnitTest {
 			2
 		);
 
+		$reported = [];
+		add_action(
+			'woocommerce_gla_exception',
+			function ( $exception, $method ) use ( &$reported ) {
+				$reported[] = [ $exception, $method ];
+			},
+			10,
+			2
+		);
+
 		$this->assertFalse( $this->spend_evaluator( $now )->should_show() );
-		$this->assertSame( [ [ 'unknown', 15 * MINUTE_IN_SECONDS ] ], $written );
+		$this->assertSame( [ [ 'unknown', HOUR_IN_SECONDS ] ], $written );
+		$this->assertCount( 1, $reported );
+		$this->assertSame( $failure, $reported[0][0] );
+		$this->assertStringEndsWith( '::fetch_spend_status', $reported[0][1] );
 
 		$this->assertFalse( $this->no_spend_evaluator( $now )->should_show() );
 		$this->assertFalse( $this->spend_evaluator( $now )->should_show() );
+		$this->assertCount( 1, $reported );
 	}
 
 	/**
@@ -390,7 +404,7 @@ class CyoSurveyEvaluatorTest extends UnitTest {
 
 		$this->assertFalse( $this->spend_evaluator( $now )->should_show() );
 
-		// Simulate the 15-minute "unknown" entry expiring.
+		// Simulate the "unknown" entry expiring.
 		delete_transient( NotificationCacheKeys::for_site( 'cyo-survey' ) );
 
 		$this->assertTrue( $this->spend_evaluator( $now )->should_show() );

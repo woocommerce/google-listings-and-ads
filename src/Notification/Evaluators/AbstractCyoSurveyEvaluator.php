@@ -188,12 +188,10 @@ abstract class AbstractCyoSurveyEvaluator implements SiteScopedNotificationEvalu
 			return $cached;
 		}
 
+		// Failures are cached for the same hour as results, matching the other notification
+		// evaluators, so a failing Ads account is not queried on every admin page load.
 		$status = $this->fetch_spend_status( $completed_at, $now );
-		set_transient(
-			$cache_key,
-			$status,
-			self::SPEND_STATUS_UNKNOWN === $status ? 15 * MINUTE_IN_SECONDS : HOUR_IN_SECONDS
-		);
+		set_transient( $cache_key, $status, HOUR_IN_SECONDS );
 
 		return $status;
 	}
@@ -221,6 +219,8 @@ abstract class AbstractCyoSurveyEvaluator implements SiteScopedNotificationEvalu
 				]
 			);
 		} catch ( Throwable $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
 			return self::SPEND_STATUS_UNKNOWN;
 		}
 
