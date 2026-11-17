@@ -65,14 +65,12 @@ class DeleteLocalPost extends AbstractActionSchedulerJob {
 	}
 
 	/**
-	 * Delete the post's Google Business Profile local post -- the same call the trigger used to
-	 * make inline. Any failure propagates uncaught: {@see LocalPostService::delete()} already
-	 * reports it via `woocommerce_gla_exception` before rethrowing, and letting it keep
-	 * propagating lets ActionScheduler's own reschedule-and-log see it too.
+	 * Delete the post's Google Business Profile local post. Failures propagate, so Action
+	 * Scheduler reschedules and logs them.
 	 *
 	 * @param array $args The WordPress post ID and its captured stored result.
 	 */
-	public function process_items( $args ) {
+	public function process_items( array $args ) {
 		[ $post_id, $result ] = $args;
 
 		$this->local_post_service->delete( $post_id, $result );
