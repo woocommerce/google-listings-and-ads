@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocal
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncNotice;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -633,11 +634,14 @@ class LocalPostServiceTest extends UnitTest {
 			new BusinessProfileApiException( 404, [ 'message' => 'Unsupported path' ], __METHOD__ )
 		);
 
+		$before = did_action( 'woocommerce_gla_exception' );
+
 		try {
 			$this->service->delete( $post->ID );
 			$this->fail( 'Expected a BusinessProfileApiException.' );
 		} catch ( BusinessProfileApiException $e ) {
 			$this->assertSame( $stored_result, get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+			$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
 		}
 	}
 
@@ -656,11 +660,38 @@ class LocalPostServiceTest extends UnitTest {
 			new BusinessProfileApiException( 503, [], __METHOD__ )
 		);
 
+		$before = did_action( 'woocommerce_gla_exception' );
+
 		try {
 			$this->service->delete( $post->ID );
 			$this->fail( 'Expected a BusinessProfileApiException.' );
 		} catch ( BusinessProfileApiException $e ) {
 			$this->assertSame( $stored_result, get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+			$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
+		}
+	}
+
+	public function test_delete_reports_and_rethrows_a_non_api_failure() {
+		$post          = $this->factory()->post->create_and_get();
+		$stored_result = [
+			'account_id'     => '111',
+			'location_id'    => '222',
+			'google_post_id' => '333',
+			'search_url'     => 'https://g.page/r/abc',
+			'wp_post_id'     => $post->ID,
+		];
+		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $stored_result );
+
+		$this->client->method( 'delete' )->willThrowException( AccountReconnect::jetpack_disconnected() );
+
+		$before = did_action( 'woocommerce_gla_exception' );
+
+		try {
+			$this->service->delete( $post->ID );
+			$this->fail( 'Expected an AccountReconnect.' );
+		} catch ( AccountReconnect $e ) {
+			$this->assertSame( $stored_result, get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+			$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
 		}
 	}
 
