@@ -421,6 +421,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 * Disconnecting promises the merchant that posts they already shared stay on Google, and
 	 * clearing the result lets the merchant share the post again after a later reconnect.
 	 *
+	 * A genuine failure fires `woocommerce_gla_exception` before rethrowing, so a caller that
+	 * can't catch it directly -- a deferred job included -- still gets it reported.
+	 *
 	 * @param int        $post_id
 	 * @param array|null $result The stored account/location/post-ID triple, if already known to
 	 *                           the caller. Read from post meta when omitted.
@@ -452,8 +455,12 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			$google_status = $exception->get_response_body()['error']['status'] ?? '';
 
 			if ( 404 !== $exception->get_http_status() || 'NOT_FOUND' !== $google_status ) {
+				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 				throw $exception;
 			}
+		} catch ( Exception $failure ) {
+			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+			throw $failure;
 		}
 
 		delete_post_meta( $post_id, self::RESULT_META_KEY );
