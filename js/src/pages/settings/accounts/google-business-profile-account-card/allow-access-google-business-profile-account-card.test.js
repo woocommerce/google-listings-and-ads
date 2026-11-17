@@ -4,6 +4,7 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -22,12 +23,24 @@ jest.mock( '~/utils/handleError', () => ( {
 jest.mock( '~/utils/urls', () => ( {
 	redirectTo: jest.fn().mockName( 'redirectTo' ),
 } ) );
+jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.requireActual( '@woocommerce/navigation' ),
+	getQuery: jest.fn().mockName( 'getQuery' ),
+	getNewPath: jest.fn().mockName( 'getNewPath' ),
+	getHistory: jest.fn().mockName( 'getHistory' ),
+} ) );
 
 describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
 	let fetchGoogleBusinessProfileConnect;
+	let replace;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
+
+		replace = jest.fn().mockName( 'replace' );
+		getHistory.mockReturnValue( { replace } );
+		getNewPath.mockReturnValue( 'cleaned-path' );
+		getQuery.mockReturnValue( {} );
 
 		fetchGoogleBusinessProfileConnect = jest
 			.fn()
@@ -65,6 +78,69 @@ describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
 		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
 			path: '/wc/gla/business-profile/connect?login_hint=merchant%40example.com',
 		} );
+	} );
+
+	it( 'leaves the URL alone on a normal visit', () => {
+		render( <AllowAccessGoogleBusinessProfileAccountCard /> );
+
+		expect( replace ).not.toHaveBeenCalled();
+	} );
+
+	it( "ignores a return from another service's connect flow", () => {
+		getQuery.mockReturnValue( { 'google-service': 'search-console' } );
+
+		render( <AllowAccessGoogleBusinessProfileAccountCard /> );
+
+		expect(
+			screen.getByText(
+				'By connecting you are granting Google Business Profile access.',
+				{ selector: 'p' }
+			)
+		).toBeInTheDocument();
+		expect( replace ).not.toHaveBeenCalled();
+	} );
+
+	it( 'says access was not granted on a return from Google, keeps "Connect", and removes the query arg', () => {
+		getQuery.mockReturnValue( { 'google-service': 'business-profile' } );
+
+		render( <AllowAccessGoogleBusinessProfileAccountCard /> );
+
+		expect(
+			screen.getByText( "Google Business Profile access wasn't granted" )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'Click Connect to try again, and allow access when Google asks.',
+				{ selector: 'p' }
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				'By connecting you are granting Google Business Profile access.'
+			)
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Connect' } )
+		).toBeEnabled();
+		expect( getNewPath ).toHaveBeenCalledWith( {
+			'google-service': undefined,
+		} );
+		expect( replace ).toHaveBeenCalledWith( 'cleaned-path' );
+	} );
+
+	it( 'keeps saying access was not granted once the query arg is removed', () => {
+		getQuery.mockReturnValue( { 'google-service': 'business-profile' } );
+		const { rerender } = render(
+			<AllowAccessGoogleBusinessProfileAccountCard />
+		);
+
+		getQuery.mockReturnValue( {} );
+		rerender( <AllowAccessGoogleBusinessProfileAccountCard /> );
+
+		expect(
+			screen.getByText( "Google Business Profile access wasn't granted" )
+		).toBeInTheDocument();
+		expect( replace ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'omits login_hint when the connected account email is not yet known', () => {

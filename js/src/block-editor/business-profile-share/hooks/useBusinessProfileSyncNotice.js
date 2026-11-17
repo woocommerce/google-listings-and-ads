@@ -21,7 +21,7 @@ const NOTICE_ID = 'gla-business-profile-sync-notice';
  * success has no message to show. Loading or reloading the editor shows nothing.
  */
 export default function useBusinessProfileSyncNotice() {
-	const { createNotice } = useDispatchCoreNotices();
+	const { createNotice, removeNotice } = useDispatchCoreNotices();
 	const wasSaving = useRef( false );
 	const wasAutosaving = useRef( false );
 
@@ -57,11 +57,14 @@ export default function useBusinessProfileSyncNotice() {
 
 		wasSaving.current = false;
 
-		if (
-			wasAutosaving.current ||
-			! didSaveSucceed ||
-			! outcome?.display_message
-		) {
+		if ( wasAutosaving.current || ! didSaveSucceed ) {
+			return;
+		}
+
+		if ( ! outcome?.display_message ) {
+			// Clear an earlier save's snackbar (explicitDismiss keeps it open): this save either
+			// reached Google successfully or attempted nothing, so that snackbar no longer applies.
+			removeNotice( NOTICE_ID );
 			return;
 		}
 
@@ -70,5 +73,12 @@ export default function useBusinessProfileSyncNotice() {
 			type: 'snackbar',
 			explicitDismiss: true,
 		} );
-	}, [ isSaving, isAutosaving, didSaveSucceed, outcome, createNotice ] );
+	}, [
+		isSaving,
+		isAutosaving,
+		didSaveSucceed,
+		outcome,
+		createNotice,
+		removeNotice,
+	] );
 }
