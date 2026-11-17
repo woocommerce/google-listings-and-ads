@@ -22,9 +22,9 @@ defined( 'ABSPATH' ) || exit;
  * Runs update jobs when the plugin is updated.
  *
  * A job that can't be scheduled during the upgrade (e.g. a product re-sync while the store
- * isn't ready to sync with Merchant Center) is kept in an option and retried on later admin
- * requests until it is scheduled. The installer advances the DB version regardless, so
- * without this the job would never run.
+ * isn't ready to sync with Merchant Center) is kept in an option and retried from later admin
+ * requests, at most once per RETRY_INTERVAL, until it is scheduled. The installer advances the
+ * DB version regardless, so without this the job would never run.
  *
  * @since 1.1.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update
@@ -33,6 +33,13 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 
 	use MerchantCenterAwareTrait;
 	use OptionsAwareTrait;
+
+	/**
+	 * Minimum time between two attempts to schedule a pending job.
+	 *
+	 * @var int
+	 */
+	protected const RETRY_INTERVAL = HOUR_IN_SECONDS;
 
 	/**
 	 * @var JobRepository
@@ -85,26 +92,29 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	/**
 	 * Run installation logic for this class.
 	 *
+	 * Also attempts the jobs still pending from earlier upgrades, and creates the pending jobs
+	 * option on stores that don't have it yet, so retry_pending_jobs() reads it from the
+	 * autoloaded options instead of querying the database for a missing option.
+	 *
 	 * @param string $old_version Previous version before updating.
 	 * @param string $new_version Current version after updating.
 	 */
 	public function install( string $old_version, string $new_version ): void {
-		$jobs = [];
+		$jobs = array_keys( $this->get_pending_jobs() );
 		foreach ( $this->updates as $version => $version_jobs ) {
 			if ( version_compare( $old_version, $version, '<' ) ) {
 				$jobs = array_merge( $jobs, $version_jobs );
 			}
 		}
 
-		if ( ! empty( $jobs ) ) {
-			$this->schedule_jobs( $jobs );
-		}
+		$this->schedule_jobs( $jobs );
 	}
 
 	/**
 	 * Retry the update jobs that couldn't be scheduled during a previous upgrade.
 	 *
-	 * Cheap when nothing is pending: a single (autoloaded) option read.
+	 * Runs on every admin request. With nothing pending it costs one read of the autoloaded
+	 * option (created by install()). A pending job is retried at most once per RETRY_INTERVAL.
 	 *
 	 * @since x.x.x
 	 */
@@ -113,43 +123,83 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 			return;
 		}
 
-		if ( empty( $this->options->get( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ) ) ) {
+		$stored = $this->options->get( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS );
+		if ( empty( $stored ) ) {
 			return;
 		}
 
-		// Also clears an option left with no usable jobs.
-		$this->schedule_jobs( [] );
+		$now     = time();
+		$pending = $this->get_pending_jobs();
+		$due     = array_keys(
+			array_filter(
+				$pending,
+				function ( int $attempted_at ) use ( $now ) {
+					return $now - $attempted_at >= self::RETRY_INTERVAL;
+				}
+			)
+		);
+
+		// Nothing due, and the stored value is valid: nothing to do until the next interval.
+		if ( empty( $due ) && $pending === $stored ) {
+			return;
+		}
+
+		$this->schedule_jobs( $due );
 	}
 
 	/**
-	 * Schedules a list of jobs, together with any still pending from a previous upgrade.
+	 * Schedules a list of jobs, tracking those that can't be scheduled yet.
 	 *
-	 * Each job is scheduled at most once, even when several versions ask for it. Jobs that
-	 * can't be scheduled yet are stored to be retried later, unless Merchant Center isn't
-	 * connected: then nothing was synced that needs migrating, and connecting runs a full sync.
+	 * Each job is attempted at most once, even when several versions ask for it. A job that
+	 * can't be scheduled is stored with the time of the attempt, to be retried later. Nothing
+	 * is kept when Merchant Center setup isn't complete: no products were synced that need
+	 * migrating, and completing setup runs a full sync.
 	 *
 	 * @param array $jobs List of jobs
 	 */
 	protected function schedule_jobs( array $jobs ): void {
-		$pending = array_values( array_unique( array_merge( $this->get_pending_jobs(), $jobs ) ) );
+		$jobs           = array_values( array_unique( $jobs ) );
+		$pending        = $this->get_pending_jobs();
+		$setup_complete = $this->merchant_center->is_setup_complete();
+		$now            = time();
 
-		$unscheduled = [];
-		foreach ( $pending as $job ) {
+		// Stamp the pending jobs about to be attempted first, so a concurrent admin request
+		// sees them as not due and doesn't schedule them a second time.
+		$updated = $pending;
+		foreach ( array_intersect( $jobs, array_keys( $pending ) ) as $job ) {
+			$updated[ $job ] = $now;
+		}
+		$this->save_pending_jobs( $updated );
+
+		foreach ( $jobs as $job ) {
 			try {
-				if ( ! $this->schedule_job( $job ) ) {
-					$unscheduled[] = $job;
-				}
+				$scheduled = $this->schedule_job( $job );
 			} catch ( JobException $e ) {
 				// The job doesn't exist (anymore), so retrying it can't succeed.
 				do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+				unset( $updated[ $job ] );
+				continue;
+			}
+
+			if ( $scheduled ) {
+				if ( isset( $updated[ $job ] ) ) {
+					$this->log( sprintf( 'Upgrade job %s was scheduled after waiting for the store to be ready to sync.', $job ) );
+				}
+				unset( $updated[ $job ] );
+			} elseif ( $setup_complete ) {
+				if ( ! isset( $updated[ $job ] ) ) {
+					$this->log( sprintf( 'Upgrade job %s could not be scheduled yet (the store is not ready to sync, or the job is already running). It will be retried from admin pages, at most once an hour.', $job ) );
+				}
+				$updated[ $job ] = $now;
 			}
 		}
 
-		if ( ! empty( $unscheduled ) && ! $this->merchant_center->is_connected() ) {
-			$unscheduled = [];
+		if ( ! $setup_complete && ! empty( $updated ) ) {
+			$this->log( sprintf( 'Discarded pending upgrade jobs because Merchant Center setup is not complete: %s.', implode( ', ', array_keys( $updated ) ) ) );
+			$updated = [];
 		}
 
-		$this->set_pending_jobs( $unscheduled );
+		$this->save_pending_jobs( $updated );
 	}
 
 	/**
@@ -164,7 +214,8 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 *
 	 * @param string $job Job class name.
 	 *
-	 * @return bool Whether the job was scheduled.
+	 * @return bool Whether the job was scheduled. A job that isn't an Action Scheduler job
+	 *              can't report this, so it is scheduled and treated as scheduled.
 	 *
 	 * @throws JobException If the job doesn't exist.
 	 */
@@ -190,40 +241,49 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 *
 	 * @since x.x.x
 	 *
-	 * @return string[]
+	 * @return int[] Time of the last attempt to schedule each job, keyed by job class.
 	 */
 	protected function get_pending_jobs(): array {
-		$pending = $this->options->get( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, [] );
-		if ( ! is_array( $pending ) || empty( $pending ) ) {
+		$value = $this->options->get( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS );
+		if ( ! is_array( $value ) ) {
 			return [];
 		}
 
 		$known = array_merge( ...array_values( $this->updates ) );
+		$jobs  = [];
+		foreach ( $value as $job => $attempted_at ) {
+			if ( in_array( $job, $known, true ) ) {
+				$jobs[ $job ] = (int) $attempted_at;
+			}
+		}
 
-		$pending = array_filter( $pending, 'is_string' );
-
-		return array_values( array_intersect( array_unique( $pending ), $known ) );
+		return $jobs;
 	}
 
 	/**
-	 * Store the update jobs still waiting to be scheduled, deleting the option when there are none.
+	 * Store the update jobs still waiting to be scheduled.
+	 *
+	 * The option is kept even when empty, so it stays autoloaded and the check in
+	 * retry_pending_jobs() doesn't query the database for a missing option. It is only written
+	 * when it changes: Options::update() fires an options-updated hook on every call, and this
+	 * runs from admin requests while a job is pending.
 	 *
 	 * @since x.x.x
 	 *
-	 * @param string[] $jobs Job class names.
+	 * @param int[] $jobs Time of the last attempt to schedule each job, keyed by job class.
 	 */
-	protected function set_pending_jobs( array $jobs ): void {
-		$stored = $this->options->get( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, [] );
-
-		if ( empty( $jobs ) ) {
-			if ( ! empty( $stored ) ) {
-				$this->options->delete( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS );
-			}
-			return;
-		}
-
-		if ( $stored !== $jobs ) {
+	protected function save_pending_jobs( array $jobs ): void {
+		if ( $this->options->get( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ) !== $jobs ) {
 			$this->options->update( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, $jobs );
 		}
+	}
+
+	/**
+	 * Log a message about the upgrade jobs.
+	 *
+	 * @param string $message
+	 */
+	protected function log( string $message ): void {
+		do_action( 'woocommerce_gla_debug_message', $message, __CLASS__ );
 	}
 }

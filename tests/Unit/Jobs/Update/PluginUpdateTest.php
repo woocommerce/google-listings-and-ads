@@ -20,6 +20,8 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class PluginUpdateTest extends UnitTest {
 
+	protected const PENDING = OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS;
+
 	/** @var MockObject|JobRepository $job_repository */
 	protected $job_repository;
 
@@ -32,16 +34,16 @@ class PluginUpdateTest extends UnitTest {
 	/** @var array In-memory option storage backing the options mock. */
 	protected $stored_options = [];
 
+	/** @var string[] Messages sent to woocommerce_gla_debug_message. */
+	protected $logged = [];
+
 	/** @var PluginUpdate $plugin_update */
 	protected $plugin_update;
 
 	public function setUp(): void {
 		parent::setUp();
-		$this->job_repository  = $this->createMock( JobRepository::class );
-		$this->merchant_center = $this->createMock( MerchantCenterService::class );
-		$this->options         = $this->createMock( OptionsInterface::class );
-
-		$this->merchant_center->method( 'is_connected' )->willReturn( true );
+		$this->job_repository = $this->createMock( JobRepository::class );
+		$this->options        = $this->createMock( OptionsInterface::class );
 
 		$this->stored_options = [];
 		$this->options->method( 'get' )->willReturnCallback(
@@ -55,14 +57,16 @@ class PluginUpdateTest extends UnitTest {
 				return true;
 			}
 		);
-		$this->options->method( 'delete' )->willReturnCallback(
-			function ( $name ) {
-				unset( $this->stored_options[ $name ] );
-				return true;
+
+		$this->logged = [];
+		add_action(
+			'woocommerce_gla_debug_message',
+			function ( $message ) {
+				$this->logged[] = $message;
 			}
 		);
 
-		$this->plugin_update = $this->create_plugin_update();
+		$this->plugin_update = $this->create_plugin_update( true );
 	}
 
 	public function test_upgrading_to_mapi_release_schedules_full_product_resync() {
@@ -76,11 +80,10 @@ class PluginUpdateTest extends UnitTest {
 			->with( UpdateAllProducts::class )
 			->willReturn( $update_all_products );
 
-		$this->options->expects( $this->never() )->method( 'update' );
-
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
-		$this->assertArrayNotHasKey( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, $this->stored_options );
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+		$this->assertSame( [], $this->logged );
 	}
 
 	public function test_upgrading_within_mapi_versions_does_not_reschedule_resync() {
@@ -88,9 +91,14 @@ class PluginUpdateTest extends UnitTest {
 		// test_upgrading_to_mapi_release_schedules_full_product_resync. This pins the gate at `<` so
 		// a store already on the Merchant API release (>= 3.8.0) never re-runs the re-sync.
 		$this->job_repository->expects( $this->never() )->method( 'get' );
-		$this->options->expects( $this->never() )->method( 'update' );
 
 		$this->plugin_update->install( '3.8.0', '3.8.1' );
+	}
+
+	public function test_upgrade_creates_the_empty_option_so_admin_requests_read_it_from_autoloaded_options() {
+		$this->plugin_update->install( '3.8.0', '3.8.1' );
+
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
 	}
 
 	public function test_job_requested_by_several_versions_is_scheduled_once() {
@@ -111,47 +119,122 @@ class PluginUpdateTest extends UnitTest {
 
 		$this->plugin_update->install( '1.0.0', '3.8.0' );
 
-		$this->assertArrayNotHasKey( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, $this->stored_options );
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
 	}
 
 	public function test_job_not_ready_at_upgrade_is_retried_and_scheduled_once_ready() {
-		// Not ready to sync during the upgrade request, ready on the next admin request.
+		// Not ready to sync during the upgrade request, ready on the retry an hour later.
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false, true ] );
 		$update_all_products->expects( $this->once() )->method( 'schedule' );
-		$this->job_repository->method( 'get' )->with( UpdateAllProducts::class )->willReturn( $update_all_products );
+		$this->job_repository->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->with( UpdateAllProducts::class )
+			->willReturn( $update_all_products );
 
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
 		$this->assertSame(
 			[ UpdateAllProducts::class ],
-			$this->stored_options[ OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ] ?? null,
+			array_keys( $this->stored_options[ self::PENDING ] ),
 			'A job that could not be scheduled must be kept for a later retry.'
 		);
 
+		$this->age_pending_jobs();
 		$this->plugin_update->retry_pending_jobs();
 
-		$this->assertArrayNotHasKey( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, $this->stored_options );
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
 
 		// Nothing pending anymore: a later request must not schedule it again.
 		$this->plugin_update->retry_pending_jobs();
 	}
 
+	public function test_pending_job_is_retried_at_most_once_per_interval() {
+		$this->stored_options[ self::PENDING ] = [ UpdateAllProducts::class => time() - 60 ];
+		$this->job_repository->expects( $this->never() )->method( 'get' );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->plugin_update->retry_pending_jobs();
+	}
+
 	public function test_job_stays_pending_while_store_is_not_ready() {
-		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false, false ] );
+		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false ] );
 		$update_all_products->expects( $this->never() )->method( 'schedule' );
 		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
 
-		$this->plugin_update->install( '3.7.3', '3.8.0' );
+		$this->age_pending_jobs();
+		$before = time();
 		$this->plugin_update->retry_pending_jobs();
 
+		$pending = $this->stored_options[ self::PENDING ];
+		$this->assertSame( [ UpdateAllProducts::class ], array_keys( $pending ) );
+		$this->assertGreaterThanOrEqual( $before, $pending[ UpdateAllProducts::class ], 'The attempt time must be updated so the next retry waits a full interval.' );
+	}
+
+	public function test_pending_job_is_kept_while_google_is_disconnected_after_setup() {
+		// A Google 401 clears GOOGLE_CONNECTED but leaves Merchant Center setup complete, and
+		// reconnecting Google runs no full sync: the pending re-sync must survive it.
+		$this->plugin_update = $this->create_plugin_update( true, false );
+
+		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false ] );
+		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
+
+		$this->age_pending_jobs();
+		$this->plugin_update->retry_pending_jobs();
+
+		$this->assertSame( [ UpdateAllProducts::class ], array_keys( $this->stored_options[ self::PENDING ] ) );
+	}
+
+	public function test_pending_job_is_stamped_before_it_is_scheduled() {
+		// A concurrent admin request reading the option while this one schedules must see the
+		// job as not due, so it doesn't schedule it a second time.
+		$this->age_pending_jobs();
+		$before = time();
+
+		$update_all_products = $this->createMock( UpdateAllProducts::class );
+		$update_all_products->method( 'can_schedule' )->willReturnCallback(
+			function () use ( $before ) {
+				$this->assertGreaterThanOrEqual( $before, $this->stored_options[ self::PENDING ][ UpdateAllProducts::class ] );
+				return true;
+			}
+		);
+		$update_all_products->expects( $this->once() )->method( 'schedule' );
+		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
+
+		$this->plugin_update->retry_pending_jobs();
+
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+	}
+
+	public function test_mixed_outcome_keeps_only_the_job_that_could_not_be_scheduled() {
+		$cleanup             = $this->create_job( CleanupProductTargetCountriesJob::class, [ true ] );
+		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false, true ] );
+		$cleanup->expects( $this->once() )->method( 'schedule' );
+		$update_all_products->expects( $this->once() )->method( 'schedule' );
+
+		$fetched = [];
+		$this->job_repository->method( 'get' )->willReturnCallback(
+			function ( $job ) use ( &$fetched, $cleanup, $update_all_products ) {
+				$fetched[] = $job;
+				return CleanupProductTargetCountriesJob::class === $job ? $cleanup : $update_all_products;
+			}
+		);
+
+		$this->plugin_update->install( '1.0.0', '3.8.0' );
+		$this->assertSame( [ UpdateAllProducts::class ], array_keys( $this->stored_options[ self::PENDING ] ) );
+
+		$this->age_pending_jobs();
+		$this->plugin_update->retry_pending_jobs();
+
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
 		$this->assertSame(
-			[ UpdateAllProducts::class ],
-			$this->stored_options[ OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ] ?? null
+			[ CleanupProductTargetCountriesJob::class, UpdateAllProducts::class, UpdateAllProducts::class ],
+			$fetched,
+			'The retry must only attempt the job that was still pending.'
 		);
 	}
 
 	public function test_pending_job_is_not_duplicated_by_a_later_upgrade() {
-		$this->stored_options[ OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ] = [ UpdateAllProducts::class ];
+		$this->stored_options[ self::PENDING ] = [ UpdateAllProducts::class => time() - 60 ];
 
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false ] );
 		$this->job_repository->expects( $this->once() )->method( 'get' )->willReturn( $update_all_products );
@@ -159,86 +242,132 @@ class PluginUpdateTest extends UnitTest {
 		// A second upgrade that asks for the same job again while it is still pending.
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
-		$this->assertSame(
-			[ UpdateAllProducts::class ],
-			$this->stored_options[ OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ]
-		);
+		$this->assertSame( [ UpdateAllProducts::class ], array_keys( $this->stored_options[ self::PENDING ] ) );
 	}
 
-	public function test_pending_job_is_dropped_when_merchant_center_is_not_connected() {
-		// Nothing was synced, so there is nothing to migrate: connecting runs a full sync anyway.
-		$this->merchant_center = $this->createMock( MerchantCenterService::class );
-		$this->merchant_center->method( 'is_connected' )->willReturn( false );
-		$this->plugin_update = $this->create_plugin_update();
-
-		$this->stored_options[ OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ] = [ UpdateAllProducts::class ];
+	public function test_pending_job_is_dropped_when_merchant_center_setup_is_not_complete() {
+		// Setup was undone (full disconnect): nothing synced is left to migrate, and completing
+		// setup again runs a full sync.
+		$this->plugin_update = $this->create_plugin_update( false );
 
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false ] );
 		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
 
+		$this->age_pending_jobs();
 		$this->plugin_update->retry_pending_jobs();
 
-		$this->assertArrayNotHasKey( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, $this->stored_options );
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+		$this->assertCount( 1, $this->logged );
+		$this->assertStringContainsString( 'Discarded pending upgrade jobs', $this->logged[0] );
 	}
 
-	public function test_upgrade_does_not_store_pending_job_when_merchant_center_is_not_connected() {
-		$this->merchant_center = $this->createMock( MerchantCenterService::class );
-		$this->merchant_center->method( 'is_connected' )->willReturn( false );
-		$this->plugin_update = $this->create_plugin_update();
+	public function test_upgrade_does_not_keep_job_when_merchant_center_setup_is_not_complete() {
+		$this->plugin_update = $this->create_plugin_update( false );
 
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false ] );
 		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
-		$this->options->expects( $this->never() )->method( 'update' );
 
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
-		$this->assertArrayNotHasKey( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, $this->stored_options );
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+		$this->assertSame( [], $this->logged, 'A store that never set up Merchant Center must not log about upgrade jobs.' );
+	}
+
+	public function test_state_changes_are_logged_once() {
+		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false, false, true ] );
+		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
+
+		$this->plugin_update->install( '3.7.3', '3.8.0' );
+		$this->assertCount( 1, $this->logged );
+		$this->assertStringContainsString( 'could not be scheduled yet', $this->logged[0] );
+
+		// Still not ready: no new log line.
+		$this->age_pending_jobs();
+		$this->plugin_update->retry_pending_jobs();
+		$this->assertCount( 1, $this->logged );
+
+		$this->age_pending_jobs();
+		$this->plugin_update->retry_pending_jobs();
+		$this->assertCount( 2, $this->logged );
+		$this->assertStringContainsString( 'was scheduled after waiting', $this->logged[1] );
 	}
 
 	public function test_retry_does_nothing_when_no_job_is_pending() {
+		$this->stored_options[ self::PENDING ] = [];
 		$this->job_repository->expects( $this->never() )->method( 'get' );
-		$this->merchant_center->expects( $this->never() )->method( 'is_connected' );
+		$this->merchant_center->expects( $this->never() )->method( 'is_setup_complete' );
 		$this->options->expects( $this->never() )->method( 'update' );
-		$this->options->expects( $this->never() )->method( 'delete' );
 
 		$this->plugin_update->retry_pending_jobs();
 	}
 
 	public function test_retry_is_skipped_during_ajax_requests() {
-		$this->stored_options[ OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ] = [ UpdateAllProducts::class ];
+		$this->age_pending_jobs();
+		$stored = $this->stored_options[ self::PENDING ];
 		$this->job_repository->expects( $this->never() )->method( 'get' );
 
 		add_filter( 'wp_doing_ajax', '__return_true' );
 		$this->plugin_update->retry_pending_jobs();
-		remove_filter( 'wp_doing_ajax', '__return_true' );
 
-		$this->assertSame(
-			[ UpdateAllProducts::class ],
-			$this->stored_options[ OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ]
-		);
+		$this->assertSame( $stored, $this->stored_options[ self::PENDING ] );
+	}
+
+	public function test_register_retries_pending_jobs_on_admin_init() {
+		$update_all_products = $this->create_job( UpdateAllProducts::class, [ true ] );
+		$update_all_products->expects( $this->once() )->method( 'schedule' );
+		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
+		$this->age_pending_jobs();
+
+		// Only this service's callback: the plugin's other admin_init callbacks are out of scope.
+		remove_all_actions( 'admin_init' );
+		$this->plugin_update->register();
+		do_action( 'admin_init' );
+
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
 	}
 
 	public function test_unexpected_pending_values_are_discarded() {
-		$this->stored_options[ OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ] = [ 'Some\Unknown\Job', 123, [ 'nested' ] ];
+		$this->stored_options[ self::PENDING ] = [
+			'Some\Unknown\Job' => 1,
+			0                  => UpdateAllProducts::class,
+			'nested'           => [ 'x' ],
+		];
 		$this->job_repository->expects( $this->never() )->method( 'get' );
 
 		$this->plugin_update->retry_pending_jobs();
 
-		$this->assertArrayNotHasKey( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, $this->stored_options );
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
 	}
 
-	public function test_job_missing_from_repository_is_not_kept_pending() {
-		$this->job_repository->method( 'get' )->willThrowException( JobException::job_does_not_exist( UpdateAllProducts::class ) );
+	public function test_job_missing_from_repository_is_reported_and_not_kept_pending() {
+		$exception = JobException::job_does_not_exist( UpdateAllProducts::class );
+		$this->job_repository->method( 'get' )->willThrowException( $exception );
+
+		$reported = [];
+		add_action(
+			'woocommerce_gla_exception',
+			function ( $e ) use ( &$reported ) {
+				$reported[] = $e;
+			}
+		);
 
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
-		$this->assertArrayNotHasKey( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, $this->stored_options );
+		$this->assertSame( [ $exception ], $reported );
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
 	}
 
 	/**
+	 * @param bool $setup_complete Whether Merchant Center setup is complete.
+	 * @param bool $connected      Whether Merchant Center is connected (Google included).
+	 *
 	 * @return PluginUpdate
 	 */
-	protected function create_plugin_update(): PluginUpdate {
+	protected function create_plugin_update( bool $setup_complete, bool $connected = true ): PluginUpdate {
+		$this->merchant_center = $this->createMock( MerchantCenterService::class );
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( $setup_complete );
+		$this->merchant_center->method( 'is_connected' )->willReturn( $setup_complete && $connected );
+
 		$plugin_update = new PluginUpdate( $this->job_repository );
 		$plugin_update->set_options_object( $this->options );
 		$plugin_update->set_merchant_center_object( $this->merchant_center );
@@ -259,5 +388,18 @@ class PluginUpdateTest extends UnitTest {
 		$job->method( 'can_schedule' )->with( null )->willReturnOnConsecutiveCalls( ...$can_schedule );
 
 		return $job;
+	}
+
+	/**
+	 * Make the pending jobs due for a retry, as if the retry interval had passed. With nothing
+	 * pending yet, marks UpdateAllProducts as pending.
+	 */
+	protected function age_pending_jobs(): void {
+		$pending = $this->stored_options[ self::PENDING ] ?? [];
+		if ( empty( $pending ) ) {
+			$pending = [ UpdateAllProducts::class => 0 ];
+		}
+
+		$this->stored_options[ self::PENDING ] = array_fill_keys( array_keys( $pending ), time() - HOUR_IN_SECONDS - 1 );
 	}
 }
