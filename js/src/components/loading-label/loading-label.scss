@@ -5,7 +5,14 @@
 	height: $button-size;
 	color: var(--wp-admin-theme-color);
 
-	.components-spinner {
-		margin: 0;
+	.woocommerce-spinner {
+		width: $icon-size;
+		height: $icon-size;
+		min-width: $icon-size;
+
+		&__circle {
+			stroke: currentcolor;
+			stroke-width: $grid-unit;
+		}
 	}
 }

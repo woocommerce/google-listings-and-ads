@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Spinner } from '@wordpress/components';
+import { Spinner } from '@woocommerce/components';
 
 /**
  * Internal dependencies
