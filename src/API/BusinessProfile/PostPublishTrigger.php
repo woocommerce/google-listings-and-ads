@@ -32,7 +32,7 @@ class PostPublishTrigger implements Service, Registerable {
 	private $job_repository;
 
 	/** @var array<int,bool> Post IDs already scheduled to send during the current request. */
-	private $sent_in_request = [];
+	private $scheduled_in_request = [];
 
 	/**
 	 * PostPublishTrigger constructor.
@@ -121,10 +121,10 @@ class PostPublishTrigger implements Service, Registerable {
 			return;
 		}
 
-		if ( isset( $this->sent_in_request[ $post->ID ] ) ) {
+		if ( isset( $this->scheduled_in_request[ $post->ID ] ) ) {
 			return;
 		}
-		$this->sent_in_request[ $post->ID ] = true;
+		$this->scheduled_in_request[ $post->ID ] = true;
 
 		$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::QUEUED );
 
