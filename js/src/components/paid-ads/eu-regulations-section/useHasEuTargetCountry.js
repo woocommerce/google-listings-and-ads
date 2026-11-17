@@ -5,7 +5,7 @@ import useTargetAudience from '~/hooks/useTargetAudience';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 
 /**
- * Checks whether any target country of the campaign is in the EU.
+ * Checks whether any country in the target audience is in the EU.
  *
  * @return {{ hasFinishedResolution: boolean, hasEuTargetCountry: boolean }} Whether the data has loaded, and whether any target country is in the EU. `hasEuTargetCountry` is `false` until the data has loaded.
  */
