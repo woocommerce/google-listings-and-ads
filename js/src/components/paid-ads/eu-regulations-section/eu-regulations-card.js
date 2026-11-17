@@ -11,6 +11,7 @@ import Subsection from '~/components/subsection';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
 import useHasEuTargetCountry from './useHasEuTargetCountry';
 import EuPoliticalContentField from './eu-political-content-field';
+import './eu-regulations-card.scss';
 
 /**
  * Displays the EU regulations card with the EU political content field when any target country is in the EU.
