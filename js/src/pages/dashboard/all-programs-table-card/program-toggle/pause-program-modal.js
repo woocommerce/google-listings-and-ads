@@ -58,7 +58,7 @@ const PauseProgramModal = ( props ) => {
 			</p>
 			<p>
 				{ __(
-					'Pausing a campaign will result in the loss of any optimisations learned from those campaigns.',
+					'Pausing a campaign will result in the loss of any optimizations learned from those campaigns.',
 					'google-listings-and-ads'
 				) }
 			</p>
