@@ -33,7 +33,7 @@ jobs:
       changelog_block: ${{ steps.generate.outputs.changelog_block }}
     steps:
       - name: Checkout release branch
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.RELEASE_BRANCH }}
           token: ${{ secrets.ORG_DEPLOY_SECRET }}
