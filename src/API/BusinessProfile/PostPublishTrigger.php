@@ -107,8 +107,8 @@ class PostPublishTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Schedule the post to be sent to Google Business Profile, when it's shareable, it isn't
-	 * already shared, and it hasn't already been scheduled during this request.
+	 * Schedule the post to be sent to Google Business Profile, when it's shareable, it hasn't
+	 * already reached Google, and it hasn't already been scheduled during this request.
 	 *
 	 * @param WP_Post $post
 	 */
@@ -118,6 +118,16 @@ class PostPublishTrigger implements Service, Registerable {
 		}
 
 		if ( $this->local_post_service->get_share_status( $post->ID )['is_shared'] ) {
+			return;
+		}
+
+		$last = $this->local_post_service->get_sync_outcome( $post->ID );
+
+		if ( null !== $last && SyncOutcome::QUEUED !== $last['outcome'] && ! in_array( $last['outcome'], SyncOutcome::FAILURES, true ) ) {
+			// Already reached Google without a stored result -- accepted with no usable post ID,
+			// say -- so sending again would create a duplicate. sends_on_save() already gives a
+			// resave this same protection; this covers the path that skips it, a status
+			// round-trip (unpublish then republish) landing here directly.
 			return;
 		}
 

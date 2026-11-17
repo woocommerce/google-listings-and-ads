@@ -183,6 +183,37 @@ class PostPublishTriggerTest extends UnitTest {
 	}
 
 	/**
+	 * A status round-trip (unpublish then republish) skips sends_on_save()'s own protection and
+	 * reaches handle_publish() directly, the same path a genuine first publish takes. Google
+	 * accepting a post without a usable post ID leaves is_shared() false with nothing to show it
+	 * was already handled -- without its own check here, this would schedule a duplicate create.
+	 */
+	public function test_does_not_schedule_a_post_that_already_reached_google_without_a_result() {
+		$this->local_post_service = $this->createMock( LocalPostService::class );
+		$this->local_post_service->method( 'is_shareable' )->willReturn( true );
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => SyncOutcome::SENT_PENDING_VERIFICATION,
+				'message' => '',
+			]
+		);
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
 	 * @dataProvider data_provider_failure_outcomes
 	 *
 	 * @param string $outcome
