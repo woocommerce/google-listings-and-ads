@@ -4,7 +4,6 @@
 }
 
 .gla-advertising-source-selector {
-
 	.gla-section-card-title {
 		font-size: 16px;
 		line-height: $grid-unit-30;
@@ -19,11 +18,6 @@
 
 	.components-radio-control {
 		margin-block-start: $grid-unit-30;
-	}
-
-	// The empty legend that `RadioControl` renders still takes up space above the options.
-	.components-radio-control > legend:empty {
-		display: none;
 	}
 
 	.components-radio-control__option:not(:first-child) {

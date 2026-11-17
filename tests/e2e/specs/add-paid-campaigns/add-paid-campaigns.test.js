@@ -599,7 +599,9 @@ test.describe( 'Add paid campaign', () => {
 
 			test( '"What do you want to advertise?" card shows with "My products" selected', async () => {
 				await expect(
-					page.getByText( 'What do you want to advertise?' )
+					page.getByRole( 'group', {
+						name: 'What do you want to advertise?',
+					} )
 				).toBeVisible();
 				await expect(
 					page.getByRole( 'radio', { name: 'My products' } )

@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import AdvertisingSourceSelector from './advertising-source-selector';
+import AdvertisingSourceSelector from '.';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import { ADVERTISING_SOURCE } from '~/constants';
 
@@ -33,7 +33,14 @@ describe( 'AdvertisingSourceSelector', () => {
 		render( <AdvertisingSourceSelector /> );
 
 		expect(
-			screen.getByText( 'What do you want to advertise?' )
+			screen.getByText( 'What do you want to advertise?', {
+				selector: '.gla-section-card-title',
+			} )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'group', {
+				name: 'What do you want to advertise?',
+			} )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText(

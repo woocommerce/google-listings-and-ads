@@ -7,4 +7,11 @@
 		margin: var(--large-gap);
 		flex: 1;
 	}
+
+	&.gla-step-content--narrow .gla-step-content__container {
+		display: flex;
+		flex-direction: column;
+		gap: $grid-unit-20;
+		max-width: 655px;
+	}
 }
