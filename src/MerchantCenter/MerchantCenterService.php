@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -164,7 +165,9 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	private function get_claimable_site_urls( string $site_url ): array {
 		$urls = [ $site_url ];
 
-		if ( ! $this->is_wpml_active() ) {
+		/** @var WPML $wpml */
+		$wpml = $this->container->get( WPML::class );
+		if ( ! $wpml->is_active() ) {
 			return $urls;
 		}
 

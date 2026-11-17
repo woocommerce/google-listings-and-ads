@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
@@ -89,6 +90,9 @@ class MerchantCenterServiceTest extends UnitTest {
 	/** @var MockObject|WP $wp */
 	protected $wp;
 
+	/** @var MockObject|WPML $wpml */
+	protected $wpml;
+
 	/** @var Container $container */
 	protected $container;
 
@@ -121,6 +125,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->transients             = $this->createMock( TransientsInterface::class );
 		$this->wc                     = $this->createMock( WC::class );
 		$this->wp                     = $this->createMock( WP::class );
+		$this->wpml                   = $this->createMock( WPML::class );
 		$this->options                = $this->createMock( OptionsInterface::class );
 
 		$this->container = new Container();
@@ -140,6 +145,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->container->addShared( TransientsInterface::class, $this->transients );
 		$this->container->addShared( WC::class, $this->wc );
 		$this->container->addShared( WP::class, $this->wp );
+		$this->container->addShared( WPML::class, $this->wpml );
 
 		$this->mc_service = new MerchantCenterService();
 		$this->mc_service->set_container( $this->container );
@@ -403,20 +409,13 @@ class MerchantCenterServiceTest extends UnitTest {
 			2
 		);
 
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
 		$this->transients->expects( $this->once() )
 			->method( 'set' )
 			->with( TransientsInterface::URL_MATCHES, 'yes', HOUR_IN_SECONDS * 12 );
 
-		// phpcs:ignore Universal.Classes.RequireAnonClassParentheses.Missing
-		$mc_service = new class extends MerchantCenterService {
-			protected function is_wpml_active(): bool {
-				return true;
-			}
-		};
-		$mc_service->set_container( $this->container );
-		$mc_service->set_options_object( $this->options );
-
-		$this->assertTrue( $mc_service->is_ready_for_syncing() );
+		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
 		$this->assertEquals( 0, did_action( 'woocommerce_gla_error' ) );
 	}
 
