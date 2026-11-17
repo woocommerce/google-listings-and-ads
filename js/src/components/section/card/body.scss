@@ -1,3 +1,7 @@
 .gla-section-card-body {
 	padding: var(--large-gap);
+
+	&.gla-section-card-body--padding-medium {
+		padding: var(--main-gap);
+	}
 }

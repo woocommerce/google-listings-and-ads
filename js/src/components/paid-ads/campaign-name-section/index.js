@@ -26,7 +26,7 @@ export default function CampaignNameSection() {
 
 	return (
 		<Section.Card className="gla-campaign-name-section">
-			<Section.Card.Body>
+			<Section.Card.Body padding="medium">
 				<VerticalGapLayout size="medium">
 					<div>
 						<Section.Card.Title>
