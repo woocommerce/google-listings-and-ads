@@ -1,0 +1,6 @@
+// Layout only: wc-admin insets its content by `--large-gap` on both sides. Span the
+// full width of the page like a WordPress Design System page header, and keep the
+// usual gap below it.
+.gla-main-page-header {
+	margin: 0 calc(-1 * var(--large-gap, 40px)) var(--main-gap);
+}

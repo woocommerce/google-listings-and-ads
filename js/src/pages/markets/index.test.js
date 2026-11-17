@@ -9,9 +9,11 @@ import { render, screen } from '@testing-library/react';
  */
 import Markets from './';
 
-jest.mock( '~/components/main-tab-nav', () =>
-	jest.fn( () => <div data-testid="main-tab-nav" /> )
+jest.mock( '~/components/main-page-header', () =>
+	jest.fn( () => <div data-testid="main-page-header" /> )
 );
+
+jest.mock( '~/components/gtin-migration-banner', () => () => null );
 
 jest.mock( '~/components/experience-rating-banner', () =>
 	jest.fn().mockReturnValue( null ).mockName( 'ExperienceRatingBanner' )
@@ -22,9 +24,9 @@ jest.mock( './components/markets-dashboard', () =>
 );
 
 describe( 'Markets page', () => {
-	test( 'renders the main tab navigation', () => {
+	test( 'renders the main page header', () => {
 		render( <Markets /> );
-		expect( screen.getByTestId( 'main-tab-nav' ) ).toBeInTheDocument();
+		expect( screen.getByTestId( 'main-page-header' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders the MarketsDashboard', () => {

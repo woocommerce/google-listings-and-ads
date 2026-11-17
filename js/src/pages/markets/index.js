@@ -1,14 +1,16 @@
 /**
  * Internal dependencies
  */
-import MainTabNav from '~/components/main-tab-nav';
+import MainPageHeader from '~/components/main-page-header';
+import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import MarketsDashboard from './components/markets-dashboard';
 import './index.scss';
 
 const Markets = () => {
 	return (
 		<div className="gla-markets">
-			<MainTabNav />
+			<MainPageHeader />
+			<GtinMigrationBanner />
 			<MarketsDashboard />
 		</div>
 	);

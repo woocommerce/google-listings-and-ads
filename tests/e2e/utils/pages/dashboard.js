@@ -24,21 +24,22 @@ export default class DashboardPage extends MockRequests {
 		this.createCampaignButton = this.paidFeatures.locator( 'button', {
 			hasText: 'Create Campaign',
 		} );
-		this.addPaidCampaignButton = this.page.locator(
-			'.gla-all-programs-table-card button',
-			{
-				hasText: 'Add campaign',
-			}
-		);
+		this.addPaidCampaignButton = this.page
+			.locator( '.gla-main-page-header' )
+			.getByRole( 'button', { name: 'Add campaign' } );
 	}
 
 	/**
-	 * Get the visible tab titles from the main navigation.
+	 * Get the visible section link titles from the page header navigation.
 	 *
 	 * @return {Promise<string[]>} An array of tab titles in display order.
 	 */
 	async getTabTitles() {
-		const tabs = this.page.locator( '.app-tab-nav [role="tab"]' );
+		const tabs = this.page
+			.getByRole( 'navigation', {
+				name: 'Google for WooCommerce sections',
+			} )
+			.getByRole( 'link' );
 		try {
 			await tabs.first().waitFor( { state: 'visible' } );
 		} catch ( e ) {

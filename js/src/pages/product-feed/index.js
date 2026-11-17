@@ -8,7 +8,8 @@ import { getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import MainTabNav from '~/components/main-tab-nav';
+import MainPageHeader from '~/components/main-page-header';
+import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import IssuesTableCard from './issues-table-card';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
@@ -49,8 +50,9 @@ const ProductFeed = () => {
 
 	return (
 		<>
+			<MainPageHeader />
 			<ExperienceRatingBanner />
-			<MainTabNav />
+			<GtinMigrationBanner />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
 			{ canCESPromptOpen && (
 				<CustomerEffortScorePrompt

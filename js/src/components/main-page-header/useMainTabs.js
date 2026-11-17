@@ -8,9 +8,6 @@ import { getNewPath, getPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import useReportsAvailability from '~/hooks/useReportsAvailability';
-import AppTabNav from '~/components/app-tab-nav';
-import useMenuEffect from '~/hooks/useMenuEffect';
-import GtinMigrationBanner from '~/components/gtin-migration-banner';
 
 export const ALL_TABS = [
 	{
@@ -57,9 +54,22 @@ const getSelectedTabKey = ( allTabs ) => {
 	return allTabs.find( ( el ) => path.includes( el.key ) )?.key;
 };
 
-const MainTabNav = () => {
-	useMenuEffect();
+/**
+ * @typedef {Object} MainTab
+ * @property {string} key Tab key. It is also the last segment of the page path.
+ * @property {string} title Translated tab label.
+ * @property {string} href Link to the page.
+ */
 
+/**
+ * Returns the main plugin tabs the merchant can see, and which one matches the current page.
+ *
+ * Tabs that need Merchant Center are hidden until it is connected, and Reports is
+ * hidden when there is nothing to report.
+ *
+ * @return {{ tabs: Array<MainTab>, selectedKey: string|undefined }} Visible tabs and the selected tab key.
+ */
+const useMainTabs = () => {
 	const { hasMC, canViewReports } = useReportsAvailability();
 
 	const tabs = ALL_TABS.filter( ( { key } ) => {
@@ -74,13 +84,7 @@ const MainTabNav = () => {
 		return true;
 	} );
 
-	const selectedKey = getSelectedTabKey( tabs );
-
-	return (
-		<>
-			<GtinMigrationBanner />
-			<AppTabNav tabs={ tabs } selectedKey={ selectedKey } />
-		</>
-	);
+	return { tabs, selectedKey: getSelectedTabKey( tabs ) };
 };
-export default MainTabNav;
+
+export default useMainTabs;

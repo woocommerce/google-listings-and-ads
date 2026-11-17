@@ -97,6 +97,10 @@ const registerPluginAdminPages = () => {
 			__( 'Google for WooCommerce', 'google-listings-and-ads' ),
 		];
 
+		// The main pages render their own page header (`MainPageHeader`), so turn off
+		// the wc-admin one.
+		const mainPageLayout = { header: false };
+
 		let pluginAdminPages = [
 			{
 				breadcrumbs: [ ...initialBreadcrumbs ],
@@ -127,6 +131,7 @@ const registerPluginAdminPages = () => {
 				],
 				container: Dashboard,
 				path: '/google/dashboard',
+				layout: mainPageLayout,
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
@@ -136,6 +141,7 @@ const registerPluginAdminPages = () => {
 				],
 				container: Reports,
 				path: '/google/reports',
+				layout: mainPageLayout,
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
@@ -145,6 +151,7 @@ const registerPluginAdminPages = () => {
 				],
 				container: ProductFeed,
 				path: '/google/product-feed',
+				layout: mainPageLayout,
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
@@ -154,6 +161,7 @@ const registerPluginAdminPages = () => {
 				],
 				container: PriceBenchmark,
 				path: '/google/price-benchmark',
+				layout: mainPageLayout,
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
@@ -163,6 +171,7 @@ const registerPluginAdminPages = () => {
 				],
 				container: AttributeMapping,
 				path: '/google/attribute-mapping',
+				layout: mainPageLayout,
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
@@ -172,6 +181,7 @@ const registerPluginAdminPages = () => {
 				],
 				container: Markets,
 				path: '/google/markets',
+				layout: mainPageLayout,
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
@@ -181,6 +191,7 @@ const registerPluginAdminPages = () => {
 				],
 				container: Settings,
 				path: '/google/settings',
+				layout: mainPageLayout,
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 		];

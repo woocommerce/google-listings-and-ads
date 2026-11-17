@@ -13,6 +13,25 @@ const exceptSVGAndPNGRule = ( rule ) => {
 	return ! rule.test.toString().match( /svg|png/i );
 };
 
+// WordPress Design System packages bundled into our scripts instead of loaded from
+// WordPress: WordPress 7.0 registers no script for any of them, so externalizing one
+// would add a script dependency that WordPress 7.0 cannot load.
+const BUNDLED_WPDS_PACKAGES = [
+	'@wordpress/admin-ui',
+	'@wordpress/react-inert-value',
+	'@wordpress/style-runtime',
+	'@wordpress/theme',
+	'@wordpress/ui',
+];
+
+// Modules of the bundled design system packages, plus `@base-ui`, which
+// `@wordpress/ui` builds on (not a `@wordpress/` package, so never externalized).
+const WPDS_CHUNK_TEST = new RegExp(
+	`[\\\\/]node_modules[\\\\/](${ [ '@base-ui', ...BUNDLED_WPDS_PACKAGES ]
+		.map( ( name ) => name.replace( '/', '[\\\\/]' ) )
+		.join( '|' ) })[\\\\/]`
+);
+
 const webpackConfig = {
 	...defaultConfig,
 	module: {
@@ -108,6 +127,16 @@ const webpackConfig = {
 				! hasReactFastRefresh && '../../.externalized.json',
 			requestToExternal: ( request ) => {
 				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					return null;
+				}
+
+				if (
+					BUNDLED_WPDS_PACKAGES.some(
+						( name ) =>
+							request === name ||
+							request.startsWith( `${ name }/` )
+					)
+				) {
 					return null;
 				}
 
@@ -208,6 +237,14 @@ const webpackConfig = {
 				vendors: {
 					name: 'vendors',
 					test: /([\\/])node_modules\1/,
+				},
+				// Keep the bundled design system packages out of `vendors`, which every
+				// lazy chunk loads, including the promos on the product editor and
+				// WooCommerce Analytics. Only chunks that use them load this one.
+				wpds: {
+					name: 'wpds',
+					priority: 10,
+					test: WPDS_CHUNK_TEST,
 				},
 				commons: {
 					name: 'commons',

@@ -11,7 +11,8 @@ import { getQuery } from '@woocommerce/navigation';
 import useProgramsReport, { usePerformanceReport } from './useProgramsReport';
 import useMetricsWithFormatter from '../useMetricsWithFormatter';
 import DifferentCurrencyNotice from '~/components/different-currency-notice';
-import MainTabNav from '~/components/main-tab-nav';
+import MainPageHeader from '~/components/main-page-header';
+import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
@@ -101,8 +102,9 @@ const ProgramsReport = () => {
 
 	return (
 		<>
+			<MainPageHeader />
 			<DifferentCurrencyNotice context={ trackEventId } />
-			<MainTabNav />
+			<GtinMigrationBanner />
 			<ReportsNavigation />
 			<ProgramsReportFilters
 				query={ getQuery() }

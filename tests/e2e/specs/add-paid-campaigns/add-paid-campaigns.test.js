@@ -139,7 +139,7 @@ test.describe( 'Add paid campaign', () => {
 	} );
 
 	test( 'Dashboard page contains Add campaign buttons', async () => {
-		//Add page campaign in the programs section.
+		// The "Add campaign" button in the page header.
 		await expect( dashboardPage.addPaidCampaignButton ).toBeEnabled();
 	} );
 

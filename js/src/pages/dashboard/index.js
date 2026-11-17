@@ -3,20 +3,20 @@
  */
 import { useState, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
 import { getNewPath, getQuery, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
-import AppButton from '~/components/app-button';
 import DifferentCurrencyNotice from '~/components/different-currency-notice';
-import MainTabNav from '~/components/main-tab-nav';
+import MainPageHeader from '~/components/main-page-header';
+import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import CustomerEffortScorePrompt from '~/components/customer-effort-score-prompt';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummarySection from './summary-section';
 import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
 import AllProgramsTableCard from './all-programs-table-card';
+import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
 import { GUIDE_NAMES } from '~/constants';
 import { subpaths, getCreateCampaignUrl } from '~/utils/urls';
 import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
@@ -33,7 +33,6 @@ import SubmissionSuccessGuide from '~/pages/product-feed/submission-success-guid
 import EuPoliticalDeclaration from '~/components/eu-political-declaration';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useIncentiveAppliedNoticeEffect from '~/hooks/useIncentiveAppliedNoticeEffect';
-import useReportsAvailability from '~/hooks/useReportsAvailability';
 import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
 import './index.scss';
 
@@ -43,7 +42,6 @@ import './index.scss';
 const Dashboard = () => {
 	const [ isCESPromptOpen, setCESPromptOpen ] = useState( false );
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
-	const { canViewReports } = useReportsAvailability();
 	useIncentiveAppliedNoticeEffect();
 
 	const handleCampaignCreationSuccessGuideClose = useCallback(
@@ -87,16 +85,6 @@ const Dashboard = () => {
 
 	const trackEventReportId = 'dashboard';
 
-	const ReportsLink = () => {
-		return (
-			<Link href={ getNewPath( null, '/google/reports' ) }>
-				<AppButton isPrimary>
-					{ __( 'View Reports', 'google-listings-and-ads' ) }
-				</AppButton>
-			</Link>
-		);
-	};
-
 	const isCampaignCreationSuccessGuideOpen =
 		query?.guide === GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS;
 	const isSubmissionSuccessOpen =
@@ -106,18 +94,27 @@ const Dashboard = () => {
 	return (
 		<>
 			<div className="gla-dashboard">
+				<MainPageHeader
+					actions={
+						<AddPaidCampaignButton
+							isSmall={ false }
+							isSecondary={ false }
+							isPrimary
+							eventProps={ { context: 'dashboard-header' } }
+						/>
+					}
+				/>
 				<UnclaimedIncentiveNotice />
 				<PMaxImproveAssetsBanner />
 				<ExperienceRatingBanner />
 				<DifferentCurrencyNotice context="dashboard" />
-				<MainTabNav />
+				<GtinMigrationBanner />
 				<RaiseBudgetRecommendationBanner />
 				{ hasGoogleMCConnection && <YouTubeShoppingTour /> }
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }
 					/>
-					{ canViewReports && <ReportsLink /> }
 				</div>
 				<div className="gla-dashboard__performance">
 					<SummarySection />

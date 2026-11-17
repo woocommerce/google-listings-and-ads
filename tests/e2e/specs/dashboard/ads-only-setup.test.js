@@ -56,10 +56,8 @@ test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 			expect( tabs ).toEqual( [ 'Dashboard', 'Reports', 'Settings' ] );
 		} );
 
-		test( 'Should display the "View Reports" link', async () => {
-			await expect(
-				page.getByRole( 'link', { name: 'View Reports' } )
-			).toBeVisible();
+		test( 'Should display the "Add campaign" button in the page header', async () => {
+			await expect( dashboardPage.addPaidCampaignButton ).toBeVisible();
 		} );
 
 		test( 'Should not display "Product Feed (Limited Visibility)" card', async () => {

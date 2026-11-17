@@ -47,8 +47,8 @@ export default function YouTubeShoppingTour() {
 		steps: [
 			{
 				referenceElements: {
-					desktop:
-						'.app-tab-nav__tabs-item[aria-controls="settings-view"]',
+					// The Settings link in the Dashboard's `MainPageHeader`.
+					desktop: `.gla-main-page-header nav a[href="${ getSettingsUrl() }"]`,
 				},
 				meta: {
 					heading: __(

@@ -52,8 +52,12 @@ test.describe( 'Google Customer Reviews Setting', () => {
 
 	test( 'should show the "Google Customer Reviews" setting card', async () => {
 		await expect(
-			page.getByRole( 'heading', { name: 'Settings' } )
-		).toBeVisible();
+			page
+				.getByRole( 'navigation', {
+					name: 'Google for WooCommerce sections',
+				} )
+				.getByRole( 'link', { name: 'Settings' } )
+		).toHaveAttribute( 'aria-current', 'page' );
 		await expect(
 			page.getByRole( 'heading', { name: 'Google Customer Reviews' } )
 		).toBeVisible();

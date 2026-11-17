@@ -120,7 +120,11 @@ test.describe( 'Programs report for Ads only setup', () => {
 
 	test( 'Should display the Reports tab in the main navigation', async () => {
 		await expect(
-			page.locator( '.app-tab-nav [role="tab"]', { hasText: 'Reports' } )
+			page
+				.getByRole( 'navigation', {
+					name: 'Google for WooCommerce sections',
+				} )
+				.getByRole( 'link', { name: 'Reports' } )
 		).toBeVisible();
 	} );
 
