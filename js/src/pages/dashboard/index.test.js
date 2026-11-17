@@ -14,6 +14,7 @@ import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
 import { GUIDE_NAMES } from '~/constants';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import YouTubeShoppingTour from '~/components/tours/youtube-shopping-tour';
+import useGTINMigrationStatus from '~/hooks/useGTINMigrationStatus';
 
 jest.mock( '~/hooks/useGTINMigrationStatus', () =>
 	jest
@@ -92,6 +93,59 @@ beforeEach( () => {
 } );
 
 describe( 'Dashboard', () => {
+	describe( 'Page header', () => {
+		beforeEach( () => {
+			getQuery.mockReturnValue( {} );
+		} );
+
+		afterEach( () => {
+			getQuery.mockReset();
+			useGTINMigrationStatus.mockReturnValue( [
+				'completed',
+				false,
+				jest.fn(),
+			] );
+		} );
+
+		test( 'Should render the plugin name as the page heading with the section links', () => {
+			render( <Dashboard /> );
+
+			expect(
+				screen.getByRole( 'heading', {
+					level: 1,
+					name: 'Google for WooCommerce',
+				} )
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole( 'navigation', {
+					name: 'Google for WooCommerce sections',
+				} )
+			).toContainElement(
+				screen.getByRole( 'link', { name: 'Dashboard' } )
+			);
+		} );
+
+		test( 'Should render the GTIN migration banner when the migration is ready', () => {
+			useGTINMigrationStatus.mockReturnValue( [
+				'ready',
+				false,
+				jest.fn(),
+			] );
+
+			render( <Dashboard /> );
+
+			// The notice text is also announced in a live region, so match the notice.
+			expect(
+				screen.getByText(
+					/will now be used by Google for WooCommerce/,
+					{
+						selector: '.components-notice__content',
+					}
+				)
+			).toBeInTheDocument();
+		} );
+	} );
+
 	describe( 'YouTube Shopping tour', () => {
 		beforeEach( () => {
 			getQuery.mockReturnValue( {} );

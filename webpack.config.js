@@ -24,6 +24,14 @@ const BUNDLED_WPDS_PACKAGES = [
 	'@wordpress/ui',
 ];
 
+// Modules of the bundled design system packages, plus `@base-ui`, which
+// `@wordpress/ui` builds on (not a `@wordpress/` package, so never externalized).
+const WPDS_CHUNK_TEST = new RegExp(
+	`[\\\\/]node_modules[\\\\/](${ [ '@base-ui', ...BUNDLED_WPDS_PACKAGES ]
+		.map( ( name ) => name.replace( '/', '[\\\\/]' ) )
+		.join( '|' ) })[\\\\/]`
+);
+
 const webpackConfig = {
 	...defaultConfig,
 	module: {
@@ -236,7 +244,7 @@ const webpackConfig = {
 				wpds: {
 					name: 'wpds',
 					priority: 10,
-					test: /[\\/]node_modules[\\/](@base-ui|@wordpress[\\/](admin-ui|react-inert-value|style-runtime|theme|ui))[\\/]/,
+					test: WPDS_CHUNK_TEST,
 				},
 				commons: {
 					name: 'commons',
