@@ -7,7 +7,9 @@ import { doAction, hasAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import useBusinessProfileSyncStatus from './useBusinessProfileSyncStatus';
+import useBusinessProfileSyncStatus, {
+	FIRST_CHECK_DELAY,
+} from './useBusinessProfileSyncStatus';
 
 const POST_ID = 123;
 
@@ -63,7 +65,7 @@ function statusResponse( syncOutcome, shareStatus ) {
  */
 function runFirstCheckTimer() {
 	act( () => {
-		jest.advanceTimersByTime( 3000 );
+		jest.advanceTimersByTime( FIRST_CHECK_DELAY );
 	} );
 }
 
@@ -100,7 +102,7 @@ describe( 'useBusinessProfileSyncStatus', () => {
 		} );
 	} );
 
-	it( "asks for the post's status on Heartbeat requests while the send is queued, starting 3 seconds after the save", () => {
+	it( "asks for the post's status on Heartbeat requests while the send is queued, starting shortly after the save", () => {
 		const { result } = renderHook( () =>
 			useBusinessProfileSyncStatus( {
 				postId: POST_ID,
@@ -110,7 +112,7 @@ describe( 'useBusinessProfileSyncStatus', () => {
 		);
 
 		act( () => {
-			jest.advanceTimersByTime( 2999 );
+			jest.advanceTimersByTime( FIRST_CHECK_DELAY - 1 );
 		} );
 		expect( window.wp.heartbeat.connectNow ).not.toHaveBeenCalled();
 
@@ -198,6 +200,30 @@ describe( 'useBusinessProfileSyncStatus', () => {
 
 		expect( result.current.syncOutcome ).toBe( rejected );
 		expect( result.current.isShared ).toBe( false );
+	} );
+
+	it( 'ignores a reply to a request sent before a later save', () => {
+		let props = {
+			postId: POST_ID,
+			syncOutcome: queued,
+			shareStatus: notShared,
+			savedAt: '2026-11-11T16:42:44',
+		};
+		const { result, rerender } = renderHook( () =>
+			useBusinessProfileSyncStatus( props )
+		);
+
+		act( () => {
+			doAction( 'heartbeat.send', {} );
+		} );
+		props = { ...props, savedAt: '2026-11-11T16:43:47' };
+		rerender();
+		act( () => {
+			doAction( 'heartbeat.tick', statusResponse( rejected, notShared ) );
+		} );
+
+		expect( result.current.syncOutcome ).toBe( queued );
+		expect( beat() ).toEqual( { gla_gbp_sync_status: POST_ID } );
 	} );
 
 	it( 'asks again after a save that queues another send', () => {

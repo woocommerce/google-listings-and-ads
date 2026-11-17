@@ -35,20 +35,19 @@ export const FIRST_CHECK_DELAY = 3000;
 /**
  * A hook to keep a post's Google Business Profile send status current while its send is queued.
  * While the send is queued, it asks for the post's status on each WordPress Heartbeat request, at
- * the editor's own speed (every 10 seconds in the block editor, every 60 in the Classic Editor),
- * since a background send can take minutes to run. It also sends one request 3 seconds after
- * each save, so a quick send shows sooner. Once the send settles, it stops asking. Where Heartbeat
- * isn't loaded, it returns the editor's values.
+ * whatever interval the editor sets, since a background send can take minutes to run. It also
+ * sends one request {@link FIRST_CHECK_DELAY} after each save, so a quick send shows sooner. Once
+ * the send settles, it stops asking. Where Heartbeat isn't loaded, it returns the editor's values.
  *
  * @param {Object} props Hook props.
- * @param {number} [props.postId] The post's ID, or `0` when it's not known yet.
+ * @param {number} props.postId The post's ID.
  * @param {SyncOutcome|null} props.syncOutcome The sync outcome the editor has for the post.
  * @param {ShareStatus|null} props.shareStatus The share status the editor has for the post.
  * @param {string} [props.savedAt] When the post was last saved, e.g. its `modified_gmt`. A new value starts over, even when the outcome is `queued` both before and after the save.
  * @return {BusinessProfileSyncStatus} The post's current send status.
  */
 export default function useBusinessProfileSyncStatus( {
-	postId = 0,
+	postId,
 	syncOutcome,
 	shareStatus,
 	savedAt = '',
@@ -70,13 +69,18 @@ export default function useBusinessProfileSyncStatus( {
 			return;
 		}
 
+		// A save replaces these actions while a request may still be on its way. Its reply then
+		// describes the post before this save, so only replies to requests sent from here count.
+		let hasAsked = false;
+
 		addAction( 'heartbeat.send', HOOK_NAMESPACE, ( data ) => {
+			hasAsked = true;
 			data[ HEARTBEAT_SYNC_STATUS_KEY ] = postId;
 		} );
 		addAction( 'heartbeat.tick', HOOK_NAMESPACE, ( response ) => {
 			const status = response?.[ HEARTBEAT_SYNC_STATUS_KEY ];
 
-			if ( status ) {
+			if ( status && hasAsked ) {
 				setLatest( {
 					savedAt,
 					syncOutcome: status.syncOutcome ?? null,
