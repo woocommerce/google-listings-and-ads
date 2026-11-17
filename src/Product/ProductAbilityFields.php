@@ -143,16 +143,12 @@ class ProductAbilityFields implements Service, Registerable {
 		}
 		ExtensibleAbilities::register_validator(
 			$common + [
-				'callback' => function ( WC_Product $product, $ability, array $context ) {
-					return $this->validate_availability_date( $product, $context );
-				},
+				'callback' => [ $this, 'validate_availability_date' ],
 			]
 		);
 		ExtensibleAbilities::register_sync(
 			$common + [
-				'callback' => function ( array $saved, $ability, array $context ): void {
-					$this->sync_hidden_product_issues( $saved, $context['input'] ?? [] );
-				},
+				'callback' => [ $this, 'sync_hidden_product_issues' ],
 			]
 		);
 	}
@@ -350,11 +346,12 @@ class ProductAbilityFields implements Service, Registerable {
 	 * A variation that a product-create call builds has no parent yet, so it cannot be checked here.
 	 *
 	 * @param WC_Product $product The changed product, before the save.
+	 * @param mixed      $ability The ability that changes the product.
 	 * @param array      $context Validator context. A product that the call deletes does not need a date.
 	 *
 	 * @return WP_Error|null
 	 */
-	public function validate_availability_date( WC_Product $product, array $context = [] ): ?WP_Error {
+	public function validate_availability_date( WC_Product $product, $ability, array $context ): ?WP_Error {
 		if ( ! empty( $context['deleting'] ) ) {
 			return null;
 		}
@@ -386,11 +383,12 @@ class ProductAbilityFields implements Service, Registerable {
 	/**
 	 * Delete the issues of a product that the call hid from Google, because a hidden product no longer reports them.
 	 *
-	 * @param WC_Product[] $saved Saved objects, the primary object first.
-	 * @param array        $input Ability input.
+	 * @param WC_Product[] $saved   Saved objects, the primary object first.
+	 * @param mixed        $ability The ability that saved the objects.
+	 * @param array        $context Sync context, with the ability input under `input`.
 	 */
-	public function sync_hidden_product_issues( array $saved, array $input ): void {
-		$visibility = $input['extensions'][ self::ABILITY_NAMESPACE ]['visibility'] ?? null;
+	public function sync_hidden_product_issues( array $saved, $ability, array $context ): void {
+		$visibility = $context['input']['extensions'][ self::ABILITY_NAMESPACE ]['visibility'] ?? null;
 		if ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $visibility || empty( $saved ) || ! $this->issue_table_exists() ) {
 			return;
 		}

@@ -200,10 +200,10 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		);
 		$this->assertCount( 1, $this->field( 'merchant_issues' )['get_callback']( $product ) );
 
-		$this->fields->sync_hidden_product_issues( [ $product ], [ 'extensions' => [ 'google' => [ 'visibility' => 'sync-and-show' ] ] ] );
+		$this->fields->sync_hidden_product_issues( [ $product ], null, [ 'input' => [ 'extensions' => [ 'google' => [ 'visibility' => 'sync-and-show' ] ] ] ] );
 		$this->assertCount( 1, $this->field( 'merchant_issues' )['get_callback']( $product ) );
 
-		$this->fields->sync_hidden_product_issues( [ $product ], [ 'extensions' => [ 'google' => [ 'visibility' => 'dont-sync-and-show' ] ] ] );
+		$this->fields->sync_hidden_product_issues( [ $product ], null, [ 'input' => [ 'extensions' => [ 'google' => [ 'visibility' => 'dont-sync-and-show' ] ] ] ] );
 		$this->assertNull( $this->field( 'merchant_issues' )['get_callback']( $product ) );
 	}
 
@@ -234,7 +234,7 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 				$this->assertSame( [ 'exclude_ids' => [] ], $filter['callback']( false ) );
 			}
 		}
-		$fields->sync_hidden_product_issues( [ $product ], [ 'extensions' => [ 'google' => [ 'visibility' => 'dont-sync-and-show' ] ] ] );
+		$fields->sync_hidden_product_issues( [ $product ], null, [ 'input' => [ 'extensions' => [ 'google' => [ 'visibility' => 'dont-sync-and-show' ] ] ] ] );
 	}
 
 	public function test_status_filter_matches_products_without_the_meta_for_its_unset_value() {
@@ -259,10 +259,10 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_stock_status( 'onbackorder' );
 
-		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product )->get_error_code() );
+		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product, null, [] )->get_error_code() );
 
 		$this->field( 'availability_date' )['set_callback']( $product, '2030-01-01T00:00:00' );
-		$this->assertNull( $this->fields->validate_availability_date( $product ) );
+		$this->assertNull( $this->fields->validate_availability_date( $product, null, [] ) );
 	}
 
 	public function test_validator_ignores_an_unrelated_change_and_a_store_that_is_not_connected() {
@@ -270,11 +270,11 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		$product->set_stock_status( 'onbackorder' );
 		$this->merchant_center->method( 'is_connected' )->willReturnOnConsecutiveCalls( false, true );
 
-		$this->assertNull( $this->fields->validate_availability_date( $product ) );
+		$this->assertNull( $this->fields->validate_availability_date( $product, null, [] ) );
 
 		$product->save();
 		$product->set_regular_price( '5' );
-		$this->assertNull( $this->fields->validate_availability_date( $product ) );
+		$this->assertNull( $this->fields->validate_availability_date( $product, null, [] ) );
 	}
 
 	public function test_validator_refuses_removing_the_date_of_a_backorder() {
@@ -286,7 +286,7 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 
 		$this->field( 'availability_date' )['set_callback']( $product, null );
 
-		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product )->get_error_code() );
+		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product, null, [] )->get_error_code() );
 	}
 
 	public function test_validator_ignores_a_product_being_deleted() {
@@ -294,8 +294,8 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_stock_status( 'onbackorder' );
 
-		$this->assertNull( $this->fields->validate_availability_date( $product, [ 'deleting' => true ] ) );
-		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product, [ 'deleting' => false ] )->get_error_code() );
+		$this->assertNull( $this->fields->validate_availability_date( $product, null, [ 'deleting' => true ] ) );
+		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product, null, [ 'deleting' => false ] )->get_error_code() );
 	}
 
 	/**
