@@ -7,6 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Exception;
+use Throwable;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -122,21 +124,22 @@ class PostDeleteTrigger implements Service, Registerable {
 		$result = $this->pending_delete[ $post_id ];
 		unset( $this->pending_delete[ $post_id ] );
 
-		$this->job_repository->get( DeleteLocalPost::class )->schedule( [ $post_id, $result ] );
+		try {
+			$this->job_repository->get( DeleteLocalPost::class )->schedule( [ $post_id, $result ] );
+		} catch ( Throwable $failure ) {
+			// The post's own trash or delete must never break on scheduling.
+			if ( $failure instanceof Exception ) {
+				do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+			} else {
+				do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+			}
+		}
 	}
 
 	/**
-	 * Clear a restored post's last sync outcome always, and its sharing toggle too unless the
-	 * stored result is still complete.
-	 *
-	 * A still-complete result now means either a delete that genuinely failed, or one that's
-	 * simply still queued and hasn't run yet -- not cancelled on restore, matching the equivalent,
-	 * already-shipped coupon behavior. Either way `get_share_status()` (reading that same stored
-	 * result) already keeps a resend blocked for as long as the post genuinely still looks live,
-	 * so leaving the toggle and result alone here is safe. But the last sync outcome is cleared
-	 * regardless: leaving a stale "success" in place would separately block `sends_on_save()`
-	 * forever, even once the result does eventually clear -- a queued delete finally succeeding,
-	 * say -- stranding the post sharing-on with no further save ever able to retry it.
+	 * Clear a restored post's last sync outcome, and its sharing toggle too unless its stored
+	 * result is still complete (the delete failed or hasn't run yet, so the post is still live
+	 * at Google).
 	 *
 	 * @param int $post_id
 	 */
