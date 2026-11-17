@@ -1,3 +1,8 @@
+// Needs the page scope to win over the reset of `.components-card` margins in the shared Gutenberg styles.
+.gla-admin-page .gla-advertising-source-selector {
+	margin-block-end: var(--large-gap);
+}
+
 .gla-advertising-source-selector {
 
 	.gla-section-card-title {

@@ -368,6 +368,21 @@ test.describe( 'Add paid campaign', () => {
 				).toBeVisible();
 			} );
 
+			test( 'Ticking the text, images and videos box shows a notice', async () => {
+				const notice =
+					'If you also sell services, your ads in this campaign will mainly show your products rather than your services. Google recommends promoting your services in a separate campaign.';
+				const checkbox = page.getByRole( 'checkbox', {
+					name: 'Add text, images, and videos',
+				} );
+
+				await expect( checkbox ).not.toBeChecked();
+				await expect( page.getByText( notice ) ).toBeHidden();
+
+				await checkbox.check();
+
+				await expect( page.getByText( notice ) ).toBeVisible();
+			} );
+
 			test.describe( 'Preview product ad', () => {
 				test( 'Preview product ad should be visible', async () => {
 					await expect(
