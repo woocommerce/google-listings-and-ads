@@ -35,10 +35,10 @@
 		margin: 0;
 		margin-inline-start: $grid-unit-30;
 		padding: $grid-unit-15;
-		border: 1px solid #adc6e2;
+		border: 1px solid $gla-color-info-stroke;
 		border-radius: $grid-unit-10;
-		background-color: #f3f9ff;
-		color: #001b4f;
+		background-color: $gla-color-info-weak;
+		color: $gla-color-info-text;
 		font-size: $gla-font-base;
 		line-height: $grid-unit-30 - $grid-unit-05;
 	}

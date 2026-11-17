@@ -21,7 +21,9 @@ const NOTICE_TEXT =
 	'If you also sell services, your ads in this campaign will mainly show your products rather than your services. Google recommends promoting your services in a separate campaign.';
 
 // `Notice` also announces its text in a screen reader live region, so look inside the notice itself.
-const getNotice = () => document.querySelector( '.components-notice' );
+const getNotice = () => {
+	return document.querySelector( '.components-notice' );
+};
 
 /**
  * Renders the card with a minimal stateful stand-in for the adaptive form context.
@@ -36,13 +38,15 @@ function renderCard( advertisingSource, onValueChange = jest.fn() ) {
 
 		useAdaptiveFormContext.mockReturnValue( {
 			values: { advertisingSource, includeCreativeAssets },
-			getInputProps: () => ( {
-				checked: includeCreativeAssets,
-				onChange: ( value ) => {
-					onValueChange( value );
-					setIncludeCreativeAssets( value );
-				},
-			} ),
+			getInputProps: () => {
+				return {
+					checked: includeCreativeAssets,
+					onChange: ( value ) => {
+						onValueChange( value );
+						setIncludeCreativeAssets( value );
+					},
+				};
+			},
 		} );
 
 		return <AssetsOptInCard />;

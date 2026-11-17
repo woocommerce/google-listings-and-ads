@@ -13,6 +13,15 @@ import VerticalGapLayout from '~/components/vertical-gap-layout';
 import { ADVERTISING_SOURCE } from '~/constants';
 import './assets-opt-in-card.scss';
 
+const LABEL = (
+	<>
+		{ __( 'Add text, images, and videos', 'google-listings-and-ads' ) }
+		<span className="gla-assets-opt-in-card__optional">
+			{ __( '(Optional)', 'google-listings-and-ads' ) }
+		</span>
+	</>
+);
+
 /**
  * Renders the optional card for adding the merchant's own text, images and videos to a campaign that advertises
  * the store's products. It renders nothing when the campaign advertises a page, since those campaigns always have assets.
@@ -36,20 +45,7 @@ export default function AssetsOptInCard() {
 				<VerticalGapLayout size="large">
 					<CheckboxControl
 						{ ...inputProps }
-						label={
-							<>
-								{ __(
-									'Add text, images, and videos',
-									'google-listings-and-ads'
-								) }
-								<span className="gla-assets-opt-in-card__optional">
-									{ __(
-										'(Optional)',
-										'google-listings-and-ads'
-									) }
-								</span>
-							</>
-						}
+						label={ LABEL }
 						help={ __(
 							'Add your own headlines, descriptions, images, and videos alongside your products. Google AI suggests some to start with.',
 							'google-listings-and-ads'
