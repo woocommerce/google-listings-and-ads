@@ -51,7 +51,7 @@ class PluginUpdate implements Service, InstallableInterface {
 		'3.8.0'  => [
 			UpdateAllProducts::class,
 		],
-		// GOOWOO-1188: products in exchange-rate secondary markets were marked invalid with a null
+		// Products in exchange-rate secondary markets were marked invalid with a null
 		// price and are excluded from the expiring-products resync; re-sync them once.
 		'3.10.2' => [
 			UpdateAllProducts::class,
