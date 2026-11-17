@@ -19,6 +19,7 @@ interface OptionsInterface {
 	public const ADS_BILLING_URL                           = 'ads_billing_url';
 	public const ADS_HAS_UNCLAIMED_INCENTIVE               = 'ads_has_unclaimed_incentive';
 	public const ADS_ID                                    = 'ads_id';
+	public const ADS_INCENTIVE_APPLIED                     = 'ads_incentive_applied';
 	public const ADS_INCENTIVE_APPLY_ERROR                 = 'ads_incentive_apply_error';
 	public const ADS_CONVERSION_ACTION                     = 'ads_conversion_action';
 	public const ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    = 'ads_eu_political_declarations_complete';
@@ -51,6 +52,8 @@ interface OptionsInterface {
 	public const SYNCABLE_PRODUCTS_COUNT                   = 'syncable_products_count';
 	public const SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA = 'syncable_products_count_intermediate_data';
 	public const PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  = 'product_statuses_count_intermediate_data';
+	public const FEED_ISSUE_TRACKING                       = 'feed_issue_tracking';
+	public const FEED_ISSUE_SUMMARY                        = 'feed_issue_summary';
 	public const TARGET_AUDIENCE                           = 'target_audience';
 	public const TOURS                                     = 'tours';
 	public const UPDATE_ALL_PRODUCTS_LAST_SYNC             = 'update_all_products_last_sync';
@@ -73,6 +76,7 @@ interface OptionsInterface {
 		self::ADS_BILLING_URL                           => true,
 		self::ADS_HAS_UNCLAIMED_INCENTIVE               => true,
 		self::ADS_ID                                    => true,
+		self::ADS_INCENTIVE_APPLIED                     => true,
 		self::ADS_INCENTIVE_APPLY_ERROR                 => true,
 		self::ADS_CONVERSION_ACTION                     => true,
 		self::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    => true,
@@ -105,6 +109,8 @@ interface OptionsInterface {
 		self::SYNCABLE_PRODUCTS_COUNT                   => true,
 		self::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA => true,
 		self::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  => true,
+		self::FEED_ISSUE_TRACKING                       => true,
+		self::FEED_ISSUE_SUMMARY                        => true,
 		self::TARGET_AUDIENCE                           => true,
 		self::TOURS                                     => true,
 		self::UPDATE_ALL_PRODUCTS_LAST_SYNC             => true,
