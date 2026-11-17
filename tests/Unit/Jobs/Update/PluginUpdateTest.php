@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs\Update;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\CleanupProductTargetCountriesJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\PluginUpdate;
@@ -393,6 +394,19 @@ class PluginUpdateTest extends UnitTest {
 
 		$this->assertSame( [ $exception ], $reported );
 		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+	}
+
+	public function test_job_that_is_not_an_action_scheduler_job_is_not_kept_pending() {
+		// It can't say whether it can be scheduled, so it must not stay pending forever.
+		$this->job_repository->expects( $this->once() )
+			->method( 'get' )
+			->with( UpdateAllProducts::class )
+			->willReturn( $this->createMock( JobInterface::class ) );
+
+		$this->plugin_update->install( '3.7.3', '3.8.0' );
+
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+		$this->assertSame( [], $this->logged );
 	}
 
 	public function test_retry_attempts_only_the_jobs_that_are_due() {
