@@ -17,7 +17,7 @@ import EuPoliticalContentField from './eu-political-content-field';
  */
 const EuPoliticalContentCard = ( { context } ) => {
 	return (
-		<Section.Card className="gla-eu-political-content-card">
+		<Section.Card>
 			<Section.Card.Body>
 				<Section.Card.Title>
 					{ __( 'EU political content', 'google-listings-and-ads' ) }
