@@ -597,6 +597,18 @@ test.describe( 'Add paid campaign', () => {
 				);
 			} );
 
+			test( 'Campaign name field should show the generated name', async () => {
+				const campaignNameInput =
+					createCampaignPage.getCampaignNameInput();
+
+				await expect( campaignNameInput ).toHaveValue(
+					/^Campaign \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/
+				);
+				await expect(
+					page.getByText( '28/50 characters' )
+				).toBeVisible();
+			} );
+
 			test( 'Ads credit offer picker should be visible', async () => {
 				await expect(
 					page.getByText( 'Ads credit offer', { exact: true } )

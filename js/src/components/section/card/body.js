@@ -9,12 +9,31 @@ import classnames from 'classnames';
  */
 import './body.scss';
 
+// No extra class for 'large', the default padding.
+const paddingClassName = {
+	large: false,
+	medium: 'gla-section-card-body--padding-medium',
+};
+
+/**
+ * Renders the body of a `Section.Card`.
+ *
+ * @param {Object} props React props.
+ * @param {string} [props.className] Additional CSS class name to be appended.
+ * @param {'large'|'medium'} [props.padding='large'] Indicate the padding of the card body.
+ *     'large': A large padding.
+ *     'medium': A medium padding.
+ */
 const Body = ( props ) => {
-	const { className, ...rest } = props;
+	const { className, padding = 'large', ...rest } = props;
 
 	return (
 		<CardBody
-			className={ classnames( 'gla-section-card-body', className ) }
+			className={ classnames(
+				'gla-section-card-body',
+				paddingClassName[ padding ],
+				className
+			) }
 			{ ...rest }
 		></CardBody>
 	);
