@@ -38,6 +38,12 @@ class PostShareControl implements Service, Registerable {
 	/** @var string Handle of the Classic Editor meta box's script. */
 	protected const META_BOX_SCRIPT_HANDLE = 'gla-business-profile-share-meta-box';
 
+	/**
+	 * @var string Key the editors send a post ID under in a Heartbeat request, and read the post's
+	 *             send status from in the response.
+	 */
+	public const HEARTBEAT_SYNC_STATUS_KEY = 'gla_gbp_sync_status';
+
 	/** @var AssetsHandlerInterface */
 	protected $assets_handler;
 
@@ -66,11 +72,39 @@ class PostShareControl implements Service, Registerable {
 	}
 
 	/**
-	 * Register the share meta, and the assets of the block editor panel or the Classic Editor meta box.
+	 * Register the share meta, the assets of the block editor panel or the Classic Editor meta box,
+	 * and the send status the editors read from Heartbeat while a send is queued.
 	 */
 	public function register(): void {
 		add_action( 'init', [ $this, 'register_post_meta' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+		add_filter( 'heartbeat_received', [ $this, 'add_sync_status_to_heartbeat' ], 10, 2 );
+	}
+
+	/**
+	 * Add a post's send status to the Heartbeat response, when the editor asks for it and the
+	 * current user can edit the post. The editors ask while a send to Google is queued, and use the
+	 * response to show the outcome without a reload.
+	 *
+	 * @param array $response The Heartbeat response.
+	 * @param array $data     The data the editor sent with the Heartbeat request.
+	 *
+	 * @return array The response, with the post's send status under `HEARTBEAT_SYNC_STATUS_KEY`
+	 *               shaped `{ syncOutcome, shareStatus }` when asked for.
+	 */
+	public function add_sync_status_to_heartbeat( $response, $data ) {
+		$post_id = absint( $data[ self::HEARTBEAT_SYNC_STATUS_KEY ] ?? 0 );
+
+		if ( ! $post_id || ! current_user_can( 'edit_post', $post_id ) ) {
+			return $response;
+		}
+
+		$response[ self::HEARTBEAT_SYNC_STATUS_KEY ] = [
+			'syncOutcome' => $this->local_post_service->get_sync_outcome_for_display( $post_id ),
+			'shareStatus' => $this->local_post_service->get_share_status( $post_id ),
+		];
+
+		return $response;
 	}
 
 	/**
@@ -187,6 +221,12 @@ class PostShareControl implements Service, Registerable {
 			(string) filemtime( "{$build_dir}/{$entry}.css" )
 		);
 
+		// The scripts read a queued send's status from Heartbeat. Core already loads it in both
+		// editors; this keeps it there if a plugin removes it from the editor. The plugin's asset
+		// classes take dependencies only from the built asset file, so it's enqueued rather than
+		// added as a dependency.
+		wp_enqueue_script( 'heartbeat' );
+
 		$this->assets_handler->register_many( [ $script, $style ] );
 		$this->assets_handler->enqueue_many( [ $script, $style ] );
 	}
@@ -207,26 +247,22 @@ class PostShareControl implements Service, Registerable {
 	}
 
 	/**
-	 * Get the state of a post the Classic Editor meta box needs: its saved share choice and text,
-	 * its share status, and the outcome of its last attempt to reach Google, if any. "Generate
-	 * from post" reads the editor's live content directly in JS, so this never needs the post's
-	 * title or excerpt.
+	 * Get the state of a post the Classic Editor meta box needs: its ID, its saved share choice and
+	 * text, its share status, and its last sync outcome. The share status and sync outcome have the
+	 * same shape as the post's REST fields and the Heartbeat response. "Generate from post" reads the
+	 * editor's live content directly in JS, so this never needs the post's title or excerpt.
 	 *
 	 * @param WP_Post $post The post being edited.
 	 *
 	 * @return array
 	 */
 	protected function get_post_data( WP_Post $post ): array {
-		$share_status = $this->local_post_service->get_share_status( $post->ID );
-		$outcome      = $this->local_post_service->get_sync_outcome_for_display( $post->ID );
-
 		return [
+			'postId'         => $post->ID,
 			'isShareEnabled' => (bool) get_post_meta( $post->ID, self::SHARE_META_KEY, true ),
 			'summary'        => (string) get_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, true ),
-			'isShared'       => $share_status['is_shared'],
-			'searchUrl'      => $share_status['search_url'],
-			'displayMessage' => $outcome['display_message'] ?? null,
-			'displayStatus'  => $outcome['display_status'] ?? null,
+			'shareStatus'    => $this->local_post_service->get_share_status( $post->ID ),
+			'syncOutcome'    => $this->local_post_service->get_sync_outcome_for_display( $post->ID ),
 		];
 	}
 

@@ -11,7 +11,12 @@ import { recordGlaEvent } from '~/utils/tracks';
 import { buildSummary } from './utils/summaryText';
 import SummaryField from './summary-field';
 import GenerateFromPostButton from './generate-from-post-button';
+import SyncStatus from './sync-status';
 import './index.scss';
+
+/**
+ * @typedef {import('./types').SyncOutcome} SyncOutcome
+ */
 
 /**
  * Turning the "Share on my Business Profile" toggle on or off.
@@ -31,10 +36,10 @@ import './index.scss';
 
 /**
  * Renders the controls for sharing a post to Google Business Profile, independent of the editor
- * hosting them: the "Share on my Business Profile" toggle, a link to the post on Google once it has
- * one, and — while sharing is on — the field holding the text sent to Google with its "Generate
- * from post" action. On a post already shared, the toggle explains that changes made here aren't
- * sent to Google.
+ * hosting them: the "Share on my Business Profile" toggle, the status of the post's last send to
+ * Google, a link to the post on Google once it has one, and — while sharing is on — the field
+ * holding the text sent to Google with its "Generate from post" action. On a post already shared,
+ * the toggle explains that changes made here aren't sent to Google.
  *
  * @param {Object} props Component props.
  * @param {string} props.context The editor hosting the controls, sent with tracking events. Possible values: 'business-profile-share-panel', 'business-profile-share-meta-box'.
@@ -46,6 +51,7 @@ import './index.scss';
  * @param {() => {title: string, body: string}} props.getLivePostContent Returns the post's title and body right now, including unsaved edits, as plain text.
  * @param {string} [props.searchUrl] The post's link on Google, once Google provides one.
  * @param {boolean} [props.isShared] Whether the post has already been shared to Google.
+ * @param {SyncOutcome|null} [props.syncOutcome] The post's latest sync outcome.
  * @return {JSX.Element} The controls.
  *
  * @fires gla_google_business_profile_share_toggle_click with `{ context, status, is_shared }`.
@@ -61,6 +67,7 @@ export default function BusinessProfileShareControl( {
 	getLivePostContent,
 	searchUrl,
 	isShared = false,
+	syncOutcome = null,
 } ) {
 	const handleShareEnabledChange = ( nextIsShareEnabled ) => {
 		recordGlaEvent( 'gla_google_business_profile_share_toggle_click', {
@@ -117,6 +124,7 @@ export default function BusinessProfileShareControl( {
 				onChange={ handleShareEnabledChange }
 				__nextHasNoMarginBottom
 			/>
+			<SyncStatus syncOutcome={ syncOutcome } />
 			{ searchUrl && (
 				<ExternalLink
 					href={ searchUrl }

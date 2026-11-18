@@ -2,23 +2,27 @@
  * External dependencies
  */
 import { useState } from '@wordpress/element';
-import { Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
+import useBusinessProfileSyncStatus from '~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus';
 import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from './constants';
 import getLiveClassicPostContent from './getLiveClassicPostContent';
 
 /**
+ * @typedef {import('~/components/business-profile-share-control/types').ShareStatus} ShareStatus
+ * @typedef {import('~/components/business-profile-share-control/types').SyncOutcome} SyncOutcome
+ */
+
+/**
  * @typedef {Object} BusinessProfileSharePost
+ * @property {number} postId The post's ID.
  * @property {boolean} isShareEnabled Whether sharing is turned on.
  * @property {string} summary The text sent to Google.
- * @property {boolean} isShared Whether the post has already been shared to Google.
- * @property {string} searchUrl The post's link on Google, once Google provides one.
- * @property {?string} displayMessage A ready-to-display message for a non-success outcome of the post's last attempt to reach Google, or null.
- * @property {?string} displayStatus The message's severity ("error" or "warning"), or null.
+ * @property {ShareStatus} shareStatus The post's share status.
+ * @property {SyncOutcome|null} syncOutcome The post's last sync outcome.
  */
 
 /**
@@ -41,20 +45,14 @@ export default function BusinessProfileShareMetaBox( {
 } ) {
 	const [ isShareEnabled, setShareEnabled ] = useState( post.isShareEnabled );
 	const [ summary, setSummary ] = useState( post.summary );
-	const [ showNotice, setShowNotice ] = useState(
-		Boolean( post.displayMessage )
-	);
+	const { syncOutcome, isShared, searchUrl } = useBusinessProfileSyncStatus( {
+		postId: post.postId,
+		syncOutcome: post.syncOutcome,
+		shareStatus: post.shareStatus,
+	} );
 
 	return (
 		<>
-			{ showNotice && (
-				<Notice
-					status={ post.displayStatus }
-					onRemove={ () => setShowNotice( false ) }
-				>
-					{ post.displayMessage }
-				</Notice>
-			) }
 			<BusinessProfileShareControl
 				context={ BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT }
 				locationName={ location.title || location.address }
@@ -63,8 +61,9 @@ export default function BusinessProfileShareMetaBox( {
 				summary={ summary }
 				onSummaryChange={ setSummary }
 				getLivePostContent={ getLiveClassicPostContent }
-				searchUrl={ post.searchUrl }
-				isShared={ post.isShared }
+				searchUrl={ searchUrl }
+				isShared={ isShared }
+				syncOutcome={ syncOutcome }
 			/>
 			<input
 				type="hidden"

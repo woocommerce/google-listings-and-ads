@@ -2,13 +2,15 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { doAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
  */
 import BusinessProfileShareMetaBox from './business-profile-share-meta-box';
+import { FIRST_CHECK_DELAY } from '~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus';
 import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/utils/tracks', () => ( {
@@ -21,13 +23,29 @@ const location = {
 };
 
 const savedPost = {
+	postId: 123,
 	isShareEnabled: false,
 	summary: '',
-	isShared: false,
-	searchUrl: '',
-	displayMessage: null,
-	displayStatus: null,
+	shareStatus: { is_shared: false, search_url: '' },
+	syncOutcome: null,
 };
+
+/**
+ * Runs a Heartbeat request the way `heartbeat.js` does, and returns the data the request sent.
+ *
+ * @param {Object} [response] The Heartbeat response.
+ * @return {Object} The data sent with the request.
+ */
+function beat( response = {} ) {
+	const data = {};
+
+	act( () => {
+		doAction( 'heartbeat.send', data );
+		doAction( 'heartbeat.tick', response );
+	} );
+
+	return data;
+}
 
 /**
  * Sets up the page's title field and main content editor the way the Classic Editor screen does,
@@ -102,12 +120,16 @@ function getSubmittedValue( form, name ) {
 describe( 'BusinessProfileShareMetaBox', () => {
 	beforeEach( () => {
 		recordGlaEvent.mockClear();
+		window.wp = {
+			heartbeat: { connectNow: jest.fn().mockName( 'connectNow' ) },
+		};
 	} );
 
 	afterEach( () => {
 		document.getElementById( 'title' )?.remove();
 		document.getElementById( 'content' )?.remove();
 		delete window.tinymce;
+		delete window.wp;
 	} );
 
 	it( 'shows the toggle off by default, naming the connected location, with no field', () => {
@@ -249,8 +271,10 @@ describe( 'BusinessProfileShareMetaBox', () => {
 
 	it( "explains that changes aren't sent to Google and links to the post on a shared post", () => {
 		renderMetaBox( {
-			isShared: true,
-			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+			shareStatus: {
+				is_shared: true,
+				search_url: 'https://local.google.com/place?id=1&use=posts',
+			},
 		} );
 
 		expect(
@@ -268,39 +292,6 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		);
 	} );
 
-	it( 'shows a non-success outcome as a dismissible notice', async () => {
-		const user = userEvent.setup();
-		const form = renderMetaBox( {
-			displayMessage:
-				"This post couldn't be removed from Google Business Profile. It's still shown there. Update the post to try again.",
-			displayStatus: 'error',
-		} );
-
-		expect(
-			within( form ).getByText(
-				"This post couldn't be removed from Google Business Profile. It's still shown there. Update the post to try again."
-			)
-		).toBeInTheDocument();
-
-		await user.click(
-			within( form ).getByRole( 'button', { name: 'Close' } )
-		);
-
-		expect(
-			within( form ).queryByText(
-				"This post couldn't be removed from Google Business Profile. It's still shown there. Update the post to try again."
-			)
-		).not.toBeInTheDocument();
-	} );
-
-	it( 'shows nothing when the last outcome has no display message', () => {
-		const form = renderMetaBox();
-
-		expect(
-			within( form ).queryByRole( 'button', { name: 'Close' } )
-		).not.toBeInTheDocument();
-	} );
-
 	it( "falls back to the location's address when it has no name", () => {
 		render(
 			<BusinessProfileShareMetaBox
@@ -315,6 +306,63 @@ describe( 'BusinessProfileShareMetaBox', () => {
 			screen.getByText(
 				'Share to 456 Riverside Ave, San Francisco, 94107 as an update when you publish.'
 			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'asks Heartbeat about a queued send and says the post is on its way', () => {
+		jest.useFakeTimers();
+		renderMetaBox( { syncOutcome: { outcome: 'queued' } } );
+
+		act( () => {
+			jest.advanceTimersByTime( FIRST_CHECK_DELAY );
+		} );
+		jest.useRealTimers();
+
+		expect( window.wp.heartbeat.connectNow ).toHaveBeenCalledTimes( 1 );
+		expect( beat() ).toEqual( { gla_gbp_sync_status: 123 } );
+		expect(
+			screen.getByText( 'Sending to Google Business Profile…' )
+		).toBeInTheDocument();
+	} );
+
+	it( "shows a failed send's message once Heartbeat reports the send settled", () => {
+		renderMetaBox( { syncOutcome: { outcome: 'queued' } } );
+
+		beat( {
+			gla_gbp_sync_status: {
+				syncOutcome: {
+					outcome: 'request-failure',
+					display_message: 'Google couldn’t be reached.',
+					display_status: 'error',
+				},
+				shareStatus: { is_shared: false, search_url: '' },
+			},
+		} );
+
+		expect(
+			screen.getByText( 'Google couldn’t be reached.', {
+				selector: '.components-notice__content',
+			} )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Sending to Google Business Profile…' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( "shows a saved failure's message on load without asking Heartbeat", () => {
+		renderMetaBox( {
+			syncOutcome: {
+				outcome: 'content-rejection',
+				display_message: 'This update was rejected by Google.',
+				display_status: 'error',
+			},
+		} );
+
+		expect( beat() ).toEqual( {} );
+		expect(
+			screen.getByText( 'This update was rejected by Google.', {
+				selector: '.components-notice__content',
+			} )
 		).toBeInTheDocument();
 	} );
 } );

@@ -15,6 +15,7 @@ import {
  */
 import BusinessProfileSharePanel from './business-profile-share-panel';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
+import useBlockEditorSyncStatus from './hooks/useBlockEditorSyncStatus';
 import { glaBusinessProfileData } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 
@@ -36,9 +37,11 @@ jest.mock(
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
-jest.mock( './hooks/useBusinessProfileSyncNotice', () => jest.fn() );
 jest.mock( './hooks/useBusinessProfileSharePost', () =>
 	jest.fn().mockName( 'useBusinessProfileSharePost' )
+);
+jest.mock( './hooks/useBlockEditorSyncStatus', () =>
+	jest.fn().mockName( 'useBlockEditorSyncStatus' )
 );
 
 /**
@@ -50,10 +53,22 @@ function mockPost( overrides = {} ) {
 	useBusinessProfileSharePost.mockReturnValue( {
 		isShareEnabled: false,
 		summary: '',
-		isShared: false,
-		searchUrl: '',
 		setShareEnabled: jest.fn(),
 		setSummary: jest.fn(),
+		...overrides,
+	} );
+}
+
+/**
+ * Mocks the post's current send status.
+ *
+ * @param {Object} [overrides] Values to override.
+ */
+function mockSyncStatus( overrides = {} ) {
+	useBlockEditorSyncStatus.mockReturnValue( {
+		syncOutcome: null,
+		isShared: false,
+		searchUrl: '',
 		...overrides,
 	} );
 }
@@ -102,6 +117,10 @@ function renderPanel( { title = '', blocks = [] } = {} ) {
 }
 
 describe( 'BusinessProfileSharePanel', () => {
+	beforeEach( () => {
+		mockSyncStatus();
+	} );
+
 	afterEach( () => {
 		glaBusinessProfileData.businessProfileLocation = null;
 	} );
@@ -241,5 +260,40 @@ describe( 'BusinessProfileSharePanel', () => {
 		const { getBlocks } = renderPanel();
 
 		expect( getBlocks ).not.toHaveBeenCalled();
+	} );
+
+	it( "shows the post's current send status", () => {
+		glaBusinessProfileData.businessProfileLocation = {
+			title: 'Trailmark Athletics',
+		};
+		mockPost();
+		mockSyncStatus( { syncOutcome: { outcome: 'queued' } } );
+
+		renderPanel();
+
+		expect( useBlockEditorSyncStatus ).toHaveBeenCalledWith();
+		expect(
+			screen.getByText( 'Sending to Google Business Profile…' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'links to the post on Google once its send has settled', () => {
+		glaBusinessProfileData.businessProfileLocation = {
+			title: 'Trailmark Athletics',
+		};
+		mockPost();
+		mockSyncStatus( {
+			syncOutcome: { outcome: 'success' },
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+		} );
+
+		renderPanel();
+
+		expect(
+			screen.getByRole( 'link', {
+				name: 'View on Google Business Profile (opens in a new tab)',
+			} )
+		).toBeInTheDocument();
 	} );
 } );
