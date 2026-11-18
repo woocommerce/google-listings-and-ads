@@ -18,6 +18,13 @@ export default class SettingsPage extends MockRequests {
 			.filter( {
 				has: this.page.getByText( 'YouTube', { exact: true } ),
 			} );
+		this.googleBusinessProfileAccountCard = this.page
+			.locator( '.gla-account-card' )
+			.filter( {
+				has: this.page.getByText( 'Google Business Profile', {
+					exact: true,
+				} ),
+			} );
 	}
 
 	/**
@@ -72,6 +79,7 @@ export default class SettingsPage extends MockRequests {
 		await this.fulfillAdsReportProducts( adsReportProductsData );
 		await this.fulfillProductStatisticsRequest( mcProductStatistics );
 		await this.mockYouTubeAccountNotConnected();
+		await this.mockGoogleBusinessProfileNotConnected();
 	}
 
 	/**
@@ -142,6 +150,107 @@ export default class SettingsPage extends MockRequests {
 		return this.page.getByRole( 'menuitem', {
 			name: 'Disconnect',
 		} );
+	}
+
+	/**
+	 * Get the Google Business Profile "Connect" button, shown both to grant access and to connect a
+	 * single location.
+	 *
+	 * @return {import('@playwright/test').Locator} The Connect button.
+	 */
+	getGoogleBusinessProfileConnectButton() {
+		return this.googleBusinessProfileAccountCard.getByRole( 'button', {
+			name: 'Connect',
+		} );
+	}
+
+	/**
+	 * Get the Google Business Profile location selector.
+	 *
+	 * @return {import('@playwright/test').Locator} The `<select>`.
+	 */
+	getGoogleBusinessProfileLocationSelect() {
+		return this.googleBusinessProfileAccountCard.getByRole( 'combobox', {
+			name: 'Select a location',
+		} );
+	}
+
+	/**
+	 * Get the Google Business Profile "Save" button (location selection).
+	 *
+	 * @return {import('@playwright/test').Locator} The Save button.
+	 */
+	getGoogleBusinessProfileSaveButton() {
+		return this.googleBusinessProfileAccountCard.getByRole( 'button', {
+			name: 'Save',
+		} );
+	}
+
+	/**
+	 * Get the Google Business Profile account actions button.
+	 *
+	 * @return {import('@playwright/test').Locator} The actions button.
+	 */
+	getGoogleBusinessProfileAccountActionsButton() {
+		return this.googleBusinessProfileAccountCard.getByRole( 'button', {
+			name: 'Account actions for Google Business Profile',
+		} );
+	}
+
+	/**
+	 * Get the Google Business Profile Disconnect menu item.
+	 *
+	 * @return {import('@playwright/test').Locator} The Disconnect menu item.
+	 */
+	getGoogleBusinessProfileDisconnectMenuItem() {
+		return this.page.getByRole( 'menuitem', {
+			name: 'Disconnect',
+		} );
+	}
+
+	/**
+	 * Register a wait for the Google Business Profile connect request.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerGoogleBusinessProfileConnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				/\/wc\/gla\/business-profile\/connect\b/.test(
+					request.url()
+				) && request.method() === 'GET'
+		);
+	}
+
+	/**
+	 * Register a wait for the request to connect a Google Business Profile location.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerGoogleBusinessProfileSelectLocationRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				/\/wc\/gla\/business-profile\/locations\b/.test(
+					request.url()
+				) && request.method() === 'POST'
+		);
+	}
+
+	/**
+	 * Register a wait for the Google Business Profile disconnect request.
+	 *
+	 * Matches the POST that @wordpress/api-fetch sends for DELETE operations,
+	 * identified by the X-HTTP-Method-Override: DELETE header.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerGoogleBusinessProfileDisconnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/business-profile/connection' ) &&
+				request.method() === 'POST' &&
+				request.headers()[ 'x-http-method-override' ] === 'DELETE'
+		);
 	}
 
 	/**
