@@ -134,6 +134,15 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 	}
 
 	/**
+	 * Check whether the store has a recorded switch from service-based to physical products.
+	 *
+	 * @return bool True when the store has a recorded switch.
+	 */
+	public function has_switched_to_physical_products(): bool {
+		return (bool) $this->options->get( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT );
+	}
+
+	/**
 	 * Record when a service-based store first saved a product that needs shipping.
 	 *
 	 * Does nothing when a switch is already recorded, so the first switch is kept.
@@ -141,7 +150,7 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 	 * @return void
 	 */
 	public function record_switch_to_physical_products(): void {
-		if ( $this->options->get( OptionsInterface::SERVICE_TO_PHYSICAL_PRODUCTS_SWITCHED_AT ) ) {
+		if ( $this->has_switched_to_physical_products() ) {
 			return;
 		}
 

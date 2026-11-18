@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Campaign
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CollectReviewsEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\MerchantCenterAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PausedCampaignEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductIssuesEvaluator;
@@ -61,6 +62,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		CollectReviewsEvaluator::class           => true,
 		CouponsNotSyncedEvaluator::class         => true,
 		EnhancedConversionsOffEvaluator::class   => true,
+		MerchantCenterAvailableEvaluator::class  => true,
 		NotOnboardedEvaluator::class             => true,
 		PausedCampaignEvaluator::class           => true,
 		ProductIssuesEvaluator::class            => true,
@@ -81,6 +83,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( NotificationCacheInvalidator::class );
 		$this->share_with_tags( SkippedCampaignCreationEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( AbandonedOnboardingEvaluator::class, ServiceBasedMerchantState::class, OnboardingCompleted::class );
+		$this->share_with_tags( MerchantCenterAvailableEvaluator::class, ServiceBasedMerchantState::class, MerchantCenterService::class );
 		$this->share_with_tags( NotOnboardedEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( CollectReviewsEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( BadgeWidgetEvaluator::class, OnboardingCompleted::class );

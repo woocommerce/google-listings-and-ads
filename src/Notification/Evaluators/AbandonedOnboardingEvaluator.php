@@ -26,6 +26,9 @@ defined( 'ABSPATH' ) || exit;
  * used instead: a service-based merchant who finished the ads-only onboarding is done, while
  * one who has not is still genuinely mid-onboarding.
  *
+ * A former service-based store that has since added physical products is excluded too, since
+ * the merchant-center-available notification already prompts it to set up Merchant Center.
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
 class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, MerchantCenterAwareInterface, Service {
@@ -76,6 +79,13 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 		// while one who has not is still genuinely mid-onboarding.
 		if ( $this->service_based_merchant_state->is_service_based_merchant() ) {
 			return ! $this->onboarding_completed->is_onboarding_complete();
+		}
+
+		// A former service-based store that added physical products gets the
+		// merchant-center-available notification instead. Check after the classification,
+		// since its recalculation clears a switch record that no longer applies.
+		if ( $this->service_based_merchant_state->has_switched_to_physical_products() ) {
+			return false;
 		}
 
 		$setup_status = $this->merchant_center->get_setup_status();

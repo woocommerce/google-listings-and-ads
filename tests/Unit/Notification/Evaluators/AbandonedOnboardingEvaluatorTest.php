@@ -113,6 +113,24 @@ class AbandonedOnboardingEvaluatorTest extends UnitTest {
 		$this->assertTrue( $this->evaluator->should_show() );
 	}
 
+	public function test_should_not_show_when_store_switched_to_physical_products() {
+		$this->merchant_center->method( 'is_google_connected' )->willReturn( true );
+		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->service_based_merchant_state->method( 'has_switched_to_physical_products' )->willReturn( true );
+		$this->merchant_center->expects( $this->never() )->method( 'get_setup_status' );
+
+		$this->assertFalse( $this->evaluator->should_show() );
+	}
+
+	public function test_should_show_for_service_based_merchant_mid_onboarding_with_switch_recorded() {
+		$this->merchant_center->method( 'is_google_connected' )->willReturn( true );
+		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( true );
+		$this->service_based_merchant_state->method( 'has_switched_to_physical_products' )->willReturn( true );
+		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( false );
+
+		$this->assertTrue( $this->evaluator->should_show() );
+	}
+
 	public function test_should_not_show_when_paid_ads_step() {
 		$this->merchant_center->method( 'is_google_connected' )->willReturn( true );
 		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );

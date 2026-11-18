@@ -17,6 +17,7 @@ class NotificationPriorities {
 	public const PRODUCT_ISSUES            = 10;
 	public const SMALL_PRODUCT_IMAGES      = 15;
 	public const SKIPPED_CAMPAIGN_CREATION = 20;
+	public const MERCHANT_CENTER_AVAILABLE = 25;
 	public const ABANDONED_ONBOARDING      = 30;
 	public const NOT_ONBOARDED             = 40;
 	public const ENHANCED_CONVERSIONS_OFF  = 50;
