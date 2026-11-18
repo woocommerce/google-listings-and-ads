@@ -597,6 +597,34 @@ test.describe( 'Add paid campaign', () => {
 				);
 			} );
 
+			test( 'Campaign name field should show the generated name', async () => {
+				const campaignNameInput =
+					createCampaignPage.getCampaignNameInput();
+
+				await expect( campaignNameInput ).toHaveValue(
+					/^Campaign \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/
+				);
+				await expect(
+					page.getByText( '28/50 characters' )
+				).toBeVisible();
+			} );
+
+			test( '"What do you want to advertise?" card shows with "My products" selected', async () => {
+				await expect(
+					page.getByRole( 'group', {
+						name: 'What do you want to advertise?',
+					} )
+				).toBeVisible();
+				await expect(
+					page.getByRole( 'radio', { name: 'My products' } )
+				).toBeChecked();
+				await expect(
+					page.getByRole( 'radio', {
+						name: 'Another page on my store',
+					} )
+				).not.toBeChecked();
+			} );
+
 			test( 'Ads credit offer picker should be visible', async () => {
 				await expect(
 					page.getByText( 'Ads credit offer', { exact: true } )

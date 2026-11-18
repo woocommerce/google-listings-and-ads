@@ -1,0 +1,22 @@
+.gla-advertising-source-selector {
+	.gla-section-card-title {
+		margin-block-end: $grid-unit-10;
+	}
+
+	.gla-subsection-subtitle {
+		margin-block-end: 0;
+	}
+
+	.components-radio-control {
+		margin-block-start: $grid-unit-30;
+	}
+
+	.components-radio-control__option:not(:first-child) {
+		padding-block-start: $grid-unit-15;
+	}
+
+	.components-radio-control__option:not(:last-child) {
+		padding-block-end: $grid-unit-30;
+		border-bottom: 1px solid $gray-100;
+	}
+}
