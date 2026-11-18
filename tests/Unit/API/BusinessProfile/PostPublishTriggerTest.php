@@ -348,6 +348,41 @@ class PostPublishTriggerTest extends UnitTest {
 	}
 
 	/**
+	 * A post whose removal failed, with sharing switched back on: staying on Google is what the
+	 * merchant wants now, so the removal's failure message no longer applies.
+	 *
+	 * @dataProvider data_provider_unshare_failures
+	 *
+	 * @param string $outcome
+	 */
+	public function test_clears_a_failed_removals_outcome_once_sharing_is_back_on( string $outcome ) {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => $outcome,
+				'message' => '',
+			]
+		);
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->once() )->method( 'clear_sync_outcome' )->with( $post->ID );
+		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
+		$this->delete_local_post_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_unshare_failures(): array {
+		return [
+			'unshare failure'                       => [ SyncOutcome::UNSHARE_FAILURE ],
+			'unshare failure, account disconnected' => [ SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED ],
+		];
+	}
+
+	/**
 	 * @return array
 	 */
 	public function data_provider_outcomes_that_are_not_retried(): array {

@@ -59,6 +59,12 @@ final class SyncOutcome {
 		self::ACCOUNT_DISCONNECTED,
 	];
 
+	/** @var string[] Outcomes of a failed removal, which leave the post on Google. */
+	public const UNSHARE_FAILURES = [
+		self::UNSHARE_FAILURE,
+		self::UNSHARE_ACCOUNT_DISCONNECTED,
+	];
+
 	/** @var string[] Every outcome. */
 	public const ALL = [
 		self::QUEUED,

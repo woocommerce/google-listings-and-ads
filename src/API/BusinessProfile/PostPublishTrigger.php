@@ -97,7 +97,7 @@ class PostPublishTrigger implements Service, Registerable {
 
 	/**
 	 * Whether saving an already-published post sends it, because it has never been sent or its
-	 * last send failed.
+	 * last send failed. Also clears a failed removal's outcome, since sharing is back on.
 	 *
 	 * @param WP_Post $post
 	 *
@@ -110,6 +110,13 @@ class PostPublishTrigger implements Service, Registerable {
 		}
 
 		$last = $this->local_post_service->get_sync_outcome( $post->ID );
+
+		if ( null !== $last && in_array( $last['outcome'], SyncOutcome::UNSHARE_FAILURES, true ) ) {
+			// The post isn't being unshared any more, so staying on Google is what the merchant
+			// wants now, and the removal's failure message no longer applies.
+			$this->local_post_service->clear_sync_outcome( $post->ID );
+			return false;
+		}
 
 		if ( null !== $last && SyncOutcome::QUEUED === $last['outcome'] ) {
 			// A queued outcome with no pending or running job is stale -- the job was cancelled,
