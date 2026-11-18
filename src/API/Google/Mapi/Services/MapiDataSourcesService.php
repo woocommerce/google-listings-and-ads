@@ -60,6 +60,17 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 */
 	private const ONLINE_PRODUCT_DESTINATIONS = [ 'SHOPPING_ADS', 'FREE_LISTINGS' ];
 
+	/**
+	 * Destination lists tried in order when creating a product data source. Google rejects the
+	 * whole request when the account can't use one of the requested destinations (e.g. an account
+	 * without free listings gets "Destinations of the data source are invalid: ORGANIC_EXPERIENCES"),
+	 * so each rejection falls back to a narrower list. There is deliberately no final attempt
+	 * without destinations: that is what produced local-only sources (see
+	 * is_local_only_product_source()), and an account rejecting even SHOPPING_ADS would likely get
+	 * one, which channel-mismatch recovery can't repair.
+	 */
+	private const PRODUCT_DESTINATION_FALLBACKS = [ self::ONLINE_PRODUCT_DESTINATIONS, [ 'SHOPPING_ADS' ] ];
+
 	/** Destinations that only serve local (not online) product listings. */
 	private const LOCAL_PRODUCT_DESTINATIONS = [ 'LOCAL_INVENTORY_ADS', 'FREE_LOCAL_LISTINGS' ];
 
@@ -505,6 +516,22 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Whether a failure is a rejection of the requested destinations: a 400 whose message starts
+	 * with the destinations field path, e.g. "[primaryProductDataSource.destinations] Destinations
+	 * of the data source are invalid: ORGANIC_EXPERIENCES." for an account that can't use free
+	 * listings. Matching the field path keeps other 400s that merely mention destinations from
+	 * triggering a retry.
+	 *
+	 * @param MerchantApiException $failure
+	 *
+	 * @return bool
+	 */
+	private static function is_invalid_destinations_failure( MerchantApiException $failure ): bool {
+		return 400 === $failure->get_http_status()
+			&& false !== stripos( $failure->getMessage(), '[primaryProductDataSource.destinations]' );
+	}
+
+	/**
 	 * The displayName the plugin gives its own data sources, used when creating one and when
 	 * adopting a pre-existing primary source, so a source fed by the plugin is labelled
 	 * consistently in Merchant Center regardless of how it was originally created.
@@ -633,15 +660,88 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	private function create_data_source( array $type, string $content_language, string $match_value ): string {
+		if ( empty( $type['set_online_destinations'] ) ) {
+			return $this->post_data_source( $type, $content_language, $match_value, null );
+		}
+
+		// Without an explicit destinations list, Google inherits the account's local-inventory
+		// participation at creation time, which can produce a local-only source (see
+		// is_local_only_product_source()). Requesting online destinations prevents that, but an
+		// account that can't use one of them rejects the request, so narrower lists are tried next.
+		$fallbacks    = self::PRODUCT_DESTINATION_FALLBACKS;
+		$destinations = array_shift( $fallbacks );
+
+		foreach ( $fallbacks as $next ) {
+			try {
+				return $this->post_data_source( $type, $content_language, $match_value, $destinations );
+			} catch ( MerchantApiException $exception ) {
+				if ( ! self::is_invalid_destinations_failure( $exception ) ) {
+					throw $exception;
+				}
+
+				do_action(
+					'woocommerce_gla_error',
+					sprintf(
+						'Data source destinations [%s] were rejected for %s|%s, retrying with [%s]: %s',
+						implode( ', ', $destinations ),
+						$content_language,
+						$match_value,
+						implode( ', ', $next ),
+						$exception->getMessage()
+					),
+					__METHOD__
+				);
+
+				$destinations = $next;
+			}
+		}
+
+		try {
+			return $this->post_data_source( $type, $content_language, $match_value, $destinations );
+		} catch ( MerchantApiException $exception ) {
+			if ( self::is_invalid_destinations_failure( $exception ) ) {
+				$tried = array_map(
+					static function ( array $destination_list ): string {
+						return '[' . implode( ', ', $destination_list ) . ']';
+					},
+					self::PRODUCT_DESTINATION_FALLBACKS
+				);
+
+				do_action(
+					'woocommerce_gla_error',
+					sprintf(
+						'Google rejected every destination list tried for data source %s|%s (%s), so products cannot sync until the Merchant Center account can use at least one of them: %s',
+						$content_language,
+						$match_value,
+						implode( ', ', $tried ),
+						$exception->getMessage()
+					),
+					__METHOD__
+				);
+			}
+
+			throw $exception;
+		}
+	}
+
+	/**
+	 * Post a single create request for a data source of the given type.
+	 *
+	 * @param array      $type             One of the *_SOURCE descriptors.
+	 * @param string     $content_language Language code.
+	 * @param string     $match_value      Secondary identity value (feed label or target country).
+	 * @param array|null $destinations     Destinations to enable, or null to omit the field.
+	 *
+	 * @return string The created data source resource name.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	private function post_data_source( array $type, string $content_language, string $match_value, ?array $destinations ): string {
 		$descriptor = [
 			'contentLanguage'    => $content_language,
 			$type['match_field'] => $match_value,
 		];
 
-		if ( ! empty( $type['set_online_destinations'] ) ) {
-			// Without an explicit destinations list, Google inherits the account's local-inventory
-			// participation at creation time, which can produce a local-only source (see
-			// is_local_only_product_source()). Requesting only the online destinations prevents that.
+		if ( null !== $destinations ) {
 			$descriptor['destinations'] = array_map(
 				static function ( string $destination ): array {
 					return [
@@ -649,7 +749,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 						'state'       => 'ENABLED',
 					];
 				},
-				self::ONLINE_PRODUCT_DESTINATIONS
+				$destinations
 			);
 		}
 
