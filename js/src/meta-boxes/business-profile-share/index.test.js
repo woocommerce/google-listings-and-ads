@@ -16,10 +16,11 @@ const POST_SCREEN_GLA_BUSINESS_PROFILE_DATA = {
 	},
 	businessProfileSummaryMaxLength: 1500,
 	businessProfilePost: {
+		postId: 123,
 		isShareEnabled: false,
 		summary: '',
-		isShared: false,
-		searchUrl: '',
+		shareStatus: { is_shared: false, search_url: '' },
+		syncOutcome: null,
 	},
 };
 

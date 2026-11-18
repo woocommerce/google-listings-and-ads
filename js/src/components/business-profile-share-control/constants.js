@@ -8,3 +8,25 @@ import { glaBusinessProfileData } from '~/constants';
  */
 export const SUMMARY_MAX_LENGTH =
 	glaBusinessProfileData.businessProfileSummaryMaxLength;
+
+/**
+ * Post REST field reporting whether the post has been shared, and its link once Google provides one.
+ */
+export const SHARE_STATUS_FIELD = 'gla_gbp_share_status';
+
+/**
+ * Post REST field holding the outcome of the post's last send to Google, and the message to show
+ * the merchant for an outcome that needs their attention.
+ */
+export const SYNC_OUTCOME_FIELD = 'gla_gbp_sync_outcome';
+
+/**
+ * The sync outcome of a send that's scheduled but hasn't run yet.
+ */
+export const SYNC_OUTCOME_QUEUED = 'queued';
+
+/**
+ * Key the editors send a post ID under in a Heartbeat request, and read the post's send status
+ * from in the response.
+ */
+export const HEARTBEAT_SYNC_STATUS_KEY = 'gla_gbp_sync_status';
