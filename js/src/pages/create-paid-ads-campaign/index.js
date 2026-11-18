@@ -28,9 +28,7 @@ import CampaignNameCard from '~/components/paid-ads/campaign-name-card';
 import AssetsOptInCard from '~/components/paid-ads/assets-opt-in-card/assets-opt-in-card';
 import BudgetSection from '~/components/paid-ads/budget-section';
 import EuRegulationsSection from '~/components/paid-ads/eu-regulations-section';
-import AssetGroup, {
-	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
-} from '~/components/paid-ads/asset-group';
+import AssetGroup from '~/components/paid-ads/asset-group';
 import {
 	ADVERTISING_SOURCE,
 	CAMPAIGN_STEP as STEP,
@@ -105,13 +103,14 @@ const CreatePaidAdsCampaign = () => {
 	};
 
 	const handleSubmit = async ( values, enhancer ) => {
-		const { action } = enhancer.submitter.dataset;
-
 		try {
 			const {
 				dailyBudget,
 				hasConfirmedEuPoliticalContent,
 				incentiveOffer,
+				campaignName,
+				advertisingSource,
+				includeCreativeAssets,
 			} = values;
 
 			// A failed apply doesn't block creating the campaign. Once an offer is applied, a later submit
@@ -126,18 +125,26 @@ const CreatePaidAdsCampaign = () => {
 				} );
 			}
 
-			if ( hasGoogleMCConnection ) {
-				// Avoid re-creating a new campaign if the subsequent asset group update is failed.
-				if ( createdCampaignIdRef.current === null ) {
+			const campaignOptions = { name: campaignName, advertisingSource };
+			const hasCreatedCampaign = createdCampaignIdRef.current !== null;
+
+			if (
+				hasCreatedCampaign ||
+				advertisingSource === ADVERTISING_SOURCE.PRODUCT
+			) {
+				// Reuse the campaign from an earlier attempt, so a retry after a failed asset group update
+				// doesn't create another one, even if what to advertise changed.
+				if ( ! hasCreatedCampaign ) {
 					const payload = await createAdsCampaign(
 						dailyBudget,
 						countryCodes,
-						hasConfirmedEuPoliticalContent
+						hasConfirmedEuPoliticalContent,
+						campaignOptions
 					);
 					createdCampaignIdRef.current = payload.createdCampaign.id;
 				}
 
-				if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
+				if ( includeCreativeAssets ) {
 					const id = createdCampaignIdRef.current;
 					const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
 
@@ -162,7 +169,8 @@ const CreatePaidAdsCampaign = () => {
 						},
 						values
 					),
-					hasConfirmedEuPoliticalContent
+					hasConfirmedEuPoliticalContent,
+					campaignOptions
 				);
 			}
 
