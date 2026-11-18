@@ -31,4 +31,5 @@ class NotificationPriorities {
 	public const COLLECT_REVIEWS              = 140;
 	public const BADGE_WIDGET                 = 150;
 	public const SEARCH_CONSOLE_NOT_CONNECTED = 160;
+	public const CYO_SURVEY                   = 170;
 }

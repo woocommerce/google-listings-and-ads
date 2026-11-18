@@ -31,27 +31,39 @@ import {
 } from '~/constants';
 import { API_NAMESPACE } from '~/data/constants';
 import {
+	recordGlaEvent,
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '~/utils/tracks';
 import EuPoliticalDeclaration from '~/components/eu-political-declaration';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
+import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
 const dashboardURL = getDashboardUrl();
 
 /**
+ * Applying a "Choose Your Own" incentive offer when creating a campaign in the "Set up Ads" or "Create campaign" flow.
+ *
+ * @event gla_campaign_with_cyo_incentive_selected
+ * @property {string} context The context in which the incentive offer is applied, e.g. 'create-ads' or 'setup-ads'.
+ * @property {string} level The level of the applied incentive offer, e.g. 'low', 'medium', or 'high'.
+ */
+
+/**
  * Renders the campaign creation page.
  *
  * @fires gla_paid_campaign_step with `{ context: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
  * @fires gla_paid_campaign_step with `{ context: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
+ * @fires gla_campaign_with_cyo_incentive_selected with `{ context: 'create-ads', level: 'low' | 'medium' | 'high' }`.
  */
 const CreatePaidAdsCampaign = () => {
 	useLayout( 'full-content' );
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const [ step, setStep ] = useState( STEP.CAMPAIGN );
 	const createdCampaignIdRef = useRef( null );
+	const hasAppliedIncentiveRef = useRef( false );
 	const {
 		createAdsCampaign,
 		createAdsWithAssetsCampaign,
@@ -61,6 +73,7 @@ const CreatePaidAdsCampaign = () => {
 		useEuPoliticalDeclarationContext();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const { applyIncentive } = useApplyCYOIncentive();
 
 	const handleStepperClick = ( nextStep ) => {
 		recordStepperChangeEvent(
@@ -85,7 +98,23 @@ const CreatePaidAdsCampaign = () => {
 		const { action } = enhancer.submitter.dataset;
 
 		try {
-			const { dailyBudget, hasConfirmedEuPoliticalContent } = values;
+			const {
+				dailyBudget,
+				hasConfirmedEuPoliticalContent,
+				incentiveOffer,
+			} = values;
+
+			// A failed apply doesn't block creating the campaign. Once an offer is applied, a later submit
+			// gets `false`, so keep the result for the notice in case creating the campaign is retried.
+			const hasAppliedIncentive = await applyIncentive( incentiveOffer );
+
+			if ( hasAppliedIncentive ) {
+				hasAppliedIncentiveRef.current = true;
+				recordGlaEvent( 'gla_campaign_with_cyo_incentive_selected', {
+					context: eventContext,
+					level: incentiveOffer,
+				} );
+			}
 
 			if ( hasGoogleMCConnection ) {
 				// Avoid re-creating a new campaign if the subsequent asset group update is failed.
@@ -129,10 +158,15 @@ const CreatePaidAdsCampaign = () => {
 
 			createNotice(
 				'success',
-				__(
-					'You’ve successfully created a campaign!',
-					'google-listings-and-ads'
-				)
+				hasAppliedIncentiveRef.current
+					? __(
+							'Campaign created. Your Ads credit offer is applied to your Google Ads account.',
+							'google-listings-and-ads'
+						)
+					: __(
+							'You’ve successfully created a campaign!',
+							'google-listings-and-ads'
+						)
 			);
 		} catch ( e ) {
 			handleEuPoliticalDeclarationError( e );
