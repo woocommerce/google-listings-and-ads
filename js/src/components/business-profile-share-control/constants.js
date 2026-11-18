@@ -26,6 +26,11 @@ export const SYNC_OUTCOME_FIELD = 'gla_gbp_sync_outcome';
 export const SYNC_OUTCOME_QUEUED = 'queued';
 
 /**
+ * The sync outcome of a removal from Google that's scheduled but hasn't run yet.
+ */
+export const SYNC_OUTCOME_UNSHARE_QUEUED = 'unshare-queued';
+
+/**
  * Key the editors send a post ID under in a Heartbeat request, and read the post's send status
  * from in the response.
  */

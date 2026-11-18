@@ -193,6 +193,37 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}
 
+	/**
+	 * The editors show the removal as pending, and keep checking its status, while it's queued.
+	 */
+	public function test_marks_a_scheduled_removal_as_queued() {
+		$this->local_post_service = $this->mock_local_post_service_that_should_unshare();
+		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_post_with_status( 'publish' );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::UNSHARE_QUEUED );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_does_not_propagate_an_exception_from_scheduling_a_removal_and_reports_it() {
+		$this->local_post_service = $this->mock_local_post_service_that_should_unshare();
+		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_post_with_status( 'publish' );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->delete_local_post_job->method( 'schedule' )->willThrowException( new RuntimeException( 'Error saving action.' ) );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
 	public function test_schedules_removal_only_once_even_when_the_hook_fires_more_than_once_for_one_save() {
 		$this->local_post_service = $this->mock_local_post_service_that_should_unshare();
 		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
@@ -348,14 +379,14 @@ class PostPublishTriggerTest extends UnitTest {
 	}
 
 	/**
-	 * A post whose removal failed, with sharing switched back on: staying on Google is what the
-	 * merchant wants now, so the removal's failure message no longer applies.
+	 * A post whose removal is pending or failed, with sharing switched back on: staying on Google
+	 * is what the merchant wants now, so the removal's outcome no longer applies.
 	 *
-	 * @dataProvider data_provider_unshare_failures
+	 * @dataProvider data_provider_unshare_outcomes
 	 *
 	 * @param string $outcome
 	 */
-	public function test_clears_a_failed_removals_outcome_once_sharing_is_back_on( string $outcome ) {
+	public function test_clears_a_removals_outcome_once_sharing_is_back_on( string $outcome ) {
 		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
 			[
 				'outcome' => $outcome,
@@ -375,8 +406,9 @@ class PostPublishTriggerTest extends UnitTest {
 	/**
 	 * @return array
 	 */
-	public function data_provider_unshare_failures(): array {
+	public function data_provider_unshare_outcomes(): array {
 		return [
+			'unshare queued'                        => [ SyncOutcome::UNSHARE_QUEUED ],
 			'unshare failure'                       => [ SyncOutcome::UNSHARE_FAILURE ],
 			'unshare failure, account disconnected' => [ SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED ],
 		];

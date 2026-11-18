@@ -72,6 +72,14 @@ class SyncOutcomeTest extends UnitTest {
 	}
 
 	/**
+	 * A queued removal hasn't run yet, so it's neither a failure to retry nor a send.
+	 */
+	public function test_unshare_queued_is_not_a_publish_retryable_failure() {
+		$this->assertNotContains( SyncOutcome::UNSHARE_QUEUED, SyncOutcome::FAILURES );
+		$this->assertContains( SyncOutcome::UNSHARE_QUEUED, SyncOutcome::ALL );
+	}
+
+	/**
 	 * `FAILURES` only drives `sends_on_save()`'s publish-retry logic -- a failed removal retries
 	 * on save through `LocalPostService::should_unshare()` instead, which this outcome doesn't
 	 * need to be listed in.

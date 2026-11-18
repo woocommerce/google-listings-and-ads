@@ -23,6 +23,19 @@ describe( 'SyncStatus', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'says the post is being removed, with a spinner, while the removal is queued', () => {
+		const { container } = render(
+			<SyncStatus syncOutcome={ { outcome: 'unshare-queued' } } />
+		);
+
+		expect(
+			screen.getByText( 'Removing from Google Business Profile…' )
+		).toBeInTheDocument();
+		expect(
+			container.querySelector( '.components-spinner' )
+		).toBeInTheDocument();
+	} );
+
 	it.each( [ 'error', 'warning' ] )(
 		'shows the message for an outcome needing attention as a %s notice',
 		( status ) => {

@@ -45,6 +45,9 @@ final class SyncOutcome {
 	/** @var string The linked Google post no longer exists. */
 	public const NOT_FOUND = 'not-found';
 
+	/** @var string A removal from Google has been scheduled but hasn't run yet. */
+	public const UNSHARE_QUEUED = 'unshare-queued';
+
 	/** @var string Google didn't accept a request to remove the post; it's still live there. */
 	public const UNSHARE_FAILURE = 'unshare-failure';
 
@@ -59,8 +62,9 @@ final class SyncOutcome {
 		self::ACCOUNT_DISCONNECTED,
 	];
 
-	/** @var string[] Outcomes of a failed removal, which leave the post on Google. */
-	public const UNSHARE_FAILURES = [
+	/** @var string[] Outcomes of a removal that's pending or failed, which leave the post on Google. */
+	public const UNSHARE_OUTCOMES = [
+		self::UNSHARE_QUEUED,
 		self::UNSHARE_FAILURE,
 		self::UNSHARE_ACCOUNT_DISCONNECTED,
 	];
@@ -76,6 +80,7 @@ final class SyncOutcome {
 		self::ACCOUNT_RESTRICTION,
 		self::ACCOUNT_DISCONNECTED,
 		self::NOT_FOUND,
+		self::UNSHARE_QUEUED,
 		self::UNSHARE_FAILURE,
 		self::UNSHARE_ACCOUNT_DISCONNECTED,
 	];

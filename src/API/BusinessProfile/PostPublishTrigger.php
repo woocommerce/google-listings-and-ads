@@ -97,7 +97,7 @@ class PostPublishTrigger implements Service, Registerable {
 
 	/**
 	 * Whether saving an already-published post sends it, because it has never been sent or its
-	 * last send failed. Also clears a failed removal's outcome, since sharing is back on.
+	 * last send failed. Also clears a pending or failed removal's outcome, since sharing is back on.
 	 *
 	 * @param WP_Post $post
 	 *
@@ -111,9 +111,10 @@ class PostPublishTrigger implements Service, Registerable {
 
 		$last = $this->local_post_service->get_sync_outcome( $post->ID );
 
-		if ( null !== $last && in_array( $last['outcome'], SyncOutcome::UNSHARE_FAILURES, true ) ) {
+		if ( null !== $last && in_array( $last['outcome'], SyncOutcome::UNSHARE_OUTCOMES, true ) ) {
 			// The post isn't being unshared any more, so staying on Google is what the merchant
-			// wants now, and the removal's failure message no longer applies.
+			// wants now. A pending removal skips itself when it runs, and a failed one's message
+			// no longer applies.
 			$this->local_post_service->clear_sync_outcome( $post->ID );
 			return false;
 		}
@@ -188,7 +189,19 @@ class PostPublishTrigger implements Service, Registerable {
 		}
 		$this->handled_in_request[ $post->ID ] = true;
 
-		$result = $this->local_post_service->get_stored_result( $post->ID );
-		$this->job_repository->get( DeleteLocalPost::class )->schedule( [ $post->ID, $result ] );
+		$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::UNSHARE_QUEUED );
+
+		try {
+			$result = $this->local_post_service->get_stored_result( $post->ID );
+			$this->job_repository->get( DeleteLocalPost::class )->schedule( [ $post->ID, $result ] );
+		} catch ( Throwable $failure ) {
+			// The post's own save must never break on scheduling. Sharing stays off, so the next
+			// save schedules the removal again.
+			if ( $failure instanceof Exception ) {
+				do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+			} else {
+				do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+			}
+		}
 	}
 }

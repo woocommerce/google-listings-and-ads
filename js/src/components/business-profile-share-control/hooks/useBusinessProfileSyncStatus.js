@@ -7,7 +7,11 @@ import { addAction, removeAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { HEARTBEAT_SYNC_STATUS_KEY, SYNC_OUTCOME_QUEUED } from '../constants';
+import {
+	HEARTBEAT_SYNC_STATUS_KEY,
+	SYNC_OUTCOME_QUEUED,
+	SYNC_OUTCOME_UNSHARE_QUEUED,
+} from '../constants';
 
 /**
  * @typedef {import('../types').SyncOutcome} SyncOutcome
@@ -33,8 +37,8 @@ const HOOK_NAMESPACE = 'google-listings-and-ads/business-profile-sync-status';
 export const FIRST_CHECK_DELAY = 3000;
 
 /**
- * A hook to keep a post's Google Business Profile send status current while its send is queued.
- * While the send is queued, it asks for the post's status on each WordPress Heartbeat request, at
+ * A hook to keep a post's Google Business Profile send status current while a send or a removal
+ * is queued. While it's queued, it asks for the post's status on each WordPress Heartbeat request, at
  * whatever interval the editor sets, since a background send can take minutes to run. It also
  * sends one request {@link FIRST_CHECK_DELAY} after each save, so a quick send shows sooner. Once
  * the send settles, it stops asking. Where Heartbeat isn't loaded, it returns the editor's values.
@@ -60,7 +64,10 @@ export default function useBusinessProfileSyncStatus( {
 	const isCurrent = latest?.savedAt === savedAt;
 	const currentOutcome = isCurrent ? latest.syncOutcome : syncOutcome;
 	const currentShareStatus = isCurrent ? latest.shareStatus : shareStatus;
-	const isQueued = currentOutcome?.outcome === SYNC_OUTCOME_QUEUED;
+	const isQueued = [
+		SYNC_OUTCOME_QUEUED,
+		SYNC_OUTCOME_UNSHARE_QUEUED,
+	].includes( currentOutcome?.outcome );
 
 	useEffect( () => {
 		const heartbeat = window.wp?.heartbeat;

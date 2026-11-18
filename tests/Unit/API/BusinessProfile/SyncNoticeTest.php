@@ -118,6 +118,10 @@ class SyncNoticeTest extends UnitTest {
 		$this->assertNull( SyncNotice::for_outcome( $this->outcome( SyncOutcome::SUCCESS, false ) ) );
 	}
 
+	public function test_for_outcome_returns_no_notice_for_a_queued_removal() {
+		$this->assertNull( SyncNotice::for_outcome( $this->outcome( SyncOutcome::UNSHARE_QUEUED, false ) ) );
+	}
+
 	public function test_for_outcome_returns_no_notice_when_the_post_has_never_been_sent() {
 		$this->assertNull( SyncNotice::for_outcome( null ) );
 	}
