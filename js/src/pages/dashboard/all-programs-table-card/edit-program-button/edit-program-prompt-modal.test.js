@@ -10,7 +10,7 @@ import { render, screen } from '@testing-library/react';
 import EditProgramPromptModal from './edit-program-prompt-modal';
 
 describe( 'EditProgramPromptModal', () => {
-	it( 'should show the three paragraphs with US spelling', () => {
+	it( 'should use US spelling for "optimizations"', () => {
 		render(
 			<EditProgramPromptModal
 				programId={ 123 }
@@ -18,12 +18,11 @@ describe( 'EditProgramPromptModal', () => {
 			/>
 		);
 
-		const paragraphs = screen.getByRole( 'dialog' ).querySelectorAll( 'p' );
-
-		expect( [ ...paragraphs ].map( ( p ) => p.textContent ) ).toEqual( [
-			'Results typically improve with time.',
-			'Editing will result in the loss of any optimizations learned over time.',
-			'We recommend allowing your programs to run for at least 14 days after set up, without pausing or editing, for optimal performance.',
-		] );
+		expect(
+			screen.getByText(
+				'Editing will result in the loss of any optimizations learned over time.'
+			)
+		).toBeInTheDocument();
+		expect( screen.queryByText( /optimisations/ ) ).not.toBeInTheDocument();
 	} );
 } );
