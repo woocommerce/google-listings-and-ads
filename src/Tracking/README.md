@@ -458,6 +458,17 @@ Triggered when the product feed "bulk edit" functionality is being used
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
 
+### [`gla_campaign_with_cyo_incentive_selected`](../../js/src/pages/create-paid-ads-campaign/index.js#L46)
+Applying a "Choose Your Own" incentive offer when creating a campaign in the "Set up Ads" or "Create campaign" flow.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the incentive offer is applied, e.g. 'create-ads' or 'setup-ads'.
+`level` | `string` | The level of the applied incentive offer, e.g. 'low', 'medium', or 'high'.
+#### Emitters
+- [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L61) with `{ context: 'create-ads', level: 'low' | 'medium' | 'high' }`.
+- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L55) with `{ context: 'setup-ads', level: 'low' | 'medium' | 'high' }`
+
 ### [`gla_cancel_button_clicked`](../../js/src/pages/markets/components/add-market-modal/modal-footer.js#L15)
 Event fired when the "Cancel" button in the AddMarketModal is clicked.
 #### Properties
@@ -556,7 +567,7 @@ Triggered when datepicker (date ranger picker) is updated,
 #### Emitters
 - [`AppDateRangeFilterPicker`](../../js/src/pages/dashboard/app-date-range-filter-picker/index.js#L27) with `report: props.trackEventReportId` and `data` given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L39)
-- [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L37)
+- [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L38)
 
 ### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L37)
 Accounts are disconnected from the Settings > Accounts subtab.
@@ -751,7 +762,7 @@ Triggered when changing products & variations filter,
 `filter_variation` | `string` | Value of the variation filter (e.g. `"single-variation" \| "compare-variations"`)
 #### Emitters
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L39)
-- [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L37)
+- [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L38)
 
 ### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L22)
 Triggered when the "Add selected images" button is clicked.
@@ -932,16 +943,16 @@ Clicking "Try again" after the Google Business Profile locations couldn't be loa
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/locations-error-card/locations-error-notice.js#L30) with `{ context: 'settings-business-profile' }`.
 
-### [`gla_google_business_profile_post_link_click`](../../js/src/components/business-profile-share-control/index.js#L26)
+### [`gla_google_business_profile_post_link_click`](../../js/src/components/business-profile-share-control/index.js#L30)
 Clicking the "View on Google Business Profile" link to a post shared to Google Business Profile.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates which editor the link was clicked in. Possible values: 'business-profile-share-panel' (block editor), 'business-profile-share-meta-box' (Classic Editor).
 #### Emitters
-- [`exports`](../../js/src/components/business-profile-share-control/index.js#L57) with `{ context }`.
+- [`exports`](../../js/src/components/business-profile-share-control/index.js#L60) with `{ context }`.
 
-### [`gla_google_business_profile_share_toggle_click`](../../js/src/components/business-profile-share-control/index.js#L17)
+### [`gla_google_business_profile_share_toggle_click`](../../js/src/components/business-profile-share-control/index.js#L21)
 Turning the "Share on my Business Profile" toggle on or off.
 #### Properties
 | name | type | description |
@@ -950,7 +961,7 @@ Turning the "Share on my Business Profile" toggle on or off.
 `status` | `string` | Whether sharing was turned on or off. Possible values: 'on', 'off'.
 `is_shared` | `boolean` | Whether the post has already been shared to Google Business Profile.
 #### Emitters
-- [`exports`](../../js/src/components/business-profile-share-control/index.js#L57) with `{ context, status, is_shared }`.
+- [`exports`](../../js/src/components/business-profile-share-control/index.js#L60) with `{ context, status, is_shared }`.
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
 Clicking on a Google Merchant Center link.
@@ -994,7 +1005,7 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 `recommended_budget` | `number` | The recommended daily budget displayed to merchants regardless of the final amount they choose.
 `has_confirmed_eu_political_content` | `boolean` | Whether the user has confirmed that the ads campaign contains EU political content.
 #### Emitters
-- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L49) on submit
+- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L55) on submit
 
 ### [`gla_link_youtube_account_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/indicator.js#L14)
 Clicking on the button to link the YouTube account.
@@ -1059,9 +1070,9 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L43) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L248) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
+- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L259) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
 ### [`gla_modal_closed`](../../js/src/utils/tracks.js#L290)
 A modal is closed.
@@ -1074,9 +1085,9 @@ A modal is closed.
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L43) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L248) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
+- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L259) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
 ### [`gla_modal_content_link_click`](../../js/src/components/guide-page-content/index.js#L28)
 Clicking on a text link within the modal content
@@ -1099,7 +1110,7 @@ Clicking on a text link within the modal content
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L248) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L259) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 ### [`gla_modal_open`](../../js/src/utils/tracks.js#L303)
 A modal is open
@@ -1111,7 +1122,7 @@ A modal is open
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L248) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L259) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 ### [`gla_multilingual_flat_notice_settings_link_click`](../../js/src/pages/markets/components/markets-dashboard/multilingual-flat-shipping-notice/index.js#L17)
 
@@ -1170,7 +1181,7 @@ Clicking on the skip paid ads button to complete the onboarding flow.
 `billing_method_status` | `string` | The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
 `campaign_form_validation` | `string` | Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
 
-### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L40)
+### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L41)
 Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
 #### Properties
 | name | type | description |
@@ -1181,9 +1192,9 @@ Clicking on the "Complete setup" button to complete the onboarding flow with pai
 `source` | `string` | The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
 `recommended_budget` | `number` | The recommended daily budget displayed to merchants regardless of the final amount they choose.
 #### Emitters
-- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L65)
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L66)
 
-### [`gla_onboarding_with_cyo_incentive_selected`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L51)
+### [`gla_onboarding_with_cyo_incentive_selected`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L52)
 Selecting a "Choose Your Own" incentive offer when setting up paid ads during onboarding.
 #### Properties
 | name | type | description |
@@ -1191,7 +1202,7 @@ Selecting a "Choose Your Own" incentive offer when setting up paid ads during on
 `context` | `string` | The context in which the incentive offer is selected, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
 `level` | `string` | The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
 #### Emitters
-- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L65)
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L66)
 
 ### [`gla_open_ads_account_claim_invitation_button_click`](../../js/src/components/google-ads-account-card/claim-account-button.js#L15)
 Clicking on the button to open the invitation page for claiming the newly created Google Ads account.
@@ -1212,7 +1223,7 @@ Triggered when moving to another step during creating/editing a campaign.
 `action` | `string` | User's action or/and objective (e.g. `go-to-step-2`)
 `context` | `string \| undefined` | Indicates where this event happened
 #### Emitters
-- [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L50)
+- [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L61)
 	- with `{ context: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ context: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
 - [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L71)
