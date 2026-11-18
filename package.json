@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "3.10.0",
+	"version": "3.10.1",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -180,11 +180,11 @@
 			},
 			{
 				"path": "./js/build/business-profile-share.js",
-				"maxSize": "20 kB"
+				"maxSize": "20.2 kB"
 			},
 			{
 				"path": "./js/build/business-profile-share-meta-box.js",
-				"maxSize": "19.5 kB"
+				"maxSize": "19.8 kB"
 			},
 			{
 				"path": "./js/build/notifications-system.js",
