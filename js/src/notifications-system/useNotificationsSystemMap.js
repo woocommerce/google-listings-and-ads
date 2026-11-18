@@ -19,6 +19,7 @@ import AppDocumentationLink from '~/components/app-documentation-link';
 import { handleApiError } from '~/utils/handleError';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import {
+	getAccountsSettingsUrl,
 	getDashboardUrl,
 	getProductFeedUrl,
 	getSettingsUrl,
@@ -59,6 +60,7 @@ const TermsApplyLink = ( { linkId, children } ) => {
 const setupAdsUrl = getSetupAdsUrl();
 const dashboardUrl = getDashboardUrl();
 const settingsUrl = getSettingsUrl();
+const accountsSettingsUrl = getAccountsSettingsUrl();
 const wcTrackingSettingsUrl = getWCTrackingSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
 const wcCouponsUrl = getWCCouponsUrl();
@@ -238,6 +240,20 @@ const STATIC_MAP = {
 				id: 'turn-on-tracking',
 				href: wcTrackingSettingsUrl,
 				children: __( 'Turn on tracking', 'google-listings-and-ads' ),
+			},
+		],
+	},
+	'merchant-center-available': {
+		title: __( 'Show your products on Google', 'google-listings-and-ads' ),
+		description: __(
+			"You've added physical products to your store. Set up Merchant Center to list them on Google and run product ads.",
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'set-up-merchant-center',
+				href: accountsSettingsUrl,
+				children: __( 'Set up now', 'google-listings-and-ads' ),
 			},
 		],
 	},

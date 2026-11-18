@@ -91,6 +91,37 @@ describe( 'useNotificationsSystemMap', () => {
 		);
 	} );
 
+	it( 'defines the merchant-center-available notification content and CTA', () => {
+		const { result } = renderHook( () => useNotificationsSystemMap() );
+		const config = result.current[ 'merchant-center-available' ];
+
+		expect( config.title ).toBe( 'Show your products on Google' );
+		expect( config.description ).toBe(
+			"You've added physical products to your store. Set up Merchant Center to list them on Google and run product ads."
+		);
+		expect( config.actions ).toHaveLength( 1 );
+		expect( config.actions[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				id: 'set-up-merchant-center',
+				children: 'Set up now',
+			} )
+		);
+	} );
+
+	it( 'links the merchant-center-available CTA to the Accounts section of Settings', () => {
+		const { result } = renderHook( () => useNotificationsSystemMap() );
+		const { href } =
+			result.current[ 'merchant-center-available' ].actions[ 0 ];
+		const { searchParams } = new URL(
+			href,
+			'https://example.com/wp-admin/'
+		);
+
+		expect( searchParams.get( 'page' ) ).toBe( 'wc-admin' );
+		expect( searchParams.get( 'path' ) ).toBe( '/google/settings' );
+		expect( searchParams.get( 'section' ) ).toBe( 'accounts' );
+	} );
+
 	it( "saves gcr_collect_reviews_after_purchase, blocks default navigation, dismisses the notification, and navigates to the anchor's href once the save succeeds", async () => {
 		saveSettings.mockResolvedValue( {} );
 
