@@ -274,6 +274,7 @@ test.describe( 'Google Business Profile', () => {
 			} );
 
 			test( 'should reconnect cleanly afterward', async () => {
+				await settingsPage.mockGoogleBusinessProfileSelectLocationSuccess();
 				await settingsPage.mockGoogleBusinessProfileConnected(
 					DOWNTOWN
 				);
