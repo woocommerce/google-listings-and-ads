@@ -319,6 +319,9 @@ class ProductRepository implements Service {
 	 * and OR, which makes WP_Meta_Query LEFT JOIN postmeta on post ID alone: every meta row of a
 	 * product then multiplies the rows the database reads, and large stores stalled for hours.
 	 *
+	 * Variations skip the publish status check because ProductHelper::is_sync_ready() judges a
+	 * variation by its parent's status, so a disabled variation of a published product still counts.
+	 *
 	 * @param int $last_id The last product ID processed in the previous batch (0 to start from the beginning).
 	 * @param int $limit   Maximum number of results to retrieve or -1 for unlimited.
 	 *
@@ -342,10 +345,6 @@ class ProductRepository implements Service {
 		$visibility_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 		$errors_key     = $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS );
 
-		// Add a temporary WHERE clause for keyset pagination (ID > $last_id), the publish status and the
-		// visibility and errors conditions. Variations are left out of the status check because
-		// ProductHelper::is_sync_ready() judges a variation by its parent's status, so a disabled
-		// (private) variation of a published product can still be resubmitted.
 		$where_filter = function ( string $where ) use ( $wpdb, $last_id, $visibility_key, $errors_key ): string {
 			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			return $where . $wpdb->prepare(
