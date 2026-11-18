@@ -24,6 +24,7 @@ import HelpIconButton from '~/components/help-icon-button';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import CampaignSetup from '~/components/paid-ads/campaign-setup';
 import AdvertisingSourceSelector from '~/components/paid-ads/advertising-source-selector';
+import CampaignNameCard from '~/components/paid-ads/campaign-name-card';
 import AssetsOptInCard from '~/components/paid-ads/assets-opt-in-card/assets-opt-in-card';
 import BudgetSection from '~/components/paid-ads/budget-section';
 import EuRegulationsSection from '~/components/paid-ads/eu-regulations-section';
@@ -240,6 +241,7 @@ const CreatePaidAdsCampaign = () => {
 										);
 									} }
 								>
+									<CampaignNameCard />
 									{ hasGoogleMCConnection && (
 										<AdvertisingSourceSelector />
 									) }

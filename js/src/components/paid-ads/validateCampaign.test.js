@@ -170,4 +170,101 @@ describe( 'validateCampaign', () => {
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toContain( 'is at least Rs 31' );
 	} );
+
+	describe( 'Campaign name', () => {
+		beforeEach( () => {
+			values = {
+				amount: 1,
+				level: 'custom',
+			};
+		} );
+
+		it( 'When the name is over 50 characters, should not pass', () => {
+			values.campaignName = 'a'.repeat( 51 );
+
+			const errors = validateCampaign( values, validateCampaignOptions );
+
+			expect( errors ).toHaveProperty( 'campaignName' );
+			expect( errors.campaignName ).toMatchSnapshot();
+		} );
+
+		it( 'When the name is exactly 50 characters, should pass', () => {
+			values.campaignName = 'a'.repeat( 50 );
+
+			const errors = validateCampaign( values, validateCampaignOptions );
+
+			expect( errors ).not.toHaveProperty( 'campaignName' );
+		} );
+
+		it( 'When the name is empty, blank or undefined, should pass', () => {
+			values.campaignName = '';
+			expect(
+				validateCampaign( values, validateCampaignOptions )
+			).not.toHaveProperty( 'campaignName' );
+
+			values.campaignName = '   ';
+			expect(
+				validateCampaign( values, validateCampaignOptions )
+			).not.toHaveProperty( 'campaignName' );
+
+			values.campaignName = undefined;
+			expect(
+				validateCampaign( values, validateCampaignOptions )
+			).not.toHaveProperty( 'campaignName' );
+		} );
+
+		it( 'When the name has surrounding spaces, should count the trimmed value', () => {
+			values.campaignName = `  ${ 'a'.repeat( 50 ) }  `;
+
+			const errors = validateCampaign( values, validateCampaignOptions );
+
+			expect( errors ).not.toHaveProperty( 'campaignName' );
+		} );
+
+		it( 'When the name has wide characters, should count each of them as 2', () => {
+			values.campaignName = '名'.repeat( 25 );
+			expect(
+				validateCampaign( values, validateCampaignOptions )
+			).not.toHaveProperty( 'campaignName' );
+
+			values.campaignName = '名'.repeat( 26 );
+			expect(
+				validateCampaign( values, validateCampaignOptions )
+			).toHaveProperty( 'campaignName' );
+		} );
+
+		it( 'When the name is too long and the custom budget is too low, should return both errors', () => {
+			values.campaignName = 'a'.repeat( 51 );
+			values.amount = 10;
+
+			const errors = validateCampaign( values, {
+				dailyBudget: 100,
+				formatAmount: mockFormatAmount,
+			} );
+
+			expect( errors ).toHaveProperty( 'campaignName' );
+			expect( errors ).toHaveProperty( 'amount' );
+		} );
+
+		it( 'When the name is too long and the amount is not positive, should return both errors', () => {
+			values.campaignName = 'a'.repeat( 51 );
+			values.amount = 0;
+
+			const errors = validateCampaign( values, validateCampaignOptions );
+
+			expect( errors ).toHaveProperty( 'campaignName' );
+			expect( errors ).toHaveProperty( 'amount' );
+		} );
+
+		it( 'When the name is too long and the level is not custom, should still return the name error', () => {
+			values.campaignName = 'a'.repeat( 51 );
+			values.level = 'recommended';
+
+			const errors = validateCampaign( values, validateCampaignOptions );
+
+			expect( errors ).toStrictEqual( {
+				campaignName: expect.any( String ),
+			} );
+		} );
+	} );
 } );

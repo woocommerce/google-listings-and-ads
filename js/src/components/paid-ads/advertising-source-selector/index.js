@@ -52,7 +52,7 @@ export default function AdvertisingSourceSelector() {
 
 	return (
 		<Section.Card className="gla-advertising-source-selector">
-			<Section.Card.Body>
+			<Section.Card.Body padding="medium">
 				<Section.Card.Title>{ TITLE }</Section.Card.Title>
 				<Subsection.Subtitle>
 					{ __(

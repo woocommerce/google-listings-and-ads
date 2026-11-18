@@ -41,7 +41,7 @@ export default function AssetsOptInCard() {
 
 	return (
 		<Section.Card className="gla-assets-opt-in-card">
-			<Section.Card.Body>
+			<Section.Card.Body padding="medium">
 				<VerticalGapLayout size="large">
 					<CheckboxControl
 						{ ...inputProps }

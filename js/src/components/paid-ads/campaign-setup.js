@@ -25,7 +25,7 @@ export default function CampaignSetup( { children, continueButton } ) {
 	const formContext = useAdaptiveFormContext();
 
 	return (
-		<StepContent>
+		<StepContent variant="narrow">
 			{ children }
 
 			<StepContentFooter>

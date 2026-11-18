@@ -66,6 +66,15 @@ export default class CreateCampaignPage extends MockRequests {
 	}
 
 	/**
+	 * Get the campaign name input.
+	 *
+	 * @return {import('@playwright/test').Locator} Campaign name input.
+	 */
+	getCampaignNameInput() {
+		return this.page.getByRole( 'textbox', { name: 'Campaign name' } );
+	}
+
+	/**
 	 * Get the Continue button.
 	 *
 	 * @return {import('@playwright/test').Locator} Continue button.

@@ -1,8 +1,3 @@
-// Needs the page scope to win over the reset of `.components-card` margins in the shared Gutenberg styles.
-.gla-admin-page .gla-assets-opt-in-card {
-	margin-block-end: var(--large-gap);
-}
-
 .gla-assets-opt-in-card {
 
 	// Centers the checkbox on the first line of the label.
