@@ -537,6 +537,7 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$count_where_callbacks = function () use ( &$wp_filter ): int {
 			return isset( $wp_filter['posts_where'] ) ? count( $wp_filter['posts_where']->callbacks, COUNT_RECURSIVE ) : 0;
 		};
+
 		$before = $count_where_callbacks();
 
 		$this->product_repository->find_expiring_product_ids();
