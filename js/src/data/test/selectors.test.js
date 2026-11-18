@@ -7,6 +7,7 @@ import {
 	getSearchConsoleOverviewReport,
 	getSearchConsoleTopProductPages,
 	getSearchConsoleTopStorePages,
+	hasAppliedCYOIncentive,
 } from '../selectors';
 import { getReportKey } from '../utils';
 
@@ -155,5 +156,21 @@ describe( 'getSearchConsoleTopStorePages', () => {
 		};
 
 		expect( getSearchConsoleTopStorePages( state, query ) ).toBeNull();
+	} );
+} );
+
+describe( 'hasAppliedCYOIncentive', () => {
+	it( 'returns the flag from the incentives response', () => {
+		expect(
+			hasAppliedCYOIncentive( {
+				ads: { cyo_incentives: { has_applied_incentive: true } },
+			} )
+		).toBe( true );
+	} );
+
+	it( 'returns false when the incentives are not fetched yet', () => {
+		expect(
+			hasAppliedCYOIncentive( { ads: { cyo_incentives: {} } } )
+		).toBe( false );
 	} );
 } );

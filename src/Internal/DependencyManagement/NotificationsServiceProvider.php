@@ -15,6 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BadgeWid
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CollectReviewsEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CyoSurveyNoSpendEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CyoSurveySpendEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PausedCampaignEvaluator;
@@ -62,6 +64,8 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		CampaignNoSalesEvaluator::class           => true,
 		CollectReviewsEvaluator::class            => true,
 		CouponsNotSyncedEvaluator::class          => true,
+		CyoSurveyNoSpendEvaluator::class          => true,
+		CyoSurveySpendEvaluator::class            => true,
 		EnhancedConversionsOffEvaluator::class    => true,
 		NotOnboardedEvaluator::class              => true,
 		PausedCampaignEvaluator::class            => true,
@@ -99,5 +103,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class, AdsRecommendationsService::class );
 		$this->share_with_tags( RecommendationsAvailableEvaluator::class, AdsRecommendationsService::class, AdsCampaign::class );
 		$this->share_with_tags( SearchConsoleNotConnectedEvaluator::class, SearchConsoleConnection::class, OnboardingCompleted::class );
+		$this->share_with_tags( CyoSurveySpendEvaluator::class, OnboardingCompleted::class, AdsReport::class );
+		$this->share_with_tags( CyoSurveyNoSpendEvaluator::class, OnboardingCompleted::class, AdsReport::class );
 	}
 }

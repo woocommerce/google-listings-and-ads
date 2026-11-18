@@ -12,6 +12,9 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import { handleApiError } from '~/utils/handleError';
 import { getAccountsSettingsUrl } from '~/utils/urls';
+import { useAppDispatch } from '~/data';
+
+jest.mock( '~/data', () => ( { useAppDispatch: jest.fn() } ) );
 
 jest.mock( '~/hooks/useGoogleMCAccount', () =>
 	jest.fn().mockName( 'useGoogleMCAccount' )
@@ -26,6 +29,7 @@ jest.mock( '~/utils/handleError', () => ( {
 const saveSettings = jest.fn();
 const push = jest.fn();
 const dismissNotification = jest.fn();
+const persistDismissal = jest.fn();
 
 jest.mock( '@woocommerce/navigation', () => ( {
 	...jest.requireActual( '@woocommerce/navigation' ),
@@ -55,6 +59,9 @@ describe( 'useNotificationsSystemMap', () => {
 			saveSettings,
 		} );
 		getHistory.mockReturnValue( { push } );
+		useAppDispatch.mockReturnValue( {
+			dismissNotification: persistDismissal,
+		} );
 	} );
 
 	it( 'defines the google-customer-reviews-collect-reviews notification content and CTA', () => {
@@ -222,5 +229,80 @@ describe( 'useNotificationsSystemMap', () => {
 				children: 'Connect now',
 			},
 		] );
+	} );
+
+	describe.each( [
+		[
+			'cyo-survey-spend',
+			'How did your Google Ads sign-up offer work for you?',
+			'You may have claimed an introductory offer when launching your campaigns. Take a quick 4-minute survey to help WooCommerce and Google improve future merchant incentives.',
+			'Share your thoughts',
+			'https://forms.gle/RyGfPnPHEshzDvL88',
+		],
+		[
+			'cyo-survey-no-spend',
+			'Tell us about your Google Ads sign-up offer',
+			'Even if you haven’t started running ads yet, your feedback matters. Take a quick 2-minute survey to help us improve the setup and offer experience for store owners.',
+			'Give quick feedback',
+			'https://forms.gle/i4qugA7rgm4o4j5K9',
+		],
+	] )( 'the %s notification', ( id, title, description, label, href ) => {
+		const getAction = () => {
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+			return result.current[ id ].actions[ 0 ];
+		};
+
+		it( 'defines the survey copy and a CTA that opens the form in a new tab', () => {
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+			const config = result.current[ id ];
+
+			expect( config.title ).toBe( title );
+			expect( config.description ).toBe( description );
+			expect( config.actions ).toHaveLength( 1 );
+			expect( config.actions[ 0 ] ).toEqual(
+				expect.objectContaining( {
+					href,
+					target: '_blank',
+					rel: 'noopener noreferrer',
+					children: label,
+					onClick: expect.any( Function ),
+				} )
+			);
+		} );
+
+		it( 'persists the dismissal, then removes the card, without blocking the link from opening', async () => {
+			persistDismissal.mockResolvedValue( {} );
+			const action = getAction();
+			const event = createMockEvent();
+
+			await act( async () => {
+				await action.onClick( event, dismissNotification );
+			} );
+
+			expect( persistDismissal ).toHaveBeenCalledTimes( 1 );
+			expect( persistDismissal ).toHaveBeenCalledWith( id );
+			expect( dismissNotification ).toHaveBeenCalledTimes( 1 );
+			expect( dismissNotification ).toHaveBeenCalledWith( id );
+			expect(
+				persistDismissal.mock.invocationCallOrder[ 0 ]
+			).toBeLessThan( dismissNotification.mock.invocationCallOrder[ 0 ] );
+			expect( event.preventDefault ).not.toHaveBeenCalled();
+		} );
+
+		it( 'keeps the card and lets no error escape when persisting the dismissal fails', async () => {
+			persistDismissal.mockRejectedValue( new Error( 'Request failed' ) );
+			const action = getAction();
+			const event = createMockEvent();
+
+			await act( async () => {
+				await expect(
+					action.onClick( event, dismissNotification )
+				).resolves.toBeUndefined();
+			} );
+
+			expect( persistDismissal ).toHaveBeenCalledWith( id );
+			expect( dismissNotification ).not.toHaveBeenCalled();
+			expect( event.preventDefault ).not.toHaveBeenCalled();
+		} );
 	} );
 } );
