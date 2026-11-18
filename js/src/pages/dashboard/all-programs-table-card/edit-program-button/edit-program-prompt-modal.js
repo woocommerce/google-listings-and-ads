@@ -70,7 +70,7 @@ const EditProgramPromptModal = ( { programId, onRequestClose } ) => {
 			</p>
 			<p>
 				{ __(
-					'Editing will result in the loss of any optimisations learned over time.',
+					'Editing will result in the loss of any optimizations learned over time.',
 					'google-listings-and-ads'
 				) }
 			</p>
