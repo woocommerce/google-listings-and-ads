@@ -29,7 +29,7 @@ const EuRegulationsCard = ( { context } ) => {
 
 	return (
 		<Section.Card>
-			<Section.Card.Body padding="narrow">
+			<Section.Card.Body padding="medium">
 				<Flex direction="column" align="stretch" gap={ 6 }>
 					<FlexBlock>
 						<Subsection.Title>

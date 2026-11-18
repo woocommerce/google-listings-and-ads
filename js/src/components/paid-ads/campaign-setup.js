@@ -35,7 +35,7 @@ export default function CampaignSetup( { children, continueButton } ) {
 
 			<Flex
 				direction="column"
-				gap="8"
+				gap={ 8 }
 				className="gla-campaign-setup-footer"
 			>
 				<StepContentActions>
