@@ -609,6 +609,22 @@ test.describe( 'Add paid campaign', () => {
 				).toBeVisible();
 			} );
 
+			test( '"What do you want to advertise?" card shows with "My products" selected', async () => {
+				await expect(
+					page.getByRole( 'group', {
+						name: 'What do you want to advertise?',
+					} )
+				).toBeVisible();
+				await expect(
+					page.getByRole( 'radio', { name: 'My products' } )
+				).toBeChecked();
+				await expect(
+					page.getByRole( 'radio', {
+						name: 'Another page on my store',
+					} )
+				).not.toBeChecked();
+			} );
+
 			test( 'Ads credit offer picker should be visible', async () => {
 				await expect(
 					page.getByText( 'Ads credit offer', { exact: true } )
