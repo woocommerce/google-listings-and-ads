@@ -1,11 +1,16 @@
 /**
+ * External dependencies
+ */
+import { Flex } from '@wordpress/components';
+
+/**
  * Internal dependencies
  */
 import StepContent from '~/components/stepper/step-content';
-import StepContentFooter from '~/components/stepper/step-content-footer';
 import StepContentActions from '~/components/stepper/step-content-actions';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Faqs from './asset-group/faqs';
+import './campaign-setup.scss';
 
 /**
  * @typedef {import('~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
@@ -28,14 +33,18 @@ export default function CampaignSetup( { children, continueButton } ) {
 		<StepContent variant="narrow">
 			{ children }
 
-			<StepContentFooter>
+			<Flex
+				direction="column"
+				gap="8"
+				className="gla-campaign-setup-footer"
+			>
 				<StepContentActions>
 					{ typeof continueButton === 'function'
 						? continueButton( formContext )
 						: continueButton }
 				</StepContentActions>
 				<Faqs />
-			</StepContentFooter>
+			</Flex>
 		</StepContent>
 	);
 }

@@ -11,7 +11,6 @@ import Section from '~/components/section';
 import Subsection from '~/components/subsection';
 import useHasEuTargetCountry from '~/hooks/useHasEuTargetCountry';
 import EuPoliticalContentField from './eu-political-content-field';
-import './eu-regulations-card.scss';
 
 /**
  * Displays the EU regulations card with the EU political content field when any target country is in the EU.
@@ -29,8 +28,8 @@ const EuRegulationsCard = ( { context } ) => {
 	}
 
 	return (
-		<Section.Card className="gla-eu-regulations-card">
-			<Section.Card.Body>
+		<Section.Card>
+			<Section.Card.Body padding="narrow">
 				<Flex direction="column" align="stretch" gap={ 6 }>
 					<FlexBlock>
 						<Subsection.Title>
