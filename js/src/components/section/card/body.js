@@ -9,7 +9,7 @@ import classnames from 'classnames';
  */
 import './body.scss';
 
-// The `large` padding is the default style, and no need to append any additional class name.
+// No extra class for 'large', the default padding.
 const paddingClassName = {
 	large: false,
 	medium: 'gla-section-card-body--padding-medium',
