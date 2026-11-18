@@ -537,6 +537,17 @@ export const getCYOIncentives = ( state ) => {
 };
 
 /**
+ * Retrieves whether an offer was already applied to the connected Google Ads account.
+ * It's returned by the same request as `getCYOIncentives`, so it's only available once that resolves.
+ *
+ * @param {Object} state The state
+ * @return {boolean} Whether an offer was already applied.
+ */
+export const hasAppliedCYOIncentive = ( state ) => {
+	return state.ads.cyo_incentives.has_applied_incentive ?? false;
+};
+
+/**
  * Return the GTIN Migration status.
  *
  * @param {Object} state The state
@@ -701,6 +712,8 @@ export const getMarket = ( state, id ) => {
  * @typedef {Object} MCLanguage
  * @property {string} code BCP 47 language code (e.g. `"en"`).
  * @property {string} label Human-readable language name (e.g. `"English"`).
+ * @property {boolean} supported Whether Google Merchant Center supports the language.
+ * @property {string|null} content_language Merchant Center content language the code resolves to (e.g. `"pt"` for `"pt-pt"`), or null when unsupported.
  */
 
 /**

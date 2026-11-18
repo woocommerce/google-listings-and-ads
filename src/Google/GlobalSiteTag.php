@@ -44,6 +44,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/** @var string Meta key used to mark orders as converted */
 	protected const ORDER_CONVERSION_META_KEY = '_gla_tracked';
 
+	/** @var string Google Analytics for WooCommerce script handle */
+	private const WCGA_SCRIPT_HANDLE = 'woocommerce-google-analytics-integration';
+
 	/**
 	 * @var AssetsHandlerInterface
 	 */
@@ -85,6 +88,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @var array
 	 */
 	protected $products = [];
+
+	/** @var bool Whether registered tracking is waiting for its Ads configuration. */
+	private $defer_events = false;
+
+	/** @var callable[] Events waiting for the Ads configuration, keyed by order ID for purchases. */
+	private $pending_events = [];
+
+	/** @var bool|null Whether Ads configuration was attached to Woo Analytics; null before activation. */
+	private $use_wcga_handle = null;
 
 	/**
 	 * Global Site Tag constructor.
@@ -128,11 +140,19 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			return;
 		}
 
+		$this->defer_events = true;
+
 		// See activate_consent_defaults()'s own docblock for why this runs at priority 999998.
+		// The Tag-Manager-only path (no native Ads tag) has no later wp_head step, so this is
+		// also where its buffered events get flushed.
 		add_action(
 			'wp_head',
-			function () {
+			function () use ( $is_native_ads_tag_enabled ) {
 				$this->activate_consent_defaults();
+
+				if ( ! $is_native_ads_tag_enabled ) {
+					$this->flush_pending_events();
+				}
 			},
 			999998
 		);
@@ -146,6 +166,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				'wp_head',
 				function () use ( $ads_conversion_id ) {
 					$this->activate_global_site_tag( $ads_conversion_id );
+					$this->flush_pending_events();
 				},
 				999999
 			);
@@ -157,6 +178,18 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				}
 			);
 		}
+
+		add_action(
+			'wp_footer',
+			function () use ( $ads_conversion_id ) {
+				if ( $this->defer_events && $this->pending_events ) {
+					// A custom template may omit wp_head, including Woo Analytics' framework output.
+					$this->display_global_site_tag( $ads_conversion_id );
+					$this->use_wcga_handle = false;
+					$this->flush_pending_events();
+				}
+			}
+		);
 
 		add_action(
 			'woocommerce_before_thankyou',
@@ -307,6 +340,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 						'currency_minor_unit'       => wc_get_price_decimals(),
 						'currency_code'             => get_woocommerce_currency(),
 						'products'                  => $this->products,
+						'developer_id'              => self::DEVELOPER_ID,
 						'tag_manager_connected'     => $this->is_tag_manager_connected(),
 						'ads_conversion_configured' => $is_native_ads_tag_enabled,
 					]
@@ -330,16 +364,23 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	public function activate_global_site_tag( string $ads_conversion_id ) {
+		$this->use_wcga_handle = false;
 		if ( $this->gtag_js->is_adding_framework() ) {
 			if ( $this->gtag_js->ga4w_v2 ) {
 				$inline_script  = $this->get_gtag_config( $ads_conversion_id );
 				$inline_script .= "\n" . $this->get_enhanced_conversion_tag();
 
-				$this->wp->wp_add_inline_script(
-					'woocommerce-google-analytics-integration',
-					$inline_script
-				);
+				if ( $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'enqueued' ) ) {
+					if ( $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'done' ) ) {
+						$this->wp->wp_print_inline_script_tag( $inline_script );
+						return;
+					}
 
+					if ( $this->wp->wp_add_inline_script( self::WCGA_SCRIPT_HANDLE, $inline_script ) ) {
+						$this->use_wcga_handle = true;
+						return;
+					}
+				}
 			} else {
 				// Legacy code to support Google Analytics for WooCommerce version < 2.0.0.
 				add_filter(
@@ -352,10 +393,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 						);
 					}
 				);
+				return;
 			}
-		} else {
-			$this->display_global_site_tag( $ads_conversion_id );
 		}
+
+		$this->display_global_site_tag( $ads_conversion_id );
 	}
 
 	/**
@@ -434,21 +476,43 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Add inline JavaScript to the page either as a standalone script or
-	 * attach it to Google Analytics for WooCommerce if it's installed
+	 * Attach inline JavaScript to the Google Analytics for WooCommerce script when
+	 * its framework is available and the script is enqueued but not yet printed.
+	 * Otherwise, or if attachment fails, print it as a standalone script.
+	 * After register(), events arriving before Ads configuration are buffered until wp_head.
 	 *
 	 * @param string $inline_script The JavaScript code to display
 	 *
 	 * @return void
 	 */
 	public function add_inline_event_script( string $inline_script ) {
-		if ( class_exists( '\WC_Google_Gtag_JS' ) ) {
-			$this->wp->wp_add_inline_script(
-				'woocommerce-google-analytics-integration',
-				$inline_script
-			);
-		} else {
-			$this->wp->wp_print_inline_script_tag( $inline_script );
+		if ( $this->defer_events ) {
+			$this->pending_events[] = function () use ( $inline_script ) {
+				$this->add_inline_event_script( $inline_script );
+			};
+			return;
+		}
+
+		if (
+			( $this->use_wcga_handle ?? $this->gtag_js->is_adding_framework() )
+			&& $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'enqueued' )
+			&& ! $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'done' )
+			&& $this->wp->wp_add_inline_script( self::WCGA_SCRIPT_HANDLE, $inline_script )
+		) {
+			return;
+		}
+
+		$this->wp->wp_print_inline_script_tag( $inline_script );
+	}
+
+	/**
+	 * Emit buffered events after configuration. Keep an event queued if output throws.
+	 */
+	private function flush_pending_events(): void {
+		$this->defer_events = false;
+		foreach ( $this->pending_events as $key => $event ) {
+			$event();
+			unset( $this->pending_events[ $key ] );
 		}
 	}
 
@@ -473,9 +537,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			return;
 		}
 
-		// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
-		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
-		$order->save_meta_data();
+		if ( $this->defer_events ) {
+			// Queue each order once, and leave its tracked marker untouched until output completes.
+			$this->pending_events[ 'purchase_' . $order_id ] = function () use ( $ads_conversion_id, $ads_conversion_label, $order_id ) {
+				$this->maybe_display_purchase_event_snippet( $ads_conversion_id, $ads_conversion_label, $order_id );
+			};
+			return;
+		}
 
 		// Get the item info in the order
 		$item_info     = [];
@@ -531,6 +599,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				'gtag("event", "purchase", {
 				ecomm_pagetype: "purchase",
 				send_to: "%s",
+				"developer_id.%s": true,
 				transaction_id: "%s",
 				currency: "%s",
 				country: "%s",
@@ -543,6 +612,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				aw_feed_language: "%s",
 				items: [%s]});',
 				esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
+				esc_js( self::DEVELOPER_ID ),
 				esc_js( $order->get_id() ),
 				esc_js( $order->get_currency() ),
 				esc_js( $this->wc->get_base_country() ),
@@ -558,31 +628,33 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$this->add_inline_event_script( $purchase_page_gtag );
 		}
 
-		if ( ! $this->is_tag_manager_connected() ) {
-			return;
+		if ( $this->is_tag_manager_connected() ) {
+			// Parallel GA4-schema push to window.dataLayer for the merchant's own GTM tags.
+			$purchase_data_layer = sprintf(
+				'window.dataLayer = window.dataLayer || [];
+				dataLayer.push({
+				event: "purchase",
+				ecommerce: {
+					transaction_id: "%s",
+					currency: "%s",
+					value: %f,
+					tax: %f,
+					shipping: %f,
+					items: [%s]
+				}});',
+				esc_js( $order->get_id() ),
+				esc_js( $order->get_currency() ),
+				$order->get_total(),
+				esc_js( $order->get_cart_tax() ),
+				$order->get_total_shipping(),
+				join( ',', $ga4_item_info ),
+			);
+			$this->add_inline_event_script( $purchase_data_layer );
 		}
 
-		// Parallel GA4-schema push to window.dataLayer for the merchant's own GTM tags.
-		$purchase_data_layer = sprintf(
-			'window.dataLayer = window.dataLayer || [];
-			dataLayer.push({
-			event: "purchase",
-			ecommerce: {
-				transaction_id: "%s",
-				currency: "%s",
-				value: %f,
-				tax: %f,
-				shipping: %f,
-				items: [%s]
-			}});',
-			esc_js( $order->get_id() ),
-			esc_js( $order->get_currency() ),
-			$order->get_total(),
-			esc_js( $order->get_cart_tax() ),
-			$order->get_total_shipping(),
-			join( ',', $ga4_item_info ),
-		);
-		$this->add_inline_event_script( $purchase_data_layer );
+		// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
+		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
+		$order->save_meta_data();
 	}
 
 	/**
@@ -604,6 +676,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$view_item_gtag = sprintf(
 				'gtag("event", "view_item", {
 				send_to: "GLA",
+				"developer_id.%s": true,
 				ecomm_pagetype: "product",
 				value: %f,
 				items:[{
@@ -613,6 +686,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 					name: %s,
 					category: %s,
 				}]});',
+				esc_js( self::DEVELOPER_ID ),
 				wc_get_price_to_display( $product ),
 				esc_js( $product->get_id() ),
 				wc_get_price_to_display( $product ),
@@ -658,7 +732,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	private function display_page_view_event_snippet(): void {
 		if ( ! is_cart() ) {
 			$this->add_inline_event_script(
-				'gtag("event", "page_view", {send_to: "GLA"});'
+				sprintf(
+					'gtag("event", "page_view", {send_to: "GLA", "developer_id.%s": true});',
+					esc_js( self::DEVELOPER_ID )
+				)
 			);
 			return;
 		}
@@ -694,9 +771,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$page_view_gtag = sprintf(
 			'gtag("event", "page_view", {
 			send_to: "GLA",
+			"developer_id.%s": true,
 			ecomm_pagetype: "cart",
 			value: %f,
 			items: [%s]});',
+			esc_js( self::DEVELOPER_ID ),
 			$value,
 			join( ',', $item_info ),
 		);

@@ -23,6 +23,7 @@ describe( 'gtag-events utils', () => {
 			products: [],
 			tag_manager_connected: true,
 			ads_conversion_configured: true,
+			developer_id: 'dOGY3NW',
 		};
 
 		window.glaGtagData.products[ 1234 ] = {
@@ -40,6 +41,7 @@ describe( 'gtag-events utils', () => {
 		trackEvent( 'event_name' );
 		expect( window.gtag ).toHaveBeenCalledWith( 'event', 'event_name', {
 			send_to: 'GLA',
+			'developer_id.dOGY3NW': true,
 		} );
 	} );
 
@@ -66,6 +68,7 @@ describe( 'gtag-events utils', () => {
 				},
 			],
 			send_to: 'GLA',
+			'developer_id.dOGY3NW': true,
 		} );
 	} );
 
@@ -83,6 +86,7 @@ describe( 'gtag-events utils', () => {
 				},
 			],
 			send_to: 'GLA',
+			'developer_id.dOGY3NW': true,
 		} );
 	} );
 
