@@ -208,6 +208,80 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertStringContainsString( "gtag('config', 'test_id'", $filtered_snippet );
 	}
 
+	/**
+	 * The WP Consent API bridge is the only GLA script that lifts the consent default
+	 * printed with GLA's own tag, so it must load whenever that tag is printed,
+	 * whether or not Woo Analytics is active.
+	 *
+	 * @dataProvider wp_consent_api_bridge_provider
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 *
+	 * @param bool $wcga_active          Whether Woo Analytics is active (its gtag class is defined).
+	 * @param bool $wcga_adds_framework  Whether Woo Analytics adds its framework for this visitor.
+	 * @param bool $wcga_handle_enqueued Whether the Woo Analytics script handle is enqueued.
+	 * @param bool $run_head             Whether the template calls wp_head.
+	 * @param bool $expect_bridge        Whether the WP Consent API bridge should be enqueued.
+	 */
+	public function test_wp_consent_api_bridge_follows_printed_global_site_tag( bool $wcga_active, bool $wcga_adds_framework, bool $wcga_handle_enqueued, bool $run_head, bool $expect_bridge ) {
+		require_once dirname( __DIR__, 2 ) . '/data/wp-consent-api-functions.php';
+		if ( $wcga_active && ! class_exists( '\\WC_Google_Gtag_JS', false ) ) {
+			class_alias( self::class, 'WC_Google_Gtag_JS' );
+		}
+
+		$this->gtag_js->ga4w_v2 = true;
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( $wcga_adds_framework );
+		$this->wp->method( 'wp_script_is' )->willReturnMap(
+			[
+				[ 'woocommerce-google-analytics-integration', 'enqueued', $wcga_handle_enqueued ],
+				[ 'woocommerce-google-analytics-integration', 'done', false ],
+			]
+		);
+		$this->wp->method( 'wp_add_inline_script' )->willReturn( true );
+		$this->options->method( 'get' )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+
+		$enqueued = [];
+		$this->assets_handler->method( 'enqueue' )->willReturnCallback(
+			function ( $asset ) use ( &$enqueued ) {
+				$enqueued[] = $asset->get_handle();
+			}
+		);
+
+		// Keep only this service's head and footer callbacks.
+		remove_all_actions( 'wp_head' );
+		remove_all_actions( 'wp_footer' );
+		$this->tag->register();
+
+		// A queued event makes the footer print GLA's tag when the template skips wp_head.
+		$this->tag->add_inline_event_script( 'gtag("event", "page_view");' );
+
+		ob_start();
+		if ( $run_head ) {
+			do_action( 'wp_head' );
+		}
+		do_action( 'wp_footer' );
+		$output = ob_get_clean();
+
+		$this->assertSame( $expect_bridge, str_contains( $output, 'Global site tag (gtag.js)' ) );
+		$this->assertContains( 'gla-gtag-events', $enqueued );
+		$this->assertSame( $expect_bridge, in_array( 'gla-wp-consent-api', $enqueued, true ) );
+	}
+
+	public function wp_consent_api_bridge_provider(): array {
+		return [
+			'Woo Analytics not installed'                  => [ false, false, false, true, true ],
+			'Woo Analytics active, not adding a framework' => [ true, false, false, true, true ],
+			'Woo Analytics active, handle not enqueued'    => [ true, true, false, true, true ],
+			'Woo Analytics active, template without head'  => [ true, false, false, false, true ],
+			'Woo Analytics carries the Ads configuration'  => [ true, true, true, true, false ],
+		];
+	}
+
 	public function test_purchase_event_not_order_received_page() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_false' );
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );

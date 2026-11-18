@@ -86,6 +86,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/** @var bool|null Whether Ads configuration was attached to Woo Analytics; null before activation. */
 	private $use_wcga_handle = null;
 
+	/** @var bool Whether this request printed GLA's own gtag.js snippet, including its consent default. */
+	private $printed_global_site_tag = false;
+
 	/**
 	 * Global Site Tag constructor.
 	 *
@@ -247,7 +250,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$this->register_js_for_fast_refresh_dev();
 				$this->assets_handler->enqueue( $gtag_events );
 
-				if ( ! class_exists( '\WC_Google_Gtag_JS' ) && function_exists( 'wp_has_consent' ) ) {
+				// Woo Analytics may be active without printing its tag, so follow GLA's own tag:
+				// this bridge is the only GLA script that lifts the consent default it prints.
+				if ( $this->printed_global_site_tag && function_exists( 'wp_has_consent' ) ) {
 					$this->assets_handler->enqueue( $wp_consent_api );
 				}
 			}
@@ -304,6 +309,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $ads_conversion_id ) {
+		$this->printed_global_site_tag = true;
+
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
