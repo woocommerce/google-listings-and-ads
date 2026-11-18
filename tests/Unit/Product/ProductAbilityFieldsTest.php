@@ -4,14 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductAbilityFields;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
-use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 use WP_Error;
 
@@ -21,9 +19,6 @@ use WP_Error;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  */
 class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
-
-	/** @var MerchantCenterService|MockObject $merchant_center */
-	protected $merchant_center;
 
 	/** @var ProductAbilityFields $fields */
 	protected $fields;
@@ -181,7 +176,6 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 			$this->container->get( AttributeManager::class ),
 			$this->container->get( ProductHelper::class ),
 			$this->container->get( ProductMetaHandler::class ),
-			$this->merchant_center,
 			$table,
 			$wpdb
 		);
@@ -217,7 +211,6 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 			$this->container->get( AttributeManager::class ),
 			$this->container->get( ProductHelper::class ),
 			$this->container->get( ProductMetaHandler::class ),
-			$this->merchant_center,
 			$table,
 			$wpdb
 		);
@@ -254,50 +247,6 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		$this->assertSame( '_wc_gla_availabilityDate', $clauses[1][0]['key'] );
 	}
 
-	public function test_validator_refuses_a_new_backorder_without_a_date_when_connected() {
-		$this->merchant_center->method( 'is_connected' )->willReturn( true );
-		$product = WC_Helper_Product::create_simple_product();
-		$product->set_stock_status( 'onbackorder' );
-
-		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product, null, [] )->get_error_code() );
-
-		$this->field( 'availability_date' )['set_callback']( $product, '2030-01-01T00:00:00' );
-		$this->assertNull( $this->fields->validate_availability_date( $product, null, [] ) );
-	}
-
-	public function test_validator_ignores_an_unrelated_change_and_a_store_that_is_not_connected() {
-		$product = WC_Helper_Product::create_simple_product();
-		$product->set_stock_status( 'onbackorder' );
-		$this->merchant_center->method( 'is_connected' )->willReturnOnConsecutiveCalls( false, true );
-
-		$this->assertNull( $this->fields->validate_availability_date( $product, null, [] ) );
-
-		$product->save();
-		$product->set_regular_price( '5' );
-		$this->assertNull( $this->fields->validate_availability_date( $product, null, [] ) );
-	}
-
-	public function test_validator_refuses_removing_the_date_of_a_backorder() {
-		$this->merchant_center->method( 'is_connected' )->willReturn( true );
-		$product = WC_Helper_Product::create_simple_product();
-		$product->set_stock_status( 'onbackorder' );
-		$this->field( 'availability_date' )['set_callback']( $product, '2030-01-01T00:00:00' );
-		$product->save();
-
-		$this->field( 'availability_date' )['set_callback']( $product, null );
-
-		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product, null, [] )->get_error_code() );
-	}
-
-	public function test_validator_ignores_a_product_being_deleted() {
-		$this->merchant_center->method( 'is_connected' )->willReturn( true );
-		$product = WC_Helper_Product::create_simple_product();
-		$product->set_stock_status( 'onbackorder' );
-
-		$this->assertNull( $this->fields->validate_availability_date( $product, null, [ 'deleting' => true ] ) );
-		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product, null, [ 'deleting' => false ] )->get_error_code() );
-	}
-
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -306,12 +255,10 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 
 		global $wpdb;
 
-		$this->merchant_center = $this->createMock( MerchantCenterService::class );
-		$this->fields          = new ProductAbilityFields(
+		$this->fields = new ProductAbilityFields(
 			$this->container->get( AttributeManager::class ),
 			$this->container->get( ProductHelper::class ),
 			$this->container->get( ProductMetaHandler::class ),
-			$this->merchant_center,
 			$this->container->get( MerchantIssueTable::class ),
 			$wpdb
 		);

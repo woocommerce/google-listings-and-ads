@@ -7,7 +7,6 @@ use Automattic\WooCommerce\Abilities\ExtensibleAbilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
@@ -30,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * Class ProductAbilityFields
  *
  * Adds the Google data of a product to WooCommerce's product abilities: fields under
- * `extensions.google`, query filters under `filters.extensions.google`, and a validator.
+ * `extensions.google`, and query filters under `filters.extensions.google`.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  *
@@ -69,11 +68,6 @@ class ProductAbilityFields implements Service, Registerable {
 	protected $meta_handler;
 
 	/**
-	 * @var MerchantCenterService
-	 */
-	protected $merchant_center;
-
-	/**
 	 * @var MerchantIssueTable
 	 */
 	protected $issue_table;
@@ -91,25 +85,22 @@ class ProductAbilityFields implements Service, Registerable {
 	/**
 	 * ProductAbilityFields constructor.
 	 *
-	 * @param AttributeManager      $attribute_manager
-	 * @param ProductHelper         $product_helper
-	 * @param ProductMetaHandler    $meta_handler
-	 * @param MerchantCenterService $merchant_center
-	 * @param MerchantIssueTable    $issue_table
-	 * @param wpdb                  $wpdb
+	 * @param AttributeManager   $attribute_manager
+	 * @param ProductHelper      $product_helper
+	 * @param ProductMetaHandler $meta_handler
+	 * @param MerchantIssueTable $issue_table
+	 * @param wpdb               $wpdb
 	 */
 	public function __construct(
 		AttributeManager $attribute_manager,
 		ProductHelper $product_helper,
 		ProductMetaHandler $meta_handler,
-		MerchantCenterService $merchant_center,
 		MerchantIssueTable $issue_table,
 		wpdb $wpdb
 	) {
 		$this->attribute_manager = $attribute_manager;
 		$this->product_helper    = $product_helper;
 		$this->meta_handler      = $meta_handler;
-		$this->merchant_center   = $merchant_center;
 		$this->issue_table       = $issue_table;
 		$this->wpdb              = $wpdb;
 	}
@@ -127,7 +118,7 @@ class ProductAbilityFields implements Service, Registerable {
 	}
 
 	/**
-	 * Register the fields, the filters and the validator.
+	 * Register the fields, the filters and the sync.
 	 */
 	protected function register_with_abilities(): void {
 		$common = [
@@ -141,11 +132,6 @@ class ProductAbilityFields implements Service, Registerable {
 		foreach ( $this->get_filters() as $filter ) {
 			ExtensibleAbilities::register_query_filter( $common + $filter );
 		}
-		ExtensibleAbilities::register_validator(
-			$common + [
-				'callback' => [ $this, 'validate_availability_date' ],
-			]
-		);
 		ExtensibleAbilities::register_sync(
 			$common + [
 				'callback' => [ $this, 'sync_hidden_product_issues' ],
@@ -337,47 +323,6 @@ class ProductAbilityFields implements Service, Registerable {
 				},
 			],
 		];
-	}
-
-	/**
-	 * Refuse a change that leaves a product that syncs on backorder with no availability date,
-	 * because the sync would then fail with an error that the caller never sees.
-	 *
-	 * A variation that a product-create call builds has no parent yet, so it cannot be checked here.
-	 *
-	 * @param WC_Product $product The changed product, before the save.
-	 * @param mixed      $ability The ability that changes the product.
-	 * @param array      $context Validator context. A product that the call deletes does not need a date.
-	 *
-	 * @return WP_Error|null
-	 */
-	public function validate_availability_date( WC_Product $product, $ability, array $context ): ?WP_Error {
-		if ( ! empty( $context['deleting'] ) ) {
-			return null;
-		}
-
-		$attribute_id = AvailabilityDate::get_id();
-		$is_orphan    = $product instanceof WC_Product_Variation && $product->get_parent_id() <= 0;
-		$has_date     = in_array( $product->get_type(), $this->attribute_manager->get_product_types_for_attribute( $attribute_id ), true );
-		if ( $is_orphan || ! $has_date || ! $this->merchant_center->is_connected() ) {
-			return null;
-		}
-
-		if ( ! empty( $this->attribute_manager->get_value( $product, $attribute_id ) ) || ! $product->is_on_backorder( 1 ) || ! $this->product_helper->is_sync_ready( $product ) ) {
-			return null;
-		}
-
-		$stock_changed = ! empty( array_intersect_key( $product->get_changes(), array_flip( [ 'stock_status', 'stock_quantity', 'manage_stock', 'backorders' ] ) ) );
-		$date_removed  = $product->get_id() > 0 && metadata_exists( 'post', $product->get_id(), $this->prefix_meta_key( $attribute_id ) );
-		if ( ! $stock_changed && ! $date_removed ) {
-			return null;
-		}
-
-		return new WP_Error(
-			'availability_date_required',
-			__( 'Google requires an availability date for a product on backorder. Send extensions.google.availability_date in the same call, or set extensions.google.visibility to dont-sync-and-show.', 'google-listings-and-ads' ),
-			[ 'status' => 400 ]
-		);
 	}
 
 	/**

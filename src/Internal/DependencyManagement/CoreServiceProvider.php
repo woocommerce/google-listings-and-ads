@@ -316,7 +316,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( AttributeManager::class );
 		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
-		$this->share_with_tags( ProductAbilityFields::class, AttributeManager::class, ProductHelper::class, ProductMetaHandler::class, MerchantCenterService::class, MerchantIssueTable::class, wpdb::class );
+		$this->share_with_tags( ProductAbilityFields::class, AttributeManager::class, ProductHelper::class, ProductMetaHandler::class, MerchantIssueTable::class, wpdb::class );
 		$this->share_with_tags( MerchantCenterStatusAbility::class, MerchantCenterService::class, MerchantStatuses::class );
 
 		$this->share_with_tags( MerchantAccountState::class );
