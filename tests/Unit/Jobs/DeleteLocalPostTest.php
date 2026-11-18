@@ -133,14 +133,15 @@ class DeleteLocalPostTest extends UnitTest {
 		$this->job->process_items( [ 123, $this->result ] );
 	}
 
-	public function test_process_items_records_a_failed_removal_instead_of_letting_it_propagate() {
+	public function test_process_items_records_a_failed_removal_of_a_published_post_instead_of_letting_it_propagate() {
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
 		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
 		$this->local_post_service->expects( $this->once() )
 			->method( 'set_sync_outcome' )
-			->with( 123, SyncOutcome::UNSHARE_FAILURE, '' );
+			->with( $post_id, SyncOutcome::UNSHARE_FAILURE, '' );
 		$this->local_post_service->expects( $this->never() )->method( 'clear_sync_outcome' );
 
-		$this->job->process_items( [ 123, $this->result ] );
+		$this->job->process_items( [ $post_id, $this->result ] );
 	}
 
 	/**
@@ -148,15 +149,17 @@ class DeleteLocalPostTest extends UnitTest {
 	 * generic `UNSHARE_FAILURE` outcome so the editor can tell the merchant the right thing to do.
 	 */
 	public function test_process_items_records_an_account_disconnected_outcome_for_a_lost_google_grant() {
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
 		$this->local_post_service->method( 'delete' )->willThrowException( AccountReconnect::google_disconnected() );
 		$this->local_post_service->expects( $this->once() )
 			->method( 'set_sync_outcome' )
-			->with( 123, SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED, '' );
+			->with( $post_id, SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED, '' );
 
-		$this->job->process_items( [ 123, $this->result ] );
+		$this->job->process_items( [ $post_id, $this->result ] );
 	}
 
 	public function test_a_throwing_exception_listener_in_record_failure_does_not_break_processing() {
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
 		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
 
 		add_action(
@@ -168,7 +171,7 @@ class DeleteLocalPostTest extends UnitTest {
 
 		$this->local_post_service->expects( $this->once() )
 			->method( 'set_sync_outcome' )
-			->with( 123, SyncOutcome::UNSHARE_FAILURE, '' );
+			->with( $post_id, SyncOutcome::UNSHARE_FAILURE, '' );
 
 		$logged = [];
 		add_action(
@@ -178,15 +181,44 @@ class DeleteLocalPostTest extends UnitTest {
 			}
 		);
 
-		$this->job->process_items( [ 123, $this->result ] );
+		$this->job->process_items( [ $post_id, $this->result ] );
 
 		$this->assertSame( [ 'A woocommerce_gla_exception callback threw: Listener failed.' ], $logged );
 	}
 
-	public function test_handle_process_items_action_does_not_reschedule_on_a_failed_removal() {
+	public function test_handle_process_items_action_does_not_reschedule_a_failed_removal_of_a_published_post() {
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
 		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
 		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
 
-		$this->job->handle_process_items_action( [ 123, $this->result ] );
+		$this->job->handle_process_items_action( [ $post_id, $this->result ] );
+	}
+
+	public function test_a_failed_removal_of_a_trashed_post_propagates_without_recording_an_outcome() {
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'trash' ] );
+		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
+		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
+
+		$this->expectException( Exception::class );
+
+		$this->job->process_items( [ $post_id, $this->result ] );
+	}
+
+	public function test_a_failed_removal_of_a_permanently_deleted_post_propagates_without_recording_an_outcome() {
+		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
+		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
+
+		$this->expectException( Exception::class );
+
+		$this->job->process_items( [ PHP_INT_MAX, $this->result ] );
+	}
+
+	public function test_handle_process_items_action_reschedules_and_rethrows_on_a_delete_failure() {
+		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
+		$this->action_scheduler->expects( $this->once() )->method( 'schedule_immediate' );
+
+		$this->expectException( Exception::class );
+
+		$this->job->handle_process_items_action( [ PHP_INT_MAX, $this->result ] );
 	}
 }
