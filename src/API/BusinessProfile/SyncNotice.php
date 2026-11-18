@@ -42,6 +42,10 @@ final class SyncNotice {
 				return self::error( __( 'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices. Once resolved, update the post to try again.', 'google-listings-and-ads' ) );
 			case SyncOutcome::NOT_FOUND:
 				return self::error( __( 'The post no longer exists on Google Business Profile.', 'google-listings-and-ads' ) );
+			case SyncOutcome::UNSHARE_FAILURE:
+				return self::error( __( 'This post couldn\'t be removed from Google Business Profile. It\'s still shown there. Update the post to try again.', 'google-listings-and-ads' ) );
+			case SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED:
+				return self::error( __( 'This post couldn\'t be removed from Google Business Profile. Reconnect your Google account, then update the post to try again.', 'google-listings-and-ads' ) );
 			case SyncOutcome::SENT_PENDING_VERIFICATION:
 				if ( ! empty( $sync_outcome['image_omitted'] ) ) {
 					return self::error( __( 'Your Google Business Profile is currently unverified. This post has been submitted without its image, which couldn\'t be synced. It will publish automatically once your profile is verified.', 'google-listings-and-ads' ) );

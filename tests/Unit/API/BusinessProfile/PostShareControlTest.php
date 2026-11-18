@@ -465,6 +465,22 @@ class PostShareControlTest extends UnitTest {
 		$this->assertSame( SyncNotice::STATUS_WARNING, $data['syncOutcome']['display_status'] );
 	}
 
+	public function test_passes_a_failed_unshare_to_the_meta_box_script_with_its_message_and_severity() {
+		$this->mock_connected_location();
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
+		$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::UNSHARE_FAILURE );
+		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$data = $this->get_meta_box_post_data();
+
+		$this->assertSame( SyncOutcome::UNSHARE_FAILURE, $data['syncOutcome']['outcome'] );
+		$this->assertSame( SyncNotice::STATUS_ERROR, $data['syncOutcome']['display_status'] );
+		$this->assertSame(
+			"This post couldn't be removed from Google Business Profile. It's still shown there. Update the post to try again.",
+			$data['syncOutcome']['display_message']
+		);
+	}
+
 	/**
 	 * Enqueue the Classic Editor meta box's assets for the global post, and read the post data
 	 * passed to its script.

@@ -165,6 +165,26 @@ describe( 'useBusinessProfileSyncStatus', () => {
 		).toBe( false );
 	} );
 
+	it( 'asks while a removal is queued, and returns the post as no longer shared once it settles', () => {
+		const { result } = renderHook( () =>
+			useBusinessProfileSyncStatus( {
+				postId: POST_ID,
+				syncOutcome: { outcome: 'unshare-queued' },
+				shareStatus: shared,
+			} )
+		);
+
+		expect( beat( statusResponse( null, notShared ) ) ).toEqual( {
+			gla_gbp_sync_status: POST_ID,
+		} );
+		expect( result.current ).toEqual( {
+			syncOutcome: null,
+			isShared: false,
+			searchUrl: '',
+		} );
+		expect( beat() ).toEqual( {} );
+	} );
+
 	it( "ignores Heartbeat responses without the post's status", () => {
 		const { result } = renderHook( () =>
 			useBusinessProfileSyncStatus( {

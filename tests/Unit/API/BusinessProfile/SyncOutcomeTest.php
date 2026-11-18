@@ -71,6 +71,32 @@ class SyncOutcomeTest extends UnitTest {
 		$this->assertContains( SyncOutcome::QUEUED, SyncOutcome::ALL );
 	}
 
+	/**
+	 * A queued removal hasn't run yet, so it's neither a failure to retry nor a send.
+	 */
+	public function test_unshare_queued_is_not_a_publish_retryable_failure() {
+		$this->assertNotContains( SyncOutcome::UNSHARE_QUEUED, SyncOutcome::FAILURES );
+		$this->assertContains( SyncOutcome::UNSHARE_QUEUED, SyncOutcome::ALL );
+	}
+
+	/**
+	 * `FAILURES` only drives `sends_on_save()`'s publish-retry logic -- a failed removal retries
+	 * on save through `LocalPostService::should_unshare()` instead, which this outcome doesn't
+	 * need to be listed in.
+	 */
+	public function test_unshare_failure_is_not_a_publish_retryable_failure() {
+		$this->assertNotContains( SyncOutcome::UNSHARE_FAILURE, SyncOutcome::FAILURES );
+		$this->assertContains( SyncOutcome::UNSHARE_FAILURE, SyncOutcome::ALL );
+	}
+
+	/**
+	 * Same reasoning as `test_unshare_failure_is_not_a_publish_retryable_failure` above.
+	 */
+	public function test_unshare_account_disconnected_is_not_a_publish_retryable_failure() {
+		$this->assertNotContains( SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED, SyncOutcome::FAILURES );
+		$this->assertContains( SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED, SyncOutcome::ALL );
+	}
+
 	public function test_a_restricted_state_is_a_success_when_has_voice_of_merchant_is_not_explicitly_false() {
 		$state = [
 			'hasVoiceOfMerchant'     => true,

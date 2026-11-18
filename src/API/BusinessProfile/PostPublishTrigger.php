@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SendLocalPost;
 use Exception;
@@ -16,10 +17,11 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class PostPublishTrigger
  *
- * Schedules a post to be sent to Google Business Profile once it's published -- manually or via
- * WordPress's own scheduler -- at most once per publish action. Saving the post again retries a
- * send that failed, or makes the first send for a published post that was never sent, such as
- * when sharing was switched on after publishing.
+ * Reacts to a published post being saved, based on its current sharing toggle: schedules a send
+ * to Google Business Profile when sharing is on (at most once per publish action -- saving again
+ * retries a send that failed, or makes the first send for a published post that was never sent,
+ * such as when sharing was switched on after publishing), or schedules the removal of a post
+ * that's still live on Google when sharing has been switched off.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -31,8 +33,8 @@ class PostPublishTrigger implements Service, Registerable {
 	/** @var JobRepository */
 	private $job_repository;
 
-	/** @var array<int,bool> Post IDs already scheduled to send during the current request. */
-	private $scheduled_in_request = [];
+	/** @var array<int,bool> Post IDs already handled -- sent or scheduled for removal -- during the current request. */
+	private $handled_in_request = [];
 
 	/**
 	 * PostPublishTrigger constructor.
@@ -68,6 +70,13 @@ class PostPublishTrigger implements Service, Registerable {
 			return;
 		}
 
+		if ( $this->local_post_service->should_unshare( $post ) ) {
+			if ( ! $this->is_meta_box_loader_follow_up() ) {
+				$this->handle_unshare( $post );
+			}
+			return;
+		}
+
 		if ( $post_before instanceof WP_Post && 'publish' === $post_before->post_status && ! $this->sends_on_save( $post ) ) {
 			return;
 		}
@@ -76,22 +85,39 @@ class PostPublishTrigger implements Service, Registerable {
 	}
 
 	/**
+	 * Whether this request is the block editor's own follow-up save for other plugins' meta
+	 * boxes, which immediately follows its main save of the same post.
+	 *
+	 * @return bool
+	 */
+	private function is_meta_box_loader_follow_up(): bool {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checks which request this is.
+		return isset( $_GET['meta-box-loader'] );
+	}
+
+	/**
 	 * Whether saving an already-published post sends it, because it has never been sent or its
-	 * last send failed.
+	 * last send failed. Also clears a pending or failed removal's outcome, since sharing is back on.
 	 *
 	 * @param WP_Post $post
 	 *
 	 * @return bool
 	 */
 	private function sends_on_save( WP_Post $post ): bool {
-		// The block editor follows its own save with a second one for other plugins' meta boxes.
 		// Sending there too would send twice for one save.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checks which request this is.
-		if ( isset( $_GET['meta-box-loader'] ) ) {
+		if ( $this->is_meta_box_loader_follow_up() ) {
 			return false;
 		}
 
 		$last = $this->local_post_service->get_sync_outcome( $post->ID );
+
+		if ( null !== $last && in_array( $last['outcome'], SyncOutcome::UNSHARE_OUTCOMES, true ) ) {
+			// The post isn't being unshared any more, so staying on Google is what the merchant
+			// wants now. A pending removal skips itself when it runs, and a failed one's message
+			// no longer applies.
+			$this->local_post_service->clear_sync_outcome( $post->ID );
+			return false;
+		}
 
 		if ( null !== $last && SyncOutcome::QUEUED === $last['outcome'] ) {
 			// A queued outcome with no pending or running job is stale -- the job was cancelled,
@@ -131,10 +157,10 @@ class PostPublishTrigger implements Service, Registerable {
 			return;
 		}
 
-		if ( isset( $this->scheduled_in_request[ $post->ID ] ) ) {
+		if ( isset( $this->handled_in_request[ $post->ID ] ) ) {
 			return;
 		}
-		$this->scheduled_in_request[ $post->ID ] = true;
+		$this->handled_in_request[ $post->ID ] = true;
 
 		$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::QUEUED );
 
@@ -143,6 +169,34 @@ class PostPublishTrigger implements Service, Registerable {
 		} catch ( Throwable $failure ) {
 			// The post's own publish must never break on scheduling. The queued outcome stays
 			// behind with no job, so the next save schedules it again.
+			if ( $failure instanceof Exception ) {
+				do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+			} else {
+				do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+			}
+		}
+	}
+
+	/**
+	 * Schedule the removal of a post that's still live on Google, because sharing has been
+	 * switched off, unless it's already been scheduled during this request.
+	 *
+	 * @param WP_Post $post
+	 */
+	protected function handle_unshare( WP_Post $post ): void {
+		if ( isset( $this->handled_in_request[ $post->ID ] ) ) {
+			return;
+		}
+		$this->handled_in_request[ $post->ID ] = true;
+
+		$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::UNSHARE_QUEUED );
+
+		try {
+			$result = $this->local_post_service->get_stored_result( $post->ID );
+			$this->job_repository->get( DeleteLocalPost::class )->schedule( [ $post->ID, $result ] );
+		} catch ( Throwable $failure ) {
+			// The post's own save must never break on scheduling. Sharing stays off, so the next
+			// save schedules the removal again.
 			if ( $failure instanceof Exception ) {
 				do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
 			} else {

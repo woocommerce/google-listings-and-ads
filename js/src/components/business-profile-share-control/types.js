@@ -2,7 +2,7 @@
  * The outcome of a post's last send to Google Business Profile, as `SyncOutcome` defines it on the
  * server.
  *
- * @typedef {'queued'|'success'|'sent-pending-verification'|'sent-location-restricted'|'request-failure'|'content-rejection'|'account-restriction'|'account-disconnected'|'not-found'} SyncOutcomeValue
+ * @typedef {'queued'|'success'|'sent-pending-verification'|'sent-location-restricted'|'request-failure'|'content-rejection'|'account-restriction'|'account-disconnected'|'not-found'|'unshare-queued'|'unshare-failure'|'unshare-account-disconnected'} SyncOutcomeValue
  */
 
 /**

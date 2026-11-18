@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishT
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SendLocalPost;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -36,6 +37,9 @@ class PostPublishTriggerTest extends UnitTest {
 
 	/** @var MockObject|SendLocalPost $send_local_post_job */
 	protected $send_local_post_job;
+
+	/** @var MockObject|DeleteLocalPost $delete_local_post_job */
+	protected $delete_local_post_job;
 
 	/** @var MockObject|JobRepository $job_repository */
 	protected $job_repository;
@@ -65,14 +69,24 @@ class PostPublishTriggerTest extends UnitTest {
 				'search_url' => '',
 			]
 		);
+		// Nothing to unshare by default -- the dedicated tests below set this up explicitly.
+		$this->local_post_service->method( 'should_unshare' )->willReturn( false );
 
 		// Still needed for register_share_meta()'s own PostShareControl, not for the trigger.
 		$this->location_service = $this->createMock( LocationService::class );
 		$this->location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
 
-		$this->send_local_post_job = $this->createMock( SendLocalPost::class );
-		$this->job_repository      = $this->createMock( JobRepository::class );
-		$this->job_repository->method( 'get' )->with( SendLocalPost::class )->willReturn( $this->send_local_post_job );
+		$this->send_local_post_job   = $this->createMock( SendLocalPost::class );
+		$this->delete_local_post_job = $this->createMock( DeleteLocalPost::class );
+		$this->job_repository        = $this->createMock( JobRepository::class );
+		// willReturnMap(), not two separate with()/willReturn() stubs -- the latter doesn't
+		// combine per-argument, the second call replaces the first regardless of argument.
+		$this->job_repository->method( 'get' )->willReturnMap(
+			[
+				[ SendLocalPost::class, $this->send_local_post_job ],
+				[ DeleteLocalPost::class, $this->delete_local_post_job ],
+			]
+		);
 
 		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
 	}
@@ -143,6 +157,105 @@ class PostPublishTriggerTest extends UnitTest {
 
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * A fresh mock is needed, not a re-stub of setUp()'s shared one -- method()->willReturn()
+	 * keeps whichever stub was configured first, same as the is_shareable() tests below.
+	 *
+	 * @param array $stored_result The stored result `get_stored_result()` returns.
+	 *
+	 * @return MockObject|LocalPostService
+	 */
+	private function mock_local_post_service_that_should_unshare( array $stored_result = [] ) {
+		$local_post_service = $this->createMock( LocalPostService::class );
+		$local_post_service->method( 'should_unshare' )->willReturn( true );
+		$local_post_service->method( 'get_stored_result' )->willReturn( $stored_result );
+
+		return $local_post_service;
+	}
+
+	public function test_schedules_removal_when_sharing_is_switched_off_on_an_already_shared_post() {
+		$result                   = [
+			'account_id'     => '111',
+			'location_id'    => '222',
+			'google_post_id' => '333',
+		];
+		$this->local_post_service = $this->mock_local_post_service_that_should_unshare( $result );
+		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_post_with_status( 'publish' );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
+		$this->delete_local_post_job->expects( $this->once() )->method( 'schedule' )->with( [ $post->ID, $result ] );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * The editors show the removal as pending, and keep checking its status, while it's queued.
+	 */
+	public function test_marks_a_scheduled_removal_as_queued() {
+		$this->local_post_service = $this->mock_local_post_service_that_should_unshare();
+		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_post_with_status( 'publish' );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::UNSHARE_QUEUED );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_does_not_propagate_an_exception_from_scheduling_a_removal_and_reports_it() {
+		$this->local_post_service = $this->mock_local_post_service_that_should_unshare();
+		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_post_with_status( 'publish' );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->delete_local_post_job->method( 'schedule' )->willThrowException( new RuntimeException( 'Error saving action.' ) );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_schedules_removal_only_once_even_when_the_hook_fires_more_than_once_for_one_save() {
+		$this->local_post_service = $this->mock_local_post_service_that_should_unshare();
+		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_post_with_status( 'publish' );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->delete_local_post_job->expects( $this->once() )->method( 'schedule' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * Same race `sends_on_save()` already guards against -- the block editor's own follow-up
+	 * meta-box-loader request would otherwise schedule a second removal for the same save.
+	 */
+	public function test_does_not_schedule_removal_during_the_block_editors_follow_up_meta_box_save() {
+		$this->local_post_service = $this->mock_local_post_service_that_should_unshare();
+		$this->trigger            = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_post_with_status( 'publish' );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->delete_local_post_job->expects( $this->never() )->method( 'schedule' );
+
+		$_GET['meta-box-loader'] = '1';
+		try {
+			$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+		} finally {
+			unset( $_GET['meta-box-loader'] );
+		}
 	}
 
 	/**
@@ -263,6 +376,42 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * A post whose removal is pending or failed, with sharing switched back on: staying on Google
+	 * is what the merchant wants now, so the removal's outcome no longer applies.
+	 *
+	 * @dataProvider data_provider_unshare_outcomes
+	 *
+	 * @param string $outcome
+	 */
+	public function test_clears_a_removals_outcome_once_sharing_is_back_on( string $outcome ) {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => $outcome,
+				'message' => '',
+			]
+		);
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->once() )->method( 'clear_sync_outcome' )->with( $post->ID );
+		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
+		$this->delete_local_post_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_unshare_outcomes(): array {
+		return [
+			'unshare queued'                        => [ SyncOutcome::UNSHARE_QUEUED ],
+			'unshare failure'                       => [ SyncOutcome::UNSHARE_FAILURE ],
+			'unshare failure, account disconnected' => [ SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED ],
+		];
 	}
 
 	/**

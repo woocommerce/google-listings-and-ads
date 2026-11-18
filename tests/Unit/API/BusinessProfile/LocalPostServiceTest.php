@@ -208,6 +208,77 @@ class LocalPostServiceTest extends UnitTest {
 		$this->assertFalse( $service->is_shareable( $post ) );
 	}
 
+	public function test_should_unshare_is_true_when_sharing_is_off_and_the_post_is_still_live_on_google() {
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
+			]
+		);
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+
+		$this->assertTrue( $this->service->should_unshare( $post ) );
+	}
+
+	public function test_should_unshare_is_false_when_sharing_is_on() {
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
+			]
+		);
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+
+		$this->assertFalse( $this->service->should_unshare( $post ) );
+	}
+
+	public function test_should_unshare_is_false_when_sharing_is_off_but_the_post_was_never_shared() {
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+
+		$this->assertFalse( $this->service->should_unshare( $post ) );
+	}
+
+	public function test_should_remove_from_business_profile_is_true_for_a_trashed_post() {
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'trash' ] );
+
+		$this->assertTrue( $this->service->should_remove_from_business_profile( $post->ID ) );
+	}
+
+	public function test_should_remove_from_business_profile_is_true_for_a_permanently_deleted_post() {
+		$this->assertTrue( $this->service->should_remove_from_business_profile( PHP_INT_MAX ) );
+	}
+
+	public function test_should_remove_from_business_profile_is_true_for_a_published_post_with_sharing_still_off() {
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+
+		$this->assertTrue( $this->service->should_remove_from_business_profile( $post->ID ) );
+	}
+
+	/**
+	 * The race this guards against: sharing was switched off (scheduling the removal), then
+	 * switched back on before the job ran -- the post is still genuinely live, nothing to remove.
+	 */
+	public function test_should_remove_from_business_profile_is_false_for_a_published_post_with_sharing_switched_back_on() {
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+
+		$this->assertFalse( $this->service->should_remove_from_business_profile( $post->ID ) );
+	}
+
 	public function test_create_throws_when_google_returns_no_usable_post_identifier() {
 		$post = $this->factory()->post->create_and_get();
 

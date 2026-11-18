@@ -69,6 +69,18 @@ class SyncNoticeTest extends UnitTest {
 				SyncNotice::STATUS_ERROR,
 				'The post no longer exists on Google Business Profile.',
 			],
+			'unshare failure'                              => [
+				SyncOutcome::UNSHARE_FAILURE,
+				false,
+				SyncNotice::STATUS_ERROR,
+				'This post couldn\'t be removed from Google Business Profile. It\'s still shown there. Update the post to try again.',
+			],
+			'unshare failure, account disconnected'        => [
+				SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED,
+				false,
+				SyncNotice::STATUS_ERROR,
+				'This post couldn\'t be removed from Google Business Profile. Reconnect your Google account, then update the post to try again.',
+			],
 			'sent, pending verification'                   => [
 				SyncOutcome::SENT_PENDING_VERIFICATION,
 				false,
@@ -104,6 +116,10 @@ class SyncNoticeTest extends UnitTest {
 
 	public function test_for_outcome_returns_no_notice_for_a_plain_success() {
 		$this->assertNull( SyncNotice::for_outcome( $this->outcome( SyncOutcome::SUCCESS, false ) ) );
+	}
+
+	public function test_for_outcome_returns_no_notice_for_a_queued_removal() {
+		$this->assertNull( SyncNotice::for_outcome( $this->outcome( SyncOutcome::UNSHARE_QUEUED, false ) ) );
 	}
 
 	public function test_for_outcome_returns_no_notice_when_the_post_has_never_been_sent() {
