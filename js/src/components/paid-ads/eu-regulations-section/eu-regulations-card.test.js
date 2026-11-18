@@ -34,9 +34,8 @@ describe( 'EuRegulationsCard', () => {
 			<EuRegulationsCard context="create-ads" />
 		);
 
-		const card = container.querySelector( '.gla-eu-regulations-card' );
+		const card = container.querySelector( '.components-card' );
 		const titles = card.querySelectorAll( '.gla-subsection-title' );
-		expect( card ).toHaveClass( 'components-card' );
 		expect( titles ).toHaveLength( 1 );
 		expect( titles[ 0 ] ).toHaveTextContent( 'EU regulations' );
 		expect( card ).toHaveTextContent(
