@@ -26,6 +26,7 @@ import CampaignSetup from '~/components/paid-ads/campaign-setup';
 import AdvertisingSourceSelector from '~/components/paid-ads/advertising-source-selector';
 import CampaignNameCard from '~/components/paid-ads/campaign-name-card';
 import AssetsOptInCard from '~/components/paid-ads/assets-opt-in-card/assets-opt-in-card';
+import OptInAssetSuggestions from '~/components/paid-ads/opt-in-asset-suggestions';
 import BudgetSection from '~/components/paid-ads/budget-section';
 import EuRegulationsSection from '~/components/paid-ads/eu-regulations-section';
 import AssetGroup, {
@@ -246,6 +247,7 @@ const CreatePaidAdsCampaign = () => {
 										<AdvertisingSourceSelector />
 									) }
 									<AssetsOptInCard />
+									<OptInAssetSuggestions />
 									<BudgetSection />
 									<EuRegulationsSection
 										context={ eventContext }
