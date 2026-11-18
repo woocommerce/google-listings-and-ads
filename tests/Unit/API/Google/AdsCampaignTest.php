@@ -22,6 +22,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAd
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Google\Ads\GoogleAds\V23\Enums\AssetFieldTypeEnum\AssetFieldType as AssetFieldTypeEnum;
+use Google\Ads\GoogleAds\V23\Resources\CampaignAsset;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V23\Services\MutateOperation;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
@@ -1056,5 +1060,145 @@ class AdsCampaignTest extends UnitTest {
 			);
 			$this->assertEquals( 404, $e->getCode() );
 		}
+	}
+
+	public function test_get_brand_asset_link_operations_skips_logo_that_is_already_linked() {
+		// Google deduplicates image assets, so re-uploading the same logo returns the linked asset's ID.
+		$this->generate_ads_query_mock( [ $this->generate_campaign_asset_row_mock( 999, AssetFieldTypeEnum::LOGO ) ] );
+
+		$this->campaign_asset->expects( $this->never() )->method( 'create_remove_operation' );
+		$this->campaign_asset->expects( $this->never() )->method( 'create_link_operations' );
+
+		$this->assertSame(
+			[],
+			$this->campaign->get_brand_asset_link_operations(
+				self::TEST_CAMPAIGN_ID,
+				[
+					[
+						'id'         => 999,
+						'content'    => null,
+						'field_type' => 'logo',
+					],
+					[
+						'id'         => null,
+						'content'    => 'https://example.com/logo-copy.png',
+						'field_type' => 'logo',
+					],
+				],
+				[
+					[
+						'id'         => null,
+						'content'    => 'https://example.com/logo-copy.png',
+						'field_type' => 'logo',
+					],
+				],
+				[ $this->generate_asset_resource_name( 999 ) ]
+			)
+		);
+	}
+
+	public function test_get_brand_asset_link_operations_skips_logo_linked_alongside_other_logos() {
+		// Campaign creation links every logo, so the re-uploaded logo may not be the last link returned.
+		$this->generate_ads_query_mock(
+			[
+				$this->generate_campaign_asset_row_mock( 999, AssetFieldTypeEnum::LOGO ),
+				$this->generate_campaign_asset_row_mock( 888, AssetFieldTypeEnum::LOGO ),
+			]
+		);
+
+		$this->campaign_asset->expects( $this->never() )->method( 'create_remove_operation' );
+		$this->campaign_asset->expects( $this->never() )->method( 'create_link_operations' );
+
+		$created = [
+			'id'         => null,
+			'content'    => 'https://example.com/logo-copy.png',
+			'field_type' => 'logo',
+		];
+
+		$this->assertSame(
+			[],
+			$this->campaign->get_brand_asset_link_operations(
+				self::TEST_CAMPAIGN_ID,
+				[ $created ],
+				[ $created ],
+				[ $this->generate_asset_resource_name( 999 ) ]
+			)
+		);
+	}
+
+	public function test_get_brand_asset_link_operations_skips_business_name_that_is_already_linked() {
+		$this->generate_ads_query_mock( [ $this->generate_campaign_asset_row_mock( 555, AssetFieldTypeEnum::BUSINESS_NAME ) ] );
+
+		$this->campaign_asset->expects( $this->never() )->method( 'create_remove_operation' );
+		$this->campaign_asset->expects( $this->never() )->method( 'create_link_operations' );
+
+		$created = [
+			'id'         => null,
+			'content'    => 'My Store',
+			'field_type' => 'business_name',
+		];
+
+		$this->assertSame(
+			[],
+			$this->campaign->get_brand_asset_link_operations(
+				self::TEST_CAMPAIGN_ID,
+				[ $created ],
+				[ $created ],
+				[ $this->generate_asset_resource_name( 555 ) ]
+			)
+		);
+	}
+
+	public function test_get_brand_asset_link_operations_replaces_logo_link_with_new_asset() {
+		$existing_row = $this->generate_campaign_asset_row_mock( 999, AssetFieldTypeEnum::LOGO );
+		$this->generate_ads_query_mock( [ $existing_row ] );
+
+		$remove_operation = new MutateOperation();
+		$link_operation   = new MutateOperation();
+
+		$this->campaign_asset->expects( $this->once() )
+			->method( 'create_remove_operation' )
+			->with( $existing_row->getCampaignAsset()->getResourceName() )
+			->willReturn( $remove_operation );
+		$this->campaign_asset->expects( $this->once() )
+			->method( 'create_link_operations' )
+			->with( self::TEST_CAMPAIGN_ID, [], [ 1000 ] )
+			->willReturn( [ $link_operation ] );
+
+		$created = [
+			'id'         => null,
+			'content'    => 'https://example.com/new-logo.png',
+			'field_type' => 'logo',
+		];
+
+		$this->assertSame(
+			[ $remove_operation, $link_operation ],
+			$this->campaign->get_brand_asset_link_operations(
+				self::TEST_CAMPAIGN_ID,
+				[ $created ],
+				[ $created ],
+				[ $this->generate_asset_resource_name( 1000 ) ]
+			)
+		);
+	}
+
+	/**
+	 * Generates a campaign asset row as returned by AdsCampaignAssetQuery.
+	 *
+	 * @param int $asset_id   Linked asset ID.
+	 * @param int $field_type Google Ads AssetFieldType enum value.
+	 *
+	 * @return GoogleAdsRow
+	 */
+	protected function generate_campaign_asset_row_mock( int $asset_id, int $field_type ): GoogleAdsRow {
+		return ( new GoogleAdsRow() )->setCampaignAsset(
+			new CampaignAsset(
+				[
+					'resource_name' => sprintf( 'customers/%d/campaignAssets/%d~%d~%s', $this->ads_id, self::TEST_CAMPAIGN_ID, $asset_id, AssetFieldTypeEnum::name( $field_type ) ),
+					'asset'         => $this->generate_asset_resource_name( $asset_id ),
+					'field_type'    => $field_type,
+				]
+			)
+		);
 	}
 }
