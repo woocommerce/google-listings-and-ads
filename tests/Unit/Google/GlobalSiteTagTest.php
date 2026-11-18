@@ -255,17 +255,24 @@ class GlobalSiteTagTest extends UnitTest {
 		// Keep only this service's head and footer callbacks.
 		remove_all_actions( 'wp_head' );
 		remove_all_actions( 'wp_footer' );
-		$this->tag->register();
 
-		// A queued event makes the footer print GLA's tag when the template skips wp_head.
-		$this->tag->add_inline_event_script( 'gtag("event", "page_view");' );
+		// Asset registration requires the built scripts, which PHP-only CI does not build.
+		$stubbed_scripts = $this->stub_missing_build_scripts( [ 'gtag-events', 'wp-consent-api' ] );
+		try {
+			$this->tag->register();
 
-		ob_start();
-		if ( $run_head ) {
-			do_action( 'wp_head' );
+			// A queued event makes the footer print GLA's tag when the template skips wp_head.
+			$this->tag->add_inline_event_script( 'gtag("event", "page_view");' );
+
+			ob_start();
+			if ( $run_head ) {
+				do_action( 'wp_head' );
+			}
+			do_action( 'wp_footer' );
+			$output = ob_get_clean();
+		} finally {
+			array_map( 'unlink', $stubbed_scripts );
 		}
-		do_action( 'wp_footer' );
-		$output = ob_get_clean();
 
 		$this->assertSame( $expect_bridge, str_contains( $output, 'Global site tag (gtag.js)' ) );
 		$this->assertContains( 'gla-gtag-events', $enqueued );
@@ -865,6 +872,30 @@ class GlobalSiteTagTest extends UnitTest {
 		);
 
 		$this->tag->register();
+	}
+
+	/**
+	 * Create empty built scripts that are missing, leaving existing builds untouched.
+	 *
+	 * @param string[] $names Script names under js/build, without extension.
+	 *
+	 * @return string[] Paths created, for the caller to remove.
+	 */
+	protected function stub_missing_build_scripts( array $names ): array {
+		$build_dir = dirname( __DIR__, 3 ) . '/js/build';
+		wp_mkdir_p( $build_dir );
+
+		$created = [];
+		foreach ( $names as $name ) {
+			$path = "{$build_dir}/{$name}.js";
+			if ( ! is_readable( $path ) && ! is_readable( "{$build_dir}/{$name}.min.js" ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+				file_put_contents( $path, '' );
+				$created[] = $path;
+			}
+		}
+
+		return $created;
 	}
 
 	/**
