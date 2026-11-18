@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { setSettings } from '@wordpress/date';
+import apiFetch from '@wordpress/api-fetch';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -19,6 +20,12 @@ import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationC
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 import { useAppDispatch } from '~/data';
 import { recordGlaEvent } from '~/utils/tracks';
+
+jest.mock( '@wordpress/api-fetch', () => {
+	const impl = jest.fn().mockName( '@wordpress/api-fetch' );
+	impl.use = jest.fn().mockName( 'apiFetch.use' );
+	return impl;
+} );
 
 jest.mock( '@woocommerce/navigation', () => ( {
 	...jest.requireActual( '@woocommerce/navigation' ),
@@ -42,22 +49,17 @@ jest.mock( '~/components/stepper/top-bar', () => () => null );
 jest.mock( '~/components/help-icon-button', () => () => null );
 jest.mock( '~/components/eu-political-declaration', () => () => null );
 
-// Replaces the form with a button that submits the given values, so the test drives `handleSubmit` directly.
+// Form values each test can override before submitting.
+let mockSubmitValues;
+
+// Replaces the form with a button that submits `mockSubmitValues`, so the test drives `handleSubmit` directly.
 jest.mock( '~/components/paid-ads/campaign-assets-form', () =>
 	jest.fn( ( props ) => (
 		<button
 			onClick={ () =>
-				props.onSubmit(
-					{
-						dailyBudget: 50,
-						hasConfirmedEuPoliticalContent: false,
-						incentiveOffer: 'medium',
-					},
-					{
-						submitter: { dataset: {} },
-						signalFailedSubmission: jest.fn(),
-					}
-				)
+				props.onSubmit( mockSubmitValues, {
+					signalFailedSubmission: jest.fn(),
+				} )
 			}
 		>
 			Submit
@@ -105,18 +107,44 @@ const CAMPAIGN_WITH_OFFER_NOTICE =
 describe( 'CreatePaidAdsCampaign', () => {
 	let applyIncentive;
 	let createAdsCampaign;
+	let createAdsWithAssetsCampaign;
+	let updateCampaignAssetGroup;
 	let createNotice;
 	let push;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
 
+		mockSubmitValues = {
+			dailyBudget: 50,
+			hasConfirmedEuPoliticalContent: false,
+			incentiveOffer: 'medium',
+			campaignName: 'Summer sale',
+			advertisingSource: 'product',
+			includeCreativeAssets: false,
+			final_url: 'https://example.com/services',
+			display_url_path: [ 'book', 'now' ],
+		};
+
 		applyIncentive = jest.fn().mockResolvedValue( true );
 		createAdsCampaign = jest
 			.fn()
 			.mockResolvedValue( { createdCampaign: { id: 123 } } );
+		createAdsWithAssetsCampaign = jest
+			.fn()
+			.mockResolvedValue( { createdCampaign: { id: 456 } } );
+		updateCampaignAssetGroup = jest.fn().mockResolvedValue( {} );
 		createNotice = jest.fn();
 		push = jest.fn();
+
+		apiFetch.mockResolvedValue( [
+			{
+				id: 789,
+				final_url: '',
+				display_url_path: [ '', '' ],
+				assets: {},
+			},
+		] );
 
 		useGoogleMCAccount.mockReturnValue( {
 			hasFinishedResolution: true,
@@ -132,8 +160,8 @@ describe( 'CreatePaidAdsCampaign', () => {
 		useApplyCYOIncentive.mockReturnValue( { applyIncentive } );
 		useAppDispatch.mockReturnValue( {
 			createAdsCampaign,
-			createAdsWithAssetsCampaign: jest.fn(),
-			updateCampaignAssetGroup: jest.fn(),
+			createAdsWithAssetsCampaign,
+			updateCampaignAssetGroup,
 		} );
 		getHistory.mockReturnValue( { push } );
 	} );
@@ -209,6 +237,113 @@ describe( 'CreatePaidAdsCampaign', () => {
 			'success',
 			CAMPAIGN_WITH_OFFER_NOTICE
 		);
+	} );
+
+	it( 'Should create a product campaign without assets when the merchant did not opt in to assets', async () => {
+		await submit();
+
+		expect( createAdsCampaign ).toHaveBeenCalledWith( 50, [ 'US' ], false, {
+			name: 'Summer sale',
+			advertisingSource: 'product',
+		} );
+		expect( apiFetch ).not.toHaveBeenCalled();
+		expect( updateCampaignAssetGroup ).not.toHaveBeenCalled();
+		expect( createAdsWithAssetsCampaign ).not.toHaveBeenCalled();
+	} );
+
+	it( 'Should create a product campaign and then update its asset group when the merchant opted in to assets', async () => {
+		mockSubmitValues.includeCreativeAssets = true;
+
+		await submit();
+
+		expect( createAdsCampaign ).toHaveBeenCalledWith( 50, [ 'US' ], false, {
+			name: 'Summer sale',
+			advertisingSource: 'product',
+		} );
+		expect( apiFetch ).toHaveBeenCalledWith( {
+			path: '/wc/gla/ads/campaigns/asset-groups?campaign_id=123',
+		} );
+		expect( updateCampaignAssetGroup ).toHaveBeenCalledWith(
+			789,
+			expect.objectContaining( {
+				final_url: 'https://example.com/services',
+				path1: 'book',
+				path2: 'now',
+			} )
+		);
+		expect( createAdsWithAssetsCampaign ).not.toHaveBeenCalled();
+	} );
+
+	it.each( [
+		[ 'connected', true ],
+		[ 'not connected', false ],
+	] )(
+		'Should create a page campaign with its assets in one request when Merchant Center is %s',
+		async ( _, hasGoogleMCConnection ) => {
+			useGoogleMCAccount.mockReturnValue( {
+				hasFinishedResolution: true,
+				hasGoogleMCConnection,
+			} );
+			mockSubmitValues.advertisingSource = 'page';
+
+			await submit();
+
+			expect( createAdsWithAssetsCampaign ).toHaveBeenCalledWith(
+				50,
+				[ 'US' ],
+				expect.objectContaining( {
+					final_url: 'https://example.com/services',
+					path1: 'book',
+					path2: 'now',
+				} ),
+				false,
+				{ name: 'Summer sale', advertisingSource: 'page' }
+			);
+			expect( createAdsCampaign ).not.toHaveBeenCalled();
+			expect( updateCampaignAssetGroup ).not.toHaveBeenCalled();
+		}
+	);
+
+	it( 'Should not create a second campaign when updating the asset group is retried after a failure', async () => {
+		mockSubmitValues.includeCreativeAssets = true;
+		updateCampaignAssetGroup.mockRejectedValueOnce( new Error( 'Failed' ) );
+
+		render( <CreatePaidAdsCampaign /> );
+		const submitButton = screen.getByRole( 'button' );
+
+		await userEvent.click( submitButton );
+		await waitFor( () =>
+			expect( updateCampaignAssetGroup ).toHaveBeenCalledTimes( 1 )
+		);
+		expect( push ).not.toHaveBeenCalled();
+
+		await userEvent.click( submitButton );
+		await waitFor( () => expect( push ).toHaveBeenCalled() );
+
+		expect( createAdsCampaign ).toHaveBeenCalledTimes( 1 );
+		expect( updateCampaignAssetGroup ).toHaveBeenCalledTimes( 2 );
+	} );
+
+	it( 'Should not create a second campaign when the advertising source is changed to page before retrying', async () => {
+		mockSubmitValues.includeCreativeAssets = true;
+		updateCampaignAssetGroup.mockRejectedValueOnce( new Error( 'Failed' ) );
+
+		render( <CreatePaidAdsCampaign /> );
+		const submitButton = screen.getByRole( 'button' );
+
+		await userEvent.click( submitButton );
+		await waitFor( () =>
+			expect( updateCampaignAssetGroup ).toHaveBeenCalledTimes( 1 )
+		);
+
+		mockSubmitValues.advertisingSource = 'page';
+
+		await userEvent.click( submitButton );
+		await waitFor( () => expect( push ).toHaveBeenCalled() );
+
+		expect( createAdsCampaign ).toHaveBeenCalledTimes( 1 );
+		expect( createAdsWithAssetsCampaign ).not.toHaveBeenCalled();
+		expect( updateCampaignAssetGroup ).toHaveBeenCalledTimes( 2 );
 	} );
 
 	it( 'Should start the advertising source as product when Merchant Center is connected', () => {

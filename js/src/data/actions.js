@@ -75,6 +75,14 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  */
 
 /**
+ * Optional data for creating a campaign.
+ *
+ * @typedef {Object} CampaignCreationOptions
+ * @property {string} [name] The campaign name. A blank name is left out, so the server generates one.
+ * @property {'product'|'page'} [advertisingSource] What the campaign advertises. When it's left out, the server picks the default.
+ */
+
+/**
  * Account status data. Indicates the current status for the Google MC account.
  *
  * @typedef {Object} AccountStatus
@@ -765,18 +773,41 @@ export function* fetchAdsIncentiveCredits() {
 }
 
 /**
+ * Gets the optional fields of the campaign creation request body.
+ *
+ * @param {CampaignCreationOptions} options The campaign creation options.
+ * @return {Object} The fields to add to the request body, without the ones that aren't given.
+ */
+function getOptionalCampaignCreationFields( { name, advertisingSource } ) {
+	const fields = {};
+	const trimmedName = name?.trim();
+
+	if ( trimmedName ) {
+		fields.name = trimmedName;
+	}
+
+	if ( advertisingSource ) {
+		fields.advertising_source = advertisingSource;
+	}
+
+	return fields;
+}
+
+/**
  * Create a new ads campaign.
  *
  * @param {number} amount Daily average cost of the paid ads campaign.
  * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
  * @param {boolean} [hasConfirmedEuPoliticalContent=false] Whether the user has confirmed that the ads campaign contains EU political content.
+ * @param {CampaignCreationOptions} [options] The campaign name and what the campaign advertises.
  *
  * @throws { { message: string } } Will throw an error if the campaign creation fails.
  */
 export function* createAdsCampaign(
 	amount,
 	countryCodes,
-	hasConfirmedEuPoliticalContent = false
+	hasConfirmedEuPoliticalContent = false,
+	options = {}
 ) {
 	let label = 'wc-web';
 
@@ -796,6 +827,7 @@ export function* createAdsCampaign(
 				eu_political_advertising_confirmation:
 					hasConfirmedEuPoliticalContent,
 				label,
+				...getOptionalCampaignCreationFields( options ),
 			},
 		} );
 
@@ -819,6 +851,7 @@ export function* createAdsCampaign(
  * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
  * @param {AssetEntityGroupUpdateBody} assets Assets of the ads campaign.
  * @param {boolean} [hasConfirmedEuPoliticalContent=false] Whether the user has confirmed that the ads campaign contains EU political content.
+ * @param {CampaignCreationOptions} [options] The campaign name and what the campaign advertises.
  *
  * @throws { { message: string } } Will throw an error if the campaign creation fails.
  */
@@ -826,7 +859,8 @@ export function* createAdsWithAssetsCampaign(
 	amount,
 	countryCodes,
 	assets,
-	hasConfirmedEuPoliticalContent = false
+	hasConfirmedEuPoliticalContent = false,
+	options = {}
 ) {
 	let label = 'wc-web';
 
@@ -850,6 +884,7 @@ export function* createAdsWithAssetsCampaign(
 				assets: assets.assets,
 				path1: assets.path1,
 				path2: assets.path2,
+				...getOptionalCampaignCreationFields( options ),
 			},
 		} );
 
