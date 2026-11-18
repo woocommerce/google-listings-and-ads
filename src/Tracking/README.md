@@ -576,7 +576,7 @@ When a documentation link is clicked.
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 - [`EditStoreAddress`](../../js/src/pages/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information" }`
-- [`EuPoliticalContentCard`](../../js/src/components/paid-ads/eu-regulations-section/eu-political-content-card.js#L25)
+- [`EuPoliticalContentField`](../../js/src/components/paid-ads/eu-regulations-section/eu-political-content-field.js#L23)
 	- with `{ context: 'setup-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
 	- with `{ context: 'create-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
 	- with `{ context: 'edit-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
