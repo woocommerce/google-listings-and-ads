@@ -125,6 +125,8 @@ export const CATEGORIES_TO_SHOW_IN_TOOLTIP = 5;
 // Campaign related
 export const CAMPAIGN_TYPE_PMAX = 'performance_max';
 
+export const CAMPAIGN_NAME_MAX_LENGTH = 50;
+
 export const ADVERTISING_SOURCE = {
 	PRODUCT: 'product',
 	PAGE: 'page',

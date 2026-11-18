@@ -1,5 +1,7 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`validateCampaign Campaign name When the name is over 50 characters, should not pass 1`] = `"Please make sure the campaign name is 50 characters or fewer."`;
+
 exports[`validateCampaign When the amount is not a number, should not pass 1`] = `"Please make sure daily average cost is greater than 0."`;
 
 exports[`validateCampaign When the amount is not a number, should not pass 2`] = `"Please make sure daily average cost is greater than 0."`;
