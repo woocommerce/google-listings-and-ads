@@ -321,6 +321,48 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
 	}
 
+	public function test_mark_as_unchanged_clears_pending_on_variation_and_parent_without_touching_synced_at() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+
+		$this->product_meta->update_synced_at( $variation, 12345 );
+		$this->product_helper->mark_as_pending( $variation );
+
+		$this->product_helper->mark_as_unchanged( $variation );
+
+		$variation = $this->wc->get_product( $variation->get_id() );
+		$parent    = $this->wc->get_product( $parent->get_id() );
+
+		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $variation ) );
+		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $parent ) );
+		$this->assertEquals( 12345, $this->product_meta->get_synced_at( $variation ) );
+		$this->assertEmpty( $this->product_meta->get_synced_at( $parent ) );
+	}
+
+	public function test_mark_as_unchanged_leaves_a_parent_that_is_no_longer_pending() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+
+		$this->product_helper->mark_as_pending( $variation );
+		$this->product_meta->update_sync_status( $this->wc->get_product( $parent->get_id() ), SyncStatus::HAS_ERRORS );
+
+		$this->product_helper->mark_as_unchanged( $variation );
+
+		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $this->wc->get_product( $variation->get_id() ) ) );
+		$this->assertEquals( SyncStatus::HAS_ERRORS, $this->product_meta->get_sync_status( $this->wc->get_product( $parent->get_id() ) ) );
+	}
+
+	public function test_mark_as_unchanged_ignores_a_stale_in_memory_pending_status() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_pending( $product );
+
+		$this->product_meta->update_sync_status( $this->wc->get_product( $product->get_id() ), SyncStatus::NOT_SYNCED );
+
+		$this->product_helper->mark_as_unchanged( $product );
+
+		$this->assertEquals( SyncStatus::NOT_SYNCED, $this->product_meta->get_sync_status( $this->wc->get_product( $product->get_id() ) ) );
+	}
+
 	public function test_mark_as_unsynced_updates_both_variation_and_parent() {
 		$parent    = WC_Helper_Product::create_variation_product();
 		$variation = $this->wc->get_product( $parent->get_children()[0] );
