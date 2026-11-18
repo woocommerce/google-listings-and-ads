@@ -252,6 +252,8 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * The SQL in find_expiring_product_ids() mirrors these visibility rules. Keep the two in step.
+	 *
 	 * @return array
 	 */
 	public function get_sync_ready_products_meta_query(): array {
@@ -289,6 +291,11 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * The SQL in find_expiring_product_ids() mirrors these errors rules. Keep the two in step.
+	 *
+	 * @deprecated x.x.x No longer called: find_expiring_product_ids(), its only caller, now checks
+	 *             the errors meta in SQL. Kept for subclasses that call or override it.
+	 *
 	 * @return array
 	 */
 	protected function get_valid_products_meta_query(): array {
@@ -320,7 +327,8 @@ class ProductRepository implements Service {
 	 * product then multiplies the rows the database reads, and large stores stalled for hours.
 	 *
 	 * Variations skip the publish status check because ProductHelper::is_sync_ready() judges a
-	 * variation by its parent's status, so a disabled variation of a published product still counts.
+	 * variation by its parent's status. The query can therefore return disabled variations, which
+	 * is_sync_ready() still rejects by default (is_visible() and woocommerce_hide_invisible_variations).
 	 *
 	 * @param int $last_id The last product ID processed in the previous batch (0 to start from the beginning).
 	 * @param int $limit   Maximum number of results to retrieve or -1 for unlimited.
@@ -345,6 +353,8 @@ class ProductRepository implements Service {
 		$visibility_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 		$errors_key     = $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS );
 
+		// The NOT EXISTS lookups mirror get_sync_ready_products_meta_query() (visibility) and
+		// get_valid_products_meta_query() (errors). Keep the rules in step when changing either.
 		$where_filter = function ( string $where ) use ( $wpdb, $last_id, $visibility_key, $errors_key ): string {
 			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			return $where . $wpdb->prepare(
@@ -485,6 +495,15 @@ class ProductRepository implements Service {
 			$args['orderby'] = 'none';
 		}
 
+		/**
+		 * Filters the product query args before they are passed to wc_get_products().
+		 *
+		 * For the expiring products lookup (find_expiring_product_ids()), `meta_query` holds only
+		 * the synced_at clause. Its visibility, errors and publish status conditions are applied in
+		 * SQL outside these args and cannot be changed through this filter.
+		 *
+		 * @param array $args Product query args.
+		 */
 		$args = apply_filters( 'woocommerce_gla_product_query_args', $args );
 
 		return $args;

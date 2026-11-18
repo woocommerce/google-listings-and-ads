@@ -495,9 +495,10 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * A disabled variation is stored as private. ProductHelper::is_sync_ready() judges a variation by
-	 * its parent's status, so a disabled variation of a published product can still be resubmitted
-	 * when `woocommerce_hide_invisible_variations` returns false.
+	 * A disabled variation is stored as private. Variations skip the publish status check because
+	 * ProductHelper::is_sync_ready() judges a variation by its parent's status. The query can
+	 * therefore return disabled variations, which is_sync_ready() still rejects by default
+	 * (is_visible() and woocommerce_hide_invisible_variations).
 	 */
 	public function test_find_expiring_product_ids_includes_disabled_variations_of_published_products() {
 		$variable     = WC_Helper_Product::create_variation_product();
@@ -509,6 +510,43 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->product_meta->update_synced_at( $variation, strtotime( '-30 days' ) );
 
 		$this->assertEquals( [ $variation_id ], $this->product_repository->find_expiring_product_ids() );
+	}
+
+	/**
+	 * The plugin never stores a NULL errors value, but other code can. NULL means no errors, so the
+	 * product counts as valid. The meta_query rules this lookup replaced excluded it.
+	 */
+	public function test_find_expiring_product_ids_includes_products_with_null_errors() {
+		global $wpdb;
+
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product, strtotime( '-30 days' ) );
+		$wpdb->insert(
+			$wpdb->postmeta,
+			[
+				'post_id'    => $product->get_id(),
+				'meta_key'   => '_wc_gla_errors',
+				'meta_value' => null,
+			]
+		);
+
+		$this->assertEquals( [ $product->get_id() ], $this->product_repository->find_expiring_product_ids() );
+	}
+
+	/**
+	 * The plugin stores one visibility row per product, but other code can add more. Any
+	 * dont-sync-and-show row excludes the product. The meta_query rules this lookup replaced
+	 * included it as long as one row had another value.
+	 */
+	public function test_find_expiring_product_ids_excludes_products_with_any_dont_sync_visibility_row() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product, strtotime( '-30 days' ) );
+		// mark_as_synced() stored sync-and-show; add a second, conflicting row.
+		add_post_meta( $product->get_id(), '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW );
+
+		$this->assertEquals( [], $this->product_repository->find_expiring_product_ids() );
 	}
 
 	public function test_find_expiring_product_ids_applies_product_query_args_filter() {
