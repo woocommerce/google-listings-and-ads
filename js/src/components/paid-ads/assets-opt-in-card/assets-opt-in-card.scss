@@ -1,0 +1,40 @@
+.gla-assets-opt-in-card {
+
+	// Centers the checkbox on the first line of the label.
+	.components-checkbox-control__input-container {
+		margin-block-start: $grid-unit-05;
+	}
+
+	.components-checkbox-control__label {
+		font-size: 15px;
+		font-weight: 500;
+		line-height: $grid-unit-30;
+		color: $gray-900;
+	}
+
+	.gla-assets-opt-in-card__optional {
+		margin-inline-start: $grid-unit-05;
+		font-weight: 400;
+		color: $gray-700;
+	}
+
+	.components-base-control__help {
+		margin-block-start: $grid-unit-05;
+		font-size: $gla-font-base;
+		line-height: $grid-unit-30 - $grid-unit-05;
+		color: $gray-700;
+	}
+
+	// Aligns the notice with the label text, to the right of the checkbox.
+	.components-notice {
+		margin: 0;
+		margin-inline-start: $grid-unit-30;
+		padding: $grid-unit-15;
+		border: 1px solid $gla-color-info-stroke;
+		border-radius: $grid-unit-10;
+		background-color: $gla-color-info-weak;
+		color: $gla-color-info-text;
+		font-size: $gla-font-base;
+		line-height: $grid-unit-30 - $grid-unit-05;
+	}
+}
