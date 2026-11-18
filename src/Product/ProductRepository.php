@@ -313,6 +313,12 @@ class ProductRepository implements Service {
 	 * uses "WHERE ID > $last_id ORDER BY ID ASC" so each batch starts exactly where the previous one
 	 * left off at O(log n) cost regardless of how deep into the result set we are.
 	 *
+	 * Only the synced_at condition goes through meta_query, which turns it into a single postmeta
+	 * join that matches one row per product. The visibility and errors conditions are added to the
+	 * WHERE clause as NOT EXISTS lookups by meta key. As meta_query clauses they need NOT EXISTS
+	 * and OR, which makes WP_Meta_Query LEFT JOIN postmeta on post ID alone: every meta row of a
+	 * product then multiplies the rows the database reads, and large stores stalled for hours.
+	 *
 	 * @param int $last_id The last product ID processed in the previous batch (0 to start from the beginning).
 	 * @param int $limit   Maximum number of results to retrieve or -1 for unlimited.
 	 *
@@ -325,9 +331,6 @@ class ProductRepository implements Service {
 			'orderby'    => 'ID',
 			'order'      => 'ASC',
 			'meta_query' => [
-				'relation' => 'AND',
-				$this->get_sync_ready_products_meta_query(),
-				$this->get_valid_products_meta_query(),
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
 					'compare' => '<',
@@ -336,17 +339,39 @@ class ProductRepository implements Service {
 			],
 		];
 
-		// Add a temporary WHERE clause to implement keyset pagination (ID > $last_id).
-		$cursor_filter = function ( string $where ) use ( $wpdb, $last_id ): string {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			return $where . $wpdb->prepare( " AND {$wpdb->posts}.ID > %d", $last_id );
+		$visibility_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
+		$errors_key     = $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS );
+
+		// Add a temporary WHERE clause for keyset pagination (ID > $last_id), the publish status and the
+		// visibility and errors conditions. Variations are left out of the status check because
+		// ProductHelper::is_sync_ready() judges a variation by its parent's status, so a disabled
+		// (private) variation of a published product can still be resubmitted.
+		$where_filter = function ( string $where ) use ( $wpdb, $last_id, $visibility_key, $errors_key ): string {
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			return $where . $wpdb->prepare(
+				" AND {$wpdb->posts}.ID > %d
+				AND ( {$wpdb->posts}.post_status = 'publish' OR {$wpdb->posts}.post_type = 'product_variation' )
+				AND NOT EXISTS (
+					SELECT 1 FROM {$wpdb->postmeta} AS gla_visibility
+					WHERE gla_visibility.post_id = {$wpdb->posts}.ID AND gla_visibility.meta_key = %s AND gla_visibility.meta_value = %s
+				)
+				AND NOT EXISTS (
+					SELECT 1 FROM {$wpdb->postmeta} AS gla_errors
+					WHERE gla_errors.post_id = {$wpdb->posts}.ID AND gla_errors.meta_key = %s AND gla_errors.meta_value <> ''
+				)",
+				$last_id,
+				$visibility_key,
+				ChannelVisibility::DONT_SYNC_AND_SHOW,
+				$errors_key
+			);
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		};
 
-		add_filter( 'posts_where', $cursor_filter );
+		add_filter( 'posts_where', $where_filter );
 		try {
 			$results = $this->find_ids( $args, $limit );
 		} finally {
-			remove_filter( 'posts_where', $cursor_filter );
+			remove_filter( 'posts_where', $where_filter );
 		}
 
 		return $results;

@@ -395,6 +395,168 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->assertEquals( $sorted, $intersection );
 	}
 
+	/**
+	 * Every extra postmeta join that matches on post ID alone multiplies the rows scanned by the
+	 * number of meta rows a product has, which stalled the query for hours on large stores.
+	 * The expiring products query must join postmeta once, for synced_at only.
+	 */
+	public function test_find_expiring_product_ids_joins_postmeta_only_once() {
+		global $wpdb;
+
+		$requests = [];
+		$capture  = function ( $request ) use ( &$requests ) {
+			$requests[] = $request;
+			return $request;
+		};
+		add_filter( 'posts_request', $capture );
+		$this->product_repository->find_expiring_product_ids( 0, 10 );
+		remove_filter( 'posts_request', $capture );
+
+		$this->assertCount( 1, $requests );
+		$this->assertSame( 1, substr_count( $requests[0], "JOIN {$wpdb->postmeta}" ) );
+	}
+
+	public function test_find_expiring_product_ids_includes_variations() {
+		$simple = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $simple, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $simple, strtotime( '-30 days' ) );
+
+		$variable      = WC_Helper_Product::create_variation_product();
+		$variation_ids = $variable->get_children();
+		foreach ( $variation_ids as $variation_id ) {
+			$variation = wc_get_product( $variation_id );
+			$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock() );
+			$this->product_meta->update_synced_at( $variation, strtotime( '-30 days' ) );
+		}
+
+		$this->assertEqualSets(
+			array_merge( [ $simple->get_id() ], $variation_ids ),
+			$this->product_repository->find_expiring_product_ids()
+		);
+	}
+
+	public function test_find_expiring_product_ids_excludes_products_with_errors() {
+		$with_errors = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $with_errors, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $with_errors, strtotime( '-30 days' ) );
+		$this->product_meta->update_errors( $with_errors, [ 'Error 1' ] );
+
+		$with_empty_errors = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $with_empty_errors, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $with_empty_errors, strtotime( '-30 days' ) );
+		$with_empty_errors->update_meta_data( '_wc_gla_errors', '' );
+		$with_empty_errors->save_meta_data();
+
+		$without_errors = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $without_errors, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $without_errors, strtotime( '-30 days' ) );
+
+		$this->assertEquals(
+			[ $with_empty_errors->get_id(), $without_errors->get_id() ],
+			$this->product_repository->find_expiring_product_ids()
+		);
+	}
+
+	public function test_find_expiring_product_ids_includes_products_without_visibility() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product, strtotime( '-30 days' ) );
+		$this->product_meta->delete_visibility( $product );
+
+		$this->assertEquals( [ $product->get_id() ], $this->product_repository->find_expiring_product_ids() );
+	}
+
+	public function test_find_expiring_product_ids_excludes_products_without_synced_at() {
+		$never_synced = WC_Helper_Product::create_simple_product();
+
+		$expired = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $expired, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $expired, strtotime( '-30 days' ) );
+
+		$ids = $this->product_repository->find_expiring_product_ids();
+
+		$this->assertNotContains( $never_synced->get_id(), $ids );
+		$this->assertEquals( [ $expired->get_id() ], $ids );
+	}
+
+	public function test_find_expiring_product_ids_excludes_unpublished_products() {
+		$expected = [];
+		foreach ( [ 'publish', 'draft', 'pending', 'private' ] as $status ) {
+			$product = WC_Helper_Product::create_simple_product( true, [ 'status' => $status ] );
+			$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+			$this->product_meta->update_synced_at( $product, strtotime( '-30 days' ) );
+
+			if ( 'publish' === $status ) {
+				$expected[] = $product->get_id();
+			}
+		}
+
+		$this->assertEquals( $expected, $this->product_repository->find_expiring_product_ids() );
+	}
+
+	/**
+	 * A disabled variation is stored as private. ProductHelper::is_sync_ready() judges a variation by
+	 * its parent's status, so a disabled variation of a published product can still be resubmitted
+	 * when `woocommerce_hide_invisible_variations` returns false.
+	 */
+	public function test_find_expiring_product_ids_includes_disabled_variations_of_published_products() {
+		$variable     = WC_Helper_Product::create_variation_product();
+		$variation_id = $variable->get_children()[0];
+		$variation    = wc_get_product( $variation_id );
+		$variation->set_status( 'private' );
+		$variation->save();
+		$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $variation, strtotime( '-30 days' ) );
+
+		$this->assertEquals( [ $variation_id ], $this->product_repository->find_expiring_product_ids() );
+	}
+
+	public function test_find_expiring_product_ids_applies_product_query_args_filter() {
+		$product_ids = [];
+		for ( $i = 0; $i < 2; $i++ ) {
+			$product = WC_Helper_Product::create_simple_product();
+			$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+			$this->product_meta->update_synced_at( $product, strtotime( '-30 days' ) );
+			$product_ids[] = $product->get_id();
+		}
+
+		$exclude_first = function ( $args ) use ( $product_ids ) {
+			$args['exclude'] = [ $product_ids[0] ];
+			return $args;
+		};
+		add_filter( 'woocommerce_gla_product_query_args', $exclude_first );
+		$ids = $this->product_repository->find_expiring_product_ids();
+		remove_filter( 'woocommerce_gla_product_query_args', $exclude_first );
+
+		$this->assertEquals( [ $product_ids[1] ], $ids );
+	}
+
+	public function test_find_expiring_product_ids_removes_its_where_filter() {
+		global $wp_filter;
+
+		$count_where_callbacks = function () use ( &$wp_filter ): int {
+			return isset( $wp_filter['posts_where'] ) ? count( $wp_filter['posts_where']->callbacks, COUNT_RECURSIVE ) : 0;
+		};
+		$before = $count_where_callbacks();
+
+		$this->product_repository->find_expiring_product_ids();
+		$this->assertSame( $before, $count_where_callbacks() );
+
+		$throw = function () {
+			throw new \RuntimeException( 'Query failed' );
+		};
+		add_filter( 'woocommerce_gla_product_query_args', $throw );
+		try {
+			$this->product_repository->find_expiring_product_ids();
+			$this->fail( 'Expected the query to throw.' );
+		} catch ( \RuntimeException $e ) {
+			$this->assertSame( 'Query failed', $e->getMessage() );
+		} finally {
+			remove_filter( 'woocommerce_gla_product_query_args', $throw );
+		}
+		$this->assertSame( $before, $count_where_callbacks() );
+	}
+
 	public function test_find_all_synced_google_ids() {
 		$synced_google_ids = [];
 
