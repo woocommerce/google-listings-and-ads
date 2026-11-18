@@ -10,6 +10,7 @@ import { doAction } from '@wordpress/hooks';
  * Internal dependencies
  */
 import BusinessProfileShareMetaBox from './business-profile-share-meta-box';
+import { FIRST_CHECK_DELAY } from '~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus';
 import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/utils/tracks', () => ( {
@@ -313,7 +314,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		renderMetaBox( { syncOutcome: { outcome: 'queued' } } );
 
 		act( () => {
-			jest.advanceTimersByTime( 3000 );
+			jest.advanceTimersByTime( FIRST_CHECK_DELAY );
 		} );
 		jest.useRealTimers();
 

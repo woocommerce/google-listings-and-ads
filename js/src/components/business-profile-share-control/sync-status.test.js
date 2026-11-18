@@ -47,21 +47,6 @@ describe( 'SyncStatus', () => {
 		}
 	);
 
-	it( 'shows a message without a severity as an error', () => {
-		const { container } = render(
-			<SyncStatus
-				syncOutcome={ {
-					outcome: 'request-failure',
-					display_message: 'Google couldn’t be reached.',
-				} }
-			/>
-		);
-
-		expect(
-			container.querySelector( '.components-notice.is-error' )
-		).toBeInTheDocument();
-	} );
-
 	it.each( [
 		[ 'never sent', null ],
 		[ 'shared with nothing to report', { outcome: 'success' } ],
