@@ -134,17 +134,18 @@ class DeleteLocalPost extends AbstractActionSchedulerJob {
 			: SyncOutcome::UNSHARE_FAILURE;
 		$this->local_post_service->set_sync_outcome( $post_id, $outcome, $result['message'] );
 
+		// LocalPostService::delete() already reports an Exception before rethrowing it. Only an
+		// Error escapes it unreported.
+		if ( $failure instanceof Exception ) {
+			return;
+		}
+
 		try {
-			// Callbacks on the exception action may expect an Exception, so report an Error by message.
-			if ( $failure instanceof Exception ) {
-				do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
-			} else {
-				do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
-			}
+			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
 		} catch ( Throwable $error ) {
 			// A throwing listener here must not escape and reschedule the batch -- the removal
 			// already failed, so replaying it would only retry it a second, redundant time.
-			$this->report_listener_error( $failure instanceof Exception ? 'woocommerce_gla_exception' : 'woocommerce_gla_error', $error );
+			$this->report_listener_error( 'woocommerce_gla_error', $error );
 		}
 	}
 }
