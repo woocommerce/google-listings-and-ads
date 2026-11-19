@@ -11,7 +11,7 @@ import { LOCAL_STORAGE_KEYS } from '~/constants';
 import localStorage from '~/utils/localStorage';
 import { recordGlaEvent } from '~/utils/tracks';
 import CustomerEffortScorePrompt from '.';
-import CustomerEffortUnmountableNotice from './notice';
+import CustomerEffortScoreNotice from './customer-effort-score-notice';
 
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
@@ -21,8 +21,8 @@ jest.mock( '~/utils/localStorage', () => ( {
 	remove: jest.fn().mockName( 'localStorage.remove' ),
 } ) );
 
-jest.mock( './notice', () =>
-	jest.fn( () => null ).mockName( 'CustomerEffortUnmountableNotice' )
+jest.mock( './customer-effort-score-notice', () =>
+	jest.fn( () => null ).mockName( 'CustomerEffortScoreNotice' )
 );
 
 describe( 'CustomerEffortScorePrompt', () => {
@@ -36,7 +36,7 @@ describe( 'CustomerEffortScorePrompt', () => {
 				secondLabel="Second label"
 			/>
 		);
-		return CustomerEffortUnmountableNotice.mock.calls[ 0 ][ 0 ];
+		return CustomerEffortScoreNotice.mock.calls[ 0 ][ 0 ];
 	};
 
 	beforeEach( () => {

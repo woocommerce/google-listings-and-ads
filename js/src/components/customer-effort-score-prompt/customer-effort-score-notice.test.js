@@ -9,7 +9,7 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import CustomerEffortUnmountableNotice from './notice';
+import CustomerEffortScoreNotice from './customer-effort-score-notice';
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn().mockName( 'useDispatch' ),
@@ -34,7 +34,7 @@ jest.mock( '@woocommerce/customer-effort-score', () => ( {
 	),
 } ) );
 
-describe( 'CustomerEffortUnmountableNotice', () => {
+describe( 'CustomerEffortScoreNotice', () => {
 	let createNotice;
 	let removeNotice;
 	let props;
@@ -69,7 +69,7 @@ describe( 'CustomerEffortUnmountableNotice', () => {
 	} );
 
 	it( 'creates one notice with the "Give feedback" action on mount', () => {
-		render( <CustomerEffortUnmountableNotice { ...props } /> );
+		render( <CustomerEffortScoreNotice { ...props } /> );
 
 		expect( useDispatch ).toHaveBeenCalledWith( 'core/notices2' );
 		expect( createNotice ).toHaveBeenCalledTimes( 1 );
@@ -95,11 +95,11 @@ describe( 'CustomerEffortUnmountableNotice', () => {
 
 	it( 'does not create a second notice when it re-renders', () => {
 		const { rerender } = render(
-			<CustomerEffortUnmountableNotice { ...props } />
+			<CustomerEffortScoreNotice { ...props } />
 		);
 
 		rerender(
-			<CustomerEffortUnmountableNotice
+			<CustomerEffortScoreNotice
 				{ ...props }
 				onNoticeShownCallback={ jest.fn() }
 				onModalShownCallback={ jest.fn() }
@@ -113,7 +113,7 @@ describe( 'CustomerEffortUnmountableNotice', () => {
 
 	it( 'removes the notice by its id on unmount', () => {
 		const { unmount } = render(
-			<CustomerEffortUnmountableNotice { ...props } />
+			<CustomerEffortScoreNotice { ...props } />
 		);
 		const { options } = getNotice();
 
@@ -124,8 +124,8 @@ describe( 'CustomerEffortUnmountableNotice', () => {
 	} );
 
 	it( 'uses a different notice id for each instance', () => {
-		render( <CustomerEffortUnmountableNotice { ...props } /> );
-		render( <CustomerEffortUnmountableNotice { ...props } /> );
+		render( <CustomerEffortScoreNotice { ...props } /> );
+		render( <CustomerEffortScoreNotice { ...props } /> );
 
 		expect( getNotice( 0 ).options.id ).not.toBe(
 			getNotice( 1 ).options.id
@@ -135,10 +135,10 @@ describe( 'CustomerEffortUnmountableNotice', () => {
 	it( 'calls the latest dismiss callback when the notice is dismissed', () => {
 		const onNoticeDismissedCallback = jest.fn();
 		const { rerender } = render(
-			<CustomerEffortUnmountableNotice { ...props } />
+			<CustomerEffortScoreNotice { ...props } />
 		);
 		rerender(
-			<CustomerEffortUnmountableNotice
+			<CustomerEffortScoreNotice
 				{ ...props }
 				onNoticeDismissedCallback={ onNoticeDismissedCallback }
 			/>
@@ -151,7 +151,7 @@ describe( 'CustomerEffortUnmountableNotice', () => {
 	} );
 
 	it( 'opens the feedback modal from the "Give feedback" action', () => {
-		render( <CustomerEffortUnmountableNotice { ...props } /> );
+		render( <CustomerEffortScoreNotice { ...props } /> );
 
 		clickGiveFeedback();
 
@@ -163,7 +163,7 @@ describe( 'CustomerEffortUnmountableNotice', () => {
 	} );
 
 	it( 'records the score and closes the modal when the feedback is sent', async () => {
-		render( <CustomerEffortUnmountableNotice { ...props } /> );
+		render( <CustomerEffortScoreNotice { ...props } /> );
 		clickGiveFeedback();
 
 		await userEvent.click( screen.getByRole( 'button', { name: 'Send' } ) );
@@ -179,7 +179,7 @@ describe( 'CustomerEffortUnmountableNotice', () => {
 	} );
 
 	it( 'closes the modal without recording a score when it is dismissed', async () => {
-		render( <CustomerEffortUnmountableNotice { ...props } /> );
+		render( <CustomerEffortScoreNotice { ...props } /> );
 		clickGiveFeedback();
 
 		await userEvent.click(

@@ -34,7 +34,7 @@ const CES_NOTICES_STORE_KEY = 'core/notices2';
  * @param {Function} [props.onModalDismissedCallback] Called when the modal is closed without sending feedback.
  * @return {JSX.Element|null} The feedback modal when it is open, otherwise null.
  */
-const CustomerEffortUnmountableNotice = ( {
+const CustomerEffortScoreNotice = ( {
 	title,
 	firstQuestion,
 	secondQuestion,
@@ -48,7 +48,7 @@ const CustomerEffortUnmountableNotice = ( {
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	const { createNotice, removeNotice } = useDispatch( CES_NOTICES_STORE_KEY );
 	const noticeId = `gla-ces-prompt-${ useInstanceId(
-		CustomerEffortUnmountableNotice
+		CustomerEffortScoreNotice
 	) }`;
 
 	// Keep the latest props in a ref, so the notice created on mount always calls
@@ -106,4 +106,4 @@ const CustomerEffortUnmountableNotice = ( {
 	);
 };
 
-export default CustomerEffortUnmountableNotice;
+export default CustomerEffortScoreNotice;

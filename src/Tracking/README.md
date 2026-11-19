@@ -463,25 +463,25 @@ Event fired when the "Cancel" button in the EditMarketModal is clicked.
 - [`ModalFooter`](../../js/src/pages/markets/components/add-market-modal/modal-footer.js#L37) when the cancel button is clicked with context of "add_market_modal"
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the cancel button is clicked with context of "edit_market_modal"
 
-### [`gla_ces_feedback`](../../js/src/components/customer-effort-score-prompt/index.js#L30)
+### [`gla_ces_feedback`](../../js/src/components/customer-effort-score-prompt/index.js#L29)
 CES feedback recorded
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L55) whenever the CES feedback is recorded
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES feedback is recorded
 
-### [`gla_ces_modal_open`](../../js/src/components/customer-effort-score-prompt/index.js#L25)
+### [`gla_ces_modal_open`](../../js/src/components/customer-effort-score-prompt/index.js#L24)
 CES modal open
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L55) whenever the CES modal is open
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES modal is open
 
-### [`gla_ces_snackbar_closed`](../../js/src/components/customer-effort-score-prompt/index.js#L20)
+### [`gla_ces_snackbar_closed`](../../js/src/components/customer-effort-score-prompt/index.js#L19)
 CES prompt snackbar closed
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L55) whenever the CES snackbar (notice) is closed
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES snackbar (notice) is closed
 
-### [`gla_ces_snackbar_open`](../../js/src/components/customer-effort-score-prompt/index.js#L15)
+### [`gla_ces_snackbar_open`](../../js/src/components/customer-effort-score-prompt/index.js#L14)
 CES prompt snackbar open
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L55) whenever the CES snackbar (notice) is open
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES snackbar (notice) is open
 
 ### [`gla_chart_tab_click`](../../js/src/pages/reports/summary-section.js#L20)
 Triggered when a chart tab is clicked

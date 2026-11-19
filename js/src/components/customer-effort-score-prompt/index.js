@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { LOCAL_STORAGE_KEYS } from '~/constants';
 import localStorage from '~/utils/localStorage';
 import { recordGlaEvent } from '~/utils/tracks';
-import CustomerEffortUnmountableNotice from './notice';
+import CustomerEffortScoreNotice from './customer-effort-score-notice';
 
 /**
  * CES prompt snackbar open
@@ -82,7 +82,7 @@ const CustomerEffortScorePrompt = ( { eventContext, label, secondLabel } ) => {
 	};
 
 	return (
-		<CustomerEffortUnmountableNotice
+		<CustomerEffortScoreNotice
 			title={ label }
 			firstQuestion={ label }
 			secondQuestion={ secondLabel }
