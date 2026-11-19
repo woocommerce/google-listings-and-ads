@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectC
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\OnboardingController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagManager\AccountController as TagManagerAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
@@ -81,7 +80,6 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 			$this->server,
 			$this->tag_manager_connection,
 			$this->createMock( TagManagerSiteTag::class ),
-			$this->createMock( TagManagerSettings::class ),
 			$job_repository
 		);
 		$tag_manager_controller->register();

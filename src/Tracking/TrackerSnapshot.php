@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -92,8 +91,6 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		/** @var TagManagerConnection $tag_manager_connection */
 		$tag_manager_connection = $this->container->get( TagManagerConnection::class );
 		$tag_manager_data       = $tag_manager_connection->get_connection_data();
-		/** @var TagManagerSettings $tag_manager_settings */
-		$tag_manager_settings = $this->container->get( TagManagerSettings::class );
 		/** @var MarketService $market_service */
 		$market_service = $this->container->get( MarketService::class );
 		$market_counts  = $market_service->get_non_default_locale_market_counts();
@@ -119,7 +116,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'ads_campaign_count'                  => $merchant_metrics->get_campaign_count(),
 			'youtube_connected'                   => $this->get_boolean_value( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK ),
 			'tag_manager_connected'               => empty( $tag_manager_data['container_id'] ) ? 'no' : 'yes',
-			'tag_manager_snippet_active'          => $tag_manager_settings->is_snippet_active() ? 'yes' : 'no',
+			'tag_manager_snippet_active'          => ! empty( $tag_manager_data['container_public_id'] ) ? 'yes' : 'no',
 			'tag_manager_ads_conversion_conflict' => ! empty( $tag_manager_data['container_id'] ) && $tag_manager_connection->has_ads_conversion_conflict() ? 'yes' : 'no',
 			'reviews_collection'                  => ! empty( $gcr_settings['gcr_collect_reviews_after_purchase'] ) ? 'yes' : 'no',
 			'reviews_badge_widget'                => ! empty( $gcr_settings['gcr_badge_widget_enabled'] ) ? 'yes' : 'no',

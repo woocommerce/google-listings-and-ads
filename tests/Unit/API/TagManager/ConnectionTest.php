@@ -5,13 +5,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\TagManager;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
@@ -269,19 +267,14 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( 'Successfully disconnected.', $message );
 	}
 
-	public function test_disconnect_also_clears_the_settings_and_the_conflict_check() {
+	public function test_disconnect_also_clears_the_conflict_check() {
 		$job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );
 		$job->expects( $this->once() )->method( 'unschedule' );
 		$repository = $this->createMock( JobRepository::class );
 		$repository->method( 'get' )->with( RefreshTagManagerAdsConversionConflict::class )->willReturn( $job );
 		$this->container->add( JobRepository::class, $repository );
 
-		// Disconnect no longer deletes the TAG_MANAGER option -- it persists the marker instead
-		// (covered by the test above) -- only the settings option is actually deleted.
 		$this->options->method( 'get' )->willReturn( [] );
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
 
 		$this->connection->disconnect();
 	}
@@ -294,9 +287,6 @@ class ConnectionTest extends UnitTest {
 		$this->container->add( JobRepository::class, $repository );
 
 		$this->options->method( 'get' )->willReturn( [] );
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
 
 		$this->assertSame( 'Successfully disconnected.', $this->connection->disconnect() );
 	}
@@ -1138,7 +1128,7 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( '456', $stored['container_id'] );
 		$this->assertNull( $stored['pending_container_id'] );
 
-		$site_tag = new TagManagerSiteTag( $this->connection, $this->createMock( Settings::class ), $this->createMock( GoogleGtagJs::class ) );
+		$site_tag = new TagManagerSiteTag( $this->connection );
 		$this->assertTrue( $site_tag->has_injection_failed() );
 	}
 
