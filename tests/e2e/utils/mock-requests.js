@@ -3,6 +3,17 @@
  */
 import lodash from 'lodash';
 
+/**
+ * Scopes granted by a baseline Google connection.
+ */
+const BASE_GOOGLE_SCOPES = [
+	'https://www.googleapis.com/auth/content',
+	'https://www.googleapis.com/auth/adwords',
+	'https://www.googleapis.com/auth/userinfo.email',
+	'https://www.googleapis.com/auth/siteverification.verify_only',
+	'openid',
+];
+
 const proxyFulfill = ( instance, options ) => {
 	return new Proxy( instance.originalTarget || instance, {
 		get( target, property ) {
@@ -784,13 +795,7 @@ export default class MockRequests {
 		await this.fulfillGoogleConnection( {
 			active: 'yes',
 			email,
-			scope: [
-				'https://www.googleapis.com/auth/content',
-				'https://www.googleapis.com/auth/adwords',
-				'https://www.googleapis.com/auth/userinfo.email',
-				'https://www.googleapis.com/auth/siteverification.verify_only',
-				'openid',
-			],
+			scope: [ ...BASE_GOOGLE_SCOPES ],
 		} );
 	}
 
@@ -1455,6 +1460,166 @@ export default class MockRequests {
 			/\/wc\/gla\/youtube\/setup\/complete\b/,
 			payload,
 			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Mock Google as connected with the Google Business Profile `business.manage` scope granted,
+	 * alongside the baseline scopes `mockGoogleConnected()` already grants.
+	 *
+	 * @param {string} email
+	 * @return {Promise<void>}
+	 */
+	async mockGoogleConnectedWithBusinessProfileScope(
+		email = 'mail@example.com'
+	) {
+		await this.fulfillGoogleConnection( {
+			active: 'yes',
+			email,
+			scope: [
+				...BASE_GOOGLE_SCOPES,
+				'https://www.googleapis.com/auth/business.manage',
+			],
+		} );
+	}
+
+	/**
+	 * Fulfill the Google Business Profile connect request, which returns the URL for granting access.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillGoogleBusinessProfileConnect( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/business-profile\/connect\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mock the Google Business Profile connect request.
+	 *
+	 * @param {string} [url] The URL returned by the connect endpoint.
+	 * @return {Promise<void>}
+	 */
+	async mockGoogleBusinessProfileConnect(
+		url = '/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts'
+	) {
+		await this.fulfillGoogleBusinessProfileConnect( { url } );
+	}
+
+	/**
+	 * Fulfill the Google Business Profile connection status/disconnect request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=[]]
+	 * @return {Promise<void>}
+	 */
+	async fulfillGoogleBusinessProfileConnection(
+		payload,
+		status = 200,
+		methods = []
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/business-profile\/connection\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
+	 * Mock the Google Business Profile account as not connected to a location.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockGoogleBusinessProfileNotConnected() {
+		await this.fulfillGoogleBusinessProfileConnection( {
+			status: 'disconnected',
+		} );
+	}
+
+	/**
+	 * Mock the Google Business Profile account as connected to the given location.
+	 *
+	 * @param {Object} location The connected location, in the shape the locations endpoint returns.
+	 * @return {Promise<void>}
+	 */
+	async mockGoogleBusinessProfileConnected( location ) {
+		await this.fulfillGoogleBusinessProfileConnection( {
+			status: 'connected',
+			...location,
+		} );
+	}
+
+	/**
+	 * Mock the Google Business Profile disconnect request.
+	 *
+	 * wordpress/api-fetch's http-v1 middleware converts DELETE to POST with an
+	 * X-HTTP-Method-Override: DELETE header, so we intercept POST here and let
+	 * GET requests fall through to the connection-state mock.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockGoogleBusinessProfileDisconnect() {
+		await this.fulfillGoogleBusinessProfileConnection(
+			{ status: 'disconnected' },
+			200,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Fulfill the Google Business Profile locations list/select-location request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=[]]
+	 * @return {Promise<void>}
+	 */
+	async fulfillGoogleBusinessProfileLocations(
+		payload,
+		status = 200,
+		methods = []
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/business-profile\/locations\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
+	 * Mock the list of Google Business Profile locations available to the connected Google user.
+	 *
+	 * @param {Array<Object>} locations The locations, in the shape the locations endpoint returns.
+	 * @return {Promise<void>}
+	 */
+	async mockGoogleBusinessProfileLocations( locations ) {
+		await this.fulfillGoogleBusinessProfileLocations( locations, 200, [
+			'GET',
+		] );
+	}
+
+	/**
+	 * Mock a successful request to connect a Google Business Profile location.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockGoogleBusinessProfileSelectLocationSuccess() {
+		await this.fulfillGoogleBusinessProfileLocations(
+			{
+				status: 'success',
+				message:
+					'Successfully connected Google Business Profile location.',
+			},
+			200,
 			[ 'POST' ]
 		);
 	}
