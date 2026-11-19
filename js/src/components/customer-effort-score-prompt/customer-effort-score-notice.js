@@ -9,8 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
 
 /**
- * The store used by WooCommerce admin to render snackbar notices, which is also
- * where the `@woocommerce/customer-effort-score` package creates its CES notice.
+ * The store used by WooCommerce admin to render snackbar notices.
  */
 const CES_NOTICES_STORE_KEY = 'core/notices2';
 
@@ -18,9 +17,8 @@ const CES_NOTICES_STORE_KEY = 'core/notices2';
  * Renders a Customer Effort Score notice that is owned by this component, and the
  * feedback modal opened from it.
  *
- * The notice is created with an id tied to this component instance. Since the
- * notices store replaces a notice that has the same id, mounting twice does not
- * create two notices.
+ * The notice id is tied to this instance, so re-running the effect replaces the
+ * notice instead of adding a second one.
  *
  * @param {Object} props React component props.
  * @param {string} props.title Text displayed in the notice and as the modal title.
