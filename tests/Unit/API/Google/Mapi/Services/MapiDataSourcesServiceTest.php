@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClien
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -22,11 +23,20 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	protected const MERCHANT_ID = 12345;
 	protected const LIST_PATH   = 'datasources/v1/accounts/12345/dataSources';
 
+	/** How long a confirmed data source stays trusted before the next check. */
+	protected const VERIFY_TTL = 12 * HOUR_IN_SECONDS;
+
 	/** @var MockObject|MerchantApiClient */
 	protected $client;
 
 	/** @var MockObject|OptionsInterface */
 	protected $options;
+
+	/** @var MockObject|TransientsInterface */
+	protected $transients;
+
+	/** @var array Backing store for the stateful transients mock. */
+	protected $stored_transients = [];
 
 	/** @var MapiDataSourcesService */
 	protected $service;
@@ -38,8 +48,37 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->options = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'get_merchant_id' )->willReturn( self::MERCHANT_ID );
 
+		// Stateful, so a verification recorded by one resolution is visible to the next.
+		$this->stored_transients = [];
+		$this->transients        = $this->createMock( TransientsInterface::class );
+		$this->transients->method( 'get' )->willReturnCallback(
+			function ( string $name, $default_value = null ) {
+				return $this->stored_transients[ $name ] ?? $default_value;
+			}
+		);
+		$this->transients->method( 'set' )->willReturnCallback(
+			function ( string $name, $value ) {
+				$this->stored_transients[ $name ] = $value;
+				return true;
+			}
+		);
+		$this->transients->method( 'delete' )->willReturnCallback(
+			function ( string $name ) {
+				unset( $this->stored_transients[ $name ] );
+				return true;
+			}
+		);
+
 		$this->service = new MapiDataSourcesService( $this->client );
 		$this->service->set_options_object( $this->options );
+		$this->service->set_transients_object( $this->transients );
+	}
+
+	/**
+	 * @return array<string, int> Verification timestamps currently stored, keyed by data source name.
+	 */
+	protected function verified_timestamps(): array {
+		return $this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] ?? [];
 	}
 
 	public function test_returns_cached_value_after_verifying_it_exists() {
@@ -59,6 +98,102 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			'accounts/12345/dataSources/999',
 			$this->service->ensure_data_source_for( 'en', 'US' )
 		);
+		// The verification is recorded so later requests skip the dataSources.get.
+		$this->assertArrayHasKey( 'accounts/12345/dataSources/999', $this->verified_timestamps() );
+	}
+
+	public function test_cache_hit_verified_within_ttl_makes_no_api_call() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999' => time() - self::VERIFY_TTL + HOUR_IN_SECONDS,
+		];
+
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_cache_hit_verified_longer_ago_than_ttl_is_verified_again() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$expired = time() - self::VERIFY_TTL - 1;
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999'  => $expired,
+			'accounts/12345/dataSources/gone' => $expired,
+		];
+
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/999' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/999' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+
+		// The re-verified name gets a fresh timestamp; other expired entries are pruned.
+		$timestamps = $this->verified_timestamps();
+		$this->assertSame( [ 'accounts/12345/dataSources/999' ], array_keys( $timestamps ) );
+		$this->assertGreaterThan( $expired, $timestamps['accounts/12345/dataSources/999'] );
+	}
+
+	public function test_failed_verification_other_than_404_keeps_the_name_but_does_not_record_it() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->willThrowException( new MerchantApiException( 503, [], 'get' ) );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame( [], $this->verified_timestamps() );
+	}
+
+	public function test_clear_verifications_makes_the_next_cache_hit_check_the_account_again() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999' => time() - HOUR_IN_SECONDS,
+		];
+
+		// Only the resolution after clear_verifications() checks the account.
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/999' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/999' ] );
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->service->ensure_data_source_for( 'en', 'US' );
+		$this->service->clear_verifications();
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+		// The cached name is kept, and the new check is recorded again.
+		$this->assertGreaterThan( time() - HOUR_IN_SECONDS, $this->verified_timestamps()['accounts/12345/dataSources/999'] );
 	}
 
 	public function test_verifies_cached_name_only_once_per_request() {
@@ -136,6 +271,11 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			}
 		);
 
+		// forget() also drops the name's verification, so the transient keeps no stale names.
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999' => time(),
+		];
+
 		// forget() clears the entry; the next resolution then discovers rather than verifying a cache hit.
 		$this->client->expects( $this->once() )
 			->method( 'get' )
@@ -165,6 +305,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			[ 'product|en|US' => 'accounts/12345/dataSources/new' ],
 			$stored[ OptionsInterface::MAPI_DATA_SOURCES ]
 		);
+		$this->assertSame( [ 'accounts/12345/dataSources/new' ], array_keys( $this->verified_timestamps() ) );
 	}
 
 	public function test_forget_promotion_data_source_for_removes_only_the_promotion_entry() {
@@ -914,6 +1055,8 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			'accounts/12345/dataSources/600',
 			$this->service->ensure_data_source_for( 'en', 'US' )
 		);
+		// The unusable source was reachable but must not be trusted for the verify window; only the new one is.
+		$this->assertSame( [ 'accounts/12345/dataSources/600' ], array_keys( $this->verified_timestamps() ) );
 	}
 
 	public function test_ignores_file_input_data_sources_when_matching_promotion_sources() {
@@ -1391,6 +1534,175 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_creates_product_data_source_with_shopping_ads_only_when_free_listings_is_rejected() {
+		// An account that can't use free listings rejects the FREE_LISTINGS destination (reported
+		// by Google under its internal name ORGANIC_EXPERIENCES) and creates nothing. Retrying
+		// with the online destination it does accept keeps product sync working.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+
+		$requested = [];
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function ( $path, $body ) use ( &$requested ) {
+					$requested[] = array_column( $body['primaryProductDataSource']['destinations'], 'destination' );
+					if ( 1 === count( $requested ) ) {
+						throw $this->invalid_destinations_exception();
+					}
+					return [ 'name' => 'accounts/12345/dataSources/720' ];
+				}
+			);
+
+		$logged   = [];
+		$callback = static function ( $message ) use ( &$logged ) {
+			$logged[] = $message;
+		};
+		add_action( 'woocommerce_gla_error', $callback );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/720',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+
+		remove_action( 'woocommerce_gla_error', $callback );
+		$this->assertSame( [ [ 'SHOPPING_ADS', 'FREE_LISTINGS' ], [ 'SHOPPING_ADS' ] ], $requested );
+		$this->assertCount( 1, $logged );
+		$this->assertStringContainsString( 'retrying with [SHOPPING_ADS]', $logged[0] );
+	}
+
+	public function test_throws_without_a_no_destinations_attempt_when_every_online_destination_is_rejected() {
+		// A create without destinations is what produced local-only sources, and an account that
+		// rejects even SHOPPING_ADS would likely get one, so the error surfaces instead.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+
+		$requested = [];
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function ( $path, $body ) use ( &$requested ) {
+					$requested[] = array_column( $body['primaryProductDataSource']['destinations'], 'destination' );
+					throw $this->invalid_destinations_exception(
+						2 === count( $requested ) ? 'SHOPPING_ADS' : 'ORGANIC_EXPERIENCES'
+					);
+				}
+			);
+
+		$logged   = [];
+		$callback = static function ( $message ) use ( &$logged ) {
+			$logged[] = $message;
+		};
+		add_action( 'woocommerce_gla_error', $callback );
+
+		try {
+			$this->service->ensure_data_source_for( 'en', 'US' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( 400, $exception->get_http_status() );
+		} finally {
+			remove_action( 'woocommerce_gla_error', $callback );
+		}
+
+		$this->assertSame( [ [ 'SHOPPING_ADS', 'FREE_LISTINGS' ], [ 'SHOPPING_ADS' ] ], $requested );
+		$this->assertCount( 2, $logged );
+		$this->assertStringContainsString(
+			'rejected every destination list tried for data source en|US ([SHOPPING_ADS, FREE_LISTINGS], [SHOPPING_ADS])',
+			$logged[1]
+		);
+	}
+
+	public function test_rethrows_a_different_error_from_the_fallback_create_without_retrying_again() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+
+		$call = 0;
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function () use ( &$call ) {
+					++$call;
+					if ( 1 === $call ) {
+						throw $this->invalid_destinations_exception();
+					}
+					throw new MerchantApiException( 500, [], 'post' );
+				}
+			);
+
+		try {
+			$this->service->ensure_data_source_for( 'en', 'US' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( 500, $exception->get_http_status() );
+		}
+	}
+
+	public function test_does_not_retry_product_data_source_creation_for_other_errors() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willThrowException(
+				new MerchantApiException( 400, [ 'error' => [ 'message' => '[displayName] Invalid display name.' ] ], 'post' )
+			);
+
+		$this->expectException( MerchantApiException::class );
+
+		$this->service->ensure_data_source_for( 'en', 'US' );
+	}
+
+	public function test_does_not_retry_for_a_400_that_mentions_destinations_outside_the_destinations_field() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willThrowException(
+				new MerchantApiException( 400, [ 'error' => [ 'message' => '[primaryProductDataSource.feedLabel] Feed label is not valid for the requested destinations.' ] ], 'post' )
+			);
+
+		$this->expectException( MerchantApiException::class );
+
+		$this->service->ensure_data_source_for( 'en', 'US' );
+	}
+
+	public function test_recreate_data_source_for_falls_back_to_shopping_ads_when_free_listings_is_rejected() {
+		$stored = [];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+
+		$requested = [];
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function ( $path, $body ) use ( &$requested ) {
+					$requested[] = array_column( $body['primaryProductDataSource']['destinations'], 'destination' );
+					if ( 1 === count( $requested ) ) {
+						throw $this->invalid_destinations_exception();
+					}
+					return [ 'name' => 'accounts/12345/dataSources/740' ];
+				}
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/740',
+			$this->service->recreate_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame( [ [ 'SHOPPING_ADS', 'FREE_LISTINGS' ], [ 'SHOPPING_ADS' ] ], $requested );
+		$this->assertSame(
+			[ 'product|en|US' => 'accounts/12345/dataSources/740' ],
+			$stored[ OptionsInterface::MAPI_DATA_SOURCES ]
+		);
+	}
+
 	public function test_creates_new_promotion_data_source_without_destinations_field() {
 		// PromotionDataSource has no destinations field in the Merchant API; sending one would be
 		// an invalid request, so promotion creation must never include it.
@@ -1459,6 +1771,23 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->assertSame(
 			'accounts/12345/dataSources/300',
 			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	/**
+	 * The rejection Google returns when a data source requests a destination the account can't
+	 * use. The ORGANIC_EXPERIENCES form is the one reported by merchants; other destination names
+	 * follow the same shape.
+	 *
+	 * @param string $destination The destination Google names as invalid.
+	 *
+	 * @return MerchantApiException
+	 */
+	private function invalid_destinations_exception( string $destination = 'ORGANIC_EXPERIENCES' ): MerchantApiException {
+		return new MerchantApiException(
+			400,
+			[ 'error' => [ 'message' => "[primaryProductDataSource.destinations] Destinations of the data source are invalid: {$destination}." ] ],
+			'post'
 		);
 	}
 }
