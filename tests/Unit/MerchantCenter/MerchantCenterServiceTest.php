@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
@@ -89,11 +90,17 @@ class MerchantCenterServiceTest extends UnitTest {
 	/** @var MockObject|WP $wp */
 	protected $wp;
 
+	/** @var MockObject|WPML $wpml */
+	protected $wpml;
+
 	/** @var Container $container */
 	protected $container;
 
 	/** @var OptionsInterface $options */
 	protected $options;
+
+	/** @var string $logged_error */
+	protected $logged_error = '';
 
 	protected const TEST_SETUP_COMPLETED = 1641038400;
 
@@ -118,6 +125,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->transients             = $this->createMock( TransientsInterface::class );
 		$this->wc                     = $this->createMock( WC::class );
 		$this->wp                     = $this->createMock( WP::class );
+		$this->wpml                   = $this->createMock( WPML::class );
 		$this->options                = $this->createMock( OptionsInterface::class );
 
 		$this->container = new Container();
@@ -137,10 +145,18 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->container->addShared( TransientsInterface::class, $this->transients );
 		$this->container->addShared( WC::class, $this->wc );
 		$this->container->addShared( WP::class, $this->wp );
+		$this->container->addShared( WPML::class, $this->wpml );
 
 		$this->mc_service = new MerchantCenterService();
 		$this->mc_service->set_container( $this->container );
 		$this->mc_service->set_options_object( $this->options );
+
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) {
+				$this->logged_error = $message;
+			}
+		);
 	}
 
 	/**
@@ -310,6 +326,139 @@ class MerchantCenterServiceTest extends UnitTest {
 		// Call twice to ensure we are getting the value from the transient the second time.
 		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
 		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
+	}
+
+	public function test_is_ready_for_syncing_on_another_language_domain() {
+		$this->mock_jetpack_connection( true, true );
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( md5( 'https://example.nl' ) );
+		$this->options->method( 'get' )->willReturn( true );
+
+		// WPML returns the home URL of the requested domain, whatever language is switched to.
+		add_filter(
+			'home_url',
+			function () {
+				return 'https://example.de';
+			}
+		);
+		add_filter(
+			'wpml_default_language',
+			function () {
+				return 'nl';
+			}
+		);
+		add_filter(
+			'wpml_permalink',
+			function ( $url, $language ) {
+				return 'nl' === $language ? 'https://example.nl/' : $url;
+			},
+			10,
+			2
+		);
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::URL_MATCHES, 'yes', HOUR_IN_SECONDS * 12 );
+
+		// phpcs:ignore Universal.Classes.RequireAnonClassParentheses.Missing
+		$mc_service = new class extends MerchantCenterService {
+			protected function is_wpml_active(): bool {
+				return true;
+			}
+		};
+		$mc_service->set_container( $this->container );
+		$mc_service->set_options_object( $this->options );
+
+		$this->assertTrue( $mc_service->is_ready_for_syncing() );
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_error' ) );
+	}
+
+	public function test_is_ready_for_syncing_when_another_language_url_is_claimed() {
+		$this->mock_jetpack_connection( true, true );
+		// The store onboarded from the German domain, so that URL is the one claimed.
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( md5( 'https://example.de' ) );
+		$this->options->method( 'get' )->willReturn( true );
+
+		// A request on the default-language domain.
+		add_filter(
+			'home_url',
+			function () {
+				return 'https://example.nl';
+			}
+		);
+		add_filter(
+			'wpml_default_language',
+			function () {
+				return 'nl';
+			}
+		);
+		add_filter(
+			'wpml_active_languages',
+			function () {
+				return [
+					'nl' => [ 'code' => 'nl' ],
+					'de' => [ 'code' => 'de' ],
+				];
+			}
+		);
+		add_filter(
+			'wpml_permalink',
+			function ( $url, $language ) {
+				return 'de' === $language ? 'https://example.de/' : 'https://example.nl/';
+			},
+			10,
+			2
+		);
+
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::URL_MATCHES, 'yes', HOUR_IN_SECONDS * 12 );
+
+		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_error' ) );
+	}
+
+	public function test_is_ready_for_syncing_logs_url_mismatch() {
+		$this->mock_jetpack_connection( true, true );
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( md5( 'https://claimed.test' ) );
+		$this->options->method( 'get' )->willReturn( true );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::URL_MATCHES, 'no', HOUR_IN_SECONDS * 12 );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+		$this->assertStringContainsString( 'does not match the URL claimed', $this->logged_error );
+	}
+
+	public function test_is_ready_for_syncing_logs_unreadable_claimed_url() {
+		$this->mock_jetpack_connection( true, true );
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( null );
+		$this->options->method( 'get' )->willReturn( true );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+		$this->assertStringContainsString( 'could not be read', $this->logged_error );
+	}
+
+	public function test_is_ready_for_syncing_logs_filter_override() {
+		$this->mock_jetpack_connection( true, true );
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( md5( untrailingslashit( get_home_url() ) ) );
+		$this->options->method( 'get' )->willReturn( true );
+
+		add_filter( 'woocommerce_gla_ready_for_syncing', '__return_false' );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+		$this->assertStringContainsString( 'woocommerce_gla_ready_for_syncing filter', $this->logged_error );
+	}
+
+	public function test_is_ready_for_syncing_does_not_log_url_mismatch_from_transient() {
+		$this->mock_jetpack_connection( true, true );
+		$this->options->method( 'get' )->willReturn( true );
+		$this->transients->method( 'get' )->willReturn( 'no' );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_error' ) );
 	}
 
 	public function test_is_ready_for_syncing_without_jetpack_owner() {
