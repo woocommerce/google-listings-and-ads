@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { useEffect } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { addQueryArgs } from '@wordpress/url';
 import { CardBody, Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { closeSmall } from '@wordpress/icons';
 
@@ -13,30 +12,25 @@ import { closeSmall } from '@wordpress/icons';
  */
 import { glaData } from '~/constants';
 import { useAppDispatch } from '~/data';
+import { addReferrerParams } from '~/utils/urls';
 import AppButton from '~/components/app-button';
 import NotificationSkeleton from './notification-skeleton';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import {
 	recordGlaEvent,
+	queueRecordGlaEvent,
 	CONTEXT_MARKETING_OVERVIEW,
 	REFERRER_TYPE_NOTIFICATION,
 } from '~/utils/tracks';
 import './notification.scss';
 
 /**
- * Appends the notification's referrer info to a CTA href, so the destination
- * flow can attribute its own tracking events back to this notification.
- *
- * @param {string} href Original CTA destination.
- * @param {string} notificationId Notification ID to attribute the referral to.
- * @return {string} `href` with `referrer_type`/`referrer_id` query params appended.
+ * @callback onCtaClick
+ * @param {Event} event The click event.
+ * @param {Function} dismissNotification Dismisses this notification (calls the `onDismiss` prop
+ *   passed to `Notification` under the hood — a temporary, local removal from the panel; it does
+ *   not persist server-side).
  */
-function withReferrer( href, notificationId ) {
-	return addQueryArgs( href, {
-		referrer_type: REFERRER_TYPE_NOTIFICATION,
-		referrer_id: notificationId,
-	} );
-}
 
 /**
  * @typedef {Object} NotificationAction
@@ -45,6 +39,9 @@ function withReferrer( href, notificationId ) {
  * @property {string} children Button label.
  * @property {string} [target] Link target (e.g. '_blank').
  * @property {string} [rel] Link rel attribute.
+ * @property {boolean} [disabled] Whether the action's button/link is disabled
+ * @property {onCtaClick} [onClick] When set, called as `onClick( event, dismissNotification )`
+ *   on click, in addition to the anchor's own default navigation (e.g. saving a setting, opening a modal).
  */
 
 /**
@@ -118,12 +115,26 @@ const Notification = ( {
 		}
 	};
 
-	const handleCtaClick = ( href ) => {
-		recordGlaEvent( 'gla_notifications_system_notification_cta_clicked', {
-			context: CONTEXT_MARKETING_OVERVIEW,
-			id,
-			href,
-		} );
+	const handleCtaClick = async ( event, action ) => {
+		const { href, onClick } = action;
+
+		// Queued, not recorded immediately — this fires on a link that
+		// navigates away by default, so an immediate call risks being lost
+		// before it reaches the tracking endpoint.
+		queueRecordGlaEvent(
+			'gla_notifications_system_notification_cta_clicked',
+			{
+				context: CONTEXT_MARKETING_OVERVIEW,
+				id,
+				href,
+			}
+		);
+
+		if ( ! onClick ) {
+			return;
+		}
+
+		await onClick( event, onDismiss );
 	};
 
 	return (
@@ -153,27 +164,37 @@ const Notification = ( {
 							{ formattedDate }
 						</span>
 						<FlexBlock>
-							{ actions.map(
-								( {
+							{ actions.map( ( action ) => {
+								const {
 									id: actionId,
 									href,
 									children,
 									target,
 									rel,
-								} ) => (
+									disabled,
+								} = action;
+
+								return (
 									<AppButton
 										key={ actionId }
 										className="gla-notification__action"
 										variant="link"
-										href={ withReferrer( href, id ) }
+										href={ addReferrerParams(
+											href,
+											REFERRER_TYPE_NOTIFICATION,
+											id
+										) }
 										target={ target }
 										rel={ rel }
-										onClick={ () => handleCtaClick( href ) }
+										onClick={ ( event ) =>
+											handleCtaClick( event, action )
+										}
+										disabled={ disabled }
 									>
 										{ children }
 									</AppButton>
-								)
-							) }
+								);
+							} ) }
 						</FlexBlock>
 					</Flex>
 				</Flex>

@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiExcep
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
@@ -27,6 +28,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUn
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductMetaTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -350,6 +352,50 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		}
 	}
 
+	public function test_generate_mapi_update_entries_rethrows_account_reconnect() {
+		$products = $this->create_and_return_supported_test_products();
+
+		$this->market_service->method( 'get_primary_market' )->willReturn(
+			[
+				'country'    => null,
+				'feed_label' => null,
+				'language'   => 'en',
+			]
+		);
+		$this->market_service->method( 'get_main_feed_label' )->willReturn( 'US' );
+		$this->market_service->method( 'get_all_countries' )->willReturn( [ 'US' ] );
+		$this->validator->method( 'validate' )->willReturn( [] );
+		$this->rules_query->method( 'get_results' )->willReturn( [] );
+
+		// An account-wide auth failure surfaces while resolving the data source.
+		$this->data_sources->method( 'ensure_data_source_for' )->willThrowException( AccountReconnect::jetpack_disconnected() );
+
+		$this->expectException( AccountReconnect::class );
+
+		$this->batch_product_helper->generate_mapi_update_entries( $products );
+	}
+
+	public function test_generate_mapi_update_entries_skips_product_on_other_exception() {
+		$products = $this->create_and_return_supported_test_products();
+
+		$this->market_service->method( 'get_primary_market' )->willReturn(
+			[
+				'country'    => null,
+				'feed_label' => null,
+				'language'   => 'en',
+			]
+		);
+		$this->market_service->method( 'get_main_feed_label' )->willReturn( 'US' );
+		$this->market_service->method( 'get_all_countries' )->willReturn( [ 'US' ] );
+		$this->validator->method( 'validate' )->willReturn( [] );
+		$this->rules_query->method( 'get_results' )->willReturn( [] );
+
+		// A per-product failure (not account-wide) is still swallowed and the product skipped.
+		$this->data_sources->method( 'ensure_data_source_for' )->willThrowException( new MerchantApiException( 400, [], __METHOD__ ) );
+
+		$this->assertSame( [], $this->batch_product_helper->generate_mapi_update_entries( $products ) );
+	}
+
 	public function test_generate_mapi_update_entries_primary_plus_secondary_two_entries_per_product() {
 		$products = $this->create_and_return_supported_test_products();
 
@@ -484,7 +530,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 				],
 				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR',
+					'feed_label' => 'FR-PROMO',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -608,9 +654,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR',
+					'feed_label' => 'FR-PROMO',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -647,9 +693,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [ 'en' ],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR',
+					'feed_label' => 'FR-PROMO',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -705,7 +751,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
 					'feed_label' => 'FR',
 					'language'   => [],
@@ -741,7 +787,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [ 'en' ],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
 					'feed_label' => 'FR',
 					'language'   => [ 'fr' ],
@@ -1945,6 +1991,85 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertCount( 1, $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
 	}
 
+	public function test_generate_skips_unchanged_end_date_only_sale_product() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2020-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 1, $entries );
+
+		// The sale starts at the fixed creation date, not at the time of the run.
+		$this->assertSame(
+			(string) $product->get_date_created(),
+			$entries[0]['input']->get_attributes()['salePriceEffectiveDate']['startTime']
+		);
+
+		$entry_key = $entries[0]['input']->get_content_language() . '|' . $entries[0]['input']->get_feed_label();
+		$this->product_meta->update_sync_hash( $product, [ $entry_key => $entries[0]['hash'] ] );
+		$this->product_meta->update_synced_at( $product, time() );
+
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+	}
+
+	public function test_generate_includes_end_date_only_sale_product_when_end_date_changes() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2020-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$entries   = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$entry_key = $entries[0]['input']->get_content_language() . '|' . $entries[0]['input']->get_feed_label();
+		$this->product_meta->update_sync_hash( $product, [ $entry_key => $entries[0]['hash'] ] );
+		$this->product_meta->update_synced_at( $product, time() );
+
+		$product->set_date_on_sale_to( '2099-02-01' );
+		$product->save();
+
+		$changed = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 1, $changed );
+		$this->assertNotSame( $entries[0]['hash'], $changed[0]['hash'] );
+	}
+
 	public function test_force_resync_filter_includes_unchanged_product() {
 		$this->set_up_market_service_stubs(
 			[ 'US' ],
@@ -2170,6 +2295,50 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
+	 * Stubs one primary market that accepts every product and passes validation.
+	 */
+	private function set_up_single_market(): void {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+	}
+
+	/**
+	 * Records the meta a successful sync leaves behind, so the next pass skips the product as unchanged.
+	 *
+	 * @param WC_Product  $product
+	 * @param int         $synced_at
+	 * @param string|null $feed_label Only record this feed; every generated feed when null.
+	 */
+	private function simulate_successful_sync( WC_Product $product, int $synced_at, ?string $feed_label = null ): void {
+		foreach ( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) as $entry ) {
+			if ( null !== $feed_label && $feed_label !== $entry['input']->get_feed_label() ) {
+				continue;
+			}
+
+			$this->product_helper->update_sync_hash(
+				$product,
+				$entry['hash'],
+				$entry['input']->get_content_language(),
+				$entry['input']->get_feed_label()
+			);
+		}
+
+		$this->product_meta->update_synced_at( $product, $synced_at );
+		$this->product_meta->update_sync_status( $product, SyncStatus::SYNCED );
+	}
+
+	/**
 	 * Configure the MarketService mock so the helper can build primary + secondary entries.
 	 *
 	 * The primary entry's feed_label is used as the get_main_feed_label() stub, then the
@@ -2273,6 +2442,289 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		return $ids;
 	}
 
+	public function test_generate_mapi_update_entries_attaches_applicable_labels_and_excludes_unconvertible_feeds() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->wpml_converted_prices['EUR'] = null;
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'en' ],
+					'currency'   => [ 'EUR' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// The EUR feed is skipped because the price cannot convert, so the product
+		// can never reach it: it must not appear in the attainable label set either,
+		// otherwise its errors would never clear.
+		$this->assertCount( 1, $results );
+		$this->assertSame( [ 'US' ], $results[0]['applicable_labels'] );
+	}
+
+	public function test_generate_clears_pending_status_when_every_feed_is_unchanged() {
+		$this->set_up_single_market();
+
+		$product   = WC_Helper_Product::create_simple_product();
+		$synced_at = time() - DAY_IN_SECONDS;
+		$this->simulate_successful_sync( $product, $synced_at );
+		$this->product_helper->mark_as_pending( $product );
+
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+
+		$refreshed = $this->wc->get_product( $product->get_id() );
+		$this->assertSame( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $refreshed ) );
+
+		// Nothing reached Google, so the expiry resubmission window must not restart.
+		$this->assertEquals( $synced_at, $this->product_meta->get_synced_at( $refreshed ) );
+	}
+
+	public function test_generate_clears_pending_status_of_unchanged_variation_and_parent() {
+		$this->set_up_single_market();
+
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $variable->get_children()[0] );
+		$this->simulate_successful_sync( $variation, time() );
+		$this->product_helper->mark_as_pending( $variation );
+
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $variation ] ) );
+
+		foreach ( [ $variation->get_id(), $variable->get_id() ] as $product_id ) {
+			$this->assertSame(
+				SyncStatus::SYNCED,
+				$this->product_meta->get_sync_status( $this->wc->get_product( $product_id ) )
+			);
+		}
+	}
+
+	public function test_generate_keeps_pending_status_when_an_entry_still_needs_syncing() {
+		$this->set_up_single_market();
+
+		$product = WC_Helper_Product::create_simple_product();
+		$this->simulate_successful_sync( $product, time() );
+		$this->product_helper->mark_as_pending( $product );
+
+		$product->set_regular_price( '123.45' );
+		$product->save();
+
+		$this->assertCount( 1, $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+
+		$this->assertSame(
+			SyncStatus::PENDING,
+			$this->product_meta->get_sync_status( $this->wc->get_product( $product->get_id() ) )
+		);
+	}
+
+	public function test_generate_keeps_has_errors_status_when_a_secondary_feed_fails_and_the_rest_are_unchanged() {
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => 'de',
+				],
+			]
+		);
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		// Only the secondary (DE) feed fails, and only once the primary hash is recorded.
+		$fail_secondary = false;
+		$this->validator->expects( $this->any() )
+			->method( 'validate' )
+			->willReturnCallback(
+				function ( WCProductAdapter $adapter ) use ( &$fail_secondary ) {
+					if ( $fail_secondary && 'US' !== $adapter->getFeedLabel() ) {
+						$violations = new ConstraintViolationList();
+						$violations->add( $this->createMock( ConstraintViolation::class ) );
+						return $violations;
+					}
+
+					return [];
+				}
+			);
+
+		$product = WC_Helper_Product::create_simple_product();
+		$this->simulate_successful_sync( $product, time(), 'US' );
+		$this->product_helper->mark_as_pending( $product );
+
+		$fail_secondary = true;
+
+		// $product still reads its in-memory pending status at this point: mark_as_invalid
+		// persists has-errors against a fresh instance from ProductHelper::get_wc_product().
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+
+		$this->assertSame(
+			SyncStatus::HAS_ERRORS,
+			$this->product_meta->get_sync_status( $this->wc->get_product( $product->get_id() ) )
+		);
+	}
+
+	public function test_generate_keeps_pending_status_when_the_product_reaches_no_feed() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'fr' ],
+				],
+			]
+		);
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
+		$this->wpml->method( 'get_post_language' )->willReturn( 'en' );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_pending( $product );
+
+		// No feed was compared, so nothing proves Google already has this product.
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+
+		$this->assertSame(
+			SyncStatus::PENDING,
+			$this->product_meta->get_sync_status( $this->wc->get_product( $product->get_id() ) )
+		);
+	}
+
+	public function test_generate_mapi_update_entries_keeps_skipped_unchanged_feed_in_applicable_labels() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'GB' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'gb'      => [
+					'country'    => 'GB',
+					'feed_label' => 'GB',
+					'language'   => [ 'en' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$first_run = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 2, $first_run );
+
+		// Record the primary entry's hash as its last successful sync, so the next
+		// run skips it as unchanged. The skip also requires a fresh synced_at, which
+		// the success path sets through mark_as_synced().
+		$primary_entry = $first_run[0];
+		$this->assertSame( 'US', $primary_entry['input']->get_feed_label() );
+		$this->product_meta->update_synced_at( $product, time() );
+		$this->product_helper->update_sync_hash(
+			$product,
+			$primary_entry['hash'],
+			$primary_entry['input']->get_content_language(),
+			$primary_entry['input']->get_feed_label()
+		);
+
+		$second_run = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// Only the secondary entry is emitted, but the skipped primary feed stays in
+		// the attainable set: its payload hash matches a previous successful sync.
+		$this->assertCount( 1, $second_run );
+		$this->assertContains( 'US', $second_run[0]['applicable_labels'] );
+		$this->assertContains( $second_run[0]['input']->get_feed_label(), $second_run[0]['applicable_labels'] );
+	}
+
+	public function test_generate_mapi_update_entries_wpml_unsupported_language_coerced_and_scoped_to_own_market() {
+		$product_one = WC_Helper_Product::create_simple_product();
+		$product_two = WC_Helper_Product::create_simple_product();
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
+		$this->wpml->method( 'get_post_language' )->willReturn( 'sr' );
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'RS', 'LT' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'rs'      => [
+					'country'    => 'RS',
+					'feed_label' => 'RS',
+					'language'   => [ 'sr' ],
+				],
+				'lt'      => [
+					'country'    => 'LT',
+					'feed_label' => 'LT',
+					'language'   => [ 'lt' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$messages = [];
+		add_action(
+			'woocommerce_gla_debug_message',
+			function ( $message ) use ( &$messages ) {
+				if ( false !== strpos( (string) $message, 'is not a Merchant Center content language' ) ) {
+					$messages[] = $message;
+				}
+			}
+		);
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product_one, $product_two ] );
+
+		// One entry per product, for the Serbian market only; the sent language is
+		// coerced to en while the raw code still drives the market matching, so the
+		// attainable set holds only the Serbian market's label.
+		$this->assertCount( 2, $results );
+		foreach ( $results as $entry ) {
+			$this->assertSame( 'RS', $entry['country'] );
+			$this->assertSame( 'en', $entry['input']->get_content_language() );
+			$this->assertSame( [ 'RS-SR-' . get_woocommerce_currency() ], $entry['applicable_labels'] );
+		}
+
+		// The replacement is logged once for the code, not once per product.
+		$this->assertCount( 1, $messages );
+	}
+
+	public function test_generate_stale_countries_delete_entries_keeps_stored_language_verbatim() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_meta->update_google_ids( $product, [ 'RS-SR-USD' => 'sr~RS-SR-USD~gla_' . $product->get_id() ] );
+
+		$this->market_service->method( 'get_all_feed_labels' )->willReturn( [ 'US' ] );
+
+		$entries = $this->batch_product_helper->generate_stale_countries_delete_entries( [ $product ] );
+
+		// Delete identities replay the stored language code untouched: coercing it
+		// would aim the delete at a feed that does not hold the entry.
+		$this->assertCount( 1, $entries );
+		$this->assertSame( 'sr', $entries[0]['input']->get_content_language() );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -2286,7 +2738,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->product_meta         = $this->container->get( ProductMetaHandler::class );
 		$this->wc                   = $this->container->get( WC::class );
 		$this->product_factory      = $this->container->get( ProductFactory::class );
-		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->market_service );
+		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc );
 		$this->batch_product_helper = new BatchProductHelper(
 			$this->product_meta,
 			$this->product_helper,

@@ -26,6 +26,12 @@ export const GUIDE_NAMES = {
 	CAMPAIGN_CREATION_SUCCESS: 'campaign-creation-success',
 };
 
+/**
+ * The one-time query arg added to a redirect URL after an Ads credit offer was applied.
+ * Flows that end with a full page reload use it, since a notice created before the reload is lost.
+ */
+export const INCENTIVE_APPLIED_QUERY = { incentive: 'applied' };
+
 export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',
@@ -36,6 +42,12 @@ export const LOCAL_STORAGE_KEYS = {
 export const API_RESPONSE_CODES = {
 	WPCOM_DISCONNECTED: 'JETPACK_DISCONNECTED',
 	GOOGLE_DISCONNECTED: 'GOOGLE_DISCONNECTED',
+};
+
+// Settings page subtabs.
+export const SETTINGS_SECTIONS = {
+	GENERAL: 'general',
+	ACCOUNTS: 'accounts',
 };
 
 export const SHIPPING_RATE_METHOD = {
@@ -135,13 +147,6 @@ export const ASSET_GROUP_KEY = {
 export const ASSET_FORM_KEY = {
 	...ASSET_KEY,
 	...ASSET_GROUP_KEY,
-};
-
-export const GOOGLE_WPCOM_APP_CONNECTED_STATUS = {
-	APPROVED: 'approved',
-	DISAPPROVED: 'disapproved',
-	ERROR: 'error',
-	DISABLED: 'disabled',
 };
 
 export const APP_RATINGS_BANNER_CONTEXT = 'app_ratings_banner';

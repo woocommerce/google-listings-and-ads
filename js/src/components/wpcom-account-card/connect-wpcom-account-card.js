@@ -9,6 +9,7 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { glaData } from '~/constants';
 import { API_NAMESPACE } from '~/data/constants';
+import { getReferrerQueryParams } from '~/utils/tracks';
 import AppButton from '~/components/app-button';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
@@ -28,7 +29,10 @@ const ConnectWPComAccountCard = () => {
 	const { createNotice } = useDispatchCoreNotices();
 
 	const nextPageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
-	const query = { next_page_name: nextPageName };
+	const query = {
+		next_page_name: nextPageName,
+		...getReferrerQueryParams(),
+	};
 	const path = addQueryArgs( `${ API_NAMESPACE }/jetpack/connect`, query );
 	const [ fetchJetpackConnect, { loading, data } ] = useApiFetchCallback( {
 		path,

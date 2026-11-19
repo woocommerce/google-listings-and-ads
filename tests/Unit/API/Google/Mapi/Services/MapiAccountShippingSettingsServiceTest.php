@@ -41,6 +41,37 @@ class MapiAccountShippingSettingsServiceTest extends UnitTest {
 		$this->service->set_options_object( $this->options );
 	}
 
+	public function test_get_shipping_settings() {
+		$shipping_settings = [
+			'name'     => 'accounts/12345/shippingSettings',
+			'services' => [
+				[
+					'deliveryCountries' => [ 'US' ],
+					'deliveryTime'      => [
+						'minTransitDays' => 3,
+						'maxTransitDays' => 5,
+					],
+				],
+			],
+		];
+
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::PATH )
+			->willReturn( $shipping_settings );
+
+		$this->assertSame( $shipping_settings, $this->service->get_shipping_settings() );
+	}
+
+	public function test_get_shipping_settings_when_no_policy_configured() {
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::PATH )
+			->willReturn( [] );
+
+		$this->assertSame( [], $this->service->get_shipping_settings() );
+	}
+
 	public function test_insert_shipping_settings() {
 		$body     = [ 'services' => [] ];
 		$response = [

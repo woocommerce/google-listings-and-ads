@@ -12,9 +12,15 @@ import {
 	setOnboardedMerchant,
 } from '../../utils/api';
 import MarketsPage, {
+	TERTIARY_MARKET,
 	PRIMARY_MARKET,
 	SECONDARY_MARKET,
+	MC_COUNTRIES,
 } from '../../utils/pages/markets';
+import {
+	MARKET_EXISTS_MESSAGE,
+	MARKET_NOT_FOUND_MESSAGE,
+} from './error-messages';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -34,6 +40,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		marketsPage = new MarketsPage( page );
+		await marketsPage.mockIsMultiLingualStore( false );
 		await setOnboardedMerchant();
 		await clearServiceBasedMerchant();
 	} );
@@ -45,7 +52,6 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 	test.describe( 'Shipping Rate - Manual', () => {
 		test.beforeAll( async () => {
-			await marketsPage.mockIsMultiLingualStore( false );
 			await marketsPage.mockMarketsPageRequests( {
 				shippingRate: 'manual',
 				multilingual: false,
@@ -67,10 +73,17 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 			await expect(
 				page.getByRole( 'columnheader', { name: 'Language' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
 			await expect(
 				page.getByRole( 'columnheader', { name: 'Currency' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
+		} );
+
+		test( 'table has the base DataViews styles on a direct load', async () => {
+			await expect( page.locator( '.dataviews-view-table' ) ).toHaveCSS(
+				'border-collapse',
+				'collapse'
+			);
 		} );
 
 		test( 'only the primary market row is visible', async () => {
@@ -82,7 +95,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 			await expect(
 				page.getByRole( 'cell', { name: 'France' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
 		} );
 
 		test( 'no Delete button is rendered', async () => {
@@ -134,21 +147,29 @@ test.describe( 'Markets – non-multilingual store', () => {
 				modal
 					.locator( '.app-modal__footer' )
 					.getByRole( 'button', { name: 'Add market' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
 
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( modal ).not.toBeVisible();
 		} );
 
-		test( 'successful save closes the Edit modal', async () => {
+		test( 'successful save closes the Edit modal and refreshes the table', async () => {
+			const updatedPrimaryMarket = {
+				...PRIMARY_MARKET,
+				countries: [ 'US' ],
+			};
 			await marketsPage.fulfillMarketUpdate(
 				PRIMARY_MARKET.id,
-				PRIMARY_MARKET
+				updatedPrimaryMarket
 			);
 			// This scenario has only the primary market — France must not
 			// exist, matching the earlier "only the primary market row is
 			// visible" assertion.
-			await marketsPage.fulfillMarkets( [ PRIMARY_MARKET ] );
+			await marketsPage.fulfillMarkets( [ updatedPrimaryMarket ] );
+
+			await expect(
+				page.getByRole( 'cell', { name: '2 countries', exact: true } )
+			).toBeVisible();
 
 			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
 
@@ -158,13 +179,18 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
 			await expect( modal ).not.toBeVisible();
+			await expect(
+				page.getByRole( 'cell', { name: '1 country', exact: true } )
+			).toBeVisible();
+
+			await marketsPage.reloadWithMarkets( [ PRIMARY_MARKET ] );
 		} );
 
 		test( 'API error shows snackbar and keeps Edit modal open', async () => {
 			await marketsPage.fulfillMarketUpdate(
 				PRIMARY_MARKET.id,
-				{ message: 'Internal server error' },
-				500
+				{ message: MARKET_NOT_FOUND_MESSAGE },
+				404
 			);
 
 			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
@@ -175,7 +201,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
 			await expect(
-				page.locator( '.components-snackbar__content' ).last()
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
 			).toBeVisible();
 
 			await expect( modal ).toBeVisible();
@@ -186,10 +212,36 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 	test.describe( 'Shipping Rate - Flat', () => {
 		test.beforeAll( async () => {
-			await marketsPage.mockIsMultiLingualStore( false );
 			await marketsPage.mockMarketsPageRequests( {
 				shippingRate: 'flat',
 				multilingual: false,
+			} );
+			// IT and ES are unclaimed by PRIMARY_MARKET/SECONDARY_MARKET, and
+			// distinct from DE and from each other, so the "no fold snackbar"
+			// and fold tests below can each successfully create a market and
+			// leave their own country claimed in the store afterwards —
+			// without consuming the other's free status, or DE's (needed by
+			// the "API error" Add-modal test later in this block). Registered
+			// before goto() since the country list is fetched once on load
+			// and never refetched afterwards.
+			await marketsPage.fulfillMCCountries( {
+				...MC_COUNTRIES,
+				countries: {
+					...MC_COUNTRIES.countries,
+					IT: { name: 'Italy', currency: 'EUR' },
+					ES: { name: 'Spain', currency: 'EUR' },
+				},
+				continents: {
+					...MC_COUNTRIES.continents,
+					EU: {
+						...MC_COUNTRIES.continents.EU,
+						countries: [
+							...MC_COUNTRIES.continents.EU.countries,
+							'IT',
+							'ES',
+						],
+					},
+				},
 			} );
 			await marketsPage.goto();
 			await marketsPage.waitForMarketsTable();
@@ -211,10 +263,10 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 			await expect(
 				page.getByRole( 'columnheader', { name: 'Country' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
 			await expect(
 				page.getByRole( 'columnheader', { name: 'Language' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
 		} );
 
 		test( 'no multilingual flat shipping notice on the dashboard', async () => {
@@ -275,7 +327,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 			await expect(
 				marketsPage.getShippingInfoNotice( modal )
-			).not.toBeVisible();
+			).not.toBeAttached();
 
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( modal ).not.toBeVisible();
@@ -306,7 +358,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 				.getByLabel( 'Free shipping over a specific order value' )
 				.uncheck();
 
-			await expect( modal.getByLabel( 'Cost' ) ).not.toBeVisible();
+			await expect( modal.getByLabel( 'Cost' ) ).not.toBeAttached();
 
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( modal ).not.toBeVisible();
@@ -322,7 +374,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 				'Free shipping over a specific order value'
 			);
 			await expect( checkbox ).not.toBeChecked();
-			await expect( modal.getByLabel( 'Cost' ) ).not.toBeVisible();
+			await expect( modal.getByLabel( 'Cost' ) ).not.toBeAttached();
 
 			await checkbox.check();
 			await expect( modal.getByLabel( 'Cost' ) ).toBeVisible();
@@ -371,49 +423,20 @@ test.describe( 'Markets – non-multilingual store', () => {
 			// to the form before Save is pressed.
 			await modal.getByText( 'Estimated shipping rates' ).click();
 
-			const ratesBatchRequest =
-				marketsPage.registerShippingRatesBatchRequest();
-
-			await modal.getByRole( 'button', { name: 'Save' } ).click();
-
-			const request = await ratesBatchRequest;
-			const body = request.postDataJSON();
-
-			expect(
-				body.rates.every(
-					( rate ) => rate.options.free_shipping_threshold === 75
-				)
-			).toBe( true );
-
-			await expect( modal ).not.toBeVisible();
-		} );
-
-		test( 'saving with an unchanged Cost value does not send a rates batch request', async () => {
-			await marketsPage.fulfillMarketUpdate(
-				PRIMARY_MARKET.id,
-				PRIMARY_MARKET
+			const updateRequest = marketsPage.registerMarketUpdateRequest(
+				PRIMARY_MARKET.id
 			);
 
-			const ratesBatchRequest = marketsPage
-				.registerShippingRatesBatchRequest( { timeout: 1000 } )
-				.catch( () => null );
-
-			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
-
-			const modal = marketsPage.getEditPrimaryMarketModal();
-			await expect( modal ).toBeVisible();
-
-			const costInput = modal.getByLabel( 'Cost' );
-			await costInput.fill( '50' );
-			await modal.getByText( 'Estimated shipping rates' ).click();
-
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
+			const body = ( await updateRequest ).postDataJSON();
+
+			expect( body.shipping.free_shipping_threshold ).toBe( 75 );
+
 			await expect( modal ).not.toBeVisible();
-			expect( await ratesBatchRequest ).toBeNull();
 		} );
 
-		test( 'secondary market edit has no audience section, no shipping notice; Add modal shows country select', async () => {
+		test( 'secondary market Edit modal has no audience section and no shipping notice', async () => {
 			await marketsPage.getEditButtonForRow( 'France' ).click();
 			const editModal = marketsPage.getEditMarketModal( 'France' );
 			await expect( editModal ).toBeVisible();
@@ -422,10 +445,12 @@ test.describe( 'Markets – non-multilingual store', () => {
 			).not.toBeAttached();
 			await expect(
 				marketsPage.getShippingInfoNotice( editModal )
-			).not.toBeVisible();
+			).not.toBeAttached();
 			await editModal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( editModal ).not.toBeVisible();
+		} );
 
+		test( 'Add modal shows the country select', async () => {
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
@@ -434,15 +459,26 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await expect( addModal ).not.toBeVisible();
 		} );
 
-		test( 'successful save closes the Edit modal', async () => {
+		test( 'successful save closes the Edit modal and refreshes the table', async () => {
+			const updatedPrimaryMarket = {
+				...PRIMARY_MARKET,
+				countries: [ 'US' ],
+			};
 			await marketsPage.fulfillMarketUpdate(
 				PRIMARY_MARKET.id,
-				PRIMARY_MARKET
+				updatedPrimaryMarket
 			);
 			await marketsPage.fulfillMarkets( [
-				PRIMARY_MARKET,
+				updatedPrimaryMarket,
 				SECONDARY_MARKET,
 			] );
+
+			await expect(
+				page.getByRole( 'cell', {
+					name: 'Primary Market (2 countries)',
+					exact: true,
+				} )
+			).toBeVisible();
 
 			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
 
@@ -452,13 +488,24 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
 			await expect( modal ).not.toBeVisible();
+			await expect(
+				page.getByRole( 'cell', {
+					name: 'Primary Market (1 country)',
+					exact: true,
+				} )
+			).toBeVisible();
+
+			await marketsPage.reloadWithMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+			] );
 		} );
 
 		test( 'API error shows snackbar and keeps Edit modal open', async () => {
 			await marketsPage.fulfillMarketUpdate(
 				PRIMARY_MARKET.id,
-				{ message: 'Internal server error' },
-				500
+				{ message: MARKET_NOT_FOUND_MESSAGE },
+				404
 			);
 
 			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
@@ -469,7 +516,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
 			await expect(
-				page.locator( '.components-snackbar__content' ).last()
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
 			).toBeVisible();
 
 			await expect( modal ).toBeVisible();
@@ -477,43 +524,130 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
 		} );
 
-		test( 'successful save closes the Add modal', async () => {
-			await marketsPage.fulfillCreateMarket( {
-				id: 'ca',
-				label: 'Canada',
-			} );
+		test( 'successful save closes the Add modal and adds the market to the table', async () => {
+			await marketsPage.fulfillCreateMarket( TERTIARY_MARKET );
+			await marketsPage.fulfillMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+				TERTIARY_MARKET,
+			] );
+
+			await expect(
+				page.getByRole( 'cell', { name: 'Germany' } )
+			).not.toBeAttached();
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
 				.click();
 
 			await expect( addModal ).not.toBeVisible();
+			await expect(
+				page.getByRole( 'cell', { name: 'Germany' } )
+			).toBeVisible();
+
+			await marketsPage.reloadWithMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+			] );
+		} );
+
+		// Runs before the fold test on purpose: this block is serial on one page, and a
+		// snackbar lingers, so asserting its absence afterwards would pass either way.
+		test( 'a market created in its own right shows no fold snackbar', async () => {
+			await marketsPage.fulfillCreateMarket( {
+				id: 'it',
+				label: 'Italy',
+				country: 'IT',
+			} );
+			await marketsPage.fulfillMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+				{ id: 'it', label: 'Italy', country: 'IT' },
+			] );
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await addModal.getByLabel( 'Market' ).selectOption( 'IT' );
+
+			await addModal
+				.getByRole( 'button', { name: 'Add market' } )
+				.click();
+
+			await expect( addModal ).not.toBeVisible();
+
+			await expect(
+				page.getByText(
+					'was added to the Primary market, as its configuration matched the existing Primary market settings'
+				)
+			).toBeHidden();
+		} );
+
+		test( 'a market whose shipping matches Primary is folded into it, with a snackbar', async () => {
+			// A matching shipping profile is answered with the primary market and the merge
+			// flag rather than a created market.
+			await marketsPage.fulfillCreateMarket( {
+				...PRIMARY_MARKET,
+				countries: [ 'US', 'CA', 'ES' ],
+				merged_into_primary: true,
+			} );
+			// Spain joined the primary market, so the refreshed list gives it no row.
+			await marketsPage.fulfillMarkets( [
+				{ ...PRIMARY_MARKET, countries: [ 'US', 'CA', 'ES' ] },
+				SECONDARY_MARKET,
+			] );
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await addModal.getByLabel( 'Market' ).selectOption( 'ES' );
+
+			await addModal
+				.getByRole( 'button', { name: 'Add market' } )
+				.click();
+
+			await expect( addModal ).not.toBeVisible();
+
+			await expect(
+				page.locator( '.components-snackbar__content' ).last()
+			).toContainText(
+				'was added to the Primary market, as its configuration matched the existing Primary market settings'
+			);
+
+			await marketsPage.waitForMarketsTable();
+
+			// Spain is covered by Primary, so the refreshed list gives it no row of its own.
+			await expect(
+				page.getByRole( 'row', { name: /^Spain/ } )
+			).toBeHidden();
 		} );
 
 		test( 'API error shows snackbar and keeps Add modal open', async () => {
 			await marketsPage.fulfillCreateMarket(
-				{ message: 'Internal server error' },
-				500
+				{ message: MARKET_EXISTS_MESSAGE },
+				409
 			);
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
 				.click();
 
 			await expect(
-				page.locator( '.components-snackbar__content' ).last()
+				marketsPage.getSnackbar( MARKET_EXISTS_MESSAGE )
 			).toBeVisible();
 
 			await expect( addModal ).toBeVisible();
@@ -524,8 +658,8 @@ test.describe( 'Markets – non-multilingual store', () => {
 		test( 'API error shows snackbar and keeps Delete modal open', async () => {
 			await marketsPage.fulfillMarketDelete(
 				SECONDARY_MARKET.id,
-				{ message: 'Internal server error' },
-				500
+				{ message: MARKET_NOT_FOUND_MESSAGE },
+				404
 			);
 
 			await marketsPage.openDeleteMarketModal( 'France' );
@@ -533,12 +667,14 @@ test.describe( 'Markets – non-multilingual store', () => {
 			const modal = marketsPage.getDeleteMarketModal();
 			await expect( modal ).toBeVisible();
 
+			await expect(
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
+			).toHaveCount( 0 );
+
 			await modal.getByRole( 'button', { name: 'Delete' } ).click();
 
-			// `.last()`: the preceding "Add modal" error test's snackbar may
-			// still be visible (snackbars auto-dismiss after a delay).
 			await expect(
-				page.locator( '.components-snackbar__content' ).last()
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
 			).toBeVisible();
 
 			await expect( modal ).toBeVisible();
@@ -563,13 +699,12 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await expect( modal ).not.toBeVisible();
 			await expect(
 				page.getByRole( 'cell', { name: 'France' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
 		} );
 	} );
 
 	test.describe( 'Shipping Rate - Automatic', () => {
 		test.beforeAll( async () => {
-			await marketsPage.mockIsMultiLingualStore( false );
 			await marketsPage.mockMarketsPageRequests( {
 				shippingRate: 'automatic',
 				multilingual: false,
@@ -588,13 +723,13 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 			await expect(
 				page.getByRole( 'columnheader', { name: 'Language' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
 			await expect(
 				page.getByRole( 'columnheader', { name: 'Currency' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
 			await expect(
 				page.getByRole( 'columnheader', { name: 'Shipping rate' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
 		} );
 
 		test( 'both primary and secondary market rows are visible', async () => {
@@ -651,7 +786,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await expect( modal ).not.toBeVisible();
 		} );
 
-		test( 'secondary market edit has no audience section, shows shipping rate notice; Add modal shows country select and notice', async () => {
+		test( 'secondary market Edit modal has no audience section and shows the shipping rate notice', async () => {
 			await marketsPage.getEditButtonForRow( 'France' ).click();
 			const editModal = marketsPage.getEditMarketModal( 'France' );
 			await expect( editModal ).toBeVisible();
@@ -663,7 +798,9 @@ test.describe( 'Markets – non-multilingual store', () => {
 			).toContainText( 'Shipping rates are synced automatically' );
 			await editModal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( editModal ).not.toBeVisible();
+		} );
 
+		test( 'Add modal shows the country select and the shipping rate notice', async () => {
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
@@ -675,15 +812,26 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await expect( addModal ).not.toBeVisible();
 		} );
 
-		test( 'successful save closes the Edit modal', async () => {
+		test( 'successful save closes the Edit modal and refreshes the table', async () => {
+			const updatedPrimaryMarket = {
+				...PRIMARY_MARKET,
+				countries: [ 'US' ],
+			};
 			await marketsPage.fulfillMarketUpdate(
 				PRIMARY_MARKET.id,
-				PRIMARY_MARKET
+				updatedPrimaryMarket
 			);
 			await marketsPage.fulfillMarkets( [
-				PRIMARY_MARKET,
+				updatedPrimaryMarket,
 				SECONDARY_MARKET,
 			] );
+
+			await expect(
+				page.getByRole( 'cell', {
+					name: 'Primary Market (2 countries)',
+					exact: true,
+				} )
+			).toBeVisible();
 
 			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
 
@@ -693,13 +841,24 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
 			await expect( modal ).not.toBeVisible();
+			await expect(
+				page.getByRole( 'cell', {
+					name: 'Primary Market (1 country)',
+					exact: true,
+				} )
+			).toBeVisible();
+
+			await marketsPage.reloadWithMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+			] );
 		} );
 
 		test( 'API error shows snackbar and keeps Edit modal open', async () => {
 			await marketsPage.fulfillMarketUpdate(
 				PRIMARY_MARKET.id,
-				{ message: 'Internal server error' },
-				500
+				{ message: MARKET_NOT_FOUND_MESSAGE },
+				404
 			);
 
 			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
@@ -710,7 +869,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
 			await expect(
-				page.locator( '.components-snackbar__content' ).last()
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
 			).toBeVisible();
 
 			await expect( modal ).toBeVisible();
@@ -718,43 +877,57 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
 		} );
 
-		test( 'successful save closes the Add modal', async () => {
-			await marketsPage.fulfillCreateMarket( {
-				id: 'ca',
-				label: 'Canada',
-			} );
+		test( 'successful save closes the Add modal and adds the market to the table', async () => {
+			await marketsPage.fulfillCreateMarket( TERTIARY_MARKET );
+			await marketsPage.fulfillMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+				TERTIARY_MARKET,
+			] );
+
+			await expect(
+				page.getByRole( 'cell', { name: 'Germany' } )
+			).not.toBeAttached();
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
 				.click();
 
 			await expect( addModal ).not.toBeVisible();
+			await expect(
+				page.getByRole( 'cell', { name: 'Germany' } )
+			).toBeVisible();
+
+			await marketsPage.reloadWithMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+			] );
 		} );
 
 		test( 'API error shows snackbar and keeps Add modal open', async () => {
 			await marketsPage.fulfillCreateMarket(
-				{ message: 'Internal server error' },
-				500
+				{ message: MARKET_EXISTS_MESSAGE },
+				409
 			);
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
 				.click();
 
 			await expect(
-				page.locator( '.components-snackbar__content' ).last()
+				marketsPage.getSnackbar( MARKET_EXISTS_MESSAGE )
 			).toBeVisible();
 
 			await expect( addModal ).toBeVisible();
@@ -765,8 +938,8 @@ test.describe( 'Markets – non-multilingual store', () => {
 		test( 'API error shows snackbar and keeps Delete modal open', async () => {
 			await marketsPage.fulfillMarketDelete(
 				SECONDARY_MARKET.id,
-				{ message: 'Internal server error' },
-				500
+				{ message: MARKET_NOT_FOUND_MESSAGE },
+				404
 			);
 
 			await marketsPage.openDeleteMarketModal( 'France' );
@@ -774,12 +947,14 @@ test.describe( 'Markets – non-multilingual store', () => {
 			const modal = marketsPage.getDeleteMarketModal();
 			await expect( modal ).toBeVisible();
 
+			await expect(
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
+			).toHaveCount( 0 );
+
 			await modal.getByRole( 'button', { name: 'Delete' } ).click();
 
-			// `.last()`: the preceding "Add modal" error test's snackbar may
-			// still be visible (snackbars auto-dismiss after a delay).
 			await expect(
-				page.locator( '.components-snackbar__content' ).last()
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
 			).toBeVisible();
 
 			await expect( modal ).toBeVisible();
@@ -804,7 +979,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await expect( modal ).not.toBeVisible();
 			await expect(
 				page.getByRole( 'cell', { name: 'France' } )
-			).not.toBeVisible();
+			).not.toBeAttached();
 		} );
 	} );
 } );

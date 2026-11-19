@@ -10,31 +10,18 @@ import useMarketDataViewsConfig from './useMarketDataViewsConfig';
 import useMarkets from './useMarkets';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
-import useShippingRates from '~/hooks/useShippingRates';
-import useShippingTimes from '~/hooks/useShippingTimes';
-import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 jest.mock( './useMarkets' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
 jest.mock( '~/hooks/useSettings' );
-jest.mock( '~/hooks/useShippingRates' );
-jest.mock( '~/hooks/useShippingTimes' );
-jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes' );
 
-const SHIPPING_RATES = [
-	{ id: 1, country: 'US', currency: 'USD', rate: 10, options: {} },
-	{
-		id: 2,
-		country: 'FR',
-		currency: 'EUR',
-		rate: 8,
-		options: { free_shipping_threshold: 50 },
-	},
-];
-
-const SHIPPING_TIMES = [
-	{ countryCode: 'US', time: 3, maxTime: 5 },
-	{ countryCode: 'FR', time: 5, maxTime: 7 },
-];
+const FLAT_SHIPPING = {
+	rate_type: 'flat',
+	time_type: 'flat',
+	flat_rate: 10,
+	free_shipping_threshold: null,
+	flat_time: 3,
+	flat_max_time: 5,
+};
 
 const PRIMARY_MARKET = {
 	id: 'primary',
@@ -51,6 +38,7 @@ const PRIMARY_MARKET_FLAT = {
 	shipping_rate: 'flat',
 	shipping_time: 'flat',
 	free_shipping: null,
+	shipping: FLAT_SHIPPING,
 };
 
 const SECONDARY_MARKET = {
@@ -67,6 +55,14 @@ const SECONDARY_MARKET_FLAT = {
 	shipping_rate: 'flat',
 	shipping_time: 'flat',
 	free_shipping: 50,
+	shipping: {
+		rate_type: 'flat',
+		time_type: 'flat',
+		flat_rate: 8,
+		free_shipping_threshold: 50,
+		flat_time: 5,
+		flat_max_time: 7,
+	},
 };
 
 const PRIMARY_MARKET_AUTOMATIC = {
@@ -79,6 +75,7 @@ const PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC = {
 	shipping_rate: 'automatic',
 	language: [ 'en' ],
 	currency: [ 'USD' ],
+	shipping: { ...FLAT_SHIPPING, rate_type: 'automatic' },
 };
 
 const SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC = {
@@ -87,6 +84,14 @@ const SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC = {
 	shipping_rate: 'automatic',
 	language: [ 'fr' ],
 	currency: [ 'EUR' ],
+	shipping: {
+		rate_type: 'automatic',
+		time_type: 'flat',
+		flat_rate: null,
+		free_shipping_threshold: null,
+		flat_time: 5,
+		flat_max_time: 7,
+	},
 };
 
 const PRIMARY_MARKET_MULTILINGUAL_MANUAL = {
@@ -116,9 +121,6 @@ const setMocks = ( {
 	},
 	multiLingualStore = false,
 	shippingRate = primary.shipping_rate,
-	shippingRates = [],
-	shippingTimes = [],
-	mainTargetCountry,
 } = {} ) => {
 	useMarkets.mockReturnValue( {
 		data: markets,
@@ -127,18 +129,6 @@ const setMocks = ( {
 	useCountryKeyNameMap.mockReturnValue( countries );
 	useSettings.mockReturnValue( {
 		settings: { shipping_rate: shippingRate },
-	} );
-	useShippingRates.mockReturnValue( {
-		data: shippingRates,
-		hasFinishedResolution: true,
-	} );
-	useShippingTimes.mockReturnValue( {
-		data: shippingTimes,
-		hasFinishedResolution: true,
-	} );
-	useTargetAudienceFinalCountryCodes.mockReturnValue( {
-		targetAudience: { main_target_country: mainTargetCountry },
-		loaded: true,
 	} );
 	// `glaData` is captured as a reference to `window.glaData` at module load
 	// (see `js/src/constants.js`), so mutate in place rather than replacing the
@@ -150,10 +140,7 @@ describe( 'useMarketDataViewsConfig', () => {
 	afterEach( () => {
 		useMarkets.mockReset();
 		useCountryKeyNameMap.mockReset();
-		useTargetAudienceFinalCountryCodes.mockReset();
 		useSettings.mockReset();
-		useShippingRates.mockReset();
-		useShippingTimes.mockReset();
 		delete window.glaData.isMultiLingualStore;
 	} );
 
@@ -304,92 +291,26 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
 		} );
 
-		test( 'attaches shipping_rate_config and shipping_time_config from lookup tables', () => {
+		test( "reads each row's shipping straight from the market's own shipping object", () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
-				shippingRates: SHIPPING_RATES,
-				shippingTimes: SHIPPING_TIMES,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 			const [ primary, secondary ] = result.current.data;
 
-			expect( primary.shipping_rate_config ).toMatchObject( {
-				rate: 10,
-				currency: 'USD',
+			expect( primary.shipping ).toMatchObject( {
+				flat_rate: 10,
+				flat_time: 3,
+				flat_max_time: 5,
 			} );
-			expect( primary.shipping_time_config ).toMatchObject( {
-				time: 3,
-				maxTime: 5,
+			expect( secondary.shipping ).toMatchObject( {
+				flat_rate: 8,
+				flat_time: 5,
+				flat_max_time: 7,
+				free_shipping_threshold: 50,
 			} );
-			expect( secondary.shipping_rate_config ).toMatchObject( {
-				rate: 8,
-				currency: 'EUR',
-			} );
-			expect( secondary.shipping_time_config ).toMatchObject( {
-				time: 5,
-				maxTime: 7,
-			} );
-		} );
-
-		test( 'uses the main target country, not the alphabetically-first row, for the primary market rate/time lookup', () => {
-			setMocks( {
-				primary: PRIMARY_MARKET_FLAT,
-				markets: [ PRIMARY_MARKET_FLAT ],
-				shippingRates: [
-					{ country: 'CA', currency: 'CAD', rate: 15, options: {} },
-					{ country: 'US', currency: 'USD', rate: 3, options: {} },
-				],
-				shippingTimes: [
-					{ countryCode: 'CA', time: 7, maxTime: 14 },
-					{ countryCode: 'US', time: 1, maxTime: 3 },
-				],
-				mainTargetCountry: 'US',
-			} );
-
-			const { result } = renderHook( () => useMarketDataViewsConfig() );
-
-			expect(
-				result.current.data[ 0 ].shipping_rate_config
-			).toMatchObject( {
-				rate: 3,
-				currency: 'USD',
-			} );
-			expect(
-				result.current.data[ 0 ].shipping_time_config
-			).toMatchObject( {
-				time: 1,
-				maxTime: 3,
-			} );
-		} );
-
-		test( 'sets shipping_rate_config to undefined when no rate is configured', () => {
-			setMocks( {
-				primary: PRIMARY_MARKET_FLAT,
-				markets: [ PRIMARY_MARKET_FLAT ],
-			} );
-
-			const { result } = renderHook( () => useMarketDataViewsConfig() );
-
-			expect(
-				result.current.data[ 0 ].shipping_rate_config
-			).toBeUndefined();
-		} );
-
-		test( 'attaches free_shipping_threshold on shipping_rate_config when configured', () => {
-			setMocks( {
-				primary: PRIMARY_MARKET_FLAT,
-				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
-				shippingRates: SHIPPING_RATES,
-			} );
-
-			const { result } = renderHook( () => useMarketDataViewsConfig() );
-
-			expect(
-				result.current.data[ 1 ].shipping_rate_config?.options
-					?.free_shipping_threshold
-			).toBe( 50 );
 		} );
 
 		test( 'formats the primary market label with the country count', () => {
@@ -478,20 +399,22 @@ describe( 'useMarketDataViewsConfig', () => {
 			);
 		} );
 
-		test( 'attaches shipping_time_config from lookup table', () => {
+		test( "reads the row's shipping straight from the market's own shipping object", () => {
 			setMocks( {
-				primary: PRIMARY_MARKET_AUTOMATIC,
-				markets: [ PRIMARY_MARKET_AUTOMATIC ],
-				shippingTimes: SHIPPING_TIMES,
+				primary: {
+					...PRIMARY_MARKET_AUTOMATIC,
+					shipping: FLAT_SHIPPING,
+				},
+				markets: [
+					{ ...PRIMARY_MARKET_AUTOMATIC, shipping: FLAT_SHIPPING },
+				],
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect(
-				result.current.data[ 0 ].shipping_time_config
-			).toMatchObject( {
-				time: 3,
-				maxTime: 5,
+			expect( result.current.data[ 0 ].shipping ).toMatchObject( {
+				flat_time: 3,
+				flat_max_time: 5,
 			} );
 		} );
 	} );
@@ -531,7 +454,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
 		} );
 
-		test( 'each row retains market language, currency, and shipping_time_config', () => {
+		test( 'each row retains market language, currency, and its own shipping object', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
 				markets: [
@@ -539,7 +462,6 @@ describe( 'useMarketDataViewsConfig', () => {
 					SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC,
 				],
 				multiLingualStore: true,
-				shippingTimes: SHIPPING_TIMES,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -547,15 +469,15 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			expect( primary.language ).toEqual( [ 'en' ] );
 			expect( primary.currency ).toEqual( [ 'USD' ] );
-			expect( primary.shipping_time_config ).toMatchObject( {
-				time: 3,
-				maxTime: 5,
+			expect( primary.shipping ).toMatchObject( {
+				flat_time: 3,
+				flat_max_time: 5,
 			} );
 			expect( secondary.language ).toEqual( [ 'fr' ] );
 			expect( secondary.currency ).toEqual( [ 'EUR' ] );
-			expect( secondary.shipping_time_config ).toMatchObject( {
-				time: 5,
-				maxTime: 7,
+			expect( secondary.shipping ).toMatchObject( {
+				flat_time: 5,
+				flat_max_time: 7,
 			} );
 		} );
 
@@ -721,37 +643,27 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
 		} );
 
-		test( 'attaches shipping_rate_config and shipping_time_config for each market row', () => {
+		test( "reads each row's shipping straight from the market's own shipping object", () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
 				multiLingualStore: true,
-				shippingRates: SHIPPING_RATES,
-				shippingTimes: SHIPPING_TIMES,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 			const [ primary, secondary ] = result.current.data;
 
-			expect( primary.shipping_rate_config ).toMatchObject( {
-				rate: 10,
-				currency: 'USD',
+			expect( primary.shipping ).toMatchObject( {
+				flat_rate: 10,
+				flat_time: 3,
+				flat_max_time: 5,
 			} );
-			expect( primary.shipping_time_config ).toMatchObject( {
-				time: 3,
-				maxTime: 5,
+			expect( secondary.shipping ).toMatchObject( {
+				flat_rate: 8,
+				flat_time: 5,
+				flat_max_time: 7,
+				free_shipping_threshold: 50,
 			} );
-			expect( secondary.shipping_rate_config ).toMatchObject( {
-				rate: 8,
-				currency: 'EUR',
-			} );
-			expect( secondary.shipping_time_config ).toMatchObject( {
-				time: 5,
-				maxTime: 7,
-			} );
-			expect(
-				secondary.shipping_rate_config?.options?.free_shipping_threshold
-			).toBe( 50 );
 		} );
 
 		test( 'formats the primary market label with the country count', () => {
@@ -777,17 +689,6 @@ describe( 'useMarketDataViewsConfig', () => {
 			} );
 			useCountryKeyNameMap.mockReturnValue( {} );
 			useSettings.mockReturnValue( { settings: null } );
-			useShippingRates.mockReturnValue( {
-				data: [],
-				hasFinishedResolution: false,
-			} );
-			useShippingTimes.mockReturnValue( {
-				data: [],
-				hasFinishedResolution: false,
-			} );
-			useTargetAudienceFinalCountryCodes.mockReturnValue( {
-				targetAudience: {},
-			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
@@ -803,50 +704,6 @@ describe( 'useMarketDataViewsConfig', () => {
 			} );
 			useCountryKeyNameMap.mockReturnValue( {} );
 			useSettings.mockReturnValue( { settings: undefined } );
-			useShippingRates.mockReturnValue( {
-				data: [],
-				hasFinishedResolution: true,
-			} );
-			useShippingTimes.mockReturnValue( {
-				data: [],
-				hasFinishedResolution: true,
-			} );
-			useTargetAudienceFinalCountryCodes.mockReturnValue( {
-				targetAudience: {},
-				loaded: true,
-			} );
-
-			const { result } = renderHook( () => useMarketDataViewsConfig() );
-
-			expect( result.current.fields ).toEqual( [] );
-			expect( result.current.data ).toEqual( [] );
-			expect( result.current.hasFinishedResolution ).toBe( false );
-		} );
-
-		test( 'returns empty fields and data when everything else is resolved but target audience is not', () => {
-			// If hasFinishedResolution ignored target audience, a row could
-			// render with an unresolved main_target_country and briefly show
-			// the wrong (first-row) rate/time for the primary market.
-			useMarkets.mockReturnValue( {
-				data: [ PRIMARY_MARKET ],
-				hasFinishedResolution: true,
-			} );
-			useCountryKeyNameMap.mockReturnValue( {} );
-			useSettings.mockReturnValue( {
-				settings: { shipping_rate: 'flat' },
-			} );
-			useShippingRates.mockReturnValue( {
-				data: [],
-				hasFinishedResolution: true,
-			} );
-			useShippingTimes.mockReturnValue( {
-				data: [],
-				hasFinishedResolution: true,
-			} );
-			useTargetAudienceFinalCountryCodes.mockReturnValue( {
-				targetAudience: {},
-				loaded: false,
-			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 

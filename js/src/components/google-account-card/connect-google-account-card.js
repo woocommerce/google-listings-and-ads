@@ -33,7 +33,7 @@ const ConnectGoogleAccountCard = () => {
 		: __(
 				'Required to sync with Google Merchant Center and Google Ads.',
 				'google-listings-and-ads'
-		  );
+			);
 
 	return (
 		<AccountCard

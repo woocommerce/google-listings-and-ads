@@ -69,7 +69,7 @@ const DeleteMarketModal = ( { market, onRequestClose } ) => {
 
 	return (
 		<AppModal
-			title={ __( 'Delete market', 'google-listings-and-ads' ) }
+			title={ __( 'Delete market?', 'google-listings-and-ads' ) }
 			onRequestClose={ deleting ? () => {} : onRequestClose }
 			buttons={ [
 				<AppButton
@@ -88,15 +88,15 @@ const DeleteMarketModal = ( { market, onRequestClose } ) => {
 					loading={ deleting }
 					isDestructive
 				>
-					{ __( 'Delete', 'google-listings-and-ads' ) }
+					{ __( 'Delete market', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
 		>
 			<p>
 				{ sprintf(
-					/* translators: %s: market name */
+					/* translators: %s: market/country name */
 					__(
-						'Are you sure you want to delete %s? This action cannot be undone.',
+						"Deleting this market will stop its product feed from syncing with Google Merchant Center. To continue selling in %s, you'll need to add it to your Primary market or create a separate market for it.",
 						'google-listings-and-ads'
 					),
 					marketName

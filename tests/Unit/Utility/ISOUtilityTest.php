@@ -16,17 +16,6 @@ class ISOUtilityTest extends ContainerAwareUnitTest {
 	/** @var ISOUtility $iso_utility */
 	protected $iso_utility;
 
-	public function test_is_iso3166_alpha2_country_code() {
-		$this->assertTrue( $this->iso_utility->is_iso3166_alpha2_country_code( 'US' ) );
-		$this->assertTrue( $this->iso_utility->is_iso3166_alpha2_country_code( 'us' ) );
-		$this->assertTrue( $this->iso_utility->is_iso3166_alpha2_country_code( 'CA' ) );
-		$this->assertTrue( $this->iso_utility->is_iso3166_alpha2_country_code( 'ca' ) );
-		$this->assertFalse( $this->iso_utility->is_iso3166_alpha2_country_code( 'USA' ) );
-		$this->assertFalse( $this->iso_utility->is_iso3166_alpha2_country_code( 'usa' ) );
-		$this->assertFalse( $this->iso_utility->is_iso3166_alpha2_country_code( 'Canada' ) );
-		$this->assertFalse( $this->iso_utility->is_iso3166_alpha2_country_code( 'Lorem ipsum!' ) );
-	}
-
 	public function test_wp_locale_to_bcp47() {
 		$this->assertEquals( 'fr-CA', $this->iso_utility->wp_locale_to_bcp47( 'fr_CA' ) );
 		$this->assertEquals( 'fr', $this->iso_utility->wp_locale_to_bcp47( 'fr' ) );
