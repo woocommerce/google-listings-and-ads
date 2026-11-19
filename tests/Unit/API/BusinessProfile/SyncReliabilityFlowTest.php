@@ -566,6 +566,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 	protected function create_shared_draft(): int {
 		$post_id = $this->factory()->post->create( [ 'post_status' => 'draft' ] );
 		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+		update_post_meta( $post_id, LocalPostService::SUMMARY_META_KEY, 'Our summer range is now in store.' );
 
 		return $post_id;
 	}

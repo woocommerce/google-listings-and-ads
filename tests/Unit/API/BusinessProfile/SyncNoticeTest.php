@@ -69,6 +69,12 @@ class SyncNoticeTest extends UnitTest {
 				SyncNotice::STATUS_ERROR,
 				'The post no longer exists on Google Business Profile.',
 			],
+			'empty summary'                                => [
+				SyncOutcome::EMPTY_SUMMARY,
+				false,
+				SyncNotice::STATUS_WARNING,
+				'This post wasn\'t shared to Google Business Profile because the Business Profile text is empty. Add text to the Business Profile section and update the post to share it.',
+			],
 			'unshare failure'                              => [
 				SyncOutcome::UNSHARE_FAILURE,
 				false,

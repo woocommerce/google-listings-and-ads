@@ -71,6 +71,8 @@ class PostPublishTriggerTest extends UnitTest {
 		);
 		// Nothing to unshare by default -- the dedicated tests below set this up explicitly.
 		$this->local_post_service->method( 'should_unshare' )->willReturn( false );
+		// A Summary is present by default -- the dedicated tests below set this up explicitly.
+		$this->local_post_service->method( 'has_empty_summary' )->willReturn( false );
 
 		// Still needed for register_share_meta()'s own PostShareControl, not for the trigger.
 		$this->location_service = $this->createMock( LocationService::class );
@@ -355,7 +357,39 @@ class PostPublishTriggerTest extends UnitTest {
 			'content rejection'    => [ SyncOutcome::CONTENT_REJECTION ],
 			'account restriction'  => [ SyncOutcome::ACCOUNT_RESTRICTION ],
 			'account disconnected' => [ SyncOutcome::ACCOUNT_DISCONNECTED ],
+			'empty summary'        => [ SyncOutcome::EMPTY_SUMMARY ],
 		];
+	}
+
+	/**
+	 * Google rejects a post with no text, so sharing is skipped rather than attempted -- the post
+	 * still publishes, but nothing is sent or scheduled.
+	 */
+	public function test_does_not_schedule_and_stores_an_empty_summary_outcome_when_the_summary_is_empty() {
+		// method()->willReturn() keeps whichever stub was configured first, so a disqualifying
+		// has_empty_summary() needs its own mock rather than re-stubbing setUp()'s shared one.
+		$this->local_post_service = $this->createMock( LocalPostService::class );
+		$this->local_post_service->method( 'is_shareable' )->willReturnCallback(
+			function ( WP_Post $post ) {
+				return (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+			}
+		);
+		$this->local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$this->local_post_service->method( 'has_empty_summary' )->willReturn( true );
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->expects( $this->once() )->method( 'set_sync_outcome' )->with( $post->ID, SyncOutcome::EMPTY_SUMMARY );
+		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}
 
 	/**
