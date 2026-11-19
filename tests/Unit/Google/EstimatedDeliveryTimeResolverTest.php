@@ -6,10 +6,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\EstimatedDeliveryTime;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\EstimatedDeliveryTimeResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
+use DateTimeImmutable;
+use DateTimeZone;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -313,5 +316,102 @@ class EstimatedDeliveryTimeResolverTest extends UnitTest {
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
 
 		$this->assertSame( 7, $this->resolver->get_max_transit_days_for_country( 'US' ) );
+	}
+
+	public function test_flat_mode_resolves_delivery_time_with_merchant_center_defaults() {
+		$this->mock_shipping_time_mode( 'flat' );
+
+		$this->shipping_time_query->method( 'where' )->willReturn( $this->shipping_time_query );
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'country'  => 'US',
+					'time'     => '3',
+					'max_time' => '5',
+				],
+			]
+		);
+
+		$delivery_time = $this->resolver->get_delivery_time_for_country( 'US' );
+
+		$this->assertInstanceOf( EstimatedDeliveryTime::class, $delivery_time );
+		// No handling time, Monday to Friday, and no cutoff: a late Friday order arrives by the next Friday.
+		$order_date = new DateTimeImmutable( '2026-10-23 22:00', new DateTimeZone( 'America/Los_Angeles' ) );
+		$this->assertSame( '2026-10-30', $delivery_time->get_delivery_date( $order_date ) );
+	}
+
+	public function test_flat_mode_returns_null_delivery_time_when_no_local_entry() {
+		$this->mock_shipping_time_mode( 'flat' );
+
+		$this->shipping_time_query->method( 'where' )->willReturn( $this->shipping_time_query );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->assertNull( $this->resolver->get_delivery_time_for_country( 'US' ) );
+	}
+
+	public function test_manual_mode_resolves_handling_time_business_days_and_cutoff() {
+		$this->mock_shipping_time_mode( 'manual' );
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+
+		$this->mapi_shipping_settings_service->method( 'get_shipping_settings' )
+			->willReturn(
+				[
+					'services' => [
+						[
+							'deliveryCountries' => [ 'RO' ],
+							'deliveryTime'      => [
+								'minHandlingDays'          => 0,
+								'maxHandlingDays'          => 1,
+								'minTransitDays'           => 1,
+								'maxTransitDays'           => 2,
+								'cutoffTime'               => [
+									'hour'     => 14,
+									'minute'   => 0,
+									'timeZone' => 'Europe/Bucharest',
+								],
+								'handlingBusinessDayConfig' => [ 'businessDays' => [ 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY' ] ],
+								'transitBusinessDayConfig' => [ 'businessDays' => [ 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY' ] ],
+							],
+						],
+					],
+				]
+			);
+
+		$delivery_time = $this->resolver->get_delivery_time_for_country( 'RO' );
+
+		$order_date = new DateTimeImmutable( '2026-10-23 10:00', new DateTimeZone( 'Europe/Bucharest' ) );
+		$this->assertSame( '2026-10-28', $delivery_time->get_delivery_date( $order_date ) );
+		$this->assertSame( 2, $this->resolver->get_max_transit_days_for_country( 'RO' ) );
+	}
+
+	public function test_manual_mode_skips_services_without_usable_delivery_time() {
+		$this->mock_shipping_time_mode( 'manual' );
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+
+		$this->mapi_shipping_settings_service->method( 'get_shipping_settings' )
+			->willReturn(
+				[
+					'services' => [
+						[
+							'deliveryCountries' => 'US',
+							'deliveryTime'      => [ 'maxTransitDays' => 1 ],
+						],
+						[
+							'deliveryCountries' => [ 'US' ],
+							'deliveryTime'      => 'unexpected',
+						],
+						[
+							'deliveryCountries' => [ 'US' ],
+							'deliveryTime'      => [ 'transitTimeTable' => [] ],
+						],
+						[
+							'deliveryCountries' => [ 'US' ],
+							'deliveryTime'      => [ 'maxTransitDays' => 7 ],
+						],
+					],
+				]
+			);
+
+		$this->assertSame( 7, $this->resolver->get_delivery_time_for_country( 'US' )->get_max_transit_days() );
 	}
 }
