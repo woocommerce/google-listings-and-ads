@@ -43,10 +43,7 @@ final class SyncNotice {
 			case SyncOutcome::NOT_FOUND:
 				return self::error( __( 'The post no longer exists on Google Business Profile.', 'google-listings-and-ads' ) );
 			case SyncOutcome::EMPTY_SUMMARY:
-				return [
-					'status'  => self::STATUS_WARNING,
-					'message' => __( 'This post wasn\'t shared to Google Business Profile because the Business Profile text is empty. Add text to the Business Profile section and update the post to share it.', 'google-listings-and-ads' ),
-				];
+				return self::error( __( 'This post wasn\'t shared to Google Business Profile because the Business Profile text is empty. Add text to the Business Profile section and update the post to share it.', 'google-listings-and-ads' ) );
 			case SyncOutcome::UNSHARE_FAILURE:
 				return self::error( __( 'This post couldn\'t be removed from Google Business Profile. It\'s still shown there. Update the post to try again.', 'google-listings-and-ads' ) );
 			case SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED:
