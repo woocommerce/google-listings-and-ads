@@ -11,7 +11,7 @@ import { useState, useCallback } from '@wordpress/element';
  * it is safe to call repeatedly without flipping the state back.
  *
  * @param {boolean} [initialValue=false] The initial value of the toggle.
- * @return {[boolean, () => void, (value: boolean) => void]} A tuple of `[ value, toggle, setValue ]`.
+ * @return {Array} `[ value, toggle, setValue ]`: the current boolean, a function that flips it, and the state setter.
  */
 const useToggle = ( initialValue = false ) => {
 	const [ value, setValue ] = useState( initialValue );
