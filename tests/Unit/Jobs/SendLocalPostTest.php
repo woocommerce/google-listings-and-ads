@@ -41,6 +41,9 @@ class SendLocalPostTest extends UnitTest {
 	/** @var SendLocalPost $job */
 	protected $job;
 
+	/** @var bool Whether the stubbed has_empty_summary() reports an empty Summary. */
+	protected $summary_is_empty = false;
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -60,6 +63,12 @@ class SendLocalPostTest extends UnitTest {
 				'is_shared'  => false,
 				'search_url' => '',
 			]
+		);
+
+		$this->local_post_service->method( 'has_empty_summary' )->willReturnCallback(
+			function () {
+				return $this->summary_is_empty;
+			}
 		);
 
 		$this->job = new SendLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service );
@@ -132,6 +141,22 @@ class SendLocalPostTest extends UnitTest {
 		$this->local_post_service->expects( $this->never() )->method( 'create' );
 		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
 		$this->local_post_service->expects( $this->once() )->method( 'clear_sync_outcome' )->with( $post->ID );
+
+		$this->job->process_items( [ $post->ID ] );
+	}
+
+	/**
+	 * The merchant can clear the Summary after this send was already queued but before this job
+	 * ran -- still_qualifies() doesn't cover that, so it's re-checked here too, the same way
+	 * sharing and publish status already are.
+	 */
+	public function test_a_post_whose_summary_was_cleared_after_scheduling_is_skipped_and_stores_an_empty_summary_outcome() {
+		$post                   = $this->create_shared_post();
+		$this->summary_is_empty = true;
+
+		$this->local_post_service->expects( $this->never() )->method( 'create' );
+		$this->local_post_service->expects( $this->never() )->method( 'clear_sync_outcome' );
+		$this->local_post_service->expects( $this->once() )->method( 'set_sync_outcome' )->with( $post->ID, SyncOutcome::EMPTY_SUMMARY );
 
 		$this->job->process_items( [ $post->ID ] );
 	}
