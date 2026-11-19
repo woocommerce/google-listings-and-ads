@@ -84,6 +84,16 @@ $packages = [
 		'package'   => 'symfony/deprecation-contracts',
 		'strict'    => true,
 	],
+	[
+		'namespace' => 'Symfony\\Contracts\\Translation',
+		'package'   => 'symfony/translation-contracts',
+		'strict'    => false,
+	],
+	[
+		'namespace' => 'Symfony\\Component\\Validator',
+		'package'   => 'symfony/validator',
+		'strict'    => false,
+	],
 ];
 
 $vendor_dir       = dirname( __DIR__ ) . '/vendor';
@@ -91,26 +101,26 @@ $namespace_prefix = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
 
 // Vendor libraries which are dependent on a library we are prefixing.
 $dependencies = [
-	'google/apiclient' => [
+	'google/apiclient'              => [
 		'google/apiclient-services',
 	],
-	'google/auth'      => [
+	'google/auth'                   => [
 		'google/apiclient',
 		'google/gax',
 	],
-	'guzzlehttp'       => [
+	'guzzlehttp'                    => [
 		'google/apiclient',
 		'google/auth',
 		'google/gax',
 	],
-	'psr/container'    => [
+	'psr/container'                 => [
 		'league/container',
 	],
-	'psr/http-client'  => [
+	'psr/http-client'               => [
 		'firebase/php-jwt',
 		'guzzlehttp/guzzle',
 	],
-	'psr/http-message' => [
+	'psr/http-message'              => [
 		'google/apiclient',
 		'google/auth',
 		'google/gax',
@@ -118,9 +128,12 @@ $dependencies = [
 		'guzzlehttp/psr7',
 		'psr/http-client',
 	],
-	'psr/http-factory' => [
+	'psr/http-factory'              => [
 		'firebase/php-jwt',
 		'guzzlehttp/psr7',
+	],
+	'symfony/translation-contracts' => [
+		'symfony/validator',
 	],
 ];
 

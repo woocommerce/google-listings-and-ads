@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\CleanupProductTargetCountriesJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\DeleteYouTubeConversionReports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\PluginUpdate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -41,6 +42,9 @@ class PluginUpdateTest extends UnitTest {
 	/** @var string[] Context (method) sent with each logged message. */
 	protected $logged_methods = [];
 
+	/** @var string[] Job classes fetched from the job repository, in order. */
+	protected $fetched = [];
+
 	/** @var PluginUpdate $plugin_update */
 	protected $plugin_update;
 
@@ -64,6 +68,7 @@ class PluginUpdateTest extends UnitTest {
 
 		$this->logged         = [];
 		$this->logged_methods = [];
+		$this->fetched        = [];
 		add_action(
 			'woocommerce_gla_debug_message',
 			function ( $message, $method ) {
@@ -81,12 +86,9 @@ class PluginUpdateTest extends UnitTest {
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ true ] );
 		$update_all_products->expects( $this->once() )->method( 'schedule' );
 
-		// 3.7.3 is above the older 1.x entries, so only the 3.8.0 job fires: a store upgrading
-		// from the Content API era must re-sync every product to pick up Merchant API ids.
-		$this->job_repository->expects( $this->once() )
-			->method( 'get' )
-			->with( UpdateAllProducts::class )
-			->willReturn( $update_all_products );
+		// 3.7.3 is above the older 1.x entries, so the 3.8.0 re-sync and later entries fire: a store
+		// upgrading from the Content API era must re-sync every product to pick up Merchant API ids.
+		$this->stub_jobs( [ UpdateAllProducts::class => $update_all_products ] );
 
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
@@ -98,13 +100,36 @@ class PluginUpdateTest extends UnitTest {
 		// No-refire boundary guard, not fix verification: the fires-on-upgrade case is covered by
 		// test_upgrading_to_mapi_release_schedules_full_product_resync. This pins the gate at `<` so
 		// a store already on the Merchant API release (>= 3.8.0) never re-runs the re-sync.
-		$this->job_repository->expects( $this->never() )->method( 'get' );
+		$this->stub_jobs( [] );
 
 		$this->plugin_update->install( '3.8.0', '3.8.1' );
+
+		$this->assertNotContains( UpdateAllProducts::class, $this->fetched );
+	}
+
+	public function test_upgrading_from_earlier_version_schedules_conversion_report_cleanup() {
+		$cleanup = $this->create_job( DeleteYouTubeConversionReports::class, [ true ] );
+		$cleanup->expects( $this->once() )->method( 'schedule' );
+		$this->stub_jobs( [ DeleteYouTubeConversionReports::class => $cleanup ] );
+
+		$this->plugin_update->install( '3.9.7', '3.10.0' );
+
+		$this->assertSame( [ DeleteYouTubeConversionReports::class ], $this->fetched );
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+	}
+
+	public function test_upgrading_from_cleanup_release_does_not_reschedule_conversion_report_cleanup() {
+		$this->stub_jobs( [] );
+
+		$this->plugin_update->install( '3.10.0', '3.10.1' );
+
+		$this->assertSame( [], $this->fetched );
 	}
 
 	public function test_upgrade_creates_the_empty_option_so_admin_requests_read_it_from_autoloaded_options() {
-		$this->plugin_update->install( '3.8.0', '3.8.1' );
+		$this->stub_jobs( [] );
+
+		$this->plugin_update->install( '3.10.0', '3.10.1' );
 
 		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
 	}
@@ -116,28 +141,31 @@ class PluginUpdateTest extends UnitTest {
 		$update_all_products->expects( $this->once() )->method( 'schedule' );
 
 		// Upgrading from before 1.0.1 crosses three versions that each ask for a full re-sync.
-		$this->job_repository->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->willReturnMap(
-				[
-					[ CleanupProductTargetCountriesJob::class, $cleanup ],
-					[ UpdateAllProducts::class, $update_all_products ],
-				]
-			);
+		$this->stub_jobs(
+			[
+				CleanupProductTargetCountriesJob::class => $cleanup,
+				UpdateAllProducts::class                => $update_all_products,
+			]
+		);
 
 		$this->plugin_update->install( '1.0.0', '3.8.0' );
 
 		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+		$this->assertSame(
+			[
+				CleanupProductTargetCountriesJob::class => 1,
+				UpdateAllProducts::class                => 1,
+				DeleteYouTubeConversionReports::class   => 1,
+			],
+			array_count_values( $this->fetched )
+		);
 	}
 
 	public function test_job_not_ready_at_upgrade_is_retried_and_scheduled_once_ready() {
 		// Not ready to sync during the upgrade request, ready on the retry an hour later.
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false, true ] );
 		$update_all_products->expects( $this->once() )->method( 'schedule' );
-		$this->job_repository->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->with( UpdateAllProducts::class )
-			->willReturn( $update_all_products );
+		$this->stub_jobs( [ UpdateAllProducts::class => $update_all_products ] );
 
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
@@ -154,6 +182,8 @@ class PluginUpdateTest extends UnitTest {
 
 		// Nothing pending anymore: a later request must not schedule it again.
 		$this->plugin_update->retry_pending_jobs();
+
+		$this->assertSame( 2, array_count_values( $this->fetched )[ UpdateAllProducts::class ] );
 	}
 
 	public function test_pending_job_is_retried_at_most_once_per_interval() {
@@ -219,12 +249,11 @@ class PluginUpdateTest extends UnitTest {
 		$cleanup->expects( $this->once() )->method( 'schedule' );
 		$update_all_products->expects( $this->once() )->method( 'schedule' );
 
-		$fetched = [];
-		$this->job_repository->method( 'get' )->willReturnCallback(
-			function ( $job ) use ( &$fetched, $cleanup, $update_all_products ) {
-				$fetched[] = $job;
-				return CleanupProductTargetCountriesJob::class === $job ? $cleanup : $update_all_products;
-			}
+		$this->stub_jobs(
+			[
+				CleanupProductTargetCountriesJob::class => $cleanup,
+				UpdateAllProducts::class                => $update_all_products,
+			]
 		);
 
 		$this->plugin_update->install( '1.0.0', '3.8.0' );
@@ -238,8 +267,9 @@ class PluginUpdateTest extends UnitTest {
 			[
 				CleanupProductTargetCountriesJob::class => 1,
 				UpdateAllProducts::class                => 2,
+				DeleteYouTubeConversionReports::class   => 1,
 			],
-			array_count_values( $fetched ),
+			array_count_values( $this->fetched ),
 			'The retry must only attempt the job that was still pending.'
 		);
 	}
@@ -248,12 +278,13 @@ class PluginUpdateTest extends UnitTest {
 		$this->stored_options[ self::PENDING ] = [ UpdateAllProducts::class => time() - 60 ];
 
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false ] );
-		$this->job_repository->expects( $this->once() )->method( 'get' )->willReturn( $update_all_products );
+		$this->stub_jobs( [ UpdateAllProducts::class => $update_all_products ] );
 
 		// A second upgrade that asks for the same job again while it is still pending.
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
 		$this->assertSame( [ UpdateAllProducts::class ], array_keys( $this->stored_options[ self::PENDING ] ) );
+		$this->assertSame( 1, array_count_values( $this->fetched )[ UpdateAllProducts::class ] );
 	}
 
 	public function test_pending_job_is_dropped_when_merchant_center_setup_is_not_complete() {
@@ -276,7 +307,7 @@ class PluginUpdateTest extends UnitTest {
 		$this->plugin_update = $this->create_plugin_update( false );
 
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false ] );
-		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
+		$this->stub_jobs( [ UpdateAllProducts::class => $update_all_products ] );
 
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
@@ -286,7 +317,7 @@ class PluginUpdateTest extends UnitTest {
 
 	public function test_state_changes_are_logged_once() {
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ false, false, true ] );
-		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
+		$this->stub_jobs( [ UpdateAllProducts::class => $update_all_products ] );
 
 		// Deferred: one line.
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
@@ -359,7 +390,7 @@ class PluginUpdateTest extends UnitTest {
 
 	public function test_job_missing_from_repository_is_reported_and_not_kept_pending() {
 		$exception = JobException::job_does_not_exist( UpdateAllProducts::class );
-		$this->job_repository->method( 'get' )->willThrowException( $exception );
+		$this->stub_jobs( [ UpdateAllProducts::class => $exception ] );
 
 		$reported = [];
 		add_action(
@@ -398,10 +429,7 @@ class PluginUpdateTest extends UnitTest {
 
 	public function test_job_that_is_not_an_action_scheduler_job_is_not_kept_pending() {
 		// It can't say whether it can be scheduled, so it must not stay pending forever.
-		$this->job_repository->expects( $this->once() )
-			->method( 'get' )
-			->with( UpdateAllProducts::class )
-			->willReturn( $this->createMock( JobInterface::class ) );
+		$this->stub_jobs( [ UpdateAllProducts::class => $this->createMock( JobInterface::class ) ] );
 
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
@@ -443,7 +471,7 @@ class PluginUpdateTest extends UnitTest {
 			]
 		);
 		$update_all_products->expects( $this->never() )->method( 'schedule' );
-		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
+		$this->stub_jobs( [ UpdateAllProducts::class => $update_all_products ] );
 
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
@@ -463,7 +491,7 @@ class PluginUpdateTest extends UnitTest {
 			]
 		);
 		$update_all_products->expects( $this->never() )->method( 'schedule' );
-		$this->job_repository->method( 'get' )->willReturn( $update_all_products );
+		$this->stub_jobs( [ UpdateAllProducts::class => $update_all_products ] );
 
 		$this->plugin_update->install( '3.7.3', '3.8.0' );
 
@@ -530,6 +558,31 @@ class PluginUpdateTest extends UnitTest {
 		$job->method( 'can_schedule' )->with( null )->willReturnOnConsecutiveCalls( ...$can_schedule );
 
 		return $job;
+	}
+
+	/**
+	 * Have the job repository return the given job for each class, record every fetch in
+	 * $this->fetched, and return a job that schedules normally for any other class.
+	 *
+	 * @param array $jobs Job mock, or exception to throw, keyed by job class name.
+	 */
+	protected function stub_jobs( array $jobs ): void {
+		$this->job_repository->method( 'get' )->willReturnCallback(
+			function ( string $job_class ) use ( $jobs ) {
+				$this->fetched[] = $job_class;
+
+				$job = $jobs[ $job_class ] ?? null;
+				if ( $job instanceof \Throwable ) {
+					throw $job;
+				}
+				if ( null === $job ) {
+					$job = $this->createMock( $job_class );
+					$job->method( 'can_schedule' )->willReturn( true );
+				}
+
+				return $job;
+			}
+		);
 	}
 
 	/**

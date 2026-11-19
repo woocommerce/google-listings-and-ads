@@ -74,6 +74,10 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 		'3.8.0'  => [
 			UpdateAllProducts::class,
 		],
+		// Delete conversion report CSVs left in the web-reachable export folder by earlier versions.
+		'3.10.0' => [
+			DeleteYouTubeConversionReports::class,
+		],
 	];
 
 	/**
@@ -129,6 +133,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 		}
 
 		$stored = $this->options->get( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS );
+
 		if ( empty( $stored ) ) {
 			return;
 		}
