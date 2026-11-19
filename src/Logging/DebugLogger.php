@@ -46,6 +46,7 @@ class DebugLogger implements Service, Registerable, Conditional {
 			add_action( 'woocommerce_gla_mc_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'woocommerce_gla_ads_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'woocommerce_gla_sv_client_exception', [ $this, 'log_exception' ], 10, 2 );
+			add_action( 'woocommerce_gla_business_profile_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'woocommerce_gla_guzzle_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'woocommerce_gla_guzzle_invalid_response', [ $this, 'log_response' ], 10, 2 );
 		}

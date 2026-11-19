@@ -14,6 +14,7 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
     -   Google Merchant Center account connection status and connected ID
     -   Google Ads account connected ID
     -   Number of markets whose first language or currency differs from the store default
+    -   Google Business Profile location connection status
     -   Feed issue counts from the last completed Merchant Center status check (counts only, no product data): blocking account issues, products disapproved in at least one market, products with error-level issues, products failing pre-sync validation, and total synced products. A variable product counts once, and can count as both failing pre-sync validation and synced when only some of its variations fail. The counts are empty when Merchant Center is not connected or no status check has completed.
 
 Feed issue summaries are published only after all pages of a status check have been tracked. A check resumed partway through an upgrade keeps the previous summary (or reports unknown counts if none exists). Tracking state is stored separately from the legacy product statistics so older versions can finish an in-progress check after a rollback. Failed count queries or exceptions preserve the previous summary and emit a debug message.
@@ -86,6 +87,31 @@ When a site verification with Google fails
 ### `gla_site_verify_success`
 
 When a site is successfully verified with Google
+
+### `gla_google_business_profile_location_connected`
+
+When a Google Business Profile location is connected.
+
+### `gla_google_business_profile_sync_success`
+
+When Google Business Profile accepts a post.
+
+#### Properties
+
+| name   | type     | description                                                                    |
+| ------ | -------- | ------------------------------------------------------------------------------ |
+| `type` | `string` | The kind of send: `create` when the post is sent to Google for the first time. |
+
+### `gla_google_business_profile_sync_failure`
+
+When sending a post to Google Business Profile fails.
+
+#### Properties
+
+| name     | type     | description                                                                                                |
+| -------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| `type`   | `string` | The kind of send: `create` when the post is sent to Google for the first time.                             |
+| `reason` | `string` | Google's error status, such as `INVALID_ARGUMENT`. Empty when Google gave none, such as a network failure. |
 
 ### `gla_created_campaign`
 
@@ -543,14 +569,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L39)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L38)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L34)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L37)
 Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | (`all-accounts`\|`youtube-account`) - indicate which accounts have been disconnected.
+`context` | `string` | (`all-accounts`\|`youtube-account`\|`google-business-profile-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/index.js#L49)
+- [`exports`](../../js/src/pages/settings/accounts/index.js#L52)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -944,6 +970,108 @@ Google Ads Promo component is shown.
 #### Emitters
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L43) with `{ context: channel-visibility-meta-box }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
+
+### [`gla_google_business_profile_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L144)
+Clicking on the button to disconnect the Google Business Profile account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L164) When the user confirms the disconnection of the Google Business Profile account.
+
+### [`gla_google_business_profile_check_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/no-locations-card/no-business-profile-account-notice.js#L19)
+Clicking "Check again" to look for a Google Business Profile again after none was found.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/no-locations-card/no-business-profile-account-notice.js#L35) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L26)
+Clicking the button to grant the Google Business Profile scope.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L86)
+
+### [`gla_google_business_profile_connection_try_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/connection-error-notice.js#L19)
+Clicking "Try again" after connecting a Google Business Profile location failed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+`retry_type` | `string` | Which step is retried. Possible values: 'connect' (falls back to the location picker), 'status_refresh' (refreshes the status of an already-connected location).
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/connection-error-notice.js#L40) with `{ context: 'settings-business-profile', retry_type: 'connect' | 'status_refresh' }`.
+
+### [`gla_google_business_profile_create_account_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L15)
+Clicking the link to create a new Google Business Profile account off-site.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L53) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_create_location_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L22)
+Clicking the link to create a new Google Business Profile location off-site.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L53) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_location_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/single-location-card/index.js#L16)
+Clicking "Connect" to connect the one Google Business Profile location found.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/single-location-card/index.js#L32) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_location_save_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/multiple-locations-card/connect-location-form.js#L19)
+Clicking "Save" to connect the Google Business Profile location picked from several found.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/multiple-locations-card/connect-location-form.js#L36) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_locations_try_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/locations-error-card/locations-error-notice.js#L15)
+Clicking "Try again" after the Google Business Profile locations couldn't be loaded.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/locations-error-card/locations-error-notice.js#L30) with `{ context: 'settings-business-profile' }`.
+
+### [`gla_google_business_profile_post_link_click`](../../js/src/components/business-profile-share-control/index.js#L32)
+Clicking the "View on Google Business Profile" link to a post shared to Google Business Profile.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates which editor the link was clicked in. Possible values: 'business-profile-share-panel' (block editor), 'business-profile-share-meta-box' (Classic Editor).
+#### Emitters
+- [`exports`](../../js/src/components/business-profile-share-control/index.js#L62) with `{ context }`.
+
+### [`gla_google_business_profile_share_toggle_click`](../../js/src/components/business-profile-share-control/index.js#L23)
+Turning the "Share on my Business Profile" toggle on or off.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates which editor the toggle was clicked in. Possible values: 'business-profile-share-panel' (block editor), 'business-profile-share-meta-box' (Classic Editor).
+`status` | `string` | Whether sharing was turned on or off. Possible values: 'on', 'off'.
+`is_shared` | `boolean` | Whether the post has already been shared to Google Business Profile.
+#### Emitters
+- [`exports`](../../js/src/components/business-profile-share-control/index.js#L62) with `{ context, status, is_shared }`.
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
 Clicking on a Google Merchant Center link.
@@ -1623,14 +1751,14 @@ Clicking on the button to connect YouTube account.
 #### Emitters
 - [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L35)
 
-### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L86)
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L137)
 Clicking on the button to disconnect the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L105) When the user confirms the disconnection of the YouTube account.
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L164) When the user confirms the disconnection of the YouTube account.
 
 ### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
 When the tour is closed.

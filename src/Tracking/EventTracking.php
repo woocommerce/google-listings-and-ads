@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\ActivatedEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\BaseEvent;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\BusinessProfileEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\GenericEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
@@ -32,6 +33,7 @@ class EventTracking implements ContainerAwareInterface, Registerable, Service {
 	 */
 	protected $events = [
 		ActivatedEvents::class,
+		BusinessProfileEvents::class,
 		GenericEvents::class,
 		SiteClaimEvents::class,
 		SiteVerificationEvents::class,

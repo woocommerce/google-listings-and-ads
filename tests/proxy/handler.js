@@ -2,10 +2,98 @@
 
 const config = require( './config' );
 
+const SHARED_CONNECTION_PATH = 'google/connection/google-mc';
+const BUSINESS_PROFILE_SCOPE =
+	'https://www.googleapis.com/auth/business.manage';
+
+// Whether a mocked Business Profile grant has happened since the proxy started.
+let isBusinessProfileScopeGranted = false;
+
+/**
+ * Whether the response to this request should report the Business Profile scope as granted.
+ *
+ * @param {Object} request Hapi request.
+ * @return {boolean} True for the shared connection's status request, once a mocked grant has happened.
+ */
+module.exports.shouldAddBusinessProfileScope = ( request ) => {
+	return (
+		isBusinessProfileScopeGranted &&
+		request.method === 'get' &&
+		request.params.path === SHARED_CONNECTION_PATH
+	);
+};
+
+/**
+ * Add the Business Profile scope to the Connect Server's real status response.
+ *
+ * @param {Error|null} err Proxy error, if the Connect Server request failed.
+ * @param {Object} res Connect Server response stream.
+ * @param {Object} request Hapi request.
+ * @param {Object} h Hapi response toolkit.
+ * @return {Promise<Object>} The status response, with the scope added to a successful JSON response.
+ */
+module.exports.addBusinessProfileScope = async ( err, res, request, h ) => {
+	if ( err ) {
+		throw err;
+	}
+
+	const chunks = [];
+	for await ( const chunk of res ) {
+		chunks.push( chunk );
+	}
+	const body = Buffer.concat( chunks ).toString();
+
+	// Pass anything but a successful JSON response through unchanged, so the real error shows.
+	const passThrough = () => {
+		return h
+			.response( body )
+			.code( res.statusCode )
+			.type( res.headers[ 'content-type' ] || 'text/plain' );
+	};
+
+	if ( res.statusCode !== 200 ) {
+		return passThrough();
+	}
+
+	let payload;
+	try {
+		payload = JSON.parse( body );
+	} catch ( parseError ) {
+		return passThrough();
+	}
+
+	if ( Array.isArray( payload.scope ) ) {
+		payload.scope = [
+			...new Set( [ ...payload.scope, BUSINESS_PROFILE_SCOPE ] ),
+		];
+	}
+
+	return h.response( payload ).code( res.statusCode );
+};
+
 module.exports.checkRequest = ( request, h ) => {
 	if ( config.logResponses ) {
 		// eslint-disable-next-line no-console
 		console.log( 'Request path: ', '\n', request.params.path );
+	}
+
+	// Mock the Business Profile access grant. See "Available mocks" in the README.
+	if (
+		request.params.path === SHARED_CONNECTION_PATH &&
+		request.method === 'post'
+	) {
+		const body = JSON.parse( request.payload || '{}' );
+
+		if (
+			( body.additionalScopes || [] ).includes( BUSINESS_PROFILE_SCOPE )
+		) {
+			isBusinessProfileScopeGranted = true;
+
+			const returnUrl = new URL( body.returnUrl );
+			returnUrl.searchParams.set( 'google-mc', 'connected' );
+
+			return { oauthUrl: returnUrl.toString() };
+		}
 	}
 
 	if ( request.params.path.includes( 'googleAds:search' ) ) {
@@ -116,6 +204,75 @@ module.exports.checkRequest = ( request, h ) => {
 
 			return response.updateErrors( body );
 		}
+	}
+
+	// Mock responses for the Google Business Profile local posts API (v4).
+	// https://developers.google.com/my-business/reference/rest/v4/accounts.locations.localPosts
+	//
+	// Only patch and the account_restricted error are mocked; see README.
+	if (
+		request.params.path.includes( 'google-gbp/v4' ) &&
+		request.params.path.includes( 'localPosts' )
+	) {
+		if ( request.method === 'patch' ) {
+			return require( './mocks/gbp/local-posts/patch.json' );
+		}
+
+		if (
+			request.method === 'post' &&
+			config.proxyMode === 'account_restricted'
+		) {
+			return h
+				.response(
+					require( './mocks/gbp/local-posts/errors/account-restricted.json' )
+				)
+				.code( 400 );
+		}
+
+		return false;
+	}
+
+	// Mock responses for the Google Business Profile Verifications API.
+	// https://developers.google.com/my-business/reference/verifications/rest/v1/locations/getVoiceOfMerchantState
+	//
+	// Stays mocked even though the real host is confirmed live; see the README.
+	if (
+		request.params.path.includes( 'google-gbp-verifications' ) &&
+		request.params.path.includes( 'VoiceOfMerchantState' )
+	) {
+		if ( config.proxyMode === 'unverified_location' ) {
+			return require( './mocks/gbp/accounts/locations/voice-of-merchant/unverified.json' );
+		}
+
+		if ( config.proxyMode === 'suspended_location' ) {
+			return require( './mocks/gbp/accounts/locations/voice-of-merchant/suspended.json' );
+		}
+
+		if ( config.proxyMode === 'under_review_location' ) {
+			return require( './mocks/gbp/accounts/locations/voice-of-merchant/under-review.json' );
+		}
+
+		if ( config.proxyMode === 'ownership_conflict_location' ) {
+			return require( './mocks/gbp/accounts/locations/voice-of-merchant/ownership-conflict.json' );
+		}
+
+		if ( request.params.path.includes( 'locations/2222' ) ) {
+			return require( './mocks/gbp/accounts/locations/voice-of-merchant/unverified.json' );
+		}
+
+		if ( request.params.path.includes( 'locations/3333' ) ) {
+			return require( './mocks/gbp/accounts/locations/voice-of-merchant/suspended.json' );
+		}
+
+		if ( request.params.path.includes( 'locations/4444' ) ) {
+			return require( './mocks/gbp/accounts/locations/voice-of-merchant/under-review.json' );
+		}
+
+		if ( request.params.path.includes( 'locations/5555' ) ) {
+			return require( './mocks/gbp/accounts/locations/voice-of-merchant/ownership-conflict.json' );
+		}
+
+		return require( './mocks/gbp/accounts/locations/voice-of-merchant/eligible.json' );
 	}
 
 	if (

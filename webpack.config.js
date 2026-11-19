@@ -177,6 +177,16 @@ const webpackConfig = {
 			'js/src/meta-boxes/channel-visibility',
 			'index.js'
 		),
+		'business-profile-share': path.resolve(
+			process.cwd(),
+			'js/src/block-editor/business-profile-share',
+			'index.js'
+		),
+		'business-profile-share-meta-box': path.resolve(
+			process.cwd(),
+			'js/src/meta-boxes/business-profile-share',
+			'index.js'
+		),
 		'woo-marketing-notifications-slot': {
 			import: path.resolve(
 				process.cwd(),

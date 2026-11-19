@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\TransferException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
@@ -269,6 +270,84 @@ class ClientTest extends UnitTest {
 
 		// A connection error (no response) is retried.
 		$response = $client->request( 'GET', 'https://testing.local' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	/**
+	 * @dataProvider data_provider_transient_failures
+	 *
+	 * @param Response|ConnectException $failure
+	 */
+	public function test_retry_on_transient_error_never_retries_a_business_profile_post_create( $failure ) {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$failure,
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// The first failure surfaces instead of consuming the queued success.
+		$this->expectException( TransferException::class );
+		$client->request( 'POST', 'https://testing.local/google/google-gbp/v4/accounts/1/locations/2/localPosts' );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_transient_failures(): array {
+		return [
+			'rate limited'     => [ new Response( 429, [], 'rate limited' ) ],
+			'server error'     => [ new Response( 503, [], 'unavailable' ) ],
+			'connection error' => [ new ConnectException( 'connection refused', new Request( 'POST', 'https://testing.local' ) ) ],
+		];
+	}
+
+	/**
+	 * @dataProvider data_provider_transient_failures
+	 *
+	 * @param Response|ConnectException $failure
+	 */
+	public function test_retry_on_transient_error_never_retries_a_business_profile_verification_read( $failure ) {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$failure,
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// The first failure surfaces instead of consuming the queued success.
+		$this->expectException( TransferException::class );
+		$client->request( 'GET', 'https://testing.local/google/google-gbp-verifications/v1/locations/2/VoiceOfMerchantState' );
+	}
+
+	public function test_retry_on_transient_error_still_retries_a_rate_limited_post_to_the_verification_path() {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new Response( 429, [], 'rate limited' ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// Only the GET read is excluded, so a 429 on any other method retries as usual.
+		$response = $client->request( 'POST', 'https://testing.local/google/google-gbp-verifications/v1/locations/2/VoiceOfMerchantState' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_still_retries_a_business_profile_location_read() {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new Response( 429, [], 'rate limited' ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		$response = $client->request( 'GET', 'https://testing.local/google/google-gbp-business-information/v1/accounts/1/locations' );
 
 		$this->assertEquals( 200, $response->getStatusCode() );
 	}

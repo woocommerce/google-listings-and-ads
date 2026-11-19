@@ -3,6 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\AccountManagementApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInformationApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService as BusinessProfileLocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BusinessProfile\AccountController as BusinessProfileAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\OnboardingController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -28,8 +34,9 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|ServiceBasedMerchantState $service_based_merchant_state */
 	protected $service_based_merchant_state;
 
-	protected const ROUTE_CONNECTIONS         = '/wc/gla/connections';
-	protected const ROUTE_ONBOARDING_COMPLETE = '/wc/gla/google/onboarding/complete';
+	protected const ROUTE_CONNECTIONS                 = '/wc/gla/connections';
+	protected const ROUTE_ONBOARDING_COMPLETE         = '/wc/gla/google/onboarding/complete';
+	protected const ROUTE_BUSINESS_PROFILE_CONNECTION = '/wc/gla/business-profile/connection';
 
 	/**
 	 * Service disconnect endpoints called by DisconnectController, other than onboarding complete.
@@ -41,6 +48,7 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 		'jetpack/connect',
 		'rest-api/authorize',
 		'youtube/connection',
+		'business-profile/connection',
 	];
 
 	/**
@@ -93,6 +101,34 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 			self::ROUTE_ONBOARDING_COMPLETE,
 			$data['responses'],
 			'The onboarding complete endpoint should be successfully called by disconnect'
+		);
+	}
+
+	/**
+	 * Test that disconnect clears the stored Business Profile location.
+	 */
+	public function test_disconnect_clears_business_profile_location(): void {
+		$business_profile_options = $this->createMock( OptionsInterface::class );
+		$business_profile_options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::BUSINESS_PROFILE )
+			->willReturn( true );
+
+		$location_service = new BusinessProfileLocationService(
+			$this->createMock( AccountManagementApiClient::class ),
+			$this->createMock( BusinessInformationApiClient::class ),
+			$this->createMock( VerificationsApiClient::class )
+		);
+		$location_service->set_options_object( $business_profile_options );
+		$connection = new BusinessProfileConnection( $location_service );
+		( new BusinessProfileAccountController( $this->server, $connection ) )->register();
+
+		$response = $this->do_request( self::ROUTE_CONNECTIONS, 'DELETE' );
+
+		$this->assertArrayHasKey(
+			self::ROUTE_BUSINESS_PROFILE_CONNECTION,
+			$response->get_data()['responses'],
+			'The Business Profile connection endpoint should be successfully called by disconnect'
 		);
 	}
 

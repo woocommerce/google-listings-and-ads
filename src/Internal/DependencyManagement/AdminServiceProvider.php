@@ -9,10 +9,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\BulkEditInitializ
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\NotificationsSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\CouponBulkEdit;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MerchantApiMigrationNotice;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\BusinessProfileShareMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\CouponChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Redirect;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
@@ -110,6 +112,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		// Share admin meta boxes
 		$this->share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class, MerchantCenterService::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( CouponChannelVisibilityMetaBox::class, Admin::class, CouponMetaHandler::class, CouponHelper::class, MerchantCenterService::class, TargetAudience::class );
+		$this->share_with_tags( BusinessProfileShareMetaBox::class, Admin::class, LocationService::class );
 		$this->share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class, MerchantCenterService::class );
 
 		$this->share_with_tags( ConnectionTest::class );
