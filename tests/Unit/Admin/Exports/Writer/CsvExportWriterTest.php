@@ -509,6 +509,35 @@ class CsvExportWriterTest extends UnitTest {
 		$this->assertFalse( $result );
 	}
 
+	public function test_get_export_dir_returns_export_folder_in_uploads() {
+		$this->assertSame( $this->test_upload_dir . '/gla-exports', $this->writer->get_export_dir() );
+	}
+
+	public function test_list_export_files_returns_top_level_files_sorted() {
+		global $wp_filesystem;
+
+		$export_dir = $this->test_upload_dir . '/gla-exports';
+		wp_mkdir_p( $export_dir . '/abc123' );
+		$second = $export_dir . '/b-export.csv';
+		$first  = $export_dir . '/a-export.csv';
+		$wp_filesystem->put_contents( $second, '' );
+		$wp_filesystem->put_contents( $first, '' );
+		$wp_filesystem->put_contents( $this->test_upload_dir . '/gla-exports/abc123/nested.csv', '' );
+
+		$this->assertSame( [ $first, $second ], $this->writer->list_export_files() );
+	}
+
+	public function test_list_export_files_returns_empty_when_export_folder_is_missing() {
+		$this->assertSame( [], $this->writer->list_export_files() );
+	}
+
+	public function test_file_exists() {
+		$file_path = $this->writer->create_file( 'test-exists', self::SUBFOLDER );
+
+		$this->assertTrue( $this->writer->file_exists( $file_path ) );
+		$this->assertFalse( $this->writer->file_exists( $this->test_upload_dir . '/gla-exports/missing.csv' ) );
+	}
+
 	public function test_move_file_moves_file_into_protected_subfolder() {
 		global $wp_filesystem;
 
