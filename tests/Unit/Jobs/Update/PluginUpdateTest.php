@@ -350,6 +350,18 @@ class PluginUpdateTest extends UnitTest {
 		$this->plugin_update->retry_pending_jobs();
 	}
 
+	public function test_retry_recreates_the_deleted_option_so_later_requests_read_it_from_autoloaded_options() {
+		// A Merchant Center disconnect deletes the option.
+		unset( $this->stored_options[ self::PENDING ] );
+		$this->job_repository->expects( $this->never() )->method( 'get' );
+		$this->options->expects( $this->once() )->method( 'update' )->with( self::PENDING, [] );
+
+		$this->plugin_update->retry_pending_jobs();
+		$this->plugin_update->retry_pending_jobs();
+
+		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+	}
+
 	public function test_retry_is_skipped_during_ajax_requests() {
 		$this->age_pending_jobs();
 		$stored = $this->stored_options[ self::PENDING ];

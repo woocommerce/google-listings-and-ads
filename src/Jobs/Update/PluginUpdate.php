@@ -134,6 +134,13 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 
 		$stored = $this->options->get( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS );
 
+		// Deleted, e.g. by a Merchant Center disconnect: create it again, empty, so later
+		// requests read it from the autoloaded options instead of querying for a missing row.
+		if ( null === $stored ) {
+			$this->options->update( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS, [] );
+			return;
+		}
+
 		if ( empty( $stored ) ) {
 			return;
 		}
