@@ -3,6 +3,7 @@
  */
 import classnames from 'classnames';
 import { __ } from '@wordpress/i18n';
+import noop from 'lodash/noop';
 
 /**
  * Internal dependencies
@@ -20,8 +21,8 @@ import EditProgramPromptModal from './edit-program-prompt-modal';
  * @param {Function} [props.onClick] Called after the modal is opened.
  */
 const EditProgramButton = ( props ) => {
-	const { className, programId, onClick = () => {}, ...buttonProps } = props;
-	const [ isOpen, toggleModal, setOpen ] = useToggle();
+	const { className, programId, onClick = noop, ...buttonProps } = props;
+	const [ isOpen, setOpen ] = useToggle();
 
 	/**
 	 * Opens the modal, then forwards the click to the caller's `onClick`
@@ -30,7 +31,7 @@ const EditProgramButton = ( props ) => {
 	 * @param {...*} args Arguments passed by the button's click event.
 	 */
 	const handleClick = ( ...args ) => {
-		toggleModal();
+		setOpen( true );
 		onClick( ...args );
 	};
 

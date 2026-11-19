@@ -306,12 +306,12 @@ describe( 'Attribute Mapping', () => {
 	} );
 
 	test.each( [
-		[ 'Create attribute rule', 0, 'attribute-mapping-create-rule-modal' ],
-		[ 'Edit', 0, 'attribute-mapping-manage-rule-modal' ],
-		[ 'Delete', 0, 'attribute-mapping-delete-rule-modal' ],
+		[ 'Create attribute rule', 'attribute-mapping-create-rule-modal' ],
+		[ 'Edit', 'attribute-mapping-manage-rule-modal' ],
+		[ 'Delete', 'attribute-mapping-delete-rule-modal' ],
 	] )(
 		'"%s" button opens and closes its modal and records the modal events',
-		async ( buttonText, index, context ) => {
+		async ( buttonText, context ) => {
 			recordGlaEvent.mockClear();
 			const { queryAllByText, queryByRole, getByRole } = render(
 				<AttributeMapping />
@@ -319,7 +319,7 @@ describe( 'Attribute Mapping', () => {
 
 			expect( queryByRole( 'dialog' ) ).toBeNull();
 
-			fireEvent.click( queryAllByText( buttonText )[ index ] );
+			fireEvent.click( queryAllByText( buttonText )[ 0 ] );
 
 			expect( queryByRole( 'dialog' ) ).toBeInTheDocument();
 			expect( recordGlaEvent ).toHaveBeenCalledWith( 'gla_modal_open', {

@@ -23,41 +23,41 @@ describe( 'useToggle', () => {
 
 	it( 'toggles from false to true', () => {
 		const { result } = renderHook( () => useToggle() );
-		act( () => result.current[ 1 ]() );
+		act( () => result.current[ 2 ]() );
 		expect( result.current[ 0 ] ).toBe( true );
 	} );
 
 	it( 'toggles from true to false', () => {
 		const { result } = renderHook( () => useToggle( true ) );
-		act( () => result.current[ 1 ]() );
+		act( () => result.current[ 2 ]() );
 		expect( result.current[ 0 ] ).toBe( false );
 	} );
 
 	it( 'returns a stable toggle function reference across renders', () => {
 		const { result, rerender } = renderHook( () => useToggle() );
-		const toggleFirst = result.current[ 1 ];
+		const toggleFirst = result.current[ 2 ];
 		rerender();
-		expect( result.current[ 1 ] ).toBe( toggleFirst );
+		expect( result.current[ 2 ] ).toBe( toggleFirst );
 	} );
 
 	it( 'keeps the toggle function reference stable after toggling', () => {
 		const { result } = renderHook( () => useToggle() );
-		const toggleFirst = result.current[ 1 ];
-		act( () => result.current[ 1 ]() );
-		expect( result.current[ 1 ] ).toBe( toggleFirst );
+		const toggleFirst = result.current[ 2 ];
+		act( () => result.current[ 2 ]() );
+		expect( result.current[ 2 ] ).toBe( toggleFirst );
 	} );
 
 	it( 'sets an explicit value with the setter', () => {
 		const { result } = renderHook( () => useToggle() );
-		act( () => result.current[ 2 ]( true ) );
+		act( () => result.current[ 1 ]( true ) );
 		expect( result.current[ 0 ] ).toBe( true );
 	} );
 
 	it( 'keeps the value when the setter is called repeatedly with the same value', () => {
 		const { result } = renderHook( () => useToggle( true ) );
 		act( () => {
-			result.current[ 2 ]( false );
-			result.current[ 2 ]( false );
+			result.current[ 1 ]( false );
+			result.current[ 1 ]( false );
 		} );
 		expect( result.current[ 0 ] ).toBe( false );
 	} );

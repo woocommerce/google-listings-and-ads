@@ -26,7 +26,7 @@ import ISSUES_TABLE_DATA_HEADERS from './issues-table-data-headers';
  * @param {JSX.Element} props.children The button content.
  */
 const IssueReadMoreButton = ( { issue, children } ) => {
-	const [ isOpen, toggleModal, setOpen ] = useToggle();
+	const [ isOpen, setOpen ] = useToggle();
 
 	return (
 		<>
@@ -37,7 +37,7 @@ const IssueReadMoreButton = ( { issue, children } ) => {
 					context: 'issues-to-resolve',
 					issue: issue.code,
 				} }
-				onClick={ toggleModal }
+				onClick={ () => setOpen( true ) }
 			>
 				{ children }
 			</AppButton>

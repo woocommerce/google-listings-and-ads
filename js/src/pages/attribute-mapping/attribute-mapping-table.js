@@ -58,7 +58,7 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
  * @param {Object} props.rule The rule to edit.
  */
 const EditRuleButton = ( { rule } ) => {
-	const [ isOpen, toggleModal, setOpen ] = useToggle();
+	const [ isOpen, setOpen ] = useToggle();
 
 	return (
 		<>
@@ -69,7 +69,7 @@ const EditRuleButton = ( { rule } ) => {
 				eventProps={ {
 					context: 'attribute-mapping-manage-rule-modal',
 				} }
-				onClick={ toggleModal }
+				onClick={ () => setOpen( true ) }
 			/>
 			{ isOpen && (
 				<AttributeMappingRuleModal
@@ -96,7 +96,7 @@ const EditRuleButton = ( { rule } ) => {
  * @param {Object} props.rule The rule to delete.
  */
 const DeleteRuleButton = ( { rule } ) => {
-	const [ isOpen, toggleModal, setOpen ] = useToggle();
+	const [ isOpen, setOpen ] = useToggle();
 
 	return (
 		<>
@@ -107,7 +107,7 @@ const DeleteRuleButton = ( { rule } ) => {
 				eventProps={ {
 					context: 'attribute-mapping-delete-rule-modal',
 				} }
-				onClick={ toggleModal }
+				onClick={ () => setOpen( true ) }
 			/>
 			{ isOpen && (
 				<AttributeMappingDeleteRuleModal
@@ -128,8 +128,8 @@ const DeleteRuleButton = ( { rule } ) => {
 /**
  * Renders the Attribute Mapping table component
  *
- * @fires gla_modal_closed When any of the modals is closed
- * @fires gla_modal_open When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
+ * @fires gla_modal_closed with `{ context: 'attribute-mapping-create-rule-modal', action }`
+ * @fires gla_modal_open with `{ context: 'attribute-mapping-create-rule-modal' }`
  * @return {JSX.Element} The component
  */
 const AttributeMappingTable = () => {
@@ -145,8 +145,7 @@ const AttributeMappingTable = () => {
 		hasFinishedResolution: attributesHasFinishedResolution,
 	} = useMappingAttributes();
 
-	const [ isCreateModalOpen, toggleCreateModal, setCreateModalOpen ] =
-		useToggle();
+	const [ isCreateModalOpen, setCreateModalOpen ] = useToggle();
 
 	const parseDestinationName = ( destination ) =>
 		attributes.find( ( e ) => e.id === destination )?.label || '';
@@ -241,32 +240,30 @@ const AttributeMappingTable = () => {
 					align="between"
 					className="gla-attribute-mapping__table-footer"
 				>
-					<>
-						<AppButton
-							isSecondary
-							text={ __(
-								'Create attribute rule',
-								'google-listings-and-ads'
-							) }
-							eventName="gla_modal_open"
-							eventProps={ {
-								context: 'attribute-mapping-create-rule-modal',
-							} }
-							onClick={ toggleCreateModal }
-						/>
-						{ isCreateModalOpen && (
-							<AttributeMappingRuleModal
-								onRequestClose={ ( action ) => {
-									setCreateModalOpen( false );
-									recordGlaEvent( 'gla_modal_closed', {
-										context:
-											'attribute-mapping-create-rule-modal',
-										action,
-									} );
-								} }
-							/>
+					<AppButton
+						isSecondary
+						text={ __(
+							'Create attribute rule',
+							'google-listings-and-ads'
 						) }
-					</>
+						eventName="gla_modal_open"
+						eventProps={ {
+							context: 'attribute-mapping-create-rule-modal',
+						} }
+						onClick={ () => setCreateModalOpen( true ) }
+					/>
+					{ isCreateModalOpen && (
+						<AttributeMappingRuleModal
+							onRequestClose={ ( action ) => {
+								setCreateModalOpen( false );
+								recordGlaEvent( 'gla_modal_closed', {
+									context:
+										'attribute-mapping-create-rule-modal',
+									action,
+								} );
+							} }
+						/>
+					) }
 					<Pagination
 						className="gla-attribute-mapping__pagination"
 						page={ page }
