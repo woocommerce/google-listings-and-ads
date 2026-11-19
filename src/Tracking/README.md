@@ -582,7 +582,7 @@ When a documentation link is clicked.
 	- with `{ context: 'edit-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
 - [`FaqLink`](../../js/src/pages/price-benchmark/faq-link.js#L20) with `{ context: 'price-benchmark-suggestions', link_id: 'price-benchmark-suggestions-faq' }` and the URL.
 - [`Faqs`](../../js/src/components/paid-ads/asset-group/faqs.js#L22) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
-- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L447)
+- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L448)
 	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
 	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#google-merchant-center-requirements' }`.
@@ -637,7 +637,7 @@ Triggered when edit links are clicked from product feed table.
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65)
 
-### [`gla_edit_product_issue_click`](../../js/src/pages/product-feed/issues-table-card/index.js#L43)
+### [`gla_edit_product_issue_click`](../../js/src/pages/product-feed/issues-table-card/index.js#L44)
 Triggered when edit links are clicked from Issues to resolve table.
 #### Properties
 | name | type | description |
@@ -696,7 +696,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'campaign-management', id: 'what-will-my-ads-look-like', action: 'expand' | 'collapse' }`.
 	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-service-ads', action: 'expand' | 'collapse' }`.
 	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
-- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L447)
+- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L448)
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'expand' }`.
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
 	- with `{ context: 'get-started', id: 'what-if-i-already-have-free-listings', action: 'expand' }`.
@@ -738,7 +738,107 @@ Triggered when changing products & variations filter,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L39)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L38)
 
-### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L22)
+### [`gla_gen_ai_edit_image_confirmation_cancel_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L54)
+Triggered when the "Cancel" button in the replace confirmation is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`asset_key` | `string` | The asset key the image belongs to.
+`prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L81) with `{ asset_key, prompt_length }` when the "Cancel" button in the confirmation is clicked.
+
+### [`gla_gen_ai_edit_image_confirmation_replace_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L46)
+Triggered when the "Replace image" button in the replace confirmation is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`asset_key` | `string` | The asset key the image belongs to.
+`prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L81) with `{ asset_key, prompt_length }` when the "Replace image" button in the confirmation is clicked.
+
+### [`gla_gen_ai_edit_image_modal_close`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L21)
+Triggered when the "Edit image" modal is dismissed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`asset_key` | `string` | The asset key the image belongs to.
+`prompt_length` | `number` | The number of characters in the trimmed prompt when the modal was dismissed.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L81) with `{ asset_key, prompt_length }` when the modal is dismissed.
+
+### [`gla_gen_ai_edit_image_modal_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L29)
+Triggered when the "Generate" button in the "Edit image" modal is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`asset_key` | `string` | The asset key the image belongs to.
+`prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L81) with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
+
+### [`gla_gen_ai_edit_image_modal_generation_completed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L37)
+Triggered when a generation request from the "Edit image" modal completes.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`asset_key` | `string` | The asset key the image belongs to.
+`prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
+`is_successful` | `boolean` | Whether an edited image was returned and replaced the source image.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L81) with `{ asset_key, prompt_length, is_successful }` when a generation request completes.
+
+### [`gla_gen_ai_generate_with_prompt_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L14)
+Triggered when the "Generate with prompt" button of an image section is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`asset_key` | `string` | The asset key of the image section.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L32) with `{ asset_key }` when the "Generate with prompt" button is clicked.
+
+### [`gla_gen_ai_generate_with_prompt_modal_close`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L27)
+Triggered when the "Generate with prompt" modal is dismissed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`asset_key` | `string` | The asset key the image is generated for.
+`prompt_length` | `number` | The number of characters in the trimmed prompt when the modal was dismissed.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L65) with `{ asset_key, prompt_length }` when the modal is dismissed.
+
+### [`gla_gen_ai_generate_with_prompt_modal_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L35)
+Triggered when the "Generate" button in the "Generate with prompt" modal is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`asset_key` | `string` | The asset key the image is generated for.
+`prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L65) with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
+
+### [`gla_gen_ai_generate_with_prompt_modal_generation_completed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L43)
+Triggered when a generation request from the "Generate with prompt" modal completes.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`asset_key` | `string` | The asset key the image is generated for.
+`prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
+`num_generated_images` | `number` | The number of images generated.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L65) with `{ asset_key, prompt_length, num_generated_images }` when a generation request completes.
+
+### [`gla_gen_ai_generate_with_prompt_modal_shown`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L20)
+Triggered when the "Generate with prompt" modal is shown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`asset_key` | `string` | The asset key the image is generated for.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L65) with `{ asset_key }` when the modal is shown.
+
+### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L24)
 Triggered when the "Add selected images" button is clicked.
 #### Properties
 | name | type | description |
@@ -747,7 +847,17 @@ Triggered when the "Add selected images" button is clicked.
 `asset_key` | `string` | The asset key for which the images were generated.
 `num_selected_images` | `number` | The number of images that were selected to be added.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L42) when the "Add selected images" button is clicked.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L53) when the "Add selected images" button is clicked.
+
+### [`gla_gen_ai_image_picker_edit_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L33)
+Triggered when the per-image Edit button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`final_url` | `string` | The final URL for which the image was generated.
+`asset_key` | `string` | The asset key the image belongs to.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L53) when the per-image Edit button is clicked.
 
 ### [`gla_gen_ai_progress_skip_button_click`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L12)
 Triggered when the skip button is clicked during Gen AI asset generation progress.
