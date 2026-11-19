@@ -219,6 +219,52 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
 	}
 
+	public function test_publishing_a_post_with_an_empty_summary_sends_nothing_to_google() {
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'draft' ] );
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+
+		$this->publish_over_rest( $post_id );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
+
+		$this->assertSame( 'publish', get_post_status( $post_id ) );
+		$this->assertEmpty( array_filter( $this->sent, [ $this, 'is_create' ] ) );
+		$this->assertSame( SyncOutcome::EMPTY_SUMMARY, $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]['outcome'] );
+		$this->assertFalse( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
+
+		// Adding text and saving again must send it, retrying the same way a genuine failure does.
+		$this->create_responses[] = $this->created_post();
+		update_post_meta( $post_id, LocalPostService::SUMMARY_META_KEY, 'Our summer range is now in store.' );
+
+		$this->start_new_request();
+		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$request->set_body_params( [ 'title' => 'Edited title' ] );
+		rest_do_request( $request );
+		$this->run_scheduled_job( $post_id );
+
+		$this->assertCount( 1, array_filter( $this->sent, [ $this, 'is_create' ] ) );
+	}
+
+	/**
+	 * `SendLocalPost::process_items()` re-checks the Summary itself, not just whatever
+	 * `PostPublishTrigger` saw at scheduling time -- state can change between the two, the same
+	 * reason it already re-checks sharing and publish status.
+	 */
+	public function test_clearing_the_summary_before_the_job_runs_skips_the_send_and_stores_an_empty_summary_outcome() {
+		$post_id = $this->create_shared_draft();
+		$this->publish_over_rest( $post_id );
+
+		$this->assertSame( SyncOutcome::QUEUED, $this->local_post_service->get_sync_outcome( $post_id )['outcome'] );
+
+		// The merchant clears the Summary before the background job runs.
+		update_post_meta( $post_id, LocalPostService::SUMMARY_META_KEY, '' );
+		$this->run_scheduled_job( $post_id );
+		$data = $this->get_edit_context_data( $post_id );
+
+		$this->assertEmpty( array_filter( $this->sent, [ $this, 'is_create' ] ) );
+		$this->assertSame( SyncOutcome::EMPTY_SUMMARY, $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]['outcome'] );
+	}
+
 	/**
 	 * @dataProvider data_provider_restricted_location_fixtures
 	 *

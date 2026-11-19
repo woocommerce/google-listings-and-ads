@@ -95,6 +95,15 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 				continue;
 			}
 
+			if ( $this->local_post_service->has_empty_summary( $post_id ) ) {
+				// Re-checked here too, not just when this was scheduled -- the merchant may have
+				// cleared the Summary after the send was queued but before this job ran, and the
+				// preceding still_qualifies() check doesn't cover it. Without this, a stale queued
+				// send would still reach Google with empty text.
+				$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::EMPTY_SUMMARY );
+				continue;
+			}
+
 			$this->send( $post );
 		}
 	}

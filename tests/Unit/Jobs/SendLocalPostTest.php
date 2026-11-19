@@ -62,6 +62,9 @@ class SendLocalPostTest extends UnitTest {
 			]
 		);
 
+		// A Summary is present by default -- the dedicated test below overrides this itself.
+		$this->local_post_service->method( 'has_empty_summary' )->willReturn( false );
+
 		$this->job = new SendLocalPost( $this->action_scheduler, $this->monitor, $this->local_post_service );
 	}
 
@@ -134,6 +137,34 @@ class SendLocalPostTest extends UnitTest {
 		$this->local_post_service->expects( $this->once() )->method( 'clear_sync_outcome' )->with( $post->ID );
 
 		$this->job->process_items( [ $post->ID ] );
+	}
+
+	/**
+	 * The merchant can clear the Summary after this send was already queued but before this job
+	 * ran -- still_qualifies() doesn't cover that, so it's re-checked here too, the same way
+	 * sharing and publish status already are.
+	 */
+	public function test_a_post_whose_summary_was_cleared_after_scheduling_is_skipped_and_stores_an_empty_summary_outcome() {
+		$post = $this->create_shared_post();
+		// A second method()->willReturn() on the same mock method doesn't override the one
+		// already set in setUp() -- PHPUnit keeps whichever was configured first -- so this needs
+		// its own mock, stubbed as empty from the start, rather than re-stubbing the shared one.
+		$local_post_service = $this->createMock( LocalPostService::class );
+		$local_post_service->method( 'is_shareable' )->willReturn( true );
+		$local_post_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$local_post_service->method( 'has_empty_summary' )->willReturn( true );
+
+		$local_post_service->expects( $this->never() )->method( 'create' );
+		$local_post_service->expects( $this->never() )->method( 'clear_sync_outcome' );
+		$local_post_service->expects( $this->once() )->method( 'set_sync_outcome' )->with( $post->ID, SyncOutcome::EMPTY_SUMMARY );
+
+		$job = new SendLocalPost( $this->action_scheduler, $this->monitor, $local_post_service );
+		$job->process_items( [ $post->ID ] );
 	}
 
 	public function test_a_post_already_sent_by_another_path_is_skipped_without_recording_a_failure() {
