@@ -7,13 +7,7 @@ import {
 	getDateParamsFromQuery,
 	isoDateFormat,
 } from '@woocommerce/date';
-// We are waiting for the release of the following fixes:
-// https://github.com/woocommerce/woocommerce-admin/issues/6890
-// https://github.com/woocommerce/woocommerce-admin/issues/6062
-// import { ReportFilters } from '@woocommerce/components';
-import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved, @woocommerce/dependency-group
-// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
-// See https://github.com/woocommerce/woocommerce-admin/issues/7781
+import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
@@ -21,6 +15,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 import { createProgramsFilterConfig } from './filterConfig';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
+import useReportsAvailability from '~/hooks/useReportsAvailability';
 import ReportFilters from '~/components/external/woocommerce/filters';
 import { recordGlaEvent } from '~/utils/tracks';
 
@@ -43,8 +38,9 @@ const getProgramsFilter = createProgramsFilterConfig();
 const ProgramsReportFilters = ( props ) => {
 	const { query, trackEventId } = props;
 	const queryCampaignAds = { exclude_removed: false };
+	const { hasMC } = useReportsAvailability();
 	const filtersConfig = [
-		getProgramsFilter( useAdsCampaigns( queryCampaignAds ) ),
+		getProgramsFilter( useAdsCampaigns( queryCampaignAds ), hasMC ),
 	];
 
 	const { period, compare, before, after } = getDateParamsFromQuery( query );

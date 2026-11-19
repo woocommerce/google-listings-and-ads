@@ -604,9 +604,14 @@ export default class MockRequests {
 	 *
 	 * @param {Array} [incentives] Incentive items array. Omit to use the default three-tier set.
 	 * @param {number} [status=200]
+	 * @param {boolean} [hasAppliedIncentive=false] Whether an offer was already applied to the Ads account.
 	 * @return {Promise<void>}
 	 */
-	async fulfillCYOIncentives( incentives, status = 200 ) {
+	async fulfillCYOIncentives(
+		incentives,
+		status = 200,
+		hasAppliedIncentive = false
+	) {
 		const defaultIncentives = [
 			{
 				id: 'incentive-low-id',
@@ -654,6 +659,7 @@ export default class MockRequests {
 			termsAndConditionsUrl:
 				'https://ads.google.com/aw/campaignassistant',
 			incentives: incentives ?? defaultIncentives,
+			has_applied_incentive: hasAppliedIncentive,
 		};
 
 		await this.fulfillRequest(
@@ -970,13 +976,11 @@ export default class MockRequests {
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id
-	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
 	 */
-	async mockMCConnected( id = 1234, wpcomRestApiStatus = null ) {
+	async mockMCConnected( id = 1234 ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'connected',
-			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 
@@ -1194,22 +1198,6 @@ export default class MockRequests {
 			status: 'success',
 			message: 'Successfully synchronized settings with Google.',
 		} );
-	}
-
-	/**
-	 * Fulfill the REST API Authorize request.
-	 *
-	 * @param {Object} payload
-	 * @param {Array} methods
-	 * @return {Promise<void>}
-	 */
-	async fulfillRESTApiAuthorize( payload, methods = [] ) {
-		await this.fulfillRequest(
-			/\/wc\/gla\/rest-api\/authorize\b/,
-			payload,
-			200,
-			methods
-		);
 	}
 
 	/**

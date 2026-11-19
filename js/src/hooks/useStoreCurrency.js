@@ -3,9 +3,7 @@
  */
 import { useMemo } from '@wordpress/element';
 import { numberFormat } from '@woocommerce/number';
-import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
-// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
-// See https://github.com/woocommerce/woocommerce-admin/issues/7781
+import { getSetting } from '@woocommerce/settings';
 
 /**
  * Get the store's currency object and a number formatter function.

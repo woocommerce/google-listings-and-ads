@@ -83,7 +83,7 @@
 	&__table-categories-help {
 		border-bottom: 1px dashed;
 		margin-left: $grid-unit-05;
-		word-wrap: break-word;
+		overflow-wrap: break-word;
 	}
 
 	&__syncing {

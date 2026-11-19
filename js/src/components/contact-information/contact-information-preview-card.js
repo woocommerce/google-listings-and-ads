@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Icon, warning as warningIcon } from '@wordpress/icons';
+import { Icon, cautionFilled as warningIcon } from '@wordpress/icons';
 import { getPath, getQuery } from '@woocommerce/navigation';
 
 /**

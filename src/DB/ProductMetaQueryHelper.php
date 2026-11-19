@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
@@ -49,14 +50,61 @@ class ProductMetaQueryHelper implements Service {
 	public function get_all_values( string $meta_key ): array {
 		self::validate_meta_key( $meta_key );
 
-		$query = "SELECT post_id, meta_value FROM {$this->wpdb->postmeta} WHERE meta_key = %s";
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		$results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $this->prefix_meta_key( $meta_key ) ) );
-		$return  = [];
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$results = $this->wpdb->get_results(
+			$this->wpdb->prepare(
+				'SELECT post_id, meta_value FROM %i WHERE meta_key = %s',
+				$this->wpdb->postmeta,
+				$this->prefix_meta_key( $meta_key )
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+		$return = [];
 		foreach ( $results as $r ) {
 			$return[ $r->post_id ] = maybe_unserialize( $r->meta_value );
 		}
 		return $return;
+	}
+
+	/**
+	 * Count the products whose meta value for a given meta_key is one of the given values.
+	 *
+	 * A simple product counts by its own value. A variable product counts once when any of its
+	 * variations has a matching value; the value saved on the parent itself is ignored.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string   $meta_key The meta key to match.
+	 * @param string[] $values   The meta values to count.
+	 *
+	 * @return int|null The count, or null when the query fails.
+	 *
+	 * @throws InvalidMeta If the meta key isn't valid.
+	 */
+	public function count_products_by_value( string $meta_key, array $values ): ?int {
+		self::validate_meta_key( $meta_key );
+
+		if ( empty( $values ) ) {
+			return 0;
+		}
+
+		$placeholder = '(' . implode( ',', array_fill( 0, count( $values ), '%s' ) ) . ')';
+		$query       = "SELECT COUNT( DISTINCT IF( p.post_type = 'product_variation', p.post_parent, p.ID ) )
+			FROM %i m INNER JOIN %i p ON p.ID = m.post_id
+			WHERE m.meta_key = %s AND m.meta_value IN {$placeholder}
+			AND (
+				( p.post_type = 'product_variation' AND p.post_parent > 0 )
+				OR ( p.post_type = 'product' AND NOT EXISTS ( SELECT 1 FROM %i c WHERE c.post_parent = p.ID AND c.post_type = 'product_variation' ) )
+			)";
+		$args        = [ $this->wpdb->postmeta, $this->wpdb->posts, $this->prefix_meta_key( $meta_key ), ...$values, $this->wpdb->posts ];
+
+		// The IN-list placeholders are generated locally from the value count.
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		$count = $this->wpdb->get_var( $this->wpdb->prepare( $query, $args ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+		// COUNT always returns a row, so null means the query failed.
+		return null === $count ? null : (int) $count;
 	}
 
 	/**
@@ -71,9 +119,15 @@ class ProductMetaQueryHelper implements Service {
 	public function delete_all_values( string $meta_key ) {
 		self::validate_meta_key( $meta_key );
 		$meta_key = $this->prefix_meta_key( $meta_key );
-		$query    = "DELETE FROM {$this->wpdb->postmeta} WHERE meta_key = %s";
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		$this->wpdb->query( $this->wpdb->prepare( $query, $meta_key ) );
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$this->wpdb->query(
+			$this->wpdb->prepare(
+				'DELETE FROM %i WHERE meta_key = %s',
+				$this->wpdb->postmeta,
+				$meta_key
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**

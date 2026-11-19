@@ -86,4 +86,66 @@ class QueryTest extends UnitTest {
 
 		$this->assertSame( 2, $this->query->get_count() );
 	}
+
+	public function test_where_treats_sql_metacharacters_as_a_literal_value(): void {
+		$this->query->insert(
+			[
+				'country'  => 'US',
+				'currency' => 'USD',
+				'rate'     => '5.00',
+				'options'  => [],
+			]
+		);
+
+		$this->query->where( 'country', "US' OR 1=1 --" );
+
+		$this->assertSame( [], $this->query->get_results() );
+	}
+
+	public function test_in_clause_treats_sql_metacharacters_as_a_literal_value(): void {
+		$this->query->insert(
+			[
+				'country'  => 'US',
+				'currency' => 'USD',
+				'rate'     => '5.00',
+				'options'  => [],
+			]
+		);
+		$this->query->insert(
+			[
+				'country'  => 'GB',
+				'currency' => 'GBP',
+				'rate'     => '9.99',
+				'options'  => [],
+			]
+		);
+
+		$this->query->where( 'country', [ 'US', "GB') OR 1=1 --" ], 'IN' );
+		$results = $this->query->get_results();
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( 'US', $results[0]['country'] );
+	}
+
+	public function test_update_or_insert_prepares_record_values(): void {
+		$note         = "Value'); DROP TABLE wp_posts; --";
+		$options_json = wp_json_encode( [ 'note' => $note ] );
+
+		$this->query->update_or_insert(
+			[
+				[
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => '5.00',
+					'options'  => $options_json,
+				],
+			]
+		);
+		$this->query->where( 'country', 'US' );
+
+		$results = $this->query->get_results();
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( $note, $results[0]['options']['note'] );
+	}
 }

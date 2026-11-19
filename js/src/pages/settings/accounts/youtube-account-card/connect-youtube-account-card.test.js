@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -11,28 +11,26 @@ import userEvent from '@testing-library/user-event';
 import ConnectYouTubeAccountCard from './connect-youtube-account-card';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import { recordGlaEvent } from '~/utils/tracks';
+import { redirectTo } from '~/utils/urls';
 
 jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/hooks/useDispatchCoreNotices' );
+jest.mock( '~/hooks/useGoogleMCAccount' );
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
 } ) );
+jest.mock( '~/utils/urls', () => ( {
+	redirectTo: jest.fn().mockName( 'redirectTo' ),
+} ) );
 
 describe( 'ConnectYouTubeAccountCard', () => {
-	const originalLocation = window.location;
 	let fetchYouTubeConnect;
 	let createNotice;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
-
-		// The component navigates via `window.location.href = url` on a
-		// successful connect; jsdom doesn't implement real navigation.
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: { href: '' },
-		} );
 
 		fetchYouTubeConnect = jest
 			.fn()
@@ -45,13 +43,7 @@ describe( 'ConnectYouTubeAccountCard', () => {
 			{ loading: false, data: undefined },
 		] );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
-	} );
-
-	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: originalLocation,
-		} );
+		useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: true } );
 	} );
 
 	it( 'tracks the connect button click and starts the OAuth flow', async () => {
@@ -66,6 +58,47 @@ describe( 'ConnectYouTubeAccountCard', () => {
 			{ context: 'settings-youtube' }
 		);
 		expect( fetchYouTubeConnect ).toHaveBeenCalledTimes( 1 );
+		expect( redirectTo ).toHaveBeenCalledWith(
+			'https://accounts.google.com/oauth'
+		);
+	} );
+
+	it( 'disables the connection when Merchant Center is not connected', async () => {
+		const user = userEvent.setup();
+		const disabledReason =
+			'Connect a Google Merchant Center account before connecting YouTube.';
+		useGoogleMCAccount.mockReturnValue( {
+			hasGoogleMCConnection: false,
+		} );
+
+		const { container } = render( <ConnectYouTubeAccountCard /> );
+		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
+		const helper = within(
+			container.querySelector( '.gla-account-card__helper' )
+		).getByText( disabledReason );
+		const accountCard = container.querySelector( '.gla-account-card' );
+
+		expect( connectButton ).toBeEnabled();
+		expect( connectButton ).toHaveAttribute( 'aria-disabled', 'true' );
+		expect( helper ).toBeVisible();
+		expect( connectButton ).toHaveAccessibleDescription( disabledReason );
+		expect( accountCard ).not.toHaveClass(
+			'gla-account-card--is-disabled'
+		);
+
+		await user.tab();
+		await user.tab();
+		expect( connectButton ).toHaveFocus();
+		expect(
+			await screen.findByRole( 'tooltip', { name: disabledReason } )
+		).toBeVisible();
+
+		await user.click( connectButton );
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_youtube_account_connect_button_click',
+			{ context: 'settings-youtube' }
+		);
+		expect( fetchYouTubeConnect ).not.toHaveBeenCalled();
 	} );
 
 	it( 'tracks the YouTube Merchant Terms documentation link click', async () => {

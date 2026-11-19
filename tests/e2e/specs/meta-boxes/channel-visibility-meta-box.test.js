@@ -219,12 +219,12 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			await page.unroute( /\/wc\/gla\/ads\/connection\b/ );
 		} );
 
-		test( 'Shows channel visibility settings with Google label and dropdown', async () => {
+		test( 'Shows channel visibility settings with Google label and toggle', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
 			const glaBox = editorUtils.getChannelVisibilityMetaBox();
 
-			await expect( glaBox.getByRole( 'combobox' ) ).toBeVisible();
+			await expect( glaBox.getByRole( 'checkbox' ) ).toBeVisible();
 
 			await expect(
 				glaBox.getByText( 'Get your products on Google' )
@@ -239,83 +239,79 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			).toBeHidden();
 		} );
 
-		test( "Dropdown contains Sync and show and Don't sync and show options", async () => {
+		test( 'Toggle defaults to Sync and show', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
 			const glaBox = editorUtils.getChannelVisibilityMetaBox();
-			const select = glaBox.getByRole( 'combobox' );
-			const options = select.locator( 'option' );
+			const toggle = glaBox.getByRole( 'checkbox' );
 
-			await expect( select ).toBeVisible();
-			await expect( options ).toHaveCount( 2 );
-			await expect( select ).toHaveValue( 'sync-and-show' );
+			await expect( toggle ).toBeVisible();
+			await expect( toggle ).toBeChecked();
 		} );
 
-		test( 'Changing the dropdown updates the selected value', async () => {
+		test( 'Changing the toggle updates the selected value', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
 			const glaBox = editorUtils.getChannelVisibilityMetaBox();
-			const select = glaBox.getByRole( 'combobox' );
+			const toggle = glaBox.getByRole( 'checkbox' );
 
-			await expect( select ).toBeVisible();
+			await expect( toggle ).toBeVisible();
 
-			await select.selectOption( 'dont-sync-and-show' );
-			await expect( select ).toHaveValue( 'dont-sync-and-show' );
+			await toggle.click();
+			await expect( toggle ).not.toBeChecked();
 
-			await select.selectOption( 'sync-and-show' );
-			await expect( select ).toHaveValue( 'sync-and-show' );
+			await toggle.click();
+			await expect( toggle ).toBeChecked();
 		} );
 
 		test( 'Selected visibility value is saved when the product form is submitted', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
 			const glaBox = editorUtils.getChannelVisibilityMetaBox();
-			const select = glaBox.getByRole( 'combobox' );
+			const toggle = glaBox.getByRole( 'checkbox' );
 
-			await select.selectOption( 'dont-sync-and-show' );
-			await expect( select ).toHaveValue( 'dont-sync-and-show' );
+			await toggle.click();
+			await expect( toggle ).not.toBeChecked();
 
 			await editorUtils.save();
 
-			const savedSelect = editorUtils
+			const savedToggle = editorUtils
 				.getChannelVisibilityMetaBox()
-				.getByRole( 'combobox' );
-			await expect( savedSelect ).toHaveValue( 'dont-sync-and-show' );
+				.getByRole( 'checkbox' );
+			await expect( savedToggle ).not.toBeChecked();
 
-			await savedSelect.selectOption( 'sync-and-show' );
+			await savedToggle.click();
 			await editorUtils.save();
 			await editorUtils.gotoEditProductPage( productId );
 
-			await expect( savedSelect ).toHaveValue( 'sync-and-show' );
+			await expect( savedToggle ).toBeChecked();
 		} );
 
 		test( 'Changed visibility value persists after navigating away and back', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
-			const select = editorUtils
+			const toggle = editorUtils
 				.getChannelVisibilityMetaBox()
-				.getByRole( 'combobox' );
+				.getByRole( 'checkbox' );
 
-			await select.selectOption( 'dont-sync-and-show' );
-			await expect( select ).toHaveValue( 'dont-sync-and-show' );
+			await toggle.click();
+			await expect( toggle ).not.toBeChecked();
 
 			await editorUtils.save();
 
 			await editorUtils.gotoEditProductPage( productId );
 
-			const selectAfterRefresh = editorUtils
+			const toggleAfterRefresh = editorUtils
 				.getChannelVisibilityMetaBox()
-				.getByRole( 'combobox' );
+				.getByRole( 'checkbox' );
 
-			await expect( selectAfterRefresh ).toHaveValue(
-				'dont-sync-and-show'
-			);
+			await expect( toggleAfterRefresh ).not.toBeChecked();
 
-			await selectAfterRefresh.selectOption( 'sync-and-show' );
+			await toggleAfterRefresh.click();
 			await editorUtils.save();
 			await editorUtils.gotoEditProductPage( productId );
 
-			await expect( selectAfterRefresh ).toHaveValue( 'sync-and-show' );
+			await expect( toggleAfterRefresh ).toBeChecked();
 		} );
 	} );
 } );

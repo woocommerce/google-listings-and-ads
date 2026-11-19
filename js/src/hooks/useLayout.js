@@ -40,6 +40,23 @@ export default function useLayout( layoutName ) {
 		bodyClassList.add( ...classNames );
 		return () => {
 			bodyClassList.remove( ...classNames );
+
+			/**
+			 * WooCommerce Admin sets `#wpbody`'s inline `margin-top` from
+			 * `.woocommerce-layout__header`'s `clientHeight`. Both layouts above
+			 * hide that header, so while one is applied the measurement is `0`
+			 * and `#wpbody` loses its margin.
+			 *
+			 * Detaching the layout makes the header visible again, but core does
+			 * not re-measure on its own, so the stale `margin-top: 0px` remains
+			 * and the header overlaps the page content. Core does recalculate on
+			 * window resize — which is why resizing by a single pixel has been
+			 * the manual workaround — so dispatch one here and let core measure
+			 * the now-visible header itself.
+			 *
+			 * Ref: https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/client/admin/client/header/shared.tsx
+			 */
+			window.dispatchEvent( new Event( 'resize' ) );
 		};
 	}, [ layoutName ] );
 }

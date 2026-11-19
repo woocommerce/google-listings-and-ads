@@ -11,7 +11,7 @@ jest.mock( '~/components/paid-ads/ads-campaign', () =>
 /**
  * External dependencies
  */
-import { screen, render, waitFor } from '@testing-library/react';
+import { screen, render, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -43,7 +43,7 @@ describe( 'AdsStepper', () => {
 				expect( continueToStep2 ).toBeDefined();
 			} );
 
-			await continueToStep2();
+			await act( async () => continueToStep2() );
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 1 );
 			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_ads', {
@@ -62,7 +62,7 @@ describe( 'AdsStepper', () => {
 			} );
 
 			// Step 2 -> Step 1
-			await continueToStep2();
+			await act( async () => continueToStep2() );
 			recordEvent.mockClear();
 			expect( recordEvent ).toHaveBeenCalledTimes( 0 );
 

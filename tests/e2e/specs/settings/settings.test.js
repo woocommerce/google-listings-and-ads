@@ -42,57 +42,13 @@ test.describe( 'Settings', () => {
 		await page.close();
 	} );
 
-	test.describe( 'Tax rate setup', () => {
-		test( 'Should not show the setup when selling in regions unrelated to the US', async () => {
-			// Mock the country where the store is located as outside of the US.
-			const once = settingsPage.withFulfillTimes( 1 );
-			await once.fulfillRequest(
-				// Having`(\w+%2C)*` is because multiple option queries may be consolidated into a single request.
-				/\/wc-admin\/options\?options=(\w+%2C)*woocommerce_default_country\b/,
-				{ woocommerce_default_country: 'JP' }
-			);
-			await settingsPage.mockTargetAudienceCountries( 'JP' );
-			await settingsPage.goto();
-
-			await expect(
-				page.getByRole( 'heading', { name: 'Settings' } )
-			).toBeVisible();
-
-			await expect(
-				page.locator( '.woocommerce-spinner' ).first()
-			).not.toBeVisible();
-
-			await expect(
-				page.getByText( 'Tax rate (required for U.S. only)' )
-			).not.toBeVisible();
-		} );
-
-		test( 'Should show the setup when selling to the US and can update the setting', async () => {
-			await settingsPage.mockTargetAudienceCountries();
-			await settingsPage.goto();
-
-			await expect(
-				page.getByText( 'Tax rate (required for U.S. only)' )
-			).toBeVisible();
-
-			const taxRateSection = settingsPage.getTaxRateSection();
-			const option = taxRateSection.getByRole( 'radio', {
-				checked: false,
-			} );
-			const optionValue = option.getAttribute( 'value' );
-
-			await option.check();
-
-			// Reload to assert the setting has been actually saved.
-			await page.reload();
-			await expect(
-				taxRateSection.getByRole( 'radio', { checked: true } )
-			).toHaveAttribute( 'value', optionValue );
-		} );
-	} );
-
 	test.describe( 'Enhanced Conversions Setting', () => {
 		test.describe( 'When ads account is connected', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockTargetAudienceCountries();
+				await settingsPage.goto();
+			} );
+
 			test( 'should show the "Enhanced Conversion" setting card', async () => {
 				await expect(
 					page.getByRole( 'heading', { name: 'Settings' } )
@@ -255,9 +211,6 @@ test.describe( 'Settings', () => {
 			).toHaveCount( 0 );
 			await expect(
 				page.getByRole( 'heading', { name: 'Contact information' } )
-			).toHaveCount( 0 );
-			await expect(
-				page.getByText( 'Tax rate (required for U.S. only)' )
 			).toHaveCount( 0 );
 		} );
 
@@ -477,31 +430,42 @@ test.describe( 'Settings', () => {
 			await clearServiceBasedMerchant();
 		} );
 
-		test( 'should not show Google Merchant Center account card', async () => {
-			// There should not be a `gla-account-card` with text 'Google Merchant Center'.
-			const gmcCard = page.locator(
-				'.gla-account-card:has-text("Google Merchant Center")'
-			);
-			await expect( gmcCard ).not.toBeVisible();
-		} );
-
-		test( 'should not show the tax rate setup section', async () => {
-			await expect(
-				page.getByText( 'Tax rate (required for U.S. only)' )
-			).not.toBeVisible();
-		} );
-
-		test( 'should hide YouTube on the Accounts tab until Merchant Center is connected', async () => {
+		test( 'should disable YouTube on the Accounts tab until Merchant Center is connected', async () => {
 			await settingsPage.gotoAccounts();
 
 			await page
 				.getByRole( 'button', { name: 'Disconnect from all accounts' } )
 				.waitFor();
 
-			await expect( settingsPage.youTubeAccountCard ).not.toBeVisible();
+			await expect( settingsPage.youTubeAccountCard ).toBeVisible();
 			await expect(
 				page.getByRole( 'heading', { name: 'Grow your reach' } )
-			).not.toBeVisible();
+			).toBeVisible();
+
+			const disabledReason =
+				'Connect a Google Merchant Center account before connecting YouTube.';
+			const connectButton = settingsPage.getYouTubeConnectButton();
+			await expect( connectButton ).toBeDisabled();
+			await expect( settingsPage.youTubeAccountCard ).not.toHaveClass(
+				/gla-account-card--is-disabled/
+			);
+			await expect(
+				settingsPage.youTubeAccountCard.locator(
+					'.gla-account-card__helper'
+				)
+			).toHaveText( disabledReason );
+
+			// The tooltip ignores hover on an aria-disabled button, so reach it by keyboard.
+			await settingsPage.youTubeAccountCard
+				.getByRole( 'link', { name: /YouTube Merchant Terms/ } )
+				.focus();
+			await page.keyboard.press( 'Tab' );
+			await expect( connectButton ).toBeFocused();
+			await expect(
+				page.locator( '.components-tooltip', {
+					hasText: disabledReason,
+				} )
+			).toBeVisible();
 
 			await settingsPage.goto();
 		} );
@@ -547,6 +511,41 @@ test.describe( 'Settings', () => {
 			const requestPayload = await request.postDataJSON();
 
 			expect( requestPayload ).toHaveProperty( 'location', 'all' );
+		} );
+
+		test( 'should explain the unavailable Merchant Center connection and let the merchant confirm supported products', async () => {
+			await settingsPage.gotoAccounts();
+
+			const gmcCard = page.locator(
+				'.gla-account-card:has-text("Google Merchant Center")'
+			);
+			const confirmationButton = gmcCard.getByRole( 'button', {
+				name: 'Confirm that I sell supported products',
+			} );
+
+			await expect(
+				gmcCard.getByText(
+					/The Google Merchant Center connection is not available/
+				)
+			).toBeVisible();
+			await expect( confirmationButton ).toBeVisible();
+
+			await confirmationButton.click();
+			await expect(
+				page.getByRole( 'heading', {
+					name: 'Confirm supported product types',
+				} )
+			).toBeVisible();
+
+			await page.getByRole( 'button', { name: 'Cancel' } ).click();
+			await expect( confirmationButton ).toBeVisible();
+
+			await confirmationButton.click();
+			await page.getByRole( 'button', { name: 'Confirm' } ).click();
+
+			await expect(
+				gmcCard.getByRole( 'link', { name: 'Connect' } )
+			).toBeVisible();
 		} );
 	} );
 } );
