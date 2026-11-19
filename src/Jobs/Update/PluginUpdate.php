@@ -78,6 +78,11 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 		'3.10.0' => [
 			DeleteYouTubeConversionReports::class,
 		],
+		// Products in exchange-rate secondary markets were marked invalid with a null
+		// price and are excluded from the expiring-products resync; re-sync them once.
+		'3.10.2' => [
+			UpdateAllProducts::class,
+		],
 	];
 
 	/**
