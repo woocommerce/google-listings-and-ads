@@ -235,11 +235,11 @@ export default function AssetGroup( {
 									? __(
 											'Create campaign',
 											'google-listings-and-ads'
-									  )
+										)
 									: __(
 											'Save changes',
 											'google-listings-and-ads'
-									  ) }
+										) }
 							</AppButton>
 						</StepContentActions>
 						<Faqs />

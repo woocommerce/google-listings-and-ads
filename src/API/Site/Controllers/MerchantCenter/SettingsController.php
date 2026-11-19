@@ -199,20 +199,6 @@ class SettingsController extends BaseOptionsController {
 					'manual',
 				],
 			],
-			'tax_rate'                           => [
-				'type'              => 'string',
-				'description'       => __(
-					'Whether tax rate is destination based or need to be configured manually in the Merchant Center.',
-					'google-listings-and-ads'
-				),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'enum'              => [
-					'destination',
-					'manual',
-				],
-				'default'           => 'destination',
-			],
 			'shipping_rates_count'               => [
 				'type'              => 'number',
 				'description'       => __(

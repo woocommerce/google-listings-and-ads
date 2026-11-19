@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -39,21 +38,14 @@ class ProductHelper implements Service {
 	protected $wc;
 
 	/**
-	 * @var MarketService
-	 */
-	protected $market_service;
-
-	/**
 	 * ProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param WC                 $wc
-	 * @param MarketService      $market_service
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, WC $wc, MarketService $market_service ) {
-		$this->meta_handler   = $meta_handler;
-		$this->wc             = $wc;
-		$this->market_service = $market_service;
+	public function __construct( ProductMetaHandler $meta_handler, WC $wc ) {
+		$this->meta_handler = $meta_handler;
+		$this->wc           = $wc;
 	}
 
 	/**
@@ -90,8 +82,11 @@ class ProductHelper implements Service {
 	 *
 	 * @param WC_Product    $product
 	 * @param GoogleProduct $google_product
+	 * @param string[]      $applicable_labels Feed labels the product can attain, computed at sync
+	 *                                         time and carried with the sync entry. An empty set
+	 *                                         means no outstanding feeds, so errors are cleared.
 	 */
-	public function mark_as_synced( WC_Product $product, GoogleProduct $google_product ) {
+	public function mark_as_synced( WC_Product $product, GoogleProduct $google_product, array $applicable_labels = [] ) {
 		$this->meta_handler->delete_failed_delete_attempts( $product );
 		$this->meta_handler->update_synced_at( $product, time() );
 		$this->meta_handler->update_sync_status( $product, SyncStatus::SYNCED );
@@ -104,12 +99,11 @@ class ProductHelper implements Service {
 		$google_ids         = array_unique( array_merge( $current_google_ids, [ $key => $google_product->getId() ] ) );
 		$this->meta_handler->update_google_ids( $product, $google_ids );
 
-		// Check whether the product is synced for every feed label its language
-		// can attain and remove any previous errors if it is. A product only ever
-		// syncs to markets accepting its language, so comparing against every
-		// market's labels would leave errors permanently uncleared.
-		$synced_keys       = array_keys( $google_ids );
-		$applicable_labels = $this->market_service->get_feed_labels_for_language( (string) $google_product->getContentLanguage() );
+		// Check whether the product is synced for every feed label the sync pass
+		// determined it can attain, and remove any previous errors if it is. The
+		// set is computed at sync time and carried with the entry, so this compares
+		// what was attempted against what has succeeded.
+		$synced_keys = array_keys( $google_ids );
 		if ( empty( array_diff( $applicable_labels, $synced_keys ) ) ) {
 			$this->meta_handler->delete_errors( $product );
 			$this->meta_handler->delete_failed_sync_attempts( $product );
@@ -124,7 +118,7 @@ class ProductHelper implements Service {
 				return;
 			}
 
-			$this->mark_as_synced( $parent_product, $google_product );
+			$this->mark_as_synced( $parent_product, $google_product, $applicable_labels );
 		}
 	}
 
@@ -269,6 +263,49 @@ class ProductHelper implements Service {
 			}
 
 			$this->mark_as_pending( $parent_product );
+		}
+	}
+
+	/**
+	 * Clears the pending status of a product whose queued sync found nothing to send to Google,
+	 * because every feed's payload still matches its last successful sync.
+	 *
+	 * Only the status changes: synced_at has to keep recording the last real submission, because
+	 * expiry resubmission and the unchanged-product skip both depend on it.
+	 *
+	 * The status is read from a fresh instance because mark_as_invalid() persists through one, so
+	 * the given product can still hold a pending status that has since been replaced.
+	 *
+	 * Unlike mark_as_synced(), errors are left in place. They can only be stale here when a feed
+	 * that was rejected is no longer applicable (e.g. its market was removed), and the next real
+	 * sync clears them.
+	 *
+	 * Note: If a product variation is cleared then the parent product is cleared as well, unless
+	 * another variation already moved the parent out of pending.
+	 *
+	 * @param WC_Product $product
+	 */
+	public function mark_as_unchanged( WC_Product $product ) {
+		try {
+			$product = $this->get_wc_product( $product->get_id() );
+		} catch ( InvalidValue $exception ) {
+			return;
+		}
+
+		if ( SyncStatus::PENDING !== $this->meta_handler->get_sync_status( $product ) ) {
+			return;
+		}
+
+		$this->meta_handler->update_sync_status( $product, SyncStatus::SYNCED );
+
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
+			$this->mark_as_unchanged( $parent_product );
 		}
 	}
 

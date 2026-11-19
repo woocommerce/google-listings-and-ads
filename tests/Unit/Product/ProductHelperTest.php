@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -36,9 +35,6 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/** @var ProductMetaHandler $product_meta */
 	protected $product_meta;
 
-	/** @var MockObject|MarketService $market_service */
-	protected $market_service;
-
 	/** @var ProductHelper $product_helper */
 	protected $product_helper;
 
@@ -54,16 +50,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
-		$this->market_service->expects( $this->any() )
-			->method( 'get_feed_labels_for_language' )
-			->willReturn( [ $this->get_sample_target_country() ] );
-
 		// add some random errors residue from previous sync attempts
 		$this->product_meta->update_errors( $product, [ 'Error 1', 'Error 2' ] );
 		$this->product_meta->update_failed_sync_attempts( $product, 1 );
 		$this->product_meta->update_sync_failed_at( $product, 12345 );
 
-		$this->product_helper->mark_as_synced( $product, $google_product );
+		$this->product_helper->mark_as_synced( $product, $google_product, [ $google_product->getTargetCountry() ] );
 
 		$this->assertGreaterThan( 0, $this->product_meta->get_synced_at( $product ) );
 		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $product ) );
@@ -108,9 +100,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$google_product->method( 'getTargetCountry' )->willReturn( 'US' );
 		$google_product->method( 'getFeedLabel' )->willReturn( 'MY-FEED' );
 
-		$this->market_service->method( 'get_feed_labels_for_language' )->willReturn( [ 'MY-FEED' ] );
-
-		$this->product_helper->mark_as_synced( $product, $google_product );
+		$this->product_helper->mark_as_synced( $product, $google_product, [ 'MY-FEED' ] );
 
 		$google_ids = $this->product_meta->get_google_ids( $product );
 		$this->assertArrayHasKey( 'MY-FEED', $google_ids );
@@ -154,14 +144,9 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$google_product->method( 'getFeedLabel' )->willReturn( 'BE-FR' );
 		$google_product->method( 'getContentLanguage' )->willReturn( 'fr' );
 
-		$this->market_service->expects( $this->once() )
-			->method( 'get_feed_labels_for_language' )
-			->with( 'fr' )
-			->willReturn( [ 'BE-FR' ] );
-
 		$this->product_meta->update_errors( $product, [ 'Error 1' ] );
 
-		$this->product_helper->mark_as_synced( $product, $google_product );
+		$this->product_helper->mark_as_synced( $product, $google_product, [ 'BE-FR' ] );
 
 		$this->assertEmpty( $this->product_meta->get_errors( $product ) );
 	}
@@ -175,16 +160,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
-		$this->market_service->expects( $this->any() )
-			->method( 'get_feed_labels_for_language' )
-			->willReturn( [ $google_product->getTargetCountry() ] );
-
 		// add some random errors residue from previous sync attempts
 		$this->product_meta->update_errors( $product, [ 'Error 1', 'Error 2' ] );
 		$this->product_meta->update_failed_sync_attempts( $product, 1 );
 		$this->product_meta->update_sync_failed_at( $product, 12345 );
 
-		$this->product_helper->mark_as_synced( $product, $google_product );
+		$this->product_helper->mark_as_synced( $product, $google_product, [ $google_product->getTargetCountry() ] );
 
 		$this->assertEmpty( $this->product_meta->get_errors( $product ) );
 		$this->assertEmpty( $this->product_meta->get_failed_sync_attempts( $product ) );
@@ -200,16 +181,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
-		$this->market_service->expects( $this->any() )
-			->method( 'get_feed_labels_for_language' )
-			->willReturn( [ 'AU', 'CA' ] );
-
 		// add some random errors residue from previous sync attempts
 		$this->product_meta->update_errors( $product, [ 'Error 1', 'Error 2' ] );
 		$this->product_meta->update_failed_sync_attempts( $product, 1 );
 		$this->product_meta->update_sync_failed_at( $product, 12345 );
 
-		$this->product_helper->mark_as_synced( $product, $google_product );
+		$this->product_helper->mark_as_synced( $product, $google_product, [ 'AU', 'CA' ] );
 
 		$this->assertEquals( [ 'Error 1', 'Error 2' ], $this->product_meta->get_errors( $product ) );
 		$this->assertEquals( 1, $this->product_meta->get_failed_sync_attempts( $product ) );
@@ -221,10 +198,6 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$parent         = WC_Helper_Product::create_variation_product();
 		$variation      = $this->wc->get_product( $parent->get_children()[0] );
 
-		$this->market_service->expects( $this->any() )
-			->method( 'get_feed_labels_for_language' )
-			->willReturn( [ $this->get_sample_target_country() ] );
-
 		// add some random errors residue from previous sync attempts
 		$this->product_meta->update_errors( $variation, [ 'Error 1', 'Error 2' ] );
 		$this->product_meta->update_failed_sync_attempts( $variation, 1 );
@@ -233,7 +206,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->product_meta->update_failed_sync_attempts( $parent, 1 );
 		$this->product_meta->update_sync_failed_at( $parent, 12345 );
 
-		$this->product_helper->mark_as_synced( $variation, $google_product );
+		$this->product_helper->mark_as_synced( $variation, $google_product, [ $google_product->getTargetCountry() ] );
 
 		// get the updated parent object from DB
 		$parent = $this->wc->get_product( $variation->get_parent_id() );
@@ -260,11 +233,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$variation->set_parent_id( 0 );
 		$variation->save();
 
-		$this->market_service->expects( $this->any() )
-			->method( 'get_feed_labels_for_language' )
-			->willReturn( [ $this->get_sample_target_country() ] );
-
-		$this->product_helper->mark_as_synced( $variation, $google_product );
+		$this->product_helper->mark_as_synced( $variation, $google_product, [ $google_product->getTargetCountry() ] );
 
 		// get the updated parent object from DB
 		$parent = $this->wc->get_product( $parent->get_id() );
@@ -350,6 +319,48 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $this->product_meta->get_errors( $product ) );
 		$this->assertEmpty( $this->product_meta->get_failed_sync_attempts( $product ) );
 		$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
+	}
+
+	public function test_mark_as_unchanged_clears_pending_on_variation_and_parent_without_touching_synced_at() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+
+		$this->product_meta->update_synced_at( $variation, 12345 );
+		$this->product_helper->mark_as_pending( $variation );
+
+		$this->product_helper->mark_as_unchanged( $variation );
+
+		$variation = $this->wc->get_product( $variation->get_id() );
+		$parent    = $this->wc->get_product( $parent->get_id() );
+
+		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $variation ) );
+		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $parent ) );
+		$this->assertEquals( 12345, $this->product_meta->get_synced_at( $variation ) );
+		$this->assertEmpty( $this->product_meta->get_synced_at( $parent ) );
+	}
+
+	public function test_mark_as_unchanged_leaves_a_parent_that_is_no_longer_pending() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+
+		$this->product_helper->mark_as_pending( $variation );
+		$this->product_meta->update_sync_status( $this->wc->get_product( $parent->get_id() ), SyncStatus::HAS_ERRORS );
+
+		$this->product_helper->mark_as_unchanged( $variation );
+
+		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $this->wc->get_product( $variation->get_id() ) ) );
+		$this->assertEquals( SyncStatus::HAS_ERRORS, $this->product_meta->get_sync_status( $this->wc->get_product( $parent->get_id() ) ) );
+	}
+
+	public function test_mark_as_unchanged_ignores_a_stale_in_memory_pending_status() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_pending( $product );
+
+		$this->product_meta->update_sync_status( $this->wc->get_product( $product->get_id() ), SyncStatus::NOT_SYNCED );
+
+		$this->product_helper->mark_as_unchanged( $product );
+
+		$this->assertEquals( SyncStatus::NOT_SYNCED, $this->product_meta->get_sync_status( $this->wc->get_product( $product->get_id() ) ) );
 	}
 
 	public function test_mark_as_unsynced_updates_both_variation_and_parent() {
@@ -1407,7 +1418,6 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		parent::setUp();
 		$this->product_meta   = $this->container->get( ProductMetaHandler::class );
 		$this->wc             = $this->container->get( WC::class );
-		$this->market_service = $this->createMock( MarketService::class );
-		$this->product_helper = new ProductHelper( $this->product_meta, $this->wc, $this->market_service );
+		$this->product_helper = new ProductHelper( $this->product_meta, $this->wc );
 	}
 }

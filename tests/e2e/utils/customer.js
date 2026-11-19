@@ -7,7 +7,7 @@
 /**
  * External dependencies
  */
-const { expect } = require( '@playwright/test' );
+import { expect } from '@playwright/test';
 
 /**
  * Internal dependencies

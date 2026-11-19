@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -91,7 +92,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		/** @var ProductImageSizeAudit $image_size_audit */
 		$image_size_audit = $this->container->get( ProductImageSizeAudit::class );
 
-		return [
+		$settings = [
 			'version'                         => $this->get_version(),
 			'db_version'                      => $this->options->get( OptionsInterface::DB_VERSION ),
 			'tos_accepted'                    => $this->get_boolean_value( OptionsInterface::WP_TOS_ACCEPTED ),
@@ -102,7 +103,6 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'target_audience'                 => $target_audience->get_target_countries(),
 			'shipping_rate'                   => $mc_settings['shipping_rate'] ?? '',
 			'shipping_time'                   => $mc_settings['shipping_time'] ?? '',
-			'tax_rate'                        => $mc_settings['tax_rate'] ?? '',
 			'has_account_issue'               => $mc_service->is_connected() && $mc_service->has_account_issues() ? 'yes' : 'no',
 			'has_at_least_one_synced_product' => $mc_service->is_connected() && $mc_service->has_at_least_one_synced_product() ? 'yes' : 'no',
 			'small_image_product_count'       => $mc_service->is_connected() ? $image_size_audit->get_small_image_product_count() : 0,
@@ -115,6 +115,42 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'multilingual_markets'            => $market_counts['multilingual'],
 			'multicurrency_markets'           => $market_counts['multicurrency'],
 		];
+
+		return array_merge( $settings, $this->get_feed_issue_counts( $mc_service->is_connected() ) );
+	}
+
+	/**
+	 * Get the feed-blocking issue counts saved by the last completed Merchant Center status check.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param bool $is_connected Whether Merchant Center is connected.
+	 *
+	 * @return array Counts keyed by snapshot field name, each an int or null.
+	 */
+	protected function get_feed_issue_counts( bool $is_connected ): array {
+		$fields  = MerchantStatuses::FEED_ISSUE_SUMMARY_FIELDS;
+		$unknown = array_fill_keys( $fields, null );
+
+		if ( ! $is_connected ) {
+			return $unknown;
+		}
+
+		$summary = $this->options->get( OptionsInterface::FEED_ISSUE_SUMMARY );
+		if ( ! is_array( $summary ) ) {
+			return $unknown;
+		}
+
+		$counts = [];
+		foreach ( $fields as $field ) {
+			if ( ! isset( $summary[ $field ] ) || ! is_int( $summary[ $field ] ) || $summary[ $field ] < 0 ) {
+				return $unknown;
+			}
+
+			$counts[ $field ] = $summary[ $field ];
+		}
+
+		return $counts;
 	}
 
 	/**

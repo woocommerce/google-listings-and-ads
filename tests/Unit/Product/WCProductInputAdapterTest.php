@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use WC_DateTime;
 use WC_Helper_Product;
+use WC_Product;
 use WC_Tax;
 
 defined( 'ABSPATH' ) || exit;
@@ -24,6 +25,9 @@ class WCProductInputAdapterTest extends UnitTest {
 
 	use ProductTrait;
 
+	/** @var string[] Debug messages captured by get_attributes_with_overrides(). */
+	protected $debug_messages = [];
+
 	public function test_returns_product_input_with_identity() {
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_name( 'Adapter title' );
@@ -35,6 +39,34 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( "gla_{$product->get_id()}", $input->get_offer_id() );
 		$this->assertSame( 'en', $input->get_content_language() );
 		$this->assertSame( 'US', $input->get_feed_label() );
+	}
+
+	public function test_content_language_falls_back_to_en_for_unsupported_locale() {
+		$filter = static function () {
+			return 'als';
+		};
+		add_filter( 'locale', $filter );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$input   = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input();
+
+		$this->assertSame( 'en', $input->get_content_language() );
+
+		remove_filter( 'locale', $filter );
+	}
+
+	public function test_content_language_falls_back_to_en_for_unsupported_language_override() {
+		$product = WC_Helper_Product::create_simple_product();
+		$input   = ( new WCProductInputAdapter( $product, 'US', null, [], [], [], '', 'sr' ) )->get_product_input();
+
+		$this->assertSame( 'en', $input->get_content_language() );
+	}
+
+	public function test_content_language_keeps_supported_language_override() {
+		$product = WC_Helper_Product::create_simple_product();
+		$input   = ( new WCProductInputAdapter( $product, 'US', null, [], [], [], '', 'fr' ) )->get_product_input();
+
+		$this->assertSame( 'fr', $input->get_content_language() );
 	}
 
 	public function test_maps_general_attributes() {
@@ -232,7 +264,30 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
 	}
 
-	public function test_sale_price_effective_date_start_is_set_to_now_if_empty() {
+	public function test_sale_price_effective_date_start_is_set_to_creation_date_if_empty() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 50,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2020-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame(
+			[
+				'startTime' => (string) $product->get_date_created(),
+				'endTime'   => (string) new WC_DateTime( '2099-01-01' ),
+			],
+			$attrs['salePriceEffectiveDate']
+		);
+	}
+
+	public function test_sale_price_effective_date_start_is_set_to_now_if_start_and_creation_date_empty() {
 		$now = (string) ( new WC_DateTime( 'now' ) );
 
 		$product = WC_Helper_Product::create_simple_product(
@@ -247,10 +302,87 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
 
-		$this->assertArrayHasKey( 'salePriceEffectiveDate', $attrs );
-		$this->assertNotEmpty( $attrs['salePriceEffectiveDate']['startTime'] );
+		$this->assertNull( $product->get_date_created() );
 		$this->assertGreaterThanOrEqual( new WC_DateTime( $now ), new WC_DateTime( $attrs['salePriceEffectiveDate']['startTime'] ) );
 		$this->assertSame( (string) new WC_DateTime( '2099-01-01' ), $attrs['salePriceEffectiveDate']['endTime'] );
+	}
+
+	public function test_sale_price_effective_date_start_is_set_to_now_if_start_empty_and_creation_date_in_future() {
+		$now = (string) ( new WC_DateTime( 'now' ) );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 50,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2098-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$start = new WC_DateTime( $attrs['salePriceEffectiveDate']['startTime'] );
+		$this->assertGreaterThanOrEqual( new WC_DateTime( $now ), $start );
+		$this->assertLessThan( $product->get_date_created(), $start );
+	}
+
+	public function test_sale_price_effective_date_start_is_set_to_now_if_filtered_creation_date_is_not_a_date() {
+		$now = (string) ( new WC_DateTime( 'now' ) );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 50,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2020-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$filter = static function () {
+			return '2020-01-01';
+		};
+		add_filter( 'woocommerce_product_get_date_created', $filter );
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+		remove_filter( 'woocommerce_product_get_date_created', $filter );
+
+		$this->assertGreaterThanOrEqual( new WC_DateTime( $now ), new WC_DateTime( $attrs['salePriceEffectiveDate']['startTime'] ) );
+	}
+
+	public function test_variation_sale_price_effective_date_start_is_set_to_its_creation_date_if_empty() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $parent->get_children()[0] );
+		$variation->set_props(
+			[
+				'sale_price'      => 5,
+				'date_created'    => '2020-02-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $variation, 'US', $parent ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( (string) $variation->get_date_created(), $attrs['salePriceEffectiveDate']['startTime'] );
+	}
+
+	public function test_variation_sale_price_effective_date_start_falls_back_to_parent_creation_date() {
+		$parent = WC_Helper_Product::create_variation_product();
+		$parent->set_date_created( '2020-01-01' );
+		$variation = wc_get_product( $parent->get_children()[0] );
+		$variation->set_props(
+			[
+				'sale_price'      => 5,
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+		$variation->set_date_created( null );
+
+		$attrs = ( new WCProductInputAdapter( $variation, 'US', $parent ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( (string) $parent->get_date_created(), $attrs['salePriceEffectiveDate']['startTime'] );
 	}
 
 	public function test_sale_price_effective_date_start_is_not_set_if_in_past_and_no_end_date() {
@@ -1254,6 +1386,227 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'Blue', $attrs['color'] );
 	}
 
+	public function test_override_filter_translates_sizes_list_to_size() {
+		$attrs = $this->get_attributes_with_overrides( [ 'sizes' => [ 'Small' ] ] );
+
+		$this->assertSame( 'Small', $attrs['size'] );
+		$this->assertArrayNotHasKey( 'sizes', $attrs );
+	}
+
+	public function test_override_filter_translates_sizes_string_to_size() {
+		$attrs = $this->get_attributes_with_overrides( [ 'sizes' => 'Small' ] );
+
+		$this->assertSame( 'Small', $attrs['size'] );
+		$this->assertArrayNotHasKey( 'sizes', $attrs );
+	}
+
+	public function test_override_filter_sends_first_of_multiple_sizes() {
+		$attrs = $this->get_attributes_with_overrides( [ 'sizes' => [ 'Small', 'Medium', 'Large' ] ] );
+
+		$this->assertSame( 'Small', $attrs['size'] );
+		$this->assertCount( 1, $this->debug_messages );
+		$this->assertStringContainsString( '["Medium","Large"]', $this->debug_messages[0] );
+	}
+
+	public function test_override_filter_accepts_zero_as_size() {
+		$attrs = $this->get_attributes_with_overrides( [ 'sizes' => [ '0' ] ] );
+
+		$this->assertSame( '0', $attrs['size'] );
+	}
+
+	/**
+	 * @dataProvider empty_sizes_provider
+	 *
+	 * @param mixed $sizes
+	 */
+	public function test_override_filter_drops_empty_sizes( $sizes ) {
+		$attrs = $this->get_attributes_with_overrides(
+			[
+				'sizes' => $sizes,
+				'color' => 'Blue',
+			]
+		);
+
+		$this->assertArrayNotHasKey( 'size', $attrs );
+		$this->assertArrayNotHasKey( 'sizes', $attrs );
+		$this->assertSame( 'Blue', $attrs['color'] );
+	}
+
+	public function empty_sizes_provider(): array {
+		return [
+			'empty string'      => [ '' ],
+			'empty list'        => [ [] ],
+			'empty first entry' => [ [ '' ] ],
+			'non-string entry'  => [ [ [ 'Small' ] ] ],
+			'null'              => [ null ],
+		];
+	}
+
+	public function test_override_filter_sizes_replaces_native_size() {
+		$attrs = $this->get_attributes_with_overrides( [ 'sizes' => [ 'Small' ] ], [ 'size' => 'XL' ] );
+
+		$this->assertSame( 'Small', $attrs['size'] );
+	}
+
+	public function test_override_filter_translates_scalar_gtin_and_size_type() {
+		$attrs = $this->get_attributes_with_overrides(
+			[
+				'gtin'     => '012345678905',
+				'sizeType' => 'petite',
+			]
+		);
+
+		$this->assertSame( [ '012345678905' ], $attrs['gtins'] );
+		$this->assertSame( [ 'PETITE' ], $attrs['sizeTypes'] );
+		$this->assertArrayNotHasKey( 'gtin', $attrs );
+		$this->assertArrayNotHasKey( 'sizeType', $attrs );
+	}
+
+	public function test_override_filter_drops_non_scalar_gtin_and_size_type() {
+		$attrs = $this->get_attributes_with_overrides(
+			[
+				'gtin'     => [ '012345678905' ],
+				'sizeType' => [ 'petite' ],
+			]
+		);
+
+		$this->assertArrayNotHasKey( 'gtins', $attrs );
+		$this->assertArrayNotHasKey( 'sizeTypes', $attrs );
+		$this->assertArrayNotHasKey( 'gtin', $attrs );
+		$this->assertArrayNotHasKey( 'sizeType', $attrs );
+	}
+
+	public function test_override_filter_drops_boolean_gtin_and_size_type() {
+		$attrs = $this->get_attributes_with_overrides(
+			[
+				'gtin'     => true,
+				'sizeType' => false,
+			]
+		);
+
+		$this->assertArrayNotHasKey( 'gtins', $attrs );
+		$this->assertArrayNotHasKey( 'sizeTypes', $attrs );
+		$this->assertCount( 2, $this->debug_messages );
+		foreach ( $this->debug_messages as $message ) {
+			$this->assertStringContainsString( 'dropped: value is not a string or number', $message );
+		}
+	}
+
+	public function test_override_filter_prefers_mapi_key_over_content_api_key() {
+		$attrs = $this->get_attributes_with_overrides(
+			[
+				'sizes'     => [ 'Small' ],
+				'size'      => 'Large',
+				'gtin'      => '012345678905',
+				'gtins'     => [ '4006381333931' ],
+				'sizeTypes' => [ 'regular' ],
+				'sizeType'  => 'petite',
+			]
+		);
+
+		$this->assertSame( 'Large', $attrs['size'] );
+		$this->assertSame( [ '4006381333931' ], $attrs['gtins'] );
+		$this->assertSame( [ 'REGULAR' ], $attrs['sizeTypes'] );
+		$this->assertArrayNotHasKey( 'sizes', $attrs );
+		$this->assertArrayNotHasKey( 'gtin', $attrs );
+		$this->assertArrayNotHasKey( 'sizeType', $attrs );
+	}
+
+	public function test_override_filter_drops_unknown_keys() {
+		$attrs = $this->get_attributes_with_overrides(
+			[
+				'targetCountry' => 'US',
+				'offerId'       => 'other-offer',
+				'color'         => 'Blue',
+				'title'         => 'Override title',
+			]
+		);
+
+		$this->assertArrayNotHasKey( 'targetCountry', $attrs );
+		$this->assertArrayNotHasKey( 'offerId', $attrs );
+		$this->assertSame( 'Blue', $attrs['color'] );
+		$this->assertSame( 'Override title', $attrs['title'] );
+	}
+
+	public function test_override_filter_reports_translated_and_dropped_keys() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$this->get_attributes_with_overrides(
+			[
+				'sizes'         => [ 'Small' ],
+				'targetCountry' => 'US',
+				'color'         => 'Blue',
+			],
+			[],
+			$product
+		);
+
+		$this->assertCount( 2, $this->debug_messages );
+		$this->assertStringContainsString( '"sizes"', $this->debug_messages[0] );
+		$this->assertStringContainsString( 'translated to size', $this->debug_messages[0] );
+		$this->assertStringContainsString( '"targetCountry"', $this->debug_messages[1] );
+		$this->assertStringContainsString( 'dropped', $this->debug_messages[1] );
+		foreach ( $this->debug_messages as $message ) {
+			$this->assertStringContainsString( sprintf( '(ID: %s)', $product->get_id() ), $message );
+		}
+	}
+
+	public function test_override_filter_reports_nothing_for_mapi_keys() {
+		$this->get_attributes_with_overrides( [ 'color' => 'Blue' ] );
+
+		$this->assertSame( [], $this->debug_messages );
+	}
+
+	public function test_attribute_keys_filter_allows_extra_keys() {
+		$cb = static function ( array $keys ): array {
+			$keys[] = 'newGoogleField';
+			return $keys;
+		};
+		add_filter( 'woocommerce_gla_product_input_attribute_keys', $cb );
+
+		$attrs = $this->get_attributes_with_overrides(
+			[
+				'newGoogleField' => 'value',
+				'color'          => 'Blue',
+			]
+		);
+
+		remove_filter( 'woocommerce_gla_product_input_attribute_keys', $cb );
+
+		$this->assertSame( 'value', $attrs['newGoogleField'] );
+		$this->assertSame( 'Blue', $attrs['color'] );
+	}
+
+	public function test_attribute_keys_filter_falls_back_to_built_in_keys_on_non_array() {
+		add_filter( 'woocommerce_gla_product_input_attribute_keys', '__return_false' );
+
+		$attrs = $this->get_attributes_with_overrides(
+			[
+				'color'         => 'Blue',
+				'targetCountry' => 'US',
+			]
+		);
+
+		remove_filter( 'woocommerce_gla_product_input_attribute_keys', '__return_false' );
+
+		$this->assertSame( 'Blue', $attrs['color'] );
+		$this->assertArrayNotHasKey( 'targetCountry', $attrs );
+	}
+
+	public function test_override_filter_passes_pre_order_availability_through() {
+		$attrs = $this->get_attributes_with_overrides(
+			[
+				'availability'     => 'preorder',
+				'availabilityDate' => '2030-01-01T00:00:00+00:00',
+			]
+		);
+
+		$this->assertSame( 'PREORDER', $attrs['availability'] );
+		$this->assertSame( '2030-01-01T00:00:00+00:00', $attrs['availabilityDate'] );
+		$this->assertSame( [], $this->debug_messages );
+	}
+
 	/**
 	 * A product input has no custom attributes unless something adds them.
 	 */
@@ -1817,5 +2170,37 @@ class WCProductInputAdapterTest extends UnitTest {
 		if ( ! empty( $postcodes ) ) {
 			WC_Tax::_update_tax_rate_postcodes( $tax_rate_id, $postcodes );
 		}
+	}
+
+	/**
+	 * Builds a product input with the given overrides returned from the attribute-values
+	 * filter, capturing debug messages in $this->debug_messages.
+	 *
+	 * @param array           $overrides      Values the override filter returns.
+	 * @param array           $gla_attributes Per-product Google attribute values.
+	 * @param WC_Product|null $product        Product to adapt; a new simple product when null.
+	 *
+	 * @return array The product input attributes.
+	 */
+	protected function get_attributes_with_overrides( array $overrides, array $gla_attributes = [], ?WC_Product $product = null ): array {
+		$product = $product ?? WC_Helper_Product::create_simple_product();
+
+		$this->debug_messages = [];
+
+		$filter  = static function () use ( $overrides ): array {
+			return $overrides;
+		};
+		$capture = function ( $message ) {
+			$this->debug_messages[] = $message;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $filter );
+		add_action( 'woocommerce_gla_debug_message', $capture );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], $gla_attributes ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $filter );
+		remove_action( 'woocommerce_gla_debug_message', $capture );
+
+		return $attrs;
 	}
 }

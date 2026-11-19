@@ -1,16 +1,12 @@
 /**
+ * External dependencies
+ */
+import { test, expect } from '@playwright/test';
+
+/**
  * Internal dependencies
  */
 import { LOAD_STATE } from '../../utils/constants';
-
-/**
- * External dependencies
- */
-const { test, expect } = require( '@playwright/test' );
-
-/**
- * Internal dependencies
- */
 import {
 	clearGCRNotificationsDismissed,
 	clearOnboardedMerchant,

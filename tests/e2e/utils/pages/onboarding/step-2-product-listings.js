@@ -110,18 +110,6 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get destination-based tax rate radio row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get destination-based tax rate radio row.
-	 */
-	getDestinationBasedTaxRateRadioRow() {
-		return this.page.getByRole( 'radio', {
-			name: 'My store uses destination-based tax rates.',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get shipping rates section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get shipping rates section.
@@ -380,17 +368,6 @@ export default class ProductListingsPage extends MockRequests {
 	async checkOfferFreeShippingCheckbox() {
 		const checkbox = this.getOfferFreeShippingCheckbox();
 		await checkbox.check();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
-	 * Check destination-based tax rate radio button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async checkDestinationBasedTaxRateRadioButton() {
-		const radio = this.getDestinationBasedTaxRateRadioRow();
-		await radio.check();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
 

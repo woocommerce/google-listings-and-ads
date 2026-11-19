@@ -135,7 +135,7 @@ function injectUpliftData( budgetRecommendation ) {
 										currentConversionsValue ) /
 										currentConversionsValue ) *
 										100
-							  )
+								)
 							: null,
 				}
 			);

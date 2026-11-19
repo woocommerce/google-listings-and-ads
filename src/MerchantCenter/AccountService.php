@@ -5,6 +5,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
@@ -258,6 +259,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	public function disconnect() {
 		$this->options->delete( OptionsInterface::CONTACT_INFO_SETUP );
 		$this->options->delete( OptionsInterface::MAPI_DATA_SOURCES );
+		$this->options->delete( OptionsInterface::MAPI_RECREATED_DATA_SOURCES );
 		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::MERCHANT_CENTER );
@@ -441,6 +443,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	 * @param int $merchant_id The Merchant Center account to update.
 	 *
 	 * @throws ExceptionWithResponseData If the account URL doesn't match the site URL or the URL is invalid.
+	 * @throws MerchantApiException If the homepage can't be read or updated.
 	 */
 	private function maybe_add_merchant_center_url( int $merchant_id ) {
 		$site_url = esc_url_raw( $this->get_site_url() );
@@ -449,15 +452,14 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			throw $this->prepare_exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
 		}
 
-		/** @var Merchant $merchant */
-		$merchant = $this->container->get( Merchant::class );
+		/** @var MapiAccountHomepageService $homepage_service */
+		$homepage_service = $this->container->get( MapiAccountHomepageService::class );
 
-		$account     = $merchant->get_account( $merchant_id );
-		$account_url = $account->getWebsiteUrl() ?: '';
+		$homepage    = $homepage_service->get_homepage( $merchant_id );
+		$account_url = $homepage['uri'] ?? '';
 
 		if ( untrailingslashit( $site_url ) !== untrailingslashit( $account_url ) ) {
 
-			$homepage           = $this->container->get( MapiAccountHomepageService::class )->get_homepage( $merchant_id );
 			$is_website_claimed = ! empty( $homepage['claimed'] );
 
 			if ( ! empty( $account_url ) && $is_website_claimed && ! $this->allow_switch_url ) {
@@ -486,8 +488,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				);
 			}
 
-			$account->setWebsiteUrl( $site_url );
-			$merchant->update_account( $account );
+			$homepage_service->update_uri( $site_url, $merchant_id );
 
 			// Clear previous hashed URL.
 			$this->options->delete( OptionsInterface::CLAIMED_URL_HASH );

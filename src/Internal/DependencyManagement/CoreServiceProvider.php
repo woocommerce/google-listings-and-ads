@@ -61,7 +61,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PriceBenchmarks;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\GLAChannel;
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\MarketingChannelRegistrar;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
@@ -126,7 +125,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\WPCLIMigrationGTIN;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use wpdb;
 
@@ -184,7 +182,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DebugLogger::class                   => true,
 		MerchantStatuses::class              => true,
 		PriceBenchmarks::class               => true,
-		PhoneVerification::class             => true,
 		PolicyComplianceCheck::class         => true,
 		ContactInformation::class            => true,
 		MerchantCenterService::class         => true,
@@ -279,7 +276,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AddressUtility::class );
 		$this->share_with_tags( DateTimeUtility::class );
 		$this->share_with_tags( ImageUtility::class, WP::class );
-		$this->share_with_tags( ISOUtility::class, ISO3166DataProvider::class );
+		$this->share_with_tags( ISOUtility::class );
 
 		// Share our regular service classes.
 		$this->share_with_tags( TrackerSnapshot::class );
@@ -320,12 +317,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( ServiceBasedMerchantHooks::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( MerchantStatuses::class );
 		$this->share_with_tags( PriceBenchmarks::class );
-		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );
 		$this->share_with_tags( PolicyComplianceCheck::class, WC::class, GoogleHelper::class, TargetAudience::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductImageSizeAudit::class, wpdb::class, TransientsInterface::class, JobRepository::class );
-		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, MarketService::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class, WPML::class );
 		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class, WPML::class );
