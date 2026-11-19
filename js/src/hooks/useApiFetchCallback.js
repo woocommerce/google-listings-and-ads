@@ -76,10 +76,9 @@ const shouldReturnResponseBody = ( options ) => {
  */
 const mergeOverwriteOptions = ( options, overwriteOptions ) => {
 	const mergedOptions = { ...options };
-	const keys = Object.keys( overwriteOptions ?? {} );
 
 	// Checks the key rather than the value, so an explicit `data: undefined` still clears the body.
-	if ( keys.includes( 'data' ) ) {
+	if ( Object.hasOwn( overwriteOptions ?? {}, 'data' ) ) {
 		mergedOptions.data = overwriteOptions.data;
 	}
 
