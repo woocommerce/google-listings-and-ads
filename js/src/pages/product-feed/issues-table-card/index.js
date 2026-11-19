@@ -24,7 +24,7 @@ const actions = (
 	<HelpPopover id="issues-to-resolve">
 		{ createInterpolateElement(
 			__(
-				'Products and stores must meet <link>Google Merchant Center’s requirements</link> in order to get approved. WooCommerce and Google automatically check your product feed to help you resolve any issues. ',
+				'Products and stores must meet <link>Google Merchant Center’s requirements</link> in order to get approved. WooCommerce and Google automatically check your product feed to help you resolve any issues.',
 				'google-listings-and-ads'
 			),
 			{

@@ -51,11 +51,11 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 		? __(
 				'To comply with EU political ads rules, you can’t create or edit campaigns in this account until the required declarations are added.',
 				'google-listings-and-ads'
-		  )
+			)
 		: __(
 				"You can't edit your campaigns until you complete the EU political ads declaration in Google Ads.",
 				'google-listings-and-ads'
-		  );
+			);
 
 	return (
 		<AppModal

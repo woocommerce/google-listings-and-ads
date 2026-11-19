@@ -123,7 +123,7 @@ const FeaturesCard = () => {
 						variant="body"
 					>
 						{ __(
-							'Connect your Google Ads account, choose a budget, and Google will optimize your ads so they appear at the right time and place. ',
+							'Connect your Google Ads account, choose a budget, and Google will optimize your ads so they appear at the right time and place.',
 							'google-listings-and-ads'
 						) }
 					</Text>

@@ -29,11 +29,11 @@ const GetStartedWithHeroCard = () => {
 		? __(
 				'Drive sales and find new customers wherever they are online including Google Search, Shopping, YouTube, and more.',
 				'google-listings-and-ads'
-		  )
+			)
 		: __(
 				'Effortlessly sync your WooCommerce product feed across Google and be seen by millions of engaged shoppers with the Google for WooCommerce extension.',
 				'google-listings-and-ads'
-		  );
+			);
 
 	return (
 		<Card className="gla-get-started-with-hero-card" isBorderless>

@@ -83,7 +83,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - if: matrix.wc-versions == needs.GetMatrix.outputs.latest-wc-version && matrix.php == 8.2
         name: Set condition to generate coverage report (only on latest versions)
@@ -95,8 +95,10 @@ jobs:
           php-version: "${{ matrix.php }}"
           coverage: "${{ env.generate_coverage == 'true' && 'xdebug' || 'none' }}"
 
-      - name: Prepare MySQL
-        uses: woocommerce/grow/prepare-mysql@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
+      - name: Start MySQL
+        run: |
+          sudo systemctl start mysql.service
+          mysql --version
 
       - name: Install svn (used for installing WP versions)
         run: sudo apt-get -y install subversion
@@ -114,7 +116,7 @@ jobs:
 
       - if: env.generate_coverage == 'true'
         name: Upload PHP unit coverage report
-        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: tests/php-coverage/report.xml
@@ -132,15 +134,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Prepare PHP
         uses: woocommerce/grow/prepare-php@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
         with:
           php-version: "${{ inputs.php-version }}"
 
-      - name: Prepare MySQL
-        uses: woocommerce/grow/prepare-mysql@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
+      - name: Start MySQL
+        run: |
+          sudo systemctl start mysql.service
+          mysql --version
 
       - name: Install svn (used for installing WP versions)
         run: sudo apt-get -y install subversion

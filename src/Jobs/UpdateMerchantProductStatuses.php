@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
@@ -84,7 +85,8 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	 */
 	public function process_items( array $items ) {
 		try {
-			$next_page_token = $items['next_page_token'] ?? null;
+			$page_token      = $items['next_page_token'] ?? null;
+			$next_page_token = $page_token;
 
 			// Clear the cache if we're starting from the beginning. Strict check: a
 			// pagination token is an opaque string, and PHP would treat "0" as falsy.
@@ -116,6 +118,7 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 			$next_page_token = $page['next_page_token'];
 
 			$this->merchant_statuses->process_mapi_products( $page['products'] );
+			$this->merchant_statuses->record_feed_issue_page( $page_token, $next_page_token );
 
 			if ( null !== $next_page_token ) {
 				$this->schedule( [ [ 'next_page_token' => $next_page_token ] ] );

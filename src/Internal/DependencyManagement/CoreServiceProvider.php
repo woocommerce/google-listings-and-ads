@@ -16,13 +16,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
@@ -35,6 +35,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BadgeWidget;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\EstimatedDeliveryTimeResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
@@ -42,6 +44,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDat
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\ReviewsOptIn;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
@@ -58,7 +61,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PriceBenchmarks;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\GLAChannel;
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\MarketingChannelRegistrar;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
@@ -91,6 +93,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFilter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -122,7 +125,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\WPCLIMigrationGTIN;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use wpdb;
 
@@ -137,72 +139,74 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Installer::class                 => true,
-		AddressUtility::class            => true,
-		AssetsHandlerInterface::class    => true,
-		ContactInformationNote::class    => true,
-		CompleteSetupTask::class         => true,
-		CompleteSetupNote::class         => true,
-		CouponHelper::class              => true,
-		CouponMetaHandler::class         => true,
-		CouponSyncer::class              => true,
-		DateTimeUtility::class           => true,
-		EventTracking::class             => true,
-		GlobalSiteTag::class             => true,
-		ISOUtility::class                => true,
-		SiteVerificationEvents::class    => true,
-		OptionsInterface::class          => true,
-		TransientsInterface::class       => true,
-		ReconnectWordPressNote::class    => true,
-		ReviewAfterClicksNote::class     => true,
-		RESTControllers::class           => true,
-		Service::class                   => true,
-		SetupCampaignNote::class         => true,
-		SetupCampaign2Note::class        => true,
-		SetupCouponSharingNote::class    => true,
-		WcInstallTimestamp::class        => true,
-		TableManager::class              => true,
-		TrackerSnapshot::class           => true,
-		Tracks::class                    => true,
-		TracksInterface::class           => true,
-		ProductSyncer::class             => true,
-		ProductHelper::class             => true,
-		ProductMetaHandler::class        => true,
-		SiteVerificationMeta::class      => true,
-		BatchProductHelper::class        => true,
-		ProductFilter::class             => true,
-		ProductRepository::class         => true,
-		ViewFactory::class               => true,
-		DebugLogger::class               => true,
-		MerchantStatuses::class          => true,
-		PriceBenchmarks::class           => true,
-		PhoneVerification::class         => true,
-		PolicyComplianceCheck::class     => true,
-		ContactInformation::class        => true,
-		MerchantCenterService::class     => true,
-		MarketService::class             => true,
-		TargetAudience::class            => true,
-		MerchantAccountState::class      => true,
-		AdsAccountState::class           => true,
-		DBInstaller::class               => true,
-		AttributeManager::class          => true,
-		ProductFactory::class            => true,
-		AttributesTab::class             => true,
-		VariationsAttributes::class      => true,
-		DeprecatedFilters::class         => true,
-		ZoneLocationsParser::class       => true,
-		ZoneMethodsParser::class         => true,
-		LocationRatesProcessor::class    => true,
-		ShippingZone::class              => true,
-		AdsRecommendationsService::class => true,
-		AdsAccountService::class         => true,
-		MerchantAccountService::class    => true,
-		MarketingChannelRegistrar::class => true,
-		OAuthService::class              => true,
-		WPCLIMigrationGTIN::class        => true,
-		OnboardingCompleted::class       => true,
-		ServiceBasedMerchantState::class => true,
-		ServiceBasedMerchantHooks::class => true,
+		Installer::class                     => true,
+		AddressUtility::class                => true,
+		AssetsHandlerInterface::class        => true,
+		ContactInformationNote::class        => true,
+		CompleteSetupTask::class             => true,
+		CompleteSetupNote::class             => true,
+		CouponHelper::class                  => true,
+		CouponMetaHandler::class             => true,
+		CouponSyncer::class                  => true,
+		DateTimeUtility::class               => true,
+		EventTracking::class                 => true,
+		GlobalSiteTag::class                 => true,
+		EstimatedDeliveryTimeResolver::class => true,
+		ReviewsOptIn::class                  => true,
+		BadgeWidget::class                   => true,
+		ISOUtility::class                    => true,
+		SiteVerificationEvents::class        => true,
+		OptionsInterface::class              => true,
+		TransientsInterface::class           => true,
+		ReconnectWordPressNote::class        => true,
+		ReviewAfterClicksNote::class         => true,
+		RESTControllers::class               => true,
+		Service::class                       => true,
+		SetupCampaignNote::class             => true,
+		SetupCampaign2Note::class            => true,
+		SetupCouponSharingNote::class        => true,
+		WcInstallTimestamp::class            => true,
+		TableManager::class                  => true,
+		TrackerSnapshot::class               => true,
+		Tracks::class                        => true,
+		TracksInterface::class               => true,
+		ProductSyncer::class                 => true,
+		ProductHelper::class                 => true,
+		ProductImageSizeAudit::class         => true,
+		ProductMetaHandler::class            => true,
+		SiteVerificationMeta::class          => true,
+		BatchProductHelper::class            => true,
+		ProductFilter::class                 => true,
+		ProductRepository::class             => true,
+		ViewFactory::class                   => true,
+		DebugLogger::class                   => true,
+		MerchantStatuses::class              => true,
+		PriceBenchmarks::class               => true,
+		PolicyComplianceCheck::class         => true,
+		ContactInformation::class            => true,
+		MerchantCenterService::class         => true,
+		MarketService::class                 => true,
+		TargetAudience::class                => true,
+		MerchantAccountState::class          => true,
+		AdsAccountState::class               => true,
+		DBInstaller::class                   => true,
+		AttributeManager::class              => true,
+		ProductFactory::class                => true,
+		AttributesTab::class                 => true,
+		VariationsAttributes::class          => true,
+		DeprecatedFilters::class             => true,
+		ZoneLocationsParser::class           => true,
+		ZoneMethodsParser::class             => true,
+		LocationRatesProcessor::class        => true,
+		ShippingZone::class                  => true,
+		AdsRecommendationsService::class     => true,
+		AdsAccountService::class             => true,
+		MerchantAccountService::class        => true,
+		MarketingChannelRegistrar::class     => true,
+		WPCLIMigrationGTIN::class            => true,
+		OnboardingCompleted::class           => true,
+		ServiceBasedMerchantState::class     => true,
+		ServiceBasedMerchantHooks::class     => true,
 	];
 
 	/**
@@ -249,9 +253,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
 
-		// Set up OAuthService service.
-		$this->share_with_tags( OAuthService::class );
-
 		$this->getContainer()
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
@@ -275,7 +276,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AddressUtility::class );
 		$this->share_with_tags( DateTimeUtility::class );
 		$this->share_with_tags( ImageUtility::class, WP::class );
-		$this->share_with_tags( ISOUtility::class, ISO3166DataProvider::class );
+		$this->share_with_tags( ISOUtility::class );
 
 		// Share our regular service classes.
 		$this->share_with_tags( TrackerSnapshot::class );
@@ -283,6 +284,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( RESTControllers::class );
 		$this->share_with_tags( CompleteSetupTask::class );
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class );
+		$this->share_with_tags( EstimatedDeliveryTimeResolver::class, MapiAccountShippingSettingsService::class );
+		$this->share_with_tags( ReviewsOptIn::class, EstimatedDeliveryTimeResolver::class, WP::class );
+		$this->share_with_tags( BadgeWidget::class );
 		$this->share_with_tags( SiteVerificationMeta::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
@@ -304,7 +308,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( WcInstallTimestamp::class, WP::class );
 
 		// Product attributes
-		$this->conditionally_share_with_tags( AttributeManager::class, AttributeMappingRulesQuery::class, WC::class );
+		$this->conditionally_share_with_tags( AttributeManager::class );
 		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 
@@ -313,11 +317,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( ServiceBasedMerchantHooks::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( MerchantStatuses::class );
 		$this->share_with_tags( PriceBenchmarks::class );
-		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );
 		$this->share_with_tags( PolicyComplianceCheck::class, WC::class, GoogleHelper::class, TargetAudience::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
-		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, MarketService::class );
+		$this->share_with_tags( ProductImageSizeAudit::class, wpdb::class, TransientsInterface::class, JobRepository::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class, WPML::class );
 		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class, WPML::class );

@@ -402,6 +402,27 @@ export function* getReportByApiQuery( category, type, reportQuery ) {
 	}
 }
 
+export function* getWCReportStats( reportType, query ) {
+	const path = addQueryArgs(
+		`/wc-analytics/reports/${ reportType }/stats`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey( 'wc-analytics', reportType, query );
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading report statistics.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* getMappingAttributes() {
 	try {
 		const response = yield apiFetch( {
@@ -838,6 +859,10 @@ export function* getCYOIncentives() {
 		);
 	}
 }
+
+getCYOIncentives.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS;
+};
 
 export function* getYouTubeAccount() {
 	yield fetchYouTubeAccount();

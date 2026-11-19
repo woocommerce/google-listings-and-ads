@@ -48,9 +48,7 @@ export default function ContactInformationPreview() {
 						context="settings-no-store-address-notice"
 						linkId={ learnMoreLinkId }
 						href={ learnMoreUrl }
-					>
-						{ __( 'Learn more', 'google-listings-and-ads' ) }
-					</AppDocumentationLink>
+					/>
 				}
 			/>
 		</Section>
