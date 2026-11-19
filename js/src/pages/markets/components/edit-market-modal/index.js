@@ -34,7 +34,7 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 				/* translators: %s is the name of the market being edited, e.g. "Europe". */
 				__( 'Edit %s', 'google-listings-and-ads' ),
 				market.label
-		  );
+			);
 
 	return (
 		<AppModal

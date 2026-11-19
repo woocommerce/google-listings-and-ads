@@ -56,7 +56,7 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 					'google-listings-and-ads'
 				),
 				components: { linkAds },
-		  }
+			}
 		: {
 				description: __(
 					'Required to sync with Google Merchant Center and Google Ads.',
@@ -76,7 +76,7 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 						/>
 					),
 				},
-		  };
+			};
 
 	const termsLabel = createInterpolateElement(
 		cardContent.terms,

@@ -35,7 +35,6 @@ class SettingsSyncControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_settings_sync() {
-		$this->settings->expects( $this->once() )->method( 'sync_taxes' );
 		$this->settings->expects( $this->once() )->method( 'sync_shipping' );
 
 		$settings = [
@@ -43,7 +42,6 @@ class SettingsSyncControllerTest extends RESTControllerUnitTest {
 			'offers_free_shipping'    => true,
 			'free_shipping_threshold' => 100,
 			'shipping_time'           => 'manual',
-			'tax_rate'                => 'manual',
 			'target_countries'        => 'US,CA',
 		];
 
@@ -62,7 +60,7 @@ class SettingsSyncControllerTest extends RESTControllerUnitTest {
 
 	public function test_settings_sync_with_non_json_exception() {
 		$this->settings->expects( $this->once() )
-			->method( 'sync_taxes' )
+			->method( 'sync_shipping' )
 			->willThrowException(
 				new Exception( 'error' )
 			);
@@ -75,7 +73,7 @@ class SettingsSyncControllerTest extends RESTControllerUnitTest {
 
 	public function test_settings_sync_with_json_exception() {
 		$this->settings->expects( $this->once() )
-			->method( 'sync_taxes' )
+			->method( 'sync_shipping' )
 			->willThrowException(
 				new Exception(
 					wp_json_encode(

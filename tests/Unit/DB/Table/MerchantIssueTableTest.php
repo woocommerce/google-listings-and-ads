@@ -33,7 +33,7 @@ class MerchantIssueTableTest extends UnitTest {
 
 		$this->wp   = $this->createMock( WP::class );
 		$this->wpdb = $this->getMockBuilder( wpdb::class )
-			->onlyMethods( [ 'query', 'prepare' ] )
+			->onlyMethods( [ 'query', 'prepare', 'get_var' ] )
 			->disableOriginalConstructor()
 			->disableOriginalClone()
 			->disableArgumentCloning()
@@ -66,6 +66,24 @@ class MerchantIssueTableTest extends UnitTest {
 		$this->mock_merchant_issue->delete_specific_product_issues( [ 1 ] );
 	}
 
+	public function test_delete_specific_product_issues_prepares_ids_and_source() {
+		$source = "mc' OR 1=1 --";
+
+		$this->mock_merchant_issue->method( 'get_sql_safe_name' )->willReturn( 'wp_gla_merchant_issues' );
+		$this->wpdb->expects( $this->once() )
+			->method( 'prepare' )
+			->with(
+				'DELETE FROM %i WHERE `product_id` IN (%d,%d) AND `source` = %s',
+				[ 'wp_gla_merchant_issues', 5, 8, $source ]
+			)
+			->willReturn( 'prepared delete query' );
+		$this->wpdb->expects( $this->once() )
+			->method( 'query' )
+			->with( 'prepared delete query' );
+
+		$this->mock_merchant_issue->delete_specific_product_issues( [ 5, 8 ], $source );
+	}
+
 	public function test_delete_by_ids_with_empty_array() {
 		$this->wpdb->expects( $this->never() )
 		->method( 'query' );
@@ -79,7 +97,10 @@ class MerchantIssueTableTest extends UnitTest {
 		$this->wpdb->method( 'prepare' )
 		->willReturnCallback(
 			function ( $query, $args ) {
-				return vsprintf( str_replace( '%d', '%s', $query ), (array) $args );
+				$query = str_replace( '%i', '`%s`', $query );
+				$query = str_replace( '%d', '%s', $query );
+
+				return vsprintf( $query, (array) $args );
 			}
 		);
 
@@ -100,5 +121,153 @@ class MerchantIssueTableTest extends UnitTest {
 		$table->install();
 
 		$this->assertEmpty( $wpdb->last_error );
+	}
+
+	public function test_count_account_issues_counts_only_merchant_center_account_issues_with_given_severities() {
+		$table = $this->get_installed_table();
+
+		$this->insert_issue( $table, 0, 'error', 'mc', 'account' );
+		$this->insert_issue( $table, 0, 'critical', 'mc', 'account' );
+		$this->insert_issue( $table, 0, 'suggestion', 'mc', 'account' );
+		$this->insert_issue( $table, 0, 'error', 'custom', 'account' );
+		$this->insert_issue( $table, 10, 'error', 'mc', 'product' );
+
+		$this->assertSame( 2, $table->count_account_issues( [ 'error', 'critical' ] ) );
+	}
+
+	public function test_count_account_issues_returns_zero_without_issues() {
+		$table = $this->get_installed_table();
+
+		$this->assertSame( 0, $table->count_account_issues( [ 'error', 'critical' ] ) );
+	}
+
+	public function test_count_products_with_issues_excludes_given_severities() {
+		$table   = $this->get_installed_table();
+		$error   = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$warning = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+
+		$this->insert_issue( $table, $error, 'error', 'mc' );
+		$this->insert_issue( $table, $warning, 'DEMOTED', 'mc' );
+		$this->insert_issue( $table, $warning, 'NOT_IMPACTED', 'mc' );
+
+		$this->assertSame( 1, $table->count_products_with_issues( 'mc', [ 'warning', 'suggestion', 'DEMOTED', 'NOT_IMPACTED' ] ) );
+	}
+
+	public function test_count_products_with_issues_counts_variations_as_their_parent() {
+		$table       = $this->get_installed_table();
+		$parent      = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$variation_a = $this->factory()->post->create(
+			[
+				'post_type'   => 'product_variation',
+				'post_parent' => $parent,
+			]
+		);
+		$variation_b = $this->factory()->post->create(
+			[
+				'post_type'   => 'product_variation',
+				'post_parent' => $parent,
+			]
+		);
+		$simple      = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+
+		$this->insert_issue( $table, $variation_a, 'error', 'mc' );
+		$this->insert_issue( $table, $variation_b, 'error', 'mc' );
+		$this->insert_issue( $table, $parent, 'error', 'mc' );
+		$this->insert_issue( $table, $simple, 'error', 'mc' );
+
+		$this->assertSame( 2, $table->count_products_with_issues( 'mc' ) );
+	}
+
+	public function test_count_products_with_issues_filters_by_source() {
+		$table    = $this->get_installed_table();
+		$mc       = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$pre_sync = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$custom   = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+
+		$this->insert_issue( $table, $mc, 'error', 'mc' );
+		$this->insert_issue( $table, $pre_sync, 'error', 'pre-sync' );
+		$this->insert_issue( $table, $custom, 'error', 'custom' );
+		$this->insert_issue( $table, 0, 'error', 'pre-sync', 'account' );
+
+		$this->assertSame( 1, $table->count_products_with_issues( 'mc' ) );
+		$this->assertSame( 1, $table->count_products_with_issues( 'pre-sync' ) );
+	}
+
+	public function test_count_products_with_issues_returns_zero_without_issues() {
+		$table = $this->get_installed_table();
+
+		$this->assertSame( 0, $table->count_products_with_issues( 'pre-sync' ) );
+	}
+
+	public function test_counts_return_null_when_the_query_fails() {
+		$this->wpdb->method( 'get_var' )->willReturn( null );
+
+		$this->assertNull( $this->mock_merchant_issue->count_account_issues( [ 'error' ] ) );
+		$this->assertNull( $this->mock_merchant_issue->count_products_with_issues( 'mc' ) );
+	}
+
+	/**
+	 * @dataProvider count_result_provider
+	 * @param mixed    $result   Database result.
+	 * @param int|null $expected Expected count.
+	 */
+	public function test_counts_accept_numeric_database_results( $result, ?int $expected ) {
+		$this->wpdb->method( 'get_var' )->willReturn( $result );
+		$this->assertSame( $expected, $this->mock_merchant_issue->count_account_issues( [ 'error' ] ) );
+		$this->assertSame( $expected, $this->mock_merchant_issue->count_products_with_issues( 'mc' ) );
+	}
+
+	public function count_result_provider(): array {
+		return [
+			'string'  => [ '3', 3 ],
+			'integer' => [ 3, 3 ],
+			'zero'    => [ 0, 0 ],
+			'invalid' => [ false, null ],
+		];
+	}
+
+	/**
+	 * Install the real table and start each test from an empty one.
+	 *
+	 * @return MerchantIssueTable
+	 */
+	protected function get_installed_table(): MerchantIssueTable {
+		global $wpdb;
+
+		$table = new MerchantIssueTable( new WP(), $wpdb );
+		$table->install();
+		$table->truncate();
+
+		return $table;
+	}
+
+	/**
+	 * Insert an issue row.
+	 *
+	 * @param MerchantIssueTable $table
+	 * @param int                $product_id
+	 * @param string             $severity
+	 * @param string             $source
+	 * @param string             $type
+	 */
+	protected function insert_issue( MerchantIssueTable $table, int $product_id, string $severity, string $source, string $type = 'product' ): void {
+		global $wpdb;
+
+		$wpdb->insert(
+			$table->get_name(),
+			[
+				'product_id'           => $product_id,
+				'issue'                => 'Issue ' . wp_generate_password( 8, false ),
+				'code'                 => 'code',
+				'severity'             => $severity,
+				'product'              => 'Product',
+				'action'               => '',
+				'action_url'           => '',
+				'applicable_countries' => '[]',
+				'source'               => $source,
+				'type'                 => $type,
+				'created_at'           => '2026-10-27 00:00:00',
+			]
+		);
 	}
 }

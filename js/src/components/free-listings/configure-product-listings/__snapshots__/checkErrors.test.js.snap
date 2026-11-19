@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`checkErrors Audience When the audience countries array is empty and the value of audience location option is 'selected', should not pass 1`] = `"Please select at least one country."`;
 

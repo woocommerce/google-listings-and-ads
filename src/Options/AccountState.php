@@ -45,7 +45,14 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	 * @return array The account creation steps and statuses.
 	 */
 	public function get( bool $initialize_if_not_found = true ): array {
-		$state = $this->options->get( $this->option_name(), [] );
+		// Entries for steps that were removed from account_creation_steps() can
+		// linger in the stored option after a plugin update. Drop them here so no
+		// caller reports or throws on a step that no longer exists.
+		$state = array_intersect_key(
+			(array) $this->options->get( $this->option_name(), [] ),
+			array_flip( $this->account_creation_steps() )
+		);
+
 		if ( empty( $state ) && $initialize_if_not_found ) {
 			$state = [];
 			foreach ( $this->account_creation_steps() as $step ) {
