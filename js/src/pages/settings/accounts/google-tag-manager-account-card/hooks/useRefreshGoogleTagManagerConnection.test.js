@@ -3,7 +3,6 @@
  */
 import '@testing-library/jest-dom';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -13,8 +12,6 @@ import { useAppDispatch } from '~/data';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import { recordGlaEvent } from '~/utils/tracks';
-import { getSettingsUrl } from '~/utils/urls';
-import { SETTINGS_SECTIONS } from '~/constants';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
@@ -29,10 +26,6 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
-} ) );
-jest.mock( '@woocommerce/navigation', () => ( {
-	...jest.requireActual( '@woocommerce/navigation' ),
-	getHistory: jest.fn().mockName( 'getHistory' ),
 } ) );
 
 /**
@@ -53,7 +46,6 @@ async function refresh( result ) {
 
 describe( 'useRefreshGoogleTagManagerConnection', () => {
 	let fetchGoogleTagManagerAccount;
-	let fetchGoogleTagManagerSettings;
 	let createNotice;
 	let fetchGoogleAdsAccount;
 	let dispatchers;
@@ -67,18 +59,11 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 			.mockResolvedValue( {
 				account: { status: 'connected', id: '6002847391' },
 			} );
-		fetchGoogleTagManagerSettings = jest
-			.fn()
-			.mockName( 'fetchGoogleTagManagerSettings' )
-			.mockResolvedValue( {
-				settings: { snippetInjectionEnabled: true },
-			} );
 		createNotice = jest.fn().mockName( 'createNotice' );
 		fetchGoogleAdsAccount = jest.fn().mockName( 'fetchGoogleAdsAccount' );
 
 		dispatchers = {
 			fetchGoogleTagManagerAccount,
-			fetchGoogleTagManagerSettings,
 			fetchGoogleAdsAccount,
 		};
 		useAppDispatch.mockReturnValue( dispatchers );
@@ -142,7 +127,7 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 		await waitFor( () => expect( result.current.loading ).toBe( false ) );
 	} );
 
-	it( 'refreshes the connection and the settings, and resolves with the refreshed connection', async () => {
+	it( 'refreshes the connection and resolves with the refreshed connection', async () => {
 		const { result } = renderHook( () =>
 			useRefreshGoogleTagManagerConnection()
 		);
@@ -150,7 +135,6 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 		const refreshed = await refresh( result );
 
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
-		expect( fetchGoogleTagManagerSettings ).toHaveBeenCalledTimes( 1 );
 		expect( refreshed ).toEqual( {
 			status: 'connected',
 			id: '6002847391',
@@ -283,9 +267,7 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 		expect( fetchGoogleAdsAccount ).not.toHaveBeenCalled();
 	} );
 
-	it( 'shows a snackbar confirming the snippet was added, with View opening Settings > General', async () => {
-		const push = jest.fn();
-		getHistory.mockReturnValue( { push } );
+	it( 'shows a snackbar confirming the snippet was added', async () => {
 		const { result } = renderHook( () =>
 			useRefreshGoogleTagManagerConnection()
 		);
@@ -296,16 +278,7 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 		expect( createNotice ).toHaveBeenCalledWith(
 			'success',
 			'The Google Tag Manager snippet has been successfully added to your site.',
-			{
-				type: 'snackbar',
-				actions: [ { label: 'View', onClick: expect.any( Function ) } ],
-			}
-		);
-
-		createNotice.mock.calls[ 0 ][ 2 ].actions[ 0 ].onClick();
-
-		expect( push ).toHaveBeenCalledWith(
-			getSettingsUrl( { section: SETTINGS_SECTIONS.GENERAL } )
+			{ type: 'snackbar' }
 		);
 	} );
 
@@ -316,19 +289,6 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 				id: '6002847391',
 				injectionFailed: true,
 			},
-		} );
-		const { result } = renderHook( () =>
-			useRefreshGoogleTagManagerConnection()
-		);
-
-		await refresh( result );
-
-		expect( createNotice ).not.toHaveBeenCalled();
-	} );
-
-	it( 'shows no snippet-added snackbar when the snippet is off', async () => {
-		fetchGoogleTagManagerSettings.mockResolvedValue( {
-			settings: { snippetInjectionEnabled: false },
 		} );
 		const { result } = renderHook( () =>
 			useRefreshGoogleTagManagerConnection()
