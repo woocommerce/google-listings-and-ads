@@ -30,9 +30,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductT
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\Validator\ConstraintViolation;
-use Symfony\Component\Validator\ConstraintViolationList;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\ConstraintViolation;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\ConstraintViolationList;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Helper_Product;
 use WC_Product;
 use WC_Product_Variable;
