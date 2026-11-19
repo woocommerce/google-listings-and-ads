@@ -29,8 +29,8 @@ defined( 'ABSPATH' ) || exit;
  * removed entirely). These tests run the job to completion across a full multi-page
  * refresh (following its own self-rescheduling synchronously, the way separate Action
  * Scheduler runs would in production) and assert the total number of `list_page()`
- * calls stays at ceil(N / page_size), so a future change that reintroduces per-product
- * reads here fails a test instead of reaching production traffic.
+ * calls stays at ceil(N / page_size). They do not catch a per-product read added
+ * through another method on the products service, since the service is mocked.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi\RequestBudget
  */
