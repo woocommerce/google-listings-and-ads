@@ -109,6 +109,7 @@ test.describe( 'Gen AI prompt-driven image generation', () => {
 		} );
 		await setupBudgetPage.mockBudgetMetrics();
 		await setupBudgetPage.mockAdsIncentiveCredits();
+		await setupBudgetPage.fulfillCYOIncentives( [] );
 		await setupBudgetPage.mockMCConnected();
 		await createCampaignPage.mockRequests();
 		await createCampaignPage.mockOptimizeCampaignRequests();
