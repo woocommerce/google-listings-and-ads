@@ -213,6 +213,9 @@ test.describe( 'Google Business Profile', () => {
 				const requestPromise =
 					settingsPage.registerGoogleBusinessProfileSelectLocationRequest();
 
+				await settingsPage
+					.getGoogleBusinessProfileLocationSelect()
+					.selectOption( RIVERSIDE.id );
 				await settingsPage.getGoogleBusinessProfileSaveButton().click();
 
 				const request = await requestPromise;
@@ -230,6 +233,17 @@ test.describe( 'Google Business Profile', () => {
 		} );
 
 		test.describe( 'disconnect and reconnect', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockGoogleBusinessProfileConnected(
+					RIVERSIDE
+				);
+				await settingsPage.mockGoogleBusinessProfileLocations( [
+					DOWNTOWN,
+					RIVERSIDE,
+				] );
+				await settingsPage.gotoAccounts();
+			} );
+
 			test( 'should disconnect and return to location selection, since access stays granted', async () => {
 				await settingsPage.mockGoogleBusinessProfileNotConnected();
 				await settingsPage.mockGoogleBusinessProfileDisconnect();
@@ -240,9 +254,7 @@ test.describe( 'Google Business Profile', () => {
 				await settingsPage
 					.getGoogleBusinessProfileAccountActionsButton()
 					.click();
-				await settingsPage
-					.getGoogleBusinessProfileDisconnectMenuItem()
-					.click();
+				await settingsPage.getDisconnectMenuItem().click();
 
 				const modal = page.getByRole( 'dialog', {
 					name: 'Disconnect Google Business Profile?',

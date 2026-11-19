@@ -142,11 +142,11 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get the YouTube Disconnect menu item.
+	 * Get the Disconnect item of the open account actions menu.
 	 *
-	 * @return {Promise<import('@playwright/test').Locator>} The Disconnect menu item.
+	 * @return {import('@playwright/test').Locator} The Disconnect menu item.
 	 */
-	getYouTubeDisconnectMenuItem() {
+	getDisconnectMenuItem() {
 		return this.page.getByRole( 'menuitem', {
 			name: 'Disconnect',
 		} );
@@ -198,17 +198,6 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get the Google Business Profile Disconnect menu item.
-	 *
-	 * @return {import('@playwright/test').Locator} The Disconnect menu item.
-	 */
-	getGoogleBusinessProfileDisconnectMenuItem() {
-		return this.page.getByRole( 'menuitem', {
-			name: 'Disconnect',
-		} );
-	}
-
-	/**
 	 * Register a wait for the Google Business Profile connect request.
 	 *
 	 * @return {Promise<import('@playwright/test').Request>} The request.
@@ -247,7 +236,9 @@ export default class SettingsPage extends MockRequests {
 	registerGoogleBusinessProfileDisconnectRequest() {
 		return this.page.waitForRequest(
 			( request ) =>
-				request.url().includes( '/gla/business-profile/connection' ) &&
+				/\/wc\/gla\/business-profile\/connection\b/.test(
+					request.url()
+				) &&
 				request.method() === 'POST' &&
 				request.headers()[ 'x-http-method-override' ] === 'DELETE'
 		);

@@ -3,6 +3,17 @@
  */
 import lodash from 'lodash';
 
+/**
+ * Scopes granted by a baseline Google connection.
+ */
+const BASE_GOOGLE_SCOPES = [
+	'https://www.googleapis.com/auth/content',
+	'https://www.googleapis.com/auth/adwords',
+	'https://www.googleapis.com/auth/userinfo.email',
+	'https://www.googleapis.com/auth/siteverification.verify_only',
+	'openid',
+];
+
 const proxyFulfill = ( instance, options ) => {
 	return new Proxy( instance.originalTarget || instance, {
 		get( target, property ) {
@@ -784,13 +795,7 @@ export default class MockRequests {
 		await this.fulfillGoogleConnection( {
 			active: 'yes',
 			email,
-			scope: [
-				'https://www.googleapis.com/auth/content',
-				'https://www.googleapis.com/auth/adwords',
-				'https://www.googleapis.com/auth/userinfo.email',
-				'https://www.googleapis.com/auth/siteverification.verify_only',
-				'openid',
-			],
+			scope: [ ...BASE_GOOGLE_SCOPES ],
 		} );
 	}
 
@@ -1473,12 +1478,8 @@ export default class MockRequests {
 			active: 'yes',
 			email,
 			scope: [
-				'https://www.googleapis.com/auth/content',
-				'https://www.googleapis.com/auth/adwords',
-				'https://www.googleapis.com/auth/userinfo.email',
-				'https://www.googleapis.com/auth/siteverification.verify_only',
+				...BASE_GOOGLE_SCOPES,
 				'https://www.googleapis.com/auth/business.manage',
-				'openid',
 			],
 		} );
 	}

@@ -287,7 +287,7 @@ test.describe( 'Settings', () => {
 					settingsPage.registerYouTubeDisconnectRequest();
 
 				await settingsPage.getYouTubeAccountActionsButton().click();
-				await settingsPage.getYouTubeDisconnectMenuItem().click();
+				await settingsPage.getDisconnectMenuItem().click();
 				await page
 					.getByRole( 'checkbox', {
 						name: 'Yes, I want to disconnect my YouTube account.',
