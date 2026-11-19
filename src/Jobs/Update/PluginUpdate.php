@@ -51,6 +51,10 @@ class PluginUpdate implements Service, InstallableInterface {
 		'3.8.0'  => [
 			UpdateAllProducts::class,
 		],
+		// Delete conversion report CSVs left in the web-reachable export folder by earlier versions.
+		'3.10.0' => [
+			DeleteYouTubeConversionReports::class,
+		],
 		// Products in exchange-rate secondary markets were marked invalid with a null
 		// price and are excluded from the expiring-products resync; re-sync them once.
 		'3.10.2' => [
