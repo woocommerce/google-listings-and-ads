@@ -47,6 +47,9 @@ class PostPublishTriggerTest extends UnitTest {
 	/** @var PostPublishTrigger $trigger */
 	protected $trigger;
 
+	/** @var bool Whether the stubbed has_empty_summary() reports an empty Summary. */
+	protected $summary_is_empty = false;
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -71,8 +74,11 @@ class PostPublishTriggerTest extends UnitTest {
 		);
 		// Nothing to unshare by default -- the dedicated tests below set this up explicitly.
 		$this->local_post_service->method( 'should_unshare' )->willReturn( false );
-		// A Summary is present by default -- the dedicated tests below set this up explicitly.
-		$this->local_post_service->method( 'has_empty_summary' )->willReturn( false );
+		$this->local_post_service->method( 'has_empty_summary' )->willReturnCallback(
+			function () {
+				return $this->summary_is_empty;
+			}
+		);
 
 		// Still needed for register_share_meta()'s own PostShareControl, not for the trigger.
 		$this->location_service = $this->createMock( LocationService::class );
@@ -366,22 +372,7 @@ class PostPublishTriggerTest extends UnitTest {
 	 * still publishes, but nothing is sent or scheduled.
 	 */
 	public function test_does_not_schedule_and_stores_an_empty_summary_outcome_when_the_summary_is_empty() {
-		// method()->willReturn() keeps whichever stub was configured first, so a disqualifying
-		// has_empty_summary() needs its own mock rather than re-stubbing setUp()'s shared one.
-		$this->local_post_service = $this->createMock( LocalPostService::class );
-		$this->local_post_service->method( 'is_shareable' )->willReturnCallback(
-			function ( WP_Post $post ) {
-				return (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
-			}
-		);
-		$this->local_post_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
-		$this->local_post_service->method( 'has_empty_summary' )->willReturn( true );
-		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->job_repository );
+		$this->summary_is_empty = true;
 
 		$post        = $this->create_shared_post();
 		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );

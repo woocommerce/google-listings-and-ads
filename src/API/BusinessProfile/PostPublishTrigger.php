@@ -163,9 +163,7 @@ class PostPublishTrigger implements Service, Registerable {
 		$this->handled_in_request[ $post->ID ] = true;
 
 		if ( $this->local_post_service->has_empty_summary( $post->ID ) ) {
-			// Google rejects a post with no text, so don't send one -- the post still publishes;
-			// only the send to Google is skipped. sends_on_save() already retries this once the
-			// merchant adds text and updates, the same way it retries any other FAILURES outcome.
+			// Google rejects a post with no text. Saving again retries it once text is added.
 			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::EMPTY_SUMMARY );
 			return;
 		}
