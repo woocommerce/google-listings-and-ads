@@ -9,6 +9,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiExcep
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,12 +25,15 @@ defined( 'ABSPATH' ) || exit;
  * and the cache-key prefix. Reuses an existing matching data source when one is already
  * on the merchant, otherwise creates one. Resolved names are cached in options.
  * Resolution is lazy: the first write into a given market triggers the lookup/create.
+ * A cached name is re-checked against the account at most once per VERIFY_TTL, so steady
+ * state costs a couple of dataSources.get calls per data source per day, not one per request.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services
  */
-class MapiDataSourcesService implements OptionsAwareInterface {
+class MapiDataSourcesService implements OptionsAwareInterface, TransientsAwareInterface {
 
 	use OptionsAwareTrait;
+	use TransientsAwareTrait;
 
 	/** Display name prefix used when creating the plugin's data sources. */
 	public const DATA_SOURCE_DISPLAY_NAME = 'Google for WooCommerce';
@@ -60,6 +66,17 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 */
 	private const ONLINE_PRODUCT_DESTINATIONS = [ 'SHOPPING_ADS', 'FREE_LISTINGS' ];
 
+	/**
+	 * Destination lists tried in order when creating a product data source. Google rejects the
+	 * whole request when the account can't use one of the requested destinations (e.g. an account
+	 * without free listings gets "Destinations of the data source are invalid: ORGANIC_EXPERIENCES"),
+	 * so each rejection falls back to a narrower list. There is deliberately no final attempt
+	 * without destinations: that is what produced local-only sources (see
+	 * is_local_only_product_source()), and an account rejecting even SHOPPING_ADS would likely get
+	 * one, which channel-mismatch recovery can't repair.
+	 */
+	private const PRODUCT_DESTINATION_FALLBACKS = [ self::ONLINE_PRODUCT_DESTINATIONS, [ 'SHOPPING_ADS' ] ];
+
 	/** Destinations that only serve local (not online) product listings. */
 	private const LOCAL_PRODUCT_DESTINATIONS = [ 'LOCAL_INVENTORY_ADS', 'FREE_LOCAL_LISTINGS' ];
 
@@ -86,12 +103,20 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 */
 	private const RECREATE_RATE_LIMIT = DAY_IN_SECONDS;
 
+	/**
+	 * How long a confirmed data source is trusted before its cached name is checked again.
+	 * A deleted or local-only source is also recovered by the product insert retry, and a
+	 * source's input type is fixed at creation, so this only bounds how long unchanged products
+	 * (skipped by hash, so never inserted) can wait for a re-resolve after a deletion.
+	 */
+	private const VERIFY_TTL = 12 * HOUR_IN_SECONDS;
+
 	/** @var MerchantApiClient */
 	protected $client;
 
 	/**
-	 * Resource names confirmed to exist on the account during this request, so repeat
-	 * resolutions of the same data source do not re-issue a dataSources.get.
+	 * Resource names this request uses without a dataSources.get: confirmed now or within
+	 * VERIFY_TTL, or kept after a non-404 check error.
 	 *
 	 * @var array<string, true>
 	 */
@@ -154,8 +179,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		if ( isset( $cache[ $cache_key ] ) && '' !== $cache[ $cache_key ] ) {
 			$name = (string) $cache[ $cache_key ];
 
-			if ( isset( $this->verified_data_sources[ $name ] ) || $this->verify_cached_source( $type, $name ) ) {
-				$this->verified_data_sources[ $name ] = true;
+			if ( $this->is_recently_verified( $name ) || $this->verify_cached_source( $type, $name ) ) {
 				return $name;
 			}
 
@@ -279,8 +303,8 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Write a resolved data source name into the option cache and mark it verified for the rest
-	 * of this request, so a repeat resolution of the same pair does not re-issue a dataSources.get.
+	 * Write a resolved data source name into the option cache and mark it verified for VERIFY_TTL,
+	 * so a repeat resolution of the same pair does not re-issue a dataSources.get.
 	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
@@ -297,7 +321,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 
 		// Just observed on the account (discovered or created), so it exists without a further request.
-		$this->verified_data_sources[ $name ] = true;
+		$this->mark_verified( $name );
 
 		return $name;
 	}
@@ -308,7 +332,8 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 *
 	 * Only a 404 proves absence, so any other error (auth, transient 5xx) keeps the cached name:
 	 * discarding it there would force a needless list-or-create, and a genuinely missing source
-	 * still surfaces on the insert that follows.
+	 * still surfaces on the insert that follows. Such an error skips the check for the rest of
+	 * this request only; just a successful get of a usable source is recorded for VERIFY_TTL.
 	 *
 	 * @param array  $type One of the *_SOURCE descriptors.
 	 * @param string $name Data source resource name.
@@ -319,10 +344,88 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		try {
 			$source = $this->client->get( sprintf( '%s/%s', MapiPaths::DATASOURCES, $name ) );
 		} catch ( MerchantApiException $exception ) {
-			return 404 !== $exception->get_http_status();
+			if ( 404 === $exception->get_http_status() ) {
+				return false;
+			}
+
+			$this->verified_data_sources[ $name ] = true;
+			return true;
 		}
 
-		return ! $this->is_unusable_data_source( $type, $source );
+		if ( $this->is_unusable_data_source( $type, $source ) ) {
+			return false;
+		}
+
+		$this->mark_verified( $name );
+		return true;
+	}
+
+	/**
+	 * Whether a data source was confirmed to exist during this request or within VERIFY_TTL.
+	 *
+	 * @param string $name Data source resource name.
+	 *
+	 * @return bool
+	 */
+	private function is_recently_verified( string $name ): bool {
+		if ( isset( $this->verified_data_sources[ $name ] ) ) {
+			return true;
+		}
+
+		$verified_at = $this->get_verified_timestamps()[ $name ] ?? 0;
+		if ( $verified_at > time() - self::VERIFY_TTL ) {
+			$this->verified_data_sources[ $name ] = true;
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Record that a data source was just confirmed to exist, for this request and for VERIFY_TTL.
+	 * Expired entries are pruned on each write so the transient does not grow.
+	 *
+	 * @param string $name Data source resource name.
+	 */
+	private function mark_verified( string $name ): void {
+		$this->verified_data_sources[ $name ] = true;
+
+		$now        = time();
+		$timestamps = array_filter(
+			$this->get_verified_timestamps(),
+			static function ( $verified_at ) use ( $now ): bool {
+				return (int) $verified_at > $now - self::VERIFY_TTL;
+			}
+		);
+
+		$timestamps[ $name ] = $now;
+		$this->transients->set( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED, $timestamps, self::VERIFY_TTL );
+	}
+
+	/**
+	 * Drop a data source's verification, so the next cache hit checks it against the account.
+	 *
+	 * @param string $name Data source resource name.
+	 */
+	private function unmark_verified( string $name ): void {
+		unset( $this->verified_data_sources[ $name ] );
+
+		$timestamps = $this->get_verified_timestamps();
+		if ( ! isset( $timestamps[ $name ] ) ) {
+			return;
+		}
+
+		unset( $timestamps[ $name ] );
+		$this->transients->set( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED, $timestamps, self::VERIFY_TTL );
+	}
+
+	/**
+	 * When each data source was last confirmed to exist, keyed by resource name.
+	 *
+	 * @return array<string, int>
+	 */
+	private function get_verified_timestamps(): array {
+		return (array) $this->transients->get( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED, [] );
 	}
 
 	/**
@@ -447,7 +550,19 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Drop a cached data source from both the option cache and the verified-this-request set.
+	 * Drop every recorded verification, so the next cache hit of each data source is checked
+	 * against the account again. For manual diagnostics that must reflect the account's current
+	 * state, not a check up to VERIFY_TTL old. Cached names are kept.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function clear_verifications(): void {
+		$this->verified_data_sources = [];
+		$this->transients->delete( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED );
+	}
+
+	/**
+	 * Drop a cached data source from the option cache and its verification.
 	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
@@ -462,8 +577,9 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		}
 
 		$name = (string) $cache[ $cache_key ];
-		unset( $cache[ $cache_key ], $this->verified_data_sources[ $name ] );
+		unset( $cache[ $cache_key ] );
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
+		$this->unmark_verified( $name );
 	}
 
 	/**
@@ -502,6 +618,22 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		}
 
 		return false !== stripos( $failure->getMessage(), 'does not match product channel' );
+	}
+
+	/**
+	 * Whether a failure is a rejection of the requested destinations: a 400 whose message starts
+	 * with the destinations field path, e.g. "[primaryProductDataSource.destinations] Destinations
+	 * of the data source are invalid: ORGANIC_EXPERIENCES." for an account that can't use free
+	 * listings. Matching the field path keeps other 400s that merely mention destinations from
+	 * triggering a retry.
+	 *
+	 * @param MerchantApiException $failure
+	 *
+	 * @return bool
+	 */
+	private static function is_invalid_destinations_failure( MerchantApiException $failure ): bool {
+		return 400 === $failure->get_http_status()
+			&& false !== stripos( $failure->getMessage(), '[primaryProductDataSource.destinations]' );
 	}
 
 	/**
@@ -633,15 +765,88 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	private function create_data_source( array $type, string $content_language, string $match_value ): string {
+		if ( empty( $type['set_online_destinations'] ) ) {
+			return $this->post_data_source( $type, $content_language, $match_value, null );
+		}
+
+		// Without an explicit destinations list, Google inherits the account's local-inventory
+		// participation at creation time, which can produce a local-only source (see
+		// is_local_only_product_source()). Requesting online destinations prevents that, but an
+		// account that can't use one of them rejects the request, so narrower lists are tried next.
+		$fallbacks    = self::PRODUCT_DESTINATION_FALLBACKS;
+		$destinations = array_shift( $fallbacks );
+
+		foreach ( $fallbacks as $next ) {
+			try {
+				return $this->post_data_source( $type, $content_language, $match_value, $destinations );
+			} catch ( MerchantApiException $exception ) {
+				if ( ! self::is_invalid_destinations_failure( $exception ) ) {
+					throw $exception;
+				}
+
+				do_action(
+					'woocommerce_gla_error',
+					sprintf(
+						'Data source destinations [%s] were rejected for %s|%s, retrying with [%s]: %s',
+						implode( ', ', $destinations ),
+						$content_language,
+						$match_value,
+						implode( ', ', $next ),
+						$exception->getMessage()
+					),
+					__METHOD__
+				);
+
+				$destinations = $next;
+			}
+		}
+
+		try {
+			return $this->post_data_source( $type, $content_language, $match_value, $destinations );
+		} catch ( MerchantApiException $exception ) {
+			if ( self::is_invalid_destinations_failure( $exception ) ) {
+				$tried = array_map(
+					static function ( array $destination_list ): string {
+						return '[' . implode( ', ', $destination_list ) . ']';
+					},
+					self::PRODUCT_DESTINATION_FALLBACKS
+				);
+
+				do_action(
+					'woocommerce_gla_error',
+					sprintf(
+						'Google rejected every destination list tried for data source %s|%s (%s), so products cannot sync until the Merchant Center account can use at least one of them: %s',
+						$content_language,
+						$match_value,
+						implode( ', ', $tried ),
+						$exception->getMessage()
+					),
+					__METHOD__
+				);
+			}
+
+			throw $exception;
+		}
+	}
+
+	/**
+	 * Post a single create request for a data source of the given type.
+	 *
+	 * @param array      $type             One of the *_SOURCE descriptors.
+	 * @param string     $content_language Language code.
+	 * @param string     $match_value      Secondary identity value (feed label or target country).
+	 * @param array|null $destinations     Destinations to enable, or null to omit the field.
+	 *
+	 * @return string The created data source resource name.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	private function post_data_source( array $type, string $content_language, string $match_value, ?array $destinations ): string {
 		$descriptor = [
 			'contentLanguage'    => $content_language,
 			$type['match_field'] => $match_value,
 		];
 
-		if ( ! empty( $type['set_online_destinations'] ) ) {
-			// Without an explicit destinations list, Google inherits the account's local-inventory
-			// participation at creation time, which can produce a local-only source (see
-			// is_local_only_product_source()). Requesting only the online destinations prevents that.
+		if ( null !== $destinations ) {
 			$descriptor['destinations'] = array_map(
 				static function ( string $destination ): array {
 					return [
@@ -649,7 +854,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 						'state'       => 'ENABLED',
 					];
 				},
-				self::ONLINE_PRODUCT_DESTINATIONS
+				$destinations
 			);
 		}
 

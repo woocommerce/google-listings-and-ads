@@ -117,7 +117,7 @@ describe( 'useUpsertAdsAccount', () => {
 		expect( fetchGoogleAdsAccountStatus ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'reports other errors to the Google Ads connection error slot', async () => {
+	it( 'reports other errors to the Google Ads connection error slot without refreshing the account data', async () => {
 		apiFetch.mockRejectedValue(
 			jsonResponse( { message: 'Invalid account' }, 400 )
 		);
@@ -139,7 +139,11 @@ describe( 'useUpsertAdsAccount', () => {
 				title: 'Google Ads Creation Failed',
 			}
 		);
-		expect( fetchGoogleAdsAccount ).toHaveBeenCalledTimes( 1 );
-		expect( fetchGoogleAdsAccountStatus ).toHaveBeenCalledTimes( 1 );
+		expect( fetchGoogleAdsAccount ).not.toHaveBeenCalled();
+		expect( fetchGoogleAdsAccountStatus ).not.toHaveBeenCalled();
+		expect( result.current[ 1 ] ).toEqual( {
+			loading: false,
+			action: null,
+		} );
 	} );
 } );

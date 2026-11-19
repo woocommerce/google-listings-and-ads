@@ -1,5 +1,28 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.10.1 - 2026-11-16 =
+* Add - Allow regional WPML language codes in Markets and align supported languages with Google Merchant Center.
+* Add - Offer the Google Ads credit picker when creating a campaign after onboarding, and hide it after an offer is applied.
+* Add - Show the Programs report with Google Ads campaign data to merchants without a Merchant Center account.
+* Fix - Clear the "Pending" sync status when a product edit doesn't change the data sent to Google.
+* Fix - Configure Google Ads before early tracking events fire on block themes.
+* Fix - Preserve Google Ads purchase events when WooCommerce Analytics tracking is unavailable.
+* Fix - Prevent a fatal error on front-end URLs containing "wp-json/" when Enhanced Conversions is enabled.
+* Fix - Prevent a fatal error on wp-admin pages when the Google Ads API connection drops during the notification check.
+* Fix - Prevent number inputs from resetting amounts of 1,000 or more when the store's decimal and thousand separators match.
+* Fix - Prevent product sync failures with "Destinations of the data source are invalid: ORGANIC_EXPERIENCES" for Merchant Center accounts that can't use free listings.
+* Fix - Restore missing styles in the Markets tab.
+* Fix - Restrict the GTIN migration status REST endpoint to users with the `manage_woocommerce` capability.
+* Fix - Show Google Ads account creation errors during onboarding and clear stale errors when switching account actions.
+* Fix - Stop resubmitting unchanged products that have a sale end date but no sale start date on every sync.
+* Tweak - Add an event-level developer ID to all structured gtag ecommerce events.
+* Tweak - Add feed issue counts to the tracker snapshot: blocking account issues, disapproved products, products with error-level issues, products failing pre-sync validation, and synced products.
+* Tweak - Allow scripts and styles to share an asset handle.
+* Tweak - Bump WooCommerce "tested up to" version to 11.3.
+* Tweak - Remove leading and trailing spaces from admin strings so translators control spacing and word order.
+* Tweak - Update Google Ads credit offer copy, including the WooCommerce Inbox notes.
+* Tweak - Update the WordPress.com logo on the account connection card.
+
 = 3.10.0 - 2026-10-20 =
 * Add - Let merchants collect Google Customer Reviews after purchase and display their aggregate Google rating on the storefront.
 * Update - Remove the US tax rate setting, as Google is retiring the US Sales Tax service.

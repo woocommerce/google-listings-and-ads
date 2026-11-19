@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BadgeWid
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CollectReviewsEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CyoSurveyNoSpendEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CyoSurveySpendEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PausedCampaignEvaluator;
@@ -49,6 +51,8 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 		CampaignNoSalesEvaluator::class,
 		CollectReviewsEvaluator::class,
 		CouponsNotSyncedEvaluator::class,
+		CyoSurveyNoSpendEvaluator::class,
+		CyoSurveySpendEvaluator::class,
 		EnhancedConversionsOffEvaluator::class,
 		NotOnboardedEvaluator::class,
 		PausedCampaignEvaluator::class,
