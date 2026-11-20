@@ -52,11 +52,6 @@ const useOrganicOverviewMetrics = () => {
 				formatFn: withFormat(
 					( value ) => `${ formatNumber( value * 100, 1 ) }%`
 				),
-				// Chart's Y-axis scale breaks for all-sub-1 values, so CTR charts as 0-100 instead.
-				chartValueScale: 100,
-				chartFormatFn: withFormat(
-					( value ) => `${ formatNumber( value, 1 ) }%`
-				),
 			},
 			{
 				key: 'position',

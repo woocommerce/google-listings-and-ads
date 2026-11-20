@@ -59,30 +59,6 @@ describe( 'useOrganicOverviewMetrics', () => {
 		} );
 	} );
 
-	it( 'scales CTR for charting, and formats the already-scaled value without multiplying again', () => {
-		const { result } = renderHook( () => useOrganicOverviewMetrics() );
-		const ctr = getMetric( result.current, 'ctr' );
-
-		// The raw value (as `formatFn` expects) is a 0-1 fraction; the charted value is that
-		// fraction already multiplied by `chartValueScale`, so the same real CTR is formatted
-		// consistently by both: formatFn(0.038) and chartFormatFn(0.038 * chartValueScale).
-		expect( ctr.chartValueScale ).toBe( 100 );
-		expect( ctr.chartFormatFn( 0.038 * ctr.chartValueScale ) ).toBe(
-			'3.8%'
-		);
-	} );
-
-	it( 'leaves clicks, impressions and position unscaled for charting', () => {
-		const { result } = renderHook( () => useOrganicOverviewMetrics() );
-
-		result.current
-			.filter( ( { key } ) => key !== 'ctr' )
-			.forEach( ( metric ) => {
-				expect( metric.chartValueScale ).toBeUndefined();
-				expect( metric.chartFormatFn ).toBeUndefined();
-			} );
-	} );
-
 	it( 'reverses the trend colours and explains average position only', () => {
 		const { result } = renderHook( () => useOrganicOverviewMetrics() );
 		const position = getMetric( result.current, 'position' );

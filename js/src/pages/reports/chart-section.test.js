@@ -37,16 +37,13 @@ const metrics = [
 	},
 ];
 
-// A CTR-shaped metric: its raw value is a 0-1 fraction (`formatFn`), but it's charted as a
-// 0-100 percentage (`chartValueScale`/`chartFormatFn`) to stay out of the value domain where
-// @woocommerce/components' Chart breaks (see useOrganicOverviewMetrics.js).
+// A CTR-shaped metric: its real values are always a 0-1 fraction, the value domain where
+// @woocommerce/components' Chart breaks (see chart-section.js's getChartValueScale).
 const ctrMetrics = [
 	{
 		key: 'ctr',
 		label: 'CTR',
 		formatFn: ( value ) => `${ value * 100 } raw%`,
-		chartValueScale: 100,
-		chartFormatFn: ( value ) => `${ value } chart%`,
 	},
 ];
 
@@ -96,7 +93,7 @@ describe( 'ChartSection', () => {
 			expect( getChartProps().isRequesting ).toBe( true );
 		} );
 
-		it( 'scales a metric with chartValueScale before plotting, and formats with chartFormatFn', () => {
+		it( 'scales an all-sub-1 metric up by a power of 10 before plotting, and formats back down', () => {
 			render(
 				<ChartSection
 					metrics={ ctrMetrics }
@@ -107,11 +104,30 @@ describe( 'ChartSection', () => {
 				/>
 			);
 
+			// 0.05 is the only value, so it alone sets the scale: ×1000 brings it to 50
+			// (the smallest power of 10 that clears the ≥10 floor), and formatFn divides that
+			// back down to the real 0.05 before applying its own ×100 percentage formatting.
 			const props = getChartProps();
 			expect( props.data ).toEqual( [
-				{ date: '2026-10-01', CTR: { value: 5, label: 'CTR' } },
+				{ date: '2026-10-01', CTR: { value: 50, label: 'CTR' } },
 			] );
-			expect( props.tooltipValueFormat( 5 ) ).toBe( '5 chart%' );
+			expect( props.tooltipValueFormat( 50 ) ).toBe( '5 raw%' );
+		} );
+
+		it( 'leaves an already-safe metric unscaled', () => {
+			render(
+				<ChartSection
+					metrics={ metrics }
+					loaded
+					intervals={ [
+						{ interval: '2026-10-01', subtotals: { clicks: 30 } },
+					] }
+				/>
+			);
+
+			expect( getChartProps().data ).toEqual( [
+				{ date: '2026-10-01', Clicks: { value: 30, label: 'Clicks' } },
+			] );
 		} );
 	} );
 
@@ -214,7 +230,7 @@ describe( 'ChartSection', () => {
 			} );
 		} );
 
-		it( 'scales a metric with chartValueScale in both the plotted data and the legend totals', () => {
+		it( 'scales an all-sub-1 metric by the combined max of both periods, with headroom for either alone', () => {
 			render(
 				<ChartSection
 					metrics={ ctrMetrics }
@@ -240,29 +256,32 @@ describe( 'ChartSection', () => {
 				/>
 			);
 
+			// The combined max across both periods (0.05) sets the scale (×1000), not either
+			// period alone -- so if the merchant unchecks "Month to date" in the legend, the
+			// remaining "Previous year" series (0.02 × 1000 = 20) is still comfortably clear
+			// of the value domain where Chart's Y-axis scale breaks.
 			const props = getChartProps();
 			expect( props.data ).toEqual( [
 				{
 					date: '2026-10-01T00:00:00',
 					primary: {
 						label: 'Month to date',
-						value: 5,
+						value: 50,
 						labelDate: '2026-10-01T00:00:00',
 					},
 					secondary: {
 						label: 'Previous year',
-						value: 2,
+						value: 20,
 						labelDate: '2025-10-01T00:00:00',
 					},
 				},
 			] );
 			expect( props.legendTotals ).toEqual( {
-				primary: 5,
-				secondary: 2,
+				primary: 50,
+				secondary: 20,
 			} );
-			expect( props.yFormat( 5 ) ).toBe( '5 chart%' );
-			expect( props.yBelow1Format( 5 ) ).toBe( '5 chart%' );
-			expect( props.legendValueFormat( 5 ) ).toBe( '5 chart%' );
+			expect( props.yFormat( 50 ) ).toBe( '5 raw%' );
+			expect( props.yBelow1Format( 20 ) ).toBe( '2 raw%' );
 		} );
 	} );
 } );

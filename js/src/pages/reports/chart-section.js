@@ -39,6 +39,53 @@ function generateDateRange( start, end ) {
 }
 
 /**
+ * Picks a power-of-10 scale factor for a metric whose combined max across both periods is
+ * below 1 (1, i.e. unscaled, for every other metric). Chart's own Y-axis scale (`calculateStep`
+ * in `@woocommerce/components`) breaks and renders nothing for an all-sub-1 value domain;
+ * metrics like CTR are always a 0-1 fraction, so they need this to chart at all.
+ *
+ * Scaling to the combined max of both periods, with a ×10 margin rather than just ≥1, also
+ * covers unchecking a legend series: Chart recomputes its Y-axis from only the still-visible
+ * series, so the remaining one needs headroom even though it wasn't the one that set the scale.
+ *
+ * @param {Array<IntervalsData>} intervals Intervals data of the selected period.
+ * @param {ChartComparison} [comparison] Data of the comparison period, if any.
+ * @param {string} key Key of the metric to plot.
+ * @return {number} Scale factor to multiply every plotted value by.
+ */
+function getChartValueScale( intervals, comparison, key ) {
+	const maxValue = Math.max(
+		0,
+		...intervals.map( ( { subtotals } ) => subtotals[ key ] ?? 0 ),
+		...( comparison?.intervals ?? [] ).map(
+			( { subtotals } ) => subtotals[ key ] ?? 0
+		)
+	);
+
+	if ( maxValue === 0 || maxValue >= 1 ) {
+		return 1;
+	}
+
+	let scale = 1;
+	while ( maxValue * scale < 10 ) {
+		scale *= 10;
+	}
+
+	return scale;
+}
+
+/**
+ * Multiplies a value by `scale`, passing `undefined` through unchanged.
+ *
+ * @param {number} [value] Value to scale.
+ * @param {number} scale Scale factor from {@see getChartValueScale}.
+ * @return {number|undefined} The scaled value.
+ */
+function scaleValue( value, scale ) {
+	return value === undefined ? undefined : value * scale;
+}
+
+/**
  * Renders a report chart.
  *
  * With `comparison`, it plots the selected and the comparison periods as two lines, each in
@@ -73,14 +120,7 @@ export default function ChartSection( {
 			metrics[ 0 ];
 	}
 
-	const {
-		key,
-		label,
-		isCurrency = false,
-		formatFn,
-		chartValueScale = 1,
-		chartFormatFn = formatFn,
-	} = visibleMetric;
+	const { key, label, isCurrency = false, formatFn } = visibleMetric;
 
 	// Preferably we would use the currency of the selected metric to be used on y axis.
 	// But due to https://github.com/woocommerce/woocommerce-admin/issues/7694 Chart will not react on changes.
@@ -88,10 +128,12 @@ export default function ChartSection( {
 	const visibleCurrency = { ...storeCurrencyConfig, symbol: '' };
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
-	// Formats a value already multiplied by `chartValueScale`, for everything Chart itself
-	// renders (tooltip, Y-axis, legend) -- as opposed to `formatFn`, which formats a raw value
-	// and is used by the summary cards above the chart instead.
-	const localizedChartFormatFn = chartFormatFn.bind( visibleMetric );
+	const scale = getChartValueScale( intervals, comparison, key );
+	// Formats a value already multiplied by `scale`, for everything Chart itself renders
+	// (tooltip, Y-axis, legend) -- as opposed to `formatFn`, which formats a raw value and is
+	// used by the summary cards above the chart instead.
+	const localizedChartFormatFn = ( value ) =>
+		formatFn.call( visibleMetric, value / scale );
 
 	const chartData = useMemo( () => {
 		if ( ! loaded || ! intervals.length ) {
@@ -99,12 +141,7 @@ export default function ChartSection( {
 		}
 
 		if ( comparison ) {
-			return getComparisonChartData(
-				intervals,
-				comparison,
-				key,
-				chartValueScale
-			);
+			return getComparisonChartData( intervals, comparison, key, scale );
 		}
 
 		// Map existing intervals for quick lookup
@@ -127,27 +164,21 @@ export default function ChartSection( {
 			return {
 				date,
 				[ label ]: {
-					value: ( subtotals[ key ] ?? 0 ) * chartValueScale,
+					value: ( subtotals[ key ] ?? 0 ) * scale,
 					label,
 				},
 			};
 		} );
-	}, [ key, label, loaded, intervals, comparison, chartValueScale ] );
-
-	// Chart's own totals (legend, tooltip) need the same scaling as the plotted data above, so
-	// they stay consistent with it and with `localizedChartFormatFn`.
-	const scaleLegendTotal = ( value ) =>
-		value === undefined ? undefined : value * chartValueScale;
+	}, [ key, label, loaded, intervals, comparison, scale ] );
 
 	const comparisonProps = comparison && {
 		yFormat: localizedChartFormatFn,
 		yBelow1Format: localizedChartFormatFn,
-		legendValueFormat: localizedChartFormatFn,
 		interval: intervalUnit,
 		allowedIntervals,
 		legendTotals: {
-			primary: scaleLegendTotal( comparison.totals[ key ]?.value ),
-			secondary: scaleLegendTotal( comparison.totals[ key ]?.prevValue ),
+			primary: scaleValue( comparison.totals[ key ]?.value, scale ),
+			secondary: scaleValue( comparison.totals[ key ]?.prevValue, scale ),
 		},
 	};
 
