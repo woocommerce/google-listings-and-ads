@@ -124,6 +124,12 @@ class GoogleHelper implements Service {
 			'currency' => 'EUR',
 			'id'       => 2191,
 		],
+		// Cyprus
+		'CY' => [
+			'code'     => 'CY',
+			'currency' => 'EUR',
+			'id'       => 2196,
+		],
 		// Czechia
 		'CZ' => [
 			'code'     => 'CZ',
@@ -159,6 +165,12 @@ class GoogleHelper implements Service {
 			'code'     => 'SV',
 			'currency' => 'USD',
 			'id'       => 2222,
+		],
+		// Estonia
+		'EE' => [
+			'code'     => 'EE',
+			'currency' => 'EUR',
+			'id'       => 2233,
 		],
 		// Ethiopia
 		'ET' => [
@@ -280,11 +292,29 @@ class GoogleHelper implements Service {
 			'currency' => 'KWD',
 			'id'       => 2414,
 		],
+		// Latvia
+		'LV' => [
+			'code'     => 'LV',
+			'currency' => 'EUR',
+			'id'       => 2428,
+		],
 		// Lebanon
 		'LB' => [
 			'code'     => 'LB',
 			'currency' => 'LBP',
 			'id'       => 2422,
+		],
+		// Lithuania
+		'LT' => [
+			'code'     => 'LT',
+			'currency' => 'EUR',
+			'id'       => 2440,
+		],
+		// Luxembourg
+		'LU' => [
+			'code'     => 'LU',
+			'currency' => 'EUR',
+			'id'       => 2442,
 		],
 		// Madagascar
 		'MG' => [
@@ -297,6 +327,12 @@ class GoogleHelper implements Service {
 			'code'     => 'MY',
 			'currency' => 'MYR',
 			'id'       => 2458,
+		],
+		// Malta
+		'MT' => [
+			'code'     => 'MT',
+			'currency' => 'EUR',
+			'id'       => 2470,
 		],
 		// Mauritius
 		'MU' => [
@@ -453,6 +489,12 @@ class GoogleHelper implements Service {
 			'code'     => 'SK',
 			'currency' => 'EUR',
 			'id'       => 2703,
+		],
+		// Slovenia
+		'SI' => [
+			'code'     => 'SI',
+			'currency' => 'EUR',
+			'id'       => 2705,
 		],
 		// South Africa
 		'ZA' => [
