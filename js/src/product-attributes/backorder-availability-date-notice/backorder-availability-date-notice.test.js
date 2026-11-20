@@ -60,7 +60,10 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 	} );
 
 	it( 'renders the warning notice when backorder is selected and no availability date is set', () => {
-		renderInventoryFields( { backorders: 'yes', stockStatus: 'instock' } );
+		renderInventoryFields( {
+			backorders: 'no',
+			stockStatus: 'onbackorder',
+		} );
 		glaDateEl.value = '';
 
 		render(
@@ -95,7 +98,10 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 	} );
 
 	it( 'renders nothing when an availability date is already set', () => {
-		renderInventoryFields( { backorders: 'yes', stockStatus: 'instock' } );
+		renderInventoryFields( {
+			backorders: 'no',
+			stockStatus: 'onbackorder',
+		} );
 		glaDateEl.value = '2026-01-01';
 
 		const { container } = render(
@@ -156,7 +162,7 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'shows the notice after backorder is selected via a change event', () => {
+	it( 'shows the notice after the stock status changes to on backorder', () => {
 		renderInventoryFields( { backorders: 'no', stockStatus: 'instock' } );
 		glaDateEl.value = '';
 
@@ -175,11 +181,11 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 			)
 		).not.toBeInTheDocument();
 
-		const backordersSelect = document.querySelector(
-			'#inventory_product_data select[name="_backorders"]'
+		const stockStatusSelect = document.querySelector(
+			'#inventory_product_data select[name="_stock_status"]'
 		);
-		backordersSelect.value = 'yes';
-		fireEvent.change( backordersSelect );
+		stockStatusSelect.value = 'onbackorder';
+		fireEvent.change( stockStatusSelect );
 
 		expect(
 			screen.getByText(
@@ -190,7 +196,10 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 	} );
 
 	it( 'hides the notice once an availability date is entered', () => {
-		renderInventoryFields( { backorders: 'yes', stockStatus: 'instock' } );
+		renderInventoryFields( {
+			backorders: 'no',
+			stockStatus: 'onbackorder',
+		} );
 		glaDateEl.value = '';
 
 		render(
@@ -220,7 +229,10 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 	} );
 
 	it( 'clicks the corresponding tab link when the notice link is clicked', () => {
-		renderInventoryFields( { backorders: 'yes', stockStatus: 'instock' } );
+		renderInventoryFields( {
+			backorders: 'no',
+			stockStatus: 'onbackorder',
+		} );
 		glaDateEl.value = '';
 
 		render(
@@ -259,12 +271,12 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 
 		unmount();
 
-		const backordersSelect = document.querySelector(
-			'#inventory_product_data select[name="_backorders"]'
+		const stockStatusSelect = document.querySelector(
+			'#inventory_product_data select[name="_stock_status"]'
 		);
-		backordersSelect.value = 'yes';
+		stockStatusSelect.value = 'onbackorder';
 
-		expect( () => fireEvent.change( backordersSelect ) ).not.toThrow();
+		expect( () => fireEvent.change( stockStatusSelect ) ).not.toThrow();
 		expect(
 			screen.queryByText(
 				'Google requires an availability date for products on backorder',

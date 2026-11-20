@@ -30,17 +30,29 @@ export const getFieldValue = ( name ) => {
 };
 
 /**
- * Check if the backorder is selected.
+ * Check if the product would be on backorder with the current inventory settings.
+ * Mirrors `WC_Product::is_on_backorder()`: with stock management enabled, backorders
+ * must be allowed and the stock quantity must be zero or less; otherwise only the
+ * stock status counts.
  *
- * @return {boolean} True if the backorder is selected, false otherwise.
+ * @return {boolean} True if the product would be on backorder, false otherwise.
  */
 export const isBackorderSelected = () => {
-	const backorders = getFieldValue( '_backorders' );
-	const stockStatus = getFieldValue( '_stock_status' );
+	const manageStock = document.querySelector(
+		`${ INVENTORY_PRODUCT_DATA } input[name="_manage_stock"]`
+	)?.checked;
+
+	if ( ! manageStock ) {
+		return getFieldValue( '_stock_status' ) === 'onbackorder';
+	}
+
+	const stockQuantity = document.querySelector(
+		`${ INVENTORY_PRODUCT_DATA } input[name="_stock"]`
+	)?.value;
 
 	return (
-		[ 'yes', 'notify' ].includes( backorders ) ||
-		stockStatus === 'onbackorder'
+		[ 'yes', 'notify' ].includes( getFieldValue( '_backorders' ) ) &&
+		Number( stockQuantity ) <= 0
 	);
 };
 

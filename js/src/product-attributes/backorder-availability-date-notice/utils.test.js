@@ -83,9 +83,16 @@ describe( 'isBackorderSelected', () => {
 		document.body.innerHTML = '';
 	} );
 
-	function renderInventoryFields( { backorders, stockStatus } ) {
+	function renderInventoryFields( {
+		manageStock = false,
+		stock = '',
+		backorders = 'no',
+		stockStatus = 'instock',
+	} ) {
 		document.body.innerHTML = `
 			<div id="inventory_product_data">
+				<input type="checkbox" name="_manage_stock" ${ manageStock ? 'checked' : '' } />
+				<input type="number" name="_stock" value="${ stock }" />
 				<select name="_backorders">
 					<option value="no" ${ backorders === 'no' ? 'selected' : '' }>No</option>
 					<option value="yes" ${ backorders === 'yes' ? 'selected' : '' }>Yes</option>
@@ -106,43 +113,80 @@ describe( 'isBackorderSelected', () => {
 		`;
 	}
 
-	it( 'returns true when backorders is "yes"', () => {
-		renderInventoryFields( { backorders: 'yes', stockStatus: 'instock' } );
+	describe( 'without stock management', () => {
+		it( 'returns true when stock status is "onbackorder"', () => {
+			renderInventoryFields( { stockStatus: 'onbackorder' } );
 
-		expect( isBackorderSelected() ).toBe( true );
-	} );
-
-	it( 'returns true when backorders is "notify"', () => {
-		renderInventoryFields( {
-			backorders: 'notify',
-			stockStatus: 'instock',
+			expect( isBackorderSelected() ).toBe( true );
 		} );
 
-		expect( isBackorderSelected() ).toBe( true );
-	} );
+		it( 'returns false when stock status is "instock"', () => {
+			renderInventoryFields( { stockStatus: 'instock' } );
 
-	it( 'returns true when stock status is "onbackorder"', () => {
-		renderInventoryFields( {
-			backorders: 'no',
-			stockStatus: 'onbackorder',
+			expect( isBackorderSelected() ).toBe( false );
 		} );
 
-		expect( isBackorderSelected() ).toBe( true );
+		it( 'ignores a stale backorders value', () => {
+			renderInventoryFields( {
+				backorders: 'yes',
+				stockStatus: 'instock',
+			} );
+
+			expect( isBackorderSelected() ).toBe( false );
+		} );
 	} );
 
-	it( 'returns false when backorders is "no" and stock status is "instock"', () => {
-		renderInventoryFields( { backorders: 'no', stockStatus: 'instock' } );
+	describe( 'with stock management', () => {
+		it( 'returns true when backorders is "yes" and stock is zero', () => {
+			renderInventoryFields( {
+				manageStock: true,
+				stock: '0',
+				backorders: 'yes',
+			} );
 
-		expect( isBackorderSelected() ).toBe( false );
-	} );
-
-	it( 'returns false when backorders is "no" and stock status is "outofstock"', () => {
-		renderInventoryFields( {
-			backorders: 'no',
-			stockStatus: 'outofstock',
+			expect( isBackorderSelected() ).toBe( true );
 		} );
 
-		expect( isBackorderSelected() ).toBe( false );
+		it( 'returns true when backorders is "notify" and stock is negative', () => {
+			renderInventoryFields( {
+				manageStock: true,
+				stock: '-2',
+				backorders: 'notify',
+			} );
+
+			expect( isBackorderSelected() ).toBe( true );
+		} );
+
+		it( 'returns false when backorders are allowed but stock is positive', () => {
+			renderInventoryFields( {
+				manageStock: true,
+				stock: '5',
+				backorders: 'yes',
+			} );
+
+			expect( isBackorderSelected() ).toBe( false );
+		} );
+
+		it( 'returns false when backorders is "no" and stock is zero', () => {
+			renderInventoryFields( {
+				manageStock: true,
+				stock: '0',
+				backorders: 'no',
+			} );
+
+			expect( isBackorderSelected() ).toBe( false );
+		} );
+
+		it( 'ignores a stale stock status value', () => {
+			renderInventoryFields( {
+				manageStock: true,
+				stock: '5',
+				backorders: 'no',
+				stockStatus: 'onbackorder',
+			} );
+
+			expect( isBackorderSelected() ).toBe( false );
+		} );
 	} );
 } );
 

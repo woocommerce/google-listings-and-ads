@@ -58,7 +58,13 @@ const BackorderAvailabilityDateNotice = ( {
 		}
 
 		const elements = document.querySelectorAll(
-			`${ PRODUCT_TYPE_SELECT }, ${ INVENTORY_PRODUCT_DATA } [name="_backorders"], ${ INVENTORY_PRODUCT_DATA } [name="_stock_status"]`
+			[
+				PRODUCT_TYPE_SELECT,
+				`${ INVENTORY_PRODUCT_DATA } [name="_manage_stock"]`,
+				`${ INVENTORY_PRODUCT_DATA } [name="_stock"]`,
+				`${ INVENTORY_PRODUCT_DATA } [name="_backorders"]`,
+				`${ INVENTORY_PRODUCT_DATA } [name="_stock_status"]`,
+			].join( ', ' )
 		);
 
 		elements.forEach( ( element ) =>
