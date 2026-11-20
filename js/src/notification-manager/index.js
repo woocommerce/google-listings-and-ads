@@ -6,7 +6,10 @@ import { addAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
+import {
+	GLA_NOTIFICATION_DISMISSED,
+	GLA_NOTIFICATIONS_COUNT_CHANGED,
+} from '~/constants';
 
 ( function () {
 	const marketingMenu = document.getElementById(
@@ -65,7 +68,13 @@ import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
 		attributeFilter: [ 'class' ],
 	} );
 
-	function handleNotificationDismissed() {
+	/**
+	 * Adjusts the badge count by a delta rather than setting an absolute count,
+	 * since the server-rendered count can include other extensions' notifications.
+	 *
+	 * @param {number} delta The number to add to the current count.
+	 */
+	function updateCount( delta ) {
 		const countEl = badge.querySelector( '.update-count' );
 
 		if ( ! countEl ) {
@@ -78,22 +87,23 @@ import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
 			return;
 		}
 
-		const newCount = Math.max( 0, currentCount - 1 );
+		const newCount = Math.max( 0, currentCount + delta );
 
-		if ( newCount === 0 ) {
-			badge.style.display = 'none';
-		} else {
-			countEl.textContent = newCount;
-			badge.className = badge.className.replace(
-				/\bcount-\d+\b/,
-				'count-' + newCount
-			);
-		}
+		countEl.textContent = newCount;
+		badge.className = badge.className.replace(
+			/\bcount-\d+\b/,
+			'count-' + newCount
+		);
+		badge.style.display = newCount === 0 ? 'none' : '';
 	}
 
+	addAction( GLA_NOTIFICATION_DISMISSED, 'gla/notification-manager', () =>
+		updateCount( -1 )
+	);
+
 	addAction(
-		GLA_NOTIFICATION_DISMISSED,
+		GLA_NOTIFICATIONS_COUNT_CHANGED,
 		'gla/notification-manager',
-		handleNotificationDismissed
+		updateCount
 	);
 } )();
