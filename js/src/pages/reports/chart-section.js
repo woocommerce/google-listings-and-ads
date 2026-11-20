@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { useMemo } from '@wordpress/element';
 import { format } from '@wordpress/date';
 import { Chart } from '@woocommerce/components';
-import { getChartTypeForQuery } from '@woocommerce/date';
+import { getChartTypeForQuery, getCurrentDates } from '@woocommerce/date';
 
 /**
  * Internal dependencies
@@ -25,16 +25,44 @@ const emptyMessage = __(
  * @param {string} end - End date in YYYY-MM-DD format.
  * @return {string[]} Array of date strings in YYYY-MM-DD format.
  */
-function generateDateRange( start, end ) {
+export function generateDateRange( start, end ) {
 	const dates = [];
-	const current = new Date( start );
-	const endDate = new Date( end );
+	// Parse as local dates. `new Date( 'YYYY-MM-DD' )` is UTC midnight, which formats as
+	// the previous day in timezones behind UTC.
+	const toLocalDate = ( value ) => {
+		const [ year, month, day ] = value.split( '-' ).map( Number );
+		return new Date( year, month - 1, day );
+	};
+	const current = toLocalDate( start );
+	const endDate = toLocalDate( end );
 
 	while ( current <= endDate ) {
 		dates.push( format( 'Y-m-d', current ) );
 		current.setDate( current.getDate() + 1 );
 	}
 	return dates;
+}
+
+/**
+ * Get every date the chart should show: the whole selected date range, so days without
+ * data at either end of the range still appear (the reports API returns no row for them).
+ * The range is widened if any interval falls outside it.
+ *
+ * @param {Array<IntervalsData>} intervals Report's intervals data, sorted by date.
+ * @param {Object} query Query parameters in the URL, holding the selected date range.
+ * @return {string[]} Dates in YYYY-MM-DD format.
+ */
+export function getChartDates( intervals, query ) {
+	const { primary } = getCurrentDates( query );
+	const after = format( 'Y-m-d', primary.after );
+	const before = format( 'Y-m-d', primary.before );
+	const firstInterval = intervals[ 0 ].interval;
+	const lastInterval = intervals[ intervals.length - 1 ].interval;
+
+	return generateDateRange(
+		firstInterval < after ? firstInterval : after,
+		lastInterval > before ? lastInterval : before
+	);
 }
 
 /**
@@ -82,10 +110,7 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			{}
 		);
 
-		// Generate full date range
-		const startDate = intervals[ 0 ].interval;
-		const endDate = intervals[ intervals.length - 1 ].interval;
-		const allDates = generateDateRange( startDate, endDate );
+		const allDates = getChartDates( intervals, query );
 
 		// Build chart data ensuring all dates are included
 		return allDates.map( ( date ) => {
@@ -98,7 +123,7 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 				},
 			};
 		} );
-	}, [ key, label, loaded, intervals ] );
+	}, [ key, label, loaded, intervals, query ] );
 
 	return (
 		<Chart

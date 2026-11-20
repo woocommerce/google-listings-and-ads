@@ -38,6 +38,12 @@ class AdsCampaignReportQuery extends AdsReportQuery {
 			return $this;
 		}
 
+		// Google Ads requires a field used in WHERE to also be selected, so keep the campaign
+		// ID column even when the dimension columns are left out.
+		if ( ! $this->include_dimensions ) {
+			$this->add_columns( [ 'id' => 'campaign.id' ] );
+		}
+
 		return $this->where( 'campaign.id', $ids, 'IN' );
 	}
 }
