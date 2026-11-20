@@ -54,10 +54,25 @@ class AttributeManager implements Service {
 	 * @throws InvalidValue If the attribute is invalid for the given product.
 	 */
 	public function update( WC_Product $product, AttributeInterface $attribute ) {
+		$this->stage_update( $product, $attribute );
+		$product->save_meta_data();
+	}
+
+	/**
+	 * Same as update(), but only changes the product in memory. The caller saves the product.
+	 *
+	 * @param WC_Product         $product
+	 * @param AttributeInterface $attribute
+	 *
+	 * @throws InvalidValue If the attribute is invalid for the given product.
+	 *
+	 * @since x.x.x
+	 */
+	public function stage_update( WC_Product $product, AttributeInterface $attribute ): void {
 		$this->validate( $product, $attribute::get_id() );
 
 		if ( null === $attribute->get_value() || '' === $attribute->get_value() ) {
-			$this->delete( $product, $attribute::get_id() );
+			$this->stage_delete( $product, $attribute::get_id() );
 			return;
 		}
 
@@ -67,7 +82,6 @@ class AttributeManager implements Service {
 		}
 
 		$product->update_meta_data( $this->prefix_meta_key( $attribute::get_id() ), $value );
-		$product->save_meta_data();
 	}
 
 	/**
@@ -153,10 +167,24 @@ class AttributeManager implements Service {
 	 * @throws InvalidValue If the attribute ID is invalid for the given product.
 	 */
 	public function delete( WC_Product $product, string $attribute_id ) {
+		$this->stage_delete( $product, $attribute_id );
+		$product->save_meta_data();
+	}
+
+	/**
+	 * Same as delete(), but only changes the product in memory. The caller saves the product.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $attribute_id
+	 *
+	 * @throws InvalidValue If the attribute ID is invalid for the given product.
+	 *
+	 * @since x.x.x
+	 */
+	public function stage_delete( WC_Product $product, string $attribute_id ): void {
 		$this->validate( $product, $attribute_id );
 
 		$product->delete_meta_data( $this->prefix_meta_key( $attribute_id ) );
-		$product->save_meta_data();
 	}
 
 	/**
@@ -207,6 +235,26 @@ class AttributeManager implements Service {
 
 		// merge all of the attribute arrays from the map (there might be duplicates) and return the results
 		return array_merge( ...$match_attributes );
+	}
+
+	/**
+	 * Returns the WooCommerce product types that an attribute applies to.
+	 *
+	 * @param string $attribute_id
+	 *
+	 * @return string[]
+	 *
+	 * @since x.x.x
+	 */
+	public function get_product_types_for_attribute( string $attribute_id ): array {
+		$product_types = [];
+		foreach ( $this->get_attribute_types_map() as $product_type => $attribute_types ) {
+			if ( isset( $attribute_types[ $attribute_id ] ) ) {
+				$product_types[] = $product_type;
+			}
+		}
+
+		return $product_types;
 	}
 
 	/**
