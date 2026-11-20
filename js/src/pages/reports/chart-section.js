@@ -73,7 +73,14 @@ export default function ChartSection( {
 			metrics[ 0 ];
 	}
 
-	const { key, label, isCurrency = false, formatFn } = visibleMetric;
+	const {
+		key,
+		label,
+		isCurrency = false,
+		formatFn,
+		chartValueScale = 1,
+		chartFormatFn = formatFn,
+	} = visibleMetric;
 
 	// Preferably we would use the currency of the selected metric to be used on y axis.
 	// But due to https://github.com/woocommerce/woocommerce-admin/issues/7694 Chart will not react on changes.
@@ -81,7 +88,10 @@ export default function ChartSection( {
 	const visibleCurrency = { ...storeCurrencyConfig, symbol: '' };
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
-	const localizedFormatFn = formatFn.bind( visibleMetric );
+	// Formats a value already multiplied by `chartValueScale`, for everything Chart itself
+	// renders (tooltip, Y-axis, legend) -- as opposed to `formatFn`, which formats a raw value
+	// and is used by the summary cards above the chart instead.
+	const localizedChartFormatFn = chartFormatFn.bind( visibleMetric );
 
 	const chartData = useMemo( () => {
 		if ( ! loaded || ! intervals.length ) {
@@ -89,7 +99,12 @@ export default function ChartSection( {
 		}
 
 		if ( comparison ) {
-			return getComparisonChartData( intervals, comparison, key );
+			return getComparisonChartData(
+				intervals,
+				comparison,
+				key,
+				chartValueScale
+			);
 		}
 
 		// Map existing intervals for quick lookup
@@ -112,21 +127,27 @@ export default function ChartSection( {
 			return {
 				date,
 				[ label ]: {
-					value: subtotals[ key ] ?? 0,
+					value: ( subtotals[ key ] ?? 0 ) * chartValueScale,
 					label,
 				},
 			};
 		} );
-	}, [ key, label, loaded, intervals, comparison ] );
+	}, [ key, label, loaded, intervals, comparison, chartValueScale ] );
+
+	// Chart's own totals (legend, tooltip) need the same scaling as the plotted data above, so
+	// they stay consistent with it and with `localizedChartFormatFn`.
+	const scaleLegendTotal = ( value ) =>
+		value === undefined ? undefined : value * chartValueScale;
 
 	const comparisonProps = comparison && {
-		yFormat: localizedFormatFn,
-		yBelow1Format: localizedFormatFn,
+		yFormat: localizedChartFormatFn,
+		yBelow1Format: localizedChartFormatFn,
+		legendValueFormat: localizedChartFormatFn,
 		interval: intervalUnit,
 		allowedIntervals,
 		legendTotals: {
-			primary: comparison.totals[ key ]?.value,
-			secondary: comparison.totals[ key ]?.prevValue,
+			primary: scaleLegendTotal( comparison.totals[ key ]?.value ),
+			secondary: scaleLegendTotal( comparison.totals[ key ]?.prevValue ),
 		},
 	};
 
@@ -138,7 +159,7 @@ export default function ChartSection( {
 			currency={ visibleCurrency }
 			chartType={ chartType }
 			valueType={ valueType }
-			tooltipValueFormat={ localizedFormatFn }
+			tooltipValueFormat={ localizedChartFormatFn }
 			isRequesting={ ! loaded }
 			emptyMessage={ emptyMessage }
 			legendPosition={ comparison ? undefined : 'hidden' }

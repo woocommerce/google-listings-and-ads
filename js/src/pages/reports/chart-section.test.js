@@ -37,6 +37,19 @@ const metrics = [
 	},
 ];
 
+// A CTR-shaped metric: its raw value is a 0-1 fraction (`formatFn`), but it's charted as a
+// 0-100 percentage (`chartValueScale`/`chartFormatFn`) to stay out of the value domain where
+// @woocommerce/components' Chart breaks (see useOrganicOverviewMetrics.js).
+const ctrMetrics = [
+	{
+		key: 'ctr',
+		label: 'CTR',
+		formatFn: ( value ) => `${ value * 100 } raw%`,
+		chartValueScale: 100,
+		chartFormatFn: ( value ) => `${ value } chart%`,
+	},
+];
+
 const getChartProps = () => {
 	return Chart.mock.calls[ Chart.mock.calls.length - 1 ][ 0 ];
 };
@@ -81,6 +94,24 @@ describe( 'ChartSection', () => {
 
 			expect( getChartProps().data ).toEqual( [] );
 			expect( getChartProps().isRequesting ).toBe( true );
+		} );
+
+		it( 'scales a metric with chartValueScale before plotting, and formats with chartFormatFn', () => {
+			render(
+				<ChartSection
+					metrics={ ctrMetrics }
+					loaded
+					intervals={ [
+						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
+					] }
+				/>
+			);
+
+			const props = getChartProps();
+			expect( props.data ).toEqual( [
+				{ date: '2026-10-01', CTR: { value: 5, label: 'CTR' } },
+			] );
+			expect( props.tooltipValueFormat( 5 ) ).toBe( '5 chart%' );
 		} );
 	} );
 
@@ -181,6 +212,57 @@ describe( 'ChartSection', () => {
 				value: 0,
 				labelDate: undefined,
 			} );
+		} );
+
+		it( 'scales a metric with chartValueScale in both the plotted data and the legend totals', () => {
+			render(
+				<ChartSection
+					metrics={ ctrMetrics }
+					loaded
+					intervals={ [
+						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
+					] }
+					comparison={ {
+						intervals: [
+							{
+								interval: '2025-10-01',
+								subtotals: { ctr: 0.02 },
+							},
+						],
+						totals: {
+							ctr: { value: 0.05, prevValue: 0.02 },
+						},
+						labels: {
+							primary: 'Month to date',
+							secondary: 'Previous year',
+						},
+					} }
+				/>
+			);
+
+			const props = getChartProps();
+			expect( props.data ).toEqual( [
+				{
+					date: '2026-10-01T00:00:00',
+					primary: {
+						label: 'Month to date',
+						value: 5,
+						labelDate: '2026-10-01T00:00:00',
+					},
+					secondary: {
+						label: 'Previous year',
+						value: 2,
+						labelDate: '2025-10-01T00:00:00',
+					},
+				},
+			] );
+			expect( props.legendTotals ).toEqual( {
+				primary: 5,
+				secondary: 2,
+			} );
+			expect( props.yFormat( 5 ) ).toBe( '5 chart%' );
+			expect( props.yBelow1Format( 5 ) ).toBe( '5 chart%' );
+			expect( props.legendValueFormat( 5 ) ).toBe( '5 chart%' );
 		} );
 	} );
 } );

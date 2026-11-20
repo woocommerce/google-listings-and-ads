@@ -400,4 +400,21 @@ describe( 'getComparisonChartData', () => {
 			getComparisonChartData( [], { labels, intervals: [] }, 'clicks' )
 		).toEqual( [] );
 	} );
+
+	it( 'multiplies both periods by valueScale, including a missing point plotted as 0', () => {
+		const intervals = [
+			{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
+		];
+		const comparison = { labels, intervals: [] };
+
+		const [ point ] = getComparisonChartData(
+			intervals,
+			comparison,
+			'ctr',
+			100
+		);
+
+		expect( point.primary.value ).toBe( 5 );
+		expect( point.secondary.value ).toBe( 0 );
+	} );
 } );
