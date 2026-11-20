@@ -290,6 +290,46 @@ class AccountServiceTest extends UnitTest {
 		$this->account->use_existing_account( self::TEST_ACCOUNT_ID );
 	}
 
+	public function test_use_existing_account_same_account_with_reverted_state() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'set_id'  => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'billing' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->state->expects( $this->once() )
+			->method( 'get_fresh' )
+			->willReturn(
+				[
+					'set_id'  => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'billing' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		// The account is already linked, so it must not be linked again.
+		$this->middleware->expects( $this->never() )
+			->method( 'link_ads_account' );
+
+		// Billing is left for setup_account() to check.
+		$this->state->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'set_id'  => [ 'status' => AdsAccountState::STEP_DONE ],
+					'billing' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->account->use_existing_account( self::TEST_ACCOUNT_ID );
+	}
+
 	public function test_use_existing_account() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )

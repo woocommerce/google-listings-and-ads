@@ -121,16 +121,28 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			return;
 		}
 
-		$this->container->get( Middleware::class )->link_ads_account( $account_id );
+		// A stored ID matching this account means it was linked already and only
+		// the recorded state was reverted afterwards, so don't link it again.
+		$already_linked = $ads_id === $account_id;
+
+		if ( ! $already_linked ) {
+			$this->container->get( Middleware::class )->link_ads_account( $account_id );
+		}
 
 		// Concurrent requests may have completed steps while the remote call
 		// above was in flight; start from the current database value so those
 		// completions are not reverted.
 		$state = $this->state->get_fresh() ?: $state;
 
-		// Skip billing setup flow when using an existing account.
-		$state['set_id']['status']  = AdsAccountState::STEP_DONE;
-		$state['billing']['status'] = AdsAccountState::STEP_DONE;
+		$state['set_id']['status'] = AdsAccountState::STEP_DONE;
+
+		// Skip billing setup flow when linking an existing account. For an account
+		// that was already linked, the reverted state no longer shows whether it was
+		// linked or created by the plugin, so setup_account() checks billing instead.
+		if ( ! $already_linked ) {
+			$state['billing']['status'] = AdsAccountState::STEP_DONE;
+		}
+
 		$this->state->update( $state );
 	}
 
