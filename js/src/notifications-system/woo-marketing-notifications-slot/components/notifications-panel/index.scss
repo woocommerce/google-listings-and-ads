@@ -1,0 +1,16 @@
+.gla-woo-marketing-notifications-slot-panel {
+	display: flex;
+	flex-direction: column;
+	gap: $grid-unit-40;
+
+	.gla-woo-marketing-notifications-slot-panel__badge {
+		align-items: center;
+		display: flex;
+		font-size: 12px;
+		justify-content: center;
+		height: 24px;
+		min-width: unset;
+		width: 24px;
+	}
+}
+

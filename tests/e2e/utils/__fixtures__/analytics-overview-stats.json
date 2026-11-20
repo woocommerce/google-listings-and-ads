@@ -1,0 +1,12 @@
+{
+	"revenue": {
+		"down": { "total_sales": 50, "net_revenue": 50, "orders_count": 5 },
+		"up": { "total_sales": 200, "net_revenue": 200, "orders_count": 20 },
+		"secondary": { "total_sales": 100, "net_revenue": 100, "orders_count": 10 }
+	},
+	"products": {
+		"down": { "items_sold": 5 },
+		"up": { "items_sold": 20 },
+		"secondary": { "items_sold": 10 }
+	}
+}

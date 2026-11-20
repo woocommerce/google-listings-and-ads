@@ -16,6 +16,7 @@ export default function createMessageForMultipleErrors(
 	isPartiallySuccessful = true
 ) {
 	if ( errorMessages.length ) {
+		// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
 		const separator = _x(
 			', ',
 			'the separator for concatenating the messages of failed actions',
@@ -34,13 +35,13 @@ export default function createMessageForMultipleErrors(
 		);
 
 		const messageFormat = isPartiallySuccessful
-			? // translators: text for the failed action(s).
-			  __(
+			? // translators: %s: text for the failed action(s).
+				__(
 					'%s Other changes have been saved. Please try again later.',
 					'google-listings-and-ads'
-			  )
-			: // translators: text for the failed action(s).
-			  __( '%s Please try again later.', 'google-listings-and-ads' );
+				)
+			: // translators: %s: text for the failed action(s).
+				__( '%s Please try again later.', 'google-listings-and-ads' );
 
 		return sprintf( messageFormat, listErrors );
 	}

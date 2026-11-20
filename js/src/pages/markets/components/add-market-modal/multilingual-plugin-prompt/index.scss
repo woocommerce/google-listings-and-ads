@@ -1,0 +1,29 @@
+.gla-multilingual-plugin-prompt {
+
+	.gla-multilingual-plugin-prompt__title {
+		margin-block-end: $grid-unit-10;
+		font-weight: 600;
+	}
+
+	.gla-multilingual-plugin-prompt__description {
+		color: $gray-700;
+		margin-block-end: $grid-unit-30;
+	}
+
+	.gla-multilingual-plugin-prompt__plugin-icon {
+		flex-shrink: 0;
+
+		img {
+			border-radius: 100%;
+		}
+	}
+
+	.gla-multilingual-plugin-prompt__plugin-title {
+		font-weight: 600;
+		margin-block-end: $grid-unit-05;
+	}
+
+	.gla-multilingual-plugin-prompt__plugin-description {
+		color: $gray-700;
+	}
+}

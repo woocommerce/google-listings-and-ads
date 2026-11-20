@@ -115,7 +115,125 @@ class MapiProductInputsService implements OptionsAwareInterface {
 
 		$this->log( sprintf( 'productInputs.insert batch of %d: %d succeeded, %d failed', count( $inputs ), count( $result['successes'] ), count( $result['failures'] ) ), __METHOD__ );
 
+		return $this->retry_recoverable_data_source_failures( $inputs, $result, $concurrency );
+	}
+
+	/**
+	 * Recover inserts rejected for a data-source reason this service knows how to fix, and retry
+	 * them once: a "data source not found" 404 is re-resolved after forgetting the stale cache
+	 * entry, and a channel-mismatch 400 (see MapiDataSourcesService::is_channel_mismatch_failure())
+	 * forces a fresh data source instead, since simply re-resolving would deterministically
+	 * re-adopt the same undetectable-as-unusable source.
+	 *
+	 * @param ProductInput[] $inputs      The inputs from the original insert_many() call.
+	 * @param array          $result      The first-pass result to merge retries into.
+	 * @param int            $concurrency Concurrent batch requests.
+	 *
+	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
+	 */
+	private function retry_recoverable_data_source_failures( array $inputs, array $result, int $concurrency ): array {
+		$paths_by_index = [];
+		$reresolved     = [];
+
+		foreach ( $result['failures'] as $index => $failure ) {
+			if ( ! isset( $inputs[ $index ] ) ) {
+				continue;
+			}
+
+			$recovery = $this->recovery_for_failure( $failure );
+			if ( null === $recovery ) {
+				continue;
+			}
+
+			$input = $inputs[ $index ];
+			// Grouping key includes the recovery kind, not just the (language, feed) pair: a 404
+			// and a channel-mismatch failure for the same pair need their own recovery attempt
+			// each, since they call different methods on MapiDataSourcesService. Sharing one slot
+			// would let whichever failure is seen first silently decide the recovery for both.
+			$key = $recovery['kind'] . '|' . $input->get_content_language() . '|' . $input->get_feed_label();
+
+			if ( ! array_key_exists( $key, $reresolved ) ) {
+				try {
+					$reresolved[ $key ] = $recovery['callback']( $input );
+				} catch ( MerchantApiException $exception ) {
+					// Recovery failed: leave the original failure in place for this pair's inputs.
+					$reresolved[ $key ] = null;
+				}
+			}
+
+			if ( null !== $reresolved[ $key ] ) {
+				$paths_by_index[ $index ] = $this->build_path( $reresolved[ $key ] );
+			}
+		}
+
+		if ( empty( $paths_by_index ) ) {
+			return $result;
+		}
+
+		$retry_inputs = array_intersect_key( $inputs, $paths_by_index );
+
+		$retry_result = $this->run_in_batches(
+			$retry_inputs,
+			$concurrency,
+			__METHOD__,
+			function ( int $index, ProductInput $input ) use ( $paths_by_index ): array {
+				return [
+					'method' => 'POST',
+					'path'   => $paths_by_index[ $index ],
+					'body'   => $input->to_array(),
+				];
+			},
+			function ( array $body ): ProductInput {
+				return ProductInput::from_array( $body );
+			}
+		);
+
+		foreach ( $retry_result['successes'] as $index => $success ) {
+			$result['successes'][ $index ] = $success;
+			unset( $result['failures'][ $index ] );
+		}
+		foreach ( $retry_result['failures'] as $index => $failure ) {
+			$result['failures'][ $index ] = $failure;
+		}
+
+		$this->log( sprintf( 'productInputs.insert retried %d inputs after data source recovery: %d succeeded', count( $retry_inputs ), count( $retry_result['successes'] ) ), __METHOD__ );
+
 		return $result;
+	}
+
+	/**
+	 * Return a recovery descriptor for a failed insert, or null when the failure isn't one this
+	 * service knows how to recover from. The 'kind' distinguishes recoveries that call different
+	 * MapiDataSourcesService methods, so a 404 and a channel-mismatch failure for the same
+	 * (language, feed) pair are never treated as interchangeable.
+	 *
+	 * @param mixed $failure
+	 *
+	 * @return array{kind: string, callback: callable(ProductInput): ?string}|null
+	 */
+	private function recovery_for_failure( $failure ): ?array {
+		if ( MapiDataSourcesService::is_missing_data_source_failure( $failure ) ) {
+			return [
+				'kind'     => 'missing',
+				'callback' => function ( ProductInput $input ): string {
+					$this->data_sources->forget_data_source_for( $input->get_content_language(), $input->get_feed_label() );
+					return $this->data_sources->ensure_data_source_for( $input->get_content_language(), $input->get_feed_label() );
+				},
+			];
+		}
+
+		if ( MapiDataSourcesService::is_channel_mismatch_failure( $failure ) ) {
+			return [
+				'kind'     => 'channel_mismatch',
+				// Null when recreate_data_source_for() is rate-limited: no source was created, so
+				// there is nothing to retry against and the pair's original failure stands.
+				'callback' => function ( ProductInput $input ): ?string {
+					return $this->data_sources->recreate_data_source_for( $input->get_content_language(), $input->get_feed_label() );
+				},
+			];
+		}
+
+		return null;
 	}
 
 	/**
@@ -369,7 +487,8 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @return int
 	 */
 	protected function get_batch_size(): int {
-		return max( 1, (int) apply_filters( 'woocommerce_gla_mapi_batch_size', 50 ) );
+		// 100 is the Merchant API's recommended maximum sub-requests per batch.
+		return max( 1, (int) apply_filters( 'woocommerce_gla_mapi_batch_size', 100 ) );
 	}
 
 	/**

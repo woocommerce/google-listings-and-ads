@@ -57,8 +57,15 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	 * @param DateTime $created_before Delete all records created before this.
 	 */
 	public function delete_stale( DateTime $created_before ): void {
-		$query = "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `created_at` < '%s'";
-		$this->wpdb->query( $this->wpdb->prepare( $query, $created_before->format( 'Y-m-d H:i:s' ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$this->wpdb->query(
+			$this->wpdb->prepare(
+				'DELETE FROM %i WHERE `created_at` < %s',
+				$this->get_sql_safe_name(),
+				$created_before->format( 'Y-m-d H:i:s' )
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**
@@ -73,7 +80,91 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 		}
 
 		$placeholder = '(' . implode( ',', array_fill( 0, count( $products_ids ), '%d' ) ) . ')';
-		$this->wpdb->query( $this->wpdb->prepare( "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `product_id` IN {$placeholder} AND `source` = %s", array_merge( $products_ids, [ $source ] ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$query       = "DELETE FROM %i WHERE `product_id` IN {$placeholder} AND `source` = %s";
+		$values      = [ $this->get_sql_safe_name(), ...$products_ids, $source ];
+
+		// The IN-list placeholders are generated locally from the product ID count.
+		$this->wpdb->query( $this->wpdb->prepare( $query, $values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+	}
+
+	/**
+	 * Delete issue records by their row IDs.
+	 *
+	 * @since 3.9.3
+	 *
+	 * @param int[] $ids Row IDs to delete.
+	 */
+	public function delete_by_ids( array $ids ): void {
+		if ( empty( $ids ) ) {
+			return;
+		}
+
+		$placeholder = '(' . implode( ',', array_fill( 0, count( $ids ), '%d' ) ) . ')';
+		$query       = "DELETE FROM %i WHERE `id` IN {$placeholder}";
+		$values      = [ $this->get_sql_safe_name(), ...$ids ];
+
+		// The IN-list placeholders are generated locally from the row ID count.
+		$this->wpdb->query( $this->wpdb->prepare( $query, $values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+	}
+
+	/**
+	 * Count the Merchant Center account issues with any of the given severities.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string[] $severities Severities to count.
+	 *
+	 * @return int|null The count, or null when the query fails.
+	 */
+	public function count_account_issues( array $severities ): ?int {
+		if ( empty( $severities ) ) {
+			return 0;
+		}
+
+		$placeholder = '(' . implode( ',', array_fill( 0, count( $severities ), '%s' ) ) . ')';
+		$query       = "SELECT COUNT(*) FROM %i WHERE `type` = 'account' AND `source` = 'mc' AND `severity` IN {$placeholder}";
+		$values      = [ $this->get_sql_safe_name(), ...$severities ];
+
+		// The IN-list placeholders are generated locally from the severity count.
+		return $this->to_count( $this->wpdb->get_var( $this->wpdb->prepare( $query, $values ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+	}
+
+	/**
+	 * Count the products with at least one product issue from the given source.
+	 *
+	 * A variation is counted as its parent product, so a variable product counts once.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string   $source              Issue source, e.g. 'mc' or 'pre-sync'.
+	 * @param string[] $excluded_severities Severities to leave out of the count.
+	 *
+	 * @return int|null The count, or null when the query fails.
+	 */
+	public function count_products_with_issues( string $source, array $excluded_severities = [] ): ?int {
+		$query  = "SELECT COUNT( DISTINCT IF( p.`post_type` = 'product_variation' AND p.`post_parent` > 0, p.`post_parent`, i.`product_id` ) )
+			FROM %i i LEFT JOIN %i p ON p.`ID` = i.`product_id`
+			WHERE i.`type` = 'product' AND i.`source` = %s";
+		$values = [ $this->get_sql_safe_name(), $this->wpdb->posts, $source ];
+
+		if ( ! empty( $excluded_severities ) ) {
+			$query .= ' AND i.`severity` NOT IN (' . implode( ',', array_fill( 0, count( $excluded_severities ), '%s' ) ) . ')';
+			$values = [ ...$values, ...$excluded_severities ];
+		}
+
+		// The NOT IN-list placeholders are generated locally from the severity count.
+		return $this->to_count( $this->wpdb->get_var( $this->wpdb->prepare( $query, $values ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+	}
+
+	/**
+	 * Convert a COUNT query result to an int, or null when the query failed (COUNT always returns a row).
+	 *
+	 * @param mixed $result The get_var() result.
+	 *
+	 * @return int|null
+	 */
+	private function to_count( $result ): ?int {
+		return is_numeric( $result ) ? (int) $result : null;
 	}
 
 	/**

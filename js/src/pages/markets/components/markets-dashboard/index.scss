@@ -1,0 +1,10 @@
+.gla-markets-dashboard {
+	display: flex;
+	flex-direction: column;
+	gap: $grid-unit-20;
+
+	.gla-markets-dashboard__card {
+		min-height: $grid-unit-60;
+		padding: $grid-unit-20;
+	}
+}

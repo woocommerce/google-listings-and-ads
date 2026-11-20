@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Condition;
@@ -19,9 +21,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductShippingDimension as GoogleProductShippingDimension;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductShippingWeight as GoogleProductShippingWeight;
 use DateInterval;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Symfony\Component\Validator\Mapping\ClassMetadata;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Constraints as Assert;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Mapping\ClassMetadata;
 use WC_DateTime;
 use WC_Product;
 use WC_Product_Variable;
@@ -69,6 +71,25 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected $product_category_ids;
 
 	/**
+	 * @var WPML|null WPML integration for currency conversion; null when not injected.
+	 */
+	protected ?WPML $wpml = null;
+
+	/**
+	 * @var string ISO 4217 currency code that overrides the store currency for price emission.
+	 *             Empty string when no override is active.
+	 */
+	protected string $currency_override = '';
+
+	/**
+	 * @var float Fixed market exchange rate used to convert prices into the override currency when
+	 *            WPML cannot convert them; 0.0 when unset.
+	 *
+	 * @since x.x.x
+	 */
+	protected float $exchange_rate = 0.0;
+
+	/**
 	 * Initialize this object's properties from an array.
 	 *
 	 * @param array $properties Used to seed this object's properties.
@@ -95,6 +116,11 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		$this->wc_product        = $properties['wc_product'];
 		$this->parent_wc_product = $properties['parent_wc_product'] ?? null;
+		$this->wpml              = $properties['wpml'] ?? null;
+		$this->currency_override = $properties['currency_override'] ?? '';
+		// A non-finite or non-positive rate converts nothing: treat it as unset.
+		$exchange_rate       = (float) ( $properties['exchange_rate'] ?? 0.0 );
+		$this->exchange_rate = is_finite( $exchange_rate ) && $exchange_rate > 0 ? $exchange_rate : 0.0;
 
 		$mapping_rules  = $properties['mapping_rules'] ?? [];
 		$gla_attributes = $properties['gla_attributes'] ?? [];
@@ -104,6 +130,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		unset( $properties['parent_wc_product'] );
 		unset( $properties['gla_attributes'] );
 		unset( $properties['mapping_rules'] );
+		unset( $properties['wpml'] );
+		unset( $properties['currency_override'] );
+		unset( $properties['exchange_rate'] );
 
 		parent::mapTypes( $properties );
 		$this->map_woocommerce_product();
@@ -123,7 +152,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected function map_woocommerce_product() {
 		$this->setChannel( self::CHANNEL_ONLINE );
 
-		$content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) ); // ISO 639-1.
+		$content_language = GoogleHelper::resolve_mc_content_language( (string) get_locale() );
 		$this->setContentLanguage( $content_language );
 
 		$this->map_wc_product_id()
@@ -624,6 +653,35 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_product_price( WC_Product $product ): WCProductAdapter {
+		if ( $this->converts_to_override_currency() ) {
+			$converted = $this->get_converted_regular_price( $product );
+
+			// No price in the override currency: leave it unset so the NotNull constraint fails and
+			// this currency's feed is skipped, not emitted with the store-currency price mislabelled.
+			if ( null === $converted ) {
+				return $this;
+			}
+
+			$price = $this->tax_excluded ?
+				wc_get_price_excluding_tax( $product, [ 'price' => $converted ] ) :
+				wc_get_price_including_tax( $product, [ 'price' => $converted ] );
+
+			/** This filter is documented in src/Product/WCProductAdapter.php */
+			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
+
+			$this->setPrice(
+				new GooglePrice(
+					[
+						'currency' => strtoupper( $this->currency_override ),
+						'value'    => $price,
+					]
+				)
+			);
+
+			$this->map_wc_product_sale_price( $product );
+			return $this;
+		}
+
 		// set regular price
 		$regular_price = $product->get_regular_price();
 		if ( '' !== $regular_price ) {
@@ -656,6 +714,91 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
+	 * Whether prices are converted into the override currency: an override is set and there is a
+	 * conversion source (WPML, or the market's fixed exchange rate).
+	 *
+	 * @since x.x.x
+	 *
+	 * @return bool
+	 */
+	protected function converts_to_override_currency(): bool {
+		return '' !== $this->currency_override && ( null !== $this->wpml || $this->exchange_rate > 0 );
+	}
+
+	/**
+	 * Regular price in the override currency: the WPML conversion when available, otherwise the
+	 * regular price converted with the market's fixed exchange rate. Mirrors
+	 * WCProductInputAdapter::map_price() so validation and sync agree on whether a price exists.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return float|null Null when the price cannot be converted.
+	 */
+	protected function get_converted_regular_price( WC_Product $product ): ?float {
+		$converted = null !== $this->wpml
+			? $this->wpml->get_product_price_in_currency( $product, $this->currency_override )
+			: null;
+
+		if ( null !== $converted ) {
+			return (float) $converted;
+		}
+
+		$regular_price = $product->get_regular_price();
+		if ( $this->exchange_rate > 0 && '' !== $regular_price ) {
+			return (float) $regular_price * $this->exchange_rate;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Sale price in the override currency: the WPML conversion when available, otherwise the
+	 * product's current sale price converted with the market's fixed exchange rate. Mirrors
+	 * WCProductInputAdapter::map_sale_price().
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return float|null Null when there is no sale price to convert.
+	 */
+	protected function get_converted_sale_price( WC_Product $product ): ?float {
+		$converted = null !== $this->wpml
+			? $this->wpml->get_product_sale_price_in_currency( $product, $this->currency_override )
+			: null;
+
+		if ( null !== $converted ) {
+			return (float) $converted;
+		}
+
+		if ( $this->exchange_rate <= 0 ) {
+			return null;
+		}
+
+		// Same active-price promotion as the store-currency path (e.g. dynamic pricing plugins
+		// filter the active price but not the sale price).
+		$regular_price = $product->get_regular_price();
+		$sale_price    = $product->get_sale_price();
+		$active_price  = $product->get_price();
+		if (
+			( empty( $sale_price ) && $active_price < $regular_price ) ||
+			( ! empty( $sale_price ) && $active_price < $sale_price )
+		) {
+			$sale_price = $active_price;
+		}
+
+		$end_date     = $product->get_date_on_sale_to();
+		$sale_expired = ! empty( $end_date ) && $end_date < new WC_DateTime();
+		if ( '' === $sale_price || $sale_expired ) {
+			return null;
+		}
+
+		return (float) $sale_price * $this->exchange_rate;
+	}
+
+	/**
 	 * Map the sale price and sale effective date for a given WooCommerce product.
 	 *
 	 * @param WC_Product $product
@@ -663,6 +806,44 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_product_sale_price( WC_Product $product ): WCProductAdapter {
+		if ( $this->converts_to_override_currency() ) {
+			$converted_regular = $this->get_converted_regular_price( $product );
+
+			if ( null !== $converted_regular ) {
+				$converted_sale = $this->get_converted_sale_price( $product );
+
+				if ( null === $converted_sale ) {
+					return $this;
+				}
+
+				$sale_price = $this->tax_excluded ?
+					wc_get_price_excluding_tax( $product, [ 'price' => $converted_sale ] ) :
+					wc_get_price_including_tax( $product, [ 'price' => $converted_sale ] );
+
+				/** This filter is documented in src/Product/WCProductAdapter.php */
+				$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $product, $this->tax_excluded );
+
+				$this->setSalePrice(
+					new GooglePrice(
+						[
+							'currency' => strtoupper( $this->currency_override ),
+							'value'    => $sale_price,
+						]
+					)
+				);
+
+				$effective_date = null !== $this->wpml
+					? $this->wpml->get_product_sale_dates_in_currency( $product, $this->currency_override )
+					: null;
+				if ( null === $effective_date ) {
+					$effective_date = $this->get_wc_product_sale_price_effective_date( $product );
+				}
+				$this->setSalePriceEffectiveDate( $effective_date );
+
+				return $this;
+			}
+		}
+
 		// Grab the sale price of the base product. Some plugins (Dynamic
 		// pricing as an example) filter the active price, but not the sale
 		// price. If the active price < the regular price treat it as a sale
@@ -968,6 +1149,35 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		// product shipping information is also country based
 		$this->map_wc_product_shipping();
+	}
+
+	/**
+	 * Sets the feed label
+	 *
+	 * @param string $feed_label
+	 */
+	public function set_feed_label( string $feed_label ): void {
+		$this->setFeedLabel( $feed_label );
+
+		// Google rejects entries whose feedLabel and targetCountry disagree, so
+		// a language-specific label is submitted with the feed label only and
+		// country eligibility comes from the shipping attribute. The country has
+		// already been applied to the tax and shipping mapping at this point.
+		// The parent setter is called directly because the overridden
+		// setTargetCountry() would remap prices and shipping.
+		if ( $feed_label !== $this->getTargetCountry() ) {
+			parent::setTargetCountry( null );
+		}
+	}
+
+	/**
+	 * Sets the content language. A code that is not Merchant Center supported
+	 * falls back to 'en'.
+	 *
+	 * @param string $language ISO 639-1 language code.
+	 */
+	public function set_language( string $language ): void {
+		$this->setContentLanguage( GoogleHelper::resolve_mc_content_language( $language ) );
 	}
 
 	/**

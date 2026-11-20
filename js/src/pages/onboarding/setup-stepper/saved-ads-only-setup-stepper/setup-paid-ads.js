@@ -35,14 +35,24 @@ import AppSpinner from '~/components/app-spinner';
  */
 
 /**
+ * Continuing the ads-only onboarding flow with a paid campaign configured.
+ *
+ * @event gla_ads_only_onboarding_with_paid_ads_continue_button_click
+ * @property {string} level The selected level of the budget recommendation, e.g. 'low', 'recommended', 'high', 'custom'.
+ * @property {number} budget The budget for the campaign.
+ * @property {string} audiences The targeted audiences for the campaign.
+ */
+
+/**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
  *
  * @fires gla_ads_only_onboarding_with_cyo_incentive_selected
+ * @fires gla_ads_only_onboarding_with_paid_ads_continue_button_click
  *
  * @param {Object} props
- * @param {Function} props.onSubmit Callback fired when the user submits the paid ads creation form. Passes dailyBudget and hasConfirmedEuPoliticalContent.
- * @param {Function} props.onSkip Callback fired when the user chooses to skip creating paid ads.
+ * @param {Function} props.onSubmit Callback fired when the user submits the paid ads creation form. Passes dailyBudget, hasConfirmedEuPoliticalContent, and hasAppliedIncentive.
+ * @param {Function} props.onSkip Callback fired when the user chooses to skip creating paid ads. Passes hasAppliedIncentive.
  */
 export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const budgetPromptRef = useRef();
@@ -58,11 +68,12 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const skipCreatePaidAds = async ( incentiveOffer ) => {
-		setCompleting( ACTION_SKIP );
+	// A failed apply doesn't block the setup. Once an offer is applied, a later attempt
+	// gets `false`, so it isn't applied twice.
+	const applySelectedIncentive = async ( incentiveOffer ) => {
+		const hasAppliedIncentive = await applyIncentive( incentiveOffer );
 
-		const applied = await applyIncentive( incentiveOffer );
-		if ( applied ) {
+		if ( hasAppliedIncentive ) {
 			recordGlaEvent(
 				'gla_ads_only_onboarding_with_cyo_incentive_selected',
 				{
@@ -72,7 +83,16 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 			);
 		}
 
-		onSkip();
+		return hasAppliedIncentive;
+	};
+
+	const skipCreatePaidAds = async ( incentiveOffer ) => {
+		setCompleting( ACTION_SKIP );
+
+		const hasAppliedIncentive =
+			await applySelectedIncentive( incentiveOffer );
+
+		onSkip( { hasAppliedIncentive } );
 	};
 
 	const createSkipButton = ( formContext ) => {
@@ -144,16 +164,8 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 		setCompleting( ACTION_CONTINUE );
 
-		const applied = await applyIncentive( incentiveOffer );
-		if ( applied ) {
-			recordGlaEvent(
-				'gla_ads_only_onboarding_with_cyo_incentive_selected',
-				{
-					context: CONTEXT_ADS_ONLY_ONBOARDING,
-					level: incentiveOffer,
-				}
-			);
-		}
+		const hasAppliedIncentive =
+			await applySelectedIncentive( incentiveOffer );
 
 		recordGlaEvent(
 			'gla_ads_only_onboarding_with_paid_ads_continue_button_click',
@@ -167,6 +179,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		onSubmit( {
 			dailyBudget,
 			hasConfirmedEuPoliticalContent,
+			hasAppliedIncentive,
 		} );
 	};
 

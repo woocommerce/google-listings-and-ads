@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-const { test, expect } = require( '@playwright/test' );
+import { test, expect } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -51,9 +51,15 @@ test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 	} );
 
 	test.describe( 'Should display limited elements', () => {
-		test( 'Should display only "Dashboard" and "Settings" tabs in the main navigation', async () => {
+		test( 'Should display only "Dashboard", "Reports" and "Settings" tabs in the main navigation', async () => {
 			const tabs = await dashboardPage.getTabTitles();
-			expect( tabs ).toEqual( [ 'Dashboard', 'Settings' ] );
+			expect( tabs ).toEqual( [ 'Dashboard', 'Reports', 'Settings' ] );
+		} );
+
+		test( 'Should display the "View Reports" link', async () => {
+			await expect(
+				page.getByRole( 'link', { name: 'View Reports' } )
+			).toBeVisible();
 		} );
 
 		test( 'Should not display "Product Feed (Limited Visibility)" card', async () => {

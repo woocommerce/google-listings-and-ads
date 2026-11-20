@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
@@ -44,9 +45,12 @@ defined( 'ABSPATH' ) || exit;
  * @method update_mc_status( WC_Product $product, string $value )
  * @method delete_mc_status( WC_Product $product )
  * @method get_mc_status( WC_Product $product ): string|null
- * @method update_sync_hash( WC_Product $product, string $value )
+ * @method update_sync_hash( WC_Product $product, array $value )
  * @method delete_sync_hash( WC_Product $product )
- * @method get_sync_hash( WC_Product $product ): string|null
+ * @method get_sync_hash( WC_Product $product ): array|string|null
+ * @method update_sync_queued_at( WC_Product $product, $value )
+ * @method delete_sync_queued_at( WC_Product $product )
+ * @method get_sync_queued_at( WC_Product $product ): int|null
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -62,6 +66,7 @@ class ProductMetaHandler implements Service, Registerable {
 	public const KEY_SYNC_STATUS            = 'sync_status';
 	public const KEY_MC_STATUS              = 'mc_status';
 	public const KEY_SYNC_HASH              = 'sync_hash';
+	public const KEY_SYNC_QUEUED_AT         = 'sync_queued_at';
 
 	protected const TYPES = [
 		self::KEY_SYNCED_AT              => 'int',
@@ -73,7 +78,13 @@ class ProductMetaHandler implements Service, Registerable {
 		self::KEY_SYNC_FAILED_AT         => 'int',
 		self::KEY_SYNC_STATUS            => 'string',
 		self::KEY_MC_STATUS              => 'string',
-		self::KEY_SYNC_HASH              => 'string',
+		// Keyed by "{contentLanguage}|{feedLabel}"; a product tracks one hash per
+		// synced entry. Reads may still return a legacy string stored before this
+		// was an array, which consumers treat as no-match. If a caller still passes
+		// a plain string, update() intentionally casts it to a single-element array;
+		// that array holds no entry key, so it is also treated as no-match.
+		self::KEY_SYNC_HASH              => 'array',
+		self::KEY_SYNC_QUEUED_AT         => 'int',
 	];
 
 	/**

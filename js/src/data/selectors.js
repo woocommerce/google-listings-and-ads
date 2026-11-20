@@ -24,6 +24,10 @@ import {
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
  */
 
+// A stable empty array for selectors to return when there is no data, so that
+// `useSelect` doesn't see a new value on every call and re-render needlessly.
+const EMPTY_ARRAY = Object.freeze( [] );
+
 /**
  * Select the general state.
  *
@@ -315,6 +319,32 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
 };
 
 /**
+ * @typedef {Object} ReportStatsQuery
+ * @property {string} after  Inclusive start of the range, ISO datetime (e.g. '2025-03-01T00:00:00').
+ * @property {string} before Inclusive end of the range, ISO datetime (e.g. '2025-03-31T23:59:59').
+ * @property {string} interval Reporting interval, e.g. 'day'.
+ */
+
+/**
+ * Select the `totals` of a WooCommerce Analytics report stats response for a given report type and range query.
+ *
+ * Results are cached in the shared `report` slice, keyed via
+ * `getReportKey( 'wc-analytics', reportType, query )`, so primary and comparison ranges cache
+ * side-by-side.
+ *
+ * @param  {Object} state The current store state will be injected by `wp.data`.
+ * @param  {'revenue'|'products'} reportType Report type.
+ * @param  {ReportStatsQuery} query Range query params of the report API.
+ *
+ * @return {Object|null} The report `totals` object of specified parameters. It would return `null` before the data is fetched.
+ */
+export const getWCReportStats = ( state, reportType, query ) => {
+	const reportKey = getReportKey( 'wc-analytics', reportType, query );
+	const report = state.report[ reportKey ];
+	return report?.totals ?? null;
+};
+
+/**
  * @typedef {Object} ReportSchema
  * @property {boolean} loaded Whether the data have been loaded.
  * @property {ReportData} data Fetched report data.
@@ -468,6 +498,17 @@ export const getCYOIncentives = ( state ) => {
 };
 
 /**
+ * Retrieves whether an offer was already applied to the connected Google Ads account.
+ * It's returned by the same request as `getCYOIncentives`, so it's only available once that resolves.
+ *
+ * @param {Object} state The state
+ * @return {boolean} Whether an offer was already applied.
+ */
+export const hasAppliedCYOIncentive = ( state ) => {
+	return state.ads.cyo_incentives.has_applied_incentive ?? false;
+};
+
+/**
  * Return the GTIN Migration status.
  *
  * @param {Object} state The state
@@ -575,11 +616,11 @@ export const getGenAIMediaAssets = ( state, url, assetType ) => {
 	const mediaAssets = state.gen_ai_assets?.[ url ]?.media;
 
 	if ( ! url || ! mediaAssets ) {
-		return [];
+		return EMPTY_ARRAY;
 	}
 
 	if ( assetType ) {
-		return mediaAssets[ assetType ] ?? [];
+		return mediaAssets[ assetType ] ?? EMPTY_ARRAY;
 	}
 
 	return mediaAssets;
@@ -597,12 +638,91 @@ export const getGenAITextAssets = ( state, url, assetType ) => {
 	const textAssets = state.gen_ai_assets?.[ url ]?.text;
 
 	if ( ! url || ! textAssets ) {
-		return [];
+		return EMPTY_ARRAY;
 	}
 
 	if ( assetType ) {
-		return textAssets[ assetType ] ?? [];
+		return textAssets[ assetType ] ?? EMPTY_ARRAY;
 	}
 
 	return textAssets;
+};
+
+/**
+ * Retrieves all markets from the state.
+ *
+ * @param {Object} state - The Redux state object containing markets data.
+ * @return {Array} The list of markets.
+ */
+export const getMarkets = ( state ) => {
+	return state.mc.markets;
+};
+
+/**
+ * Retrieves a specific market from the state by its ID.
+ *
+ * @param {Object} state - The Redux state object containing markets data.
+ * @param {string|number} id - The unique identifier of the market.
+ * @return {Object|undefined} The market with the specified ID, or undefined if not found.
+ */
+export const getMarket = ( state, id ) => {
+	return state.mc.markets.find( ( market ) => market.id === id );
+};
+
+/**
+ * @typedef {Object} MCLanguage
+ * @property {string} code BCP 47 language code (e.g. `"en"`).
+ * @property {string} label Human-readable language name (e.g. `"English"`).
+ * @property {boolean} supported Whether Google Merchant Center supports the language.
+ * @property {string|null} content_language Merchant Center content language the code resolves to (e.g. `"pt"` for `"pt-pt"`), or null when unsupported.
+ */
+
+/**
+ * @typedef {Object} MCCurrency
+ * @property {string} code ISO 4217 currency code (e.g. `"USD"`).
+ * @property {string} symbol Currency symbol (e.g. `"$"`).
+ */
+
+/**
+ * Select available languages and currencies from the store's local installation (e.g. WPML).
+ * Triggers the single resolver that populates both state properties.
+ *
+ * @param {Object} state The current store state.
+ * @return {{languages: Array<MCLanguage>|null, currencies: Array<MCCurrency>|null}} Available languages and currencies, or null values before data is fetched.
+ */
+export const getAvailableLanguagesCurrencies = ( state ) => {
+	const { languages, currencies } = state.mc;
+	return { languages, currencies };
+};
+
+/**
+ * Select the available languages from the store's local installation (e.g. WPML).
+ * Call getAvailableLanguagesCurrencies to trigger the data fetch.
+ *
+ * @param {Object} state The current store state.
+ * @return {Array<MCLanguage>|null} Available languages, or null before data is fetched.
+ */
+export const getAvailableLanguages = ( state ) => state.mc.languages;
+
+/**
+ * Select the available currencies from the store's local installation (e.g. WPML/WCML).
+ * Call getAvailableLanguagesCurrencies to trigger the data fetch.
+ *
+ * @param {Object} state The current store state.
+ * @return {Array<MCCurrency>|null} Available store currencies, or null before data is fetched.
+ */
+export const getAvailableStoreCurrencies = ( state ) => state.mc.currencies;
+
+/**
+ * @typedef {Object} Notification
+ * @property {string} id Notification ID.
+ * @property {number} triggered_at Unix timestamp of when the notification was triggered.
+ */
+
+/**
+ * @param {Object} state
+ * @return {Array<Notification>} Current notifications, or empty array if none.
+ */
+export const getNotifications = ( state ) => {
+	return state.notifications ?? [];
 };

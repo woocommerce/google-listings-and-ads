@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { test, expect } from '@playwright/test';
+
+/**
  * Internal dependencies
  */
 import ProductListingsPage from '../../utils/pages/onboarding/step-2-product-listings';
@@ -8,11 +13,6 @@ import {
 	selectCountryFromSearchBox,
 } from '../../utils/page';
 import { clearServiceBasedMerchant } from '../../utils/api';
-
-/**
- * External dependencies
- */
-const { test, expect } = require( '@playwright/test' );
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -65,7 +65,6 @@ test.describe( 'Configure product listings', () => {
 			productListingsPage.fulfillSettings( {
 				shipping_rate: 'flat',
 				shipping_rates_count: 0,
-				tax_rate: 'destination',
 			} ),
 
 			clearServiceBasedMerchant(),
@@ -93,7 +92,7 @@ test.describe( 'Configure product listings', () => {
 
 		await expect(
 			page.getByText(
-				'our product details, estimated shipping info and tax details will be displayed across Google.'
+				'our product details and estimated shipping info will be displayed across Google.'
 			)
 		).toBeVisible();
 	} );
@@ -164,6 +163,7 @@ test.describe( 'Configure product listings', () => {
 
 	test.describe( 'Shipping rate is simple', () => {
 		test.beforeAll( async () => {
+			await productListingsPage.fulfillShippingRates( [] );
 			await productListingsPage.fulfillShippingTimes( [] );
 			await page.reload();
 
@@ -201,6 +201,13 @@ test.describe( 'Configure product listings', () => {
 			await expect( estimatedRatesInputBox ).toBeVisible();
 		} );
 
+		test( 'should show error message if no shipping rate is specified', async () => {
+			await productListingsPage.clickContinueButton();
+			const estimatedRatesError =
+				productListingsPage.getEstimatedShippingRatesNullError();
+			await expect( estimatedRatesError ).toBeVisible();
+		} );
+
 		test( 'should see "Free shipping for all orders" tag if shipping rate is 0', async () => {
 			await productListingsPage.fillEstimatedShippingRates( '0' );
 			const freeShippingForAllOrdersTag =
@@ -215,12 +222,11 @@ test.describe( 'Configure product listings', () => {
 			await expect( offerFreeShippingForOrdersText ).toBeVisible();
 		} );
 
-		test( 'should see "Minimum order to qualify for free shipping" text if fee shipping checkbox is checked', async () => {
+		test( 'should see "Cost" text if fee shipping checkbox is checked', async () => {
 			// Check the checkbox of "Offer free shipping for orders".
 			await productListingsPage.checkOfferFreeShippingCheckbox();
-			const minimumOrderForFreeShippingText =
-				productListingsPage.getMinimumOrderForFreeShippingText();
-			await expect( minimumOrderForFreeShippingText ).toBeVisible();
+			const costText = productListingsPage.getCostText();
+			await expect( costText ).toBeVisible();
 		} );
 
 		test( 'should have minTime as 1 and maxTime as 5 set by default', async () => {

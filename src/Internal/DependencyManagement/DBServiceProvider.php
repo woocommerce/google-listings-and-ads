@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20211228T1
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20220524T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20240813T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20250910T1653383133;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20260813T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationVersion141;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
@@ -20,6 +21,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantPriceBenchmarksQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\AttributeMappingRulesTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\BudgetRecommendationTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
@@ -114,6 +117,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->share_migration( Migration20231109T1653383133::class, BudgetRecommendationTable::class );
 		$this->share_migration( Migration20240813T1653383133::class, ShippingTimeTable::class );
 		$this->share_migration( Migration20250910T1653383133::class, ActionScheduler::class );
+		$this->share_migration( Migration20260813T1653383133::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class, MarketService::class, OptionsInterface::class );
 		$this->share_with_tags( Migrator::class, MigrationInterface::class );
 	}
 

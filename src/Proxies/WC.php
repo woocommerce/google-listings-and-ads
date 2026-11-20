@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
@@ -222,6 +223,22 @@ class WC {
 	}
 
 	/**
+	 * Whether at least one payment gateway is enabled in store settings.
+	 *
+	 * Unlike get_available_payment_gateways(), this does not require gateways to
+	 * pass checkout availability checks (e.g. cart context or gateway configuration).
+	 */
+	public function has_enabled_payment_gateways(): bool {
+		foreach ( WCCore()->payment_gateways->payment_gateways() as $gateway ) {
+			if ( 'yes' === $gateway->enabled ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns the WooCommerce object container.
 	 *
 	 * @return Container
@@ -235,9 +252,18 @@ class WC {
 	/**
 	 * Get the customer's shipping and billing info from the session.
 	 *
-	 * @return array
+	 * WooCommerce doesn't load the session on requests it treats as REST API requests,
+	 * which includes front-end requests with "wp-json/" anywhere in their URI.
+	 *
+	 * @return array An empty array if the session isn't loaded or has no customer.
 	 */
 	public function get_customer_details() {
-		return WCCore()->session->get( 'customer', [] );
+		$session = WCCore()->session;
+
+		if ( null === $session ) {
+			return [];
+		}
+
+		return $session->get( 'customer', [] );
 	}
 }

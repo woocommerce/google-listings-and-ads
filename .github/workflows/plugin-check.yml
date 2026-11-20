@@ -1,0 +1,107 @@
+name: 'WordPress Plugin Checks'
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+    inputs:
+      security:
+        description: 'Security'
+        type: boolean
+        default: true
+      general:
+        description: 'General'
+        type: boolean
+        default: false
+      plugin_repo:
+        description: 'Plugin repo'
+        type: boolean
+        default: false
+      performance:
+        description: 'Performance'
+        type: boolean
+        default: false
+      accessibility:
+        description: 'Accessibility'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  # Lets the action post the report as a PR comment.
+  pull-requests: write
+
+jobs:
+  plugin-check:
+    name: Plugin Check
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Prepare PHP
+        uses: woocommerce/grow/prepare-php@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
+        with:
+          install-deps: "no"
+
+      - name: Prepare node
+        uses: woocommerce/grow/prepare-node@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
+        with:
+          node-version-file: ".nvmrc"
+          ignore-scripts: "no"
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Extract release ZIP
+        run: unzip -q google-listings-and-ads.zip -d dist
+
+      # Pull requests always run the security checks; manual runs use the selected categories, or security if none are selected.
+      - name: Resolve check categories
+        id: categories
+        env:
+          IS_MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
+          SECURITY: ${{ inputs.security }}
+          GENERAL: ${{ inputs.general }}
+          PLUGIN_REPO: ${{ inputs.plugin_repo }}
+          PERFORMANCE: ${{ inputs.performance }}
+          ACCESSIBILITY: ${{ inputs.accessibility }}
+        run: |
+          if [ "$IS_MANUAL" != "true" ]; then
+            echo "list=security" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          categories=()
+          [ "$SECURITY" = "true" ] && categories+=( security )
+          [ "$GENERAL" = "true" ] && categories+=( general )
+          [ "$PLUGIN_REPO" = "true" ] && categories+=( plugin_repo )
+          [ "$PERFORMANCE" = "true" ] && categories+=( performance )
+          [ "$ACCESSIBILITY" = "true" ] && categories+=( accessibility )
+
+          if [ ${#categories[@]} -eq 0 ]; then
+            echo "::notice::No category selected, running the security checks."
+            categories=( security )
+          fi
+
+          echo "list=$(IFS=,; echo "${categories[*]}")" >> "$GITHUB_OUTPUT"
+
+      - name: Run plugin check
+        uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+        with:
+          # The folder name becomes the plugin slug, so keep it matching the real one.
+          build-dir: ./dist/google-listings-and-ads
+          categories: ${{ steps.categories.outputs.list }}
+          # Third-party dependencies, namespace-prefixed at build time.
+          exclude-directories: |
+            vendor

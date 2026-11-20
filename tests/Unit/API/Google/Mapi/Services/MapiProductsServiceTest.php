@@ -157,6 +157,63 @@ class MapiProductsServiceTest extends UnitTest {
 		$this->assertSame( $boom, $captured[0][0] );
 	}
 
+	public function test_list_page_requests_first_page_at_default_size_1000() {
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'products/v1/accounts/12345/products?pageSize=1000' )
+			->willReturn(
+				[
+					'products'      => [
+						[
+							'name'    => 'accounts/12345/products/en~US~gla_1',
+							'offerId' => 'gla_1',
+						],
+					],
+					'nextPageToken' => 'tok/2',
+				]
+			);
+
+		$page = $this->service->list_page();
+
+		$this->assertCount( 1, $page['products'] );
+		$this->assertInstanceOf( Product::class, $page['products'][0] );
+		$this->assertSame( 'tok/2', $page['next_page_token'] );
+	}
+
+	public function test_list_page_clamps_page_size_to_api_bounds() {
+		$matcher = $this->exactly( 2 );
+		$this->client->expects( $matcher )
+			->method( 'get' )
+			->willReturnCallback(
+				function ( string $path ) use ( $matcher ) {
+					// The token is null, so pageSize is the final query argument; an
+					// exact suffix match cannot be satisfied by a longer number.
+					if ( 1 === $matcher->getInvocationCount() ) {
+						$this->assertStringEndsWith( 'pageSize=1000', $path );
+					} else {
+						$this->assertStringEndsWith( 'pageSize=1', $path );
+					}
+
+					return [ 'products' => [] ];
+				}
+			);
+
+		$this->service->list_page( null, 5000 );
+		$this->service->list_page( null, 0 );
+	}
+
+	public function test_list_page_encodes_token_and_ends_pagination() {
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'products/v1/accounts/12345/products?pageSize=1000&pageToken=tok%2F2' )
+			->willReturn( [ 'products' => [] ] );
+
+		$page = $this->service->list_page( 'tok/2' );
+
+		$this->assertSame( [], $page['products'] );
+		$this->assertNull( $page['next_page_token'] );
+	}
+
 	public function test_list_follows_pagination_and_returns_products() {
 		$this->client->expects( $this->exactly( 2 ) )
 			->method( 'get' )

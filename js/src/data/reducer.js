@@ -45,6 +45,9 @@ const DEFAULT_STATE = {
 				pages: null,
 			},
 		},
+		markets: [],
+		languages: null,
+		currencies: null,
 	},
 	ads_campaigns: null,
 	all_ads_campaigns: null,
@@ -78,6 +81,7 @@ const DEFAULT_STATE = {
 		budgetMetrics: {},
 		settings: null,
 	},
+	notifications: [],
 	gtinMigrationStatus: null,
 	price_benchmark: {
 		suggestions: {
@@ -678,6 +682,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, [ 'ads', 'cyo_incentives' ], cyoIncentives );
 		}
 
+		case TYPES.APPLY_CYO_INCENTIVE: {
+			return setIn(
+				state,
+				[ 'ads', 'cyo_incentives', 'has_applied_incentive' ],
+				true
+			);
+		}
+
 		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {
 			const { url, data, assetType } = action;
 			const existingMedia = state.gen_ai_assets?.[ url ]?.media ?? {};
@@ -691,16 +703,37 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 								...( data[ assetType ] ?? [] ),
 							] ),
 						],
-				  }
+					}
 				: {
 						...existingMedia,
 						...data,
-				  };
+					};
 
 			return setIn(
 				state,
 				[ 'gen_ai_assets', url, 'media' ],
 				updatedMedia
+			);
+		}
+
+		case TYPES.REPLACE_GEN_AI_MEDIA_ASSET: {
+			const { url, assetType, sourceUrl, newUrl } = action;
+			const existingAssets =
+				state.gen_ai_assets?.[ url ]?.media?.[ assetType ] ?? [];
+			const sourceIndex = existingAssets.indexOf( sourceUrl );
+
+			// Source URL isn't in the store for this url/assetType — nothing to swap.
+			if ( sourceIndex === -1 ) {
+				return state;
+			}
+
+			const updatedAssets = [ ...existingAssets ];
+			updatedAssets[ sourceIndex ] = newUrl;
+
+			return setIn(
+				state,
+				[ 'gen_ai_assets', url, 'media', assetType ],
+				updatedAssets
 			);
 		}
 
@@ -715,11 +748,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 							...( existingText[ assetType ] ?? [] ),
 							...( data[ assetType ] ?? [] ),
 						],
-				  }
+					}
 				: {
 						...existingText,
 						...data,
-				  };
+					};
 
 			return setIn(
 				state,
@@ -735,6 +768,31 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_MARKETS: {
+			const { markets } = action;
+
+			return setIn( state, 'mc.markets', markets );
+		}
+
+		case TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES: {
+			const { data } = action;
+			return chainState( state, 'mc' )
+				.setIn( 'languages', data.languages )
+				.setIn( 'currencies', data.currencies )
+				.end();
+		}
+
+		case TYPES.RECEIVE_NOTIFICATIONS: {
+			return setIn( state, 'notifications', action.notifications );
+		}
+
+		case TYPES.DISMISS_NOTIFICATION: {
+			const notifications = state.notifications.filter(
+				( notification ) => notification.id !== action.id
+			);
+			return setIn( state, 'notifications', notifications );
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:

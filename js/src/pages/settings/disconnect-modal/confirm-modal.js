@@ -13,11 +13,11 @@ import AppButton from '~/components/app-button';
 import WarningIcon from '~/components/warning-icon';
 import { useAppDispatch } from '~/data';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
-import { ALL_ACCOUNTS, ADS_ACCOUNT, ADS_ONLY } from './constants';
+import { ALL_ACCOUNTS, ADS_ONLY, YOUTUBE_ACCOUNT } from './constants';
 
 const textDict = {
 	[ ALL_ACCOUNTS ]: {
-		title: __( 'Disconnect all accounts', 'google-listings-and-ads' ),
+		title: __( 'Disconnect all accounts?', 'google-listings-and-ads' ),
 		confirmButton: __(
 			'Disconnect all accounts',
 			'google-listings-and-ads'
@@ -28,22 +28,18 @@ const textDict = {
 		),
 		contents: [
 			__(
-				'I understand that I am disconnecting any WordPress.com account, Google account, Google Merchant Center account and Google Ads account connected to this extension.',
+				'Your WordPress.com, Google, Merchant Center, and Google Ads accounts will be disconnected from your WooCommerce store. Some settings created in WooCommerce may be lost and can’t be restored.',
 				'google-listings-and-ads'
 			),
 			__(
-				'Any active product listings will continue to show on Google. They can be managed, edited, or deleted manually from Google Merchant Center (merchants.google.com).',
-				'google-listings-and-ads'
-			),
-			__(
-				'Any ongoing campaigns will continue to run. They can be managed, edited, or deleted manually from Google Ads (ads.google.com).',
+				'Your product listings will keep showing on Google, and your campaigns will keep running. To pause, edit, or delete them, go to Google Merchant Center (merchants.google.com) and Google Ads (ads.google.com).',
 				'google-listings-and-ads'
 			),
 		],
 	},
 
 	[ ADS_ONLY ]: {
-		title: __( 'Disconnect all accounts', 'google-listings-and-ads' ),
+		title: __( 'Disconnect all accounts?', 'google-listings-and-ads' ),
 		confirmButton: __(
 			'Disconnect all accounts',
 			'google-listings-and-ads'
@@ -54,43 +50,58 @@ const textDict = {
 		),
 		contents: [
 			__(
-				'I understand that I am disconnecting any WordPress.com account, Google account and Google Ads account connected to this extension.',
+				'Your WordPress.com, Google, and Google Ads accounts will be disconnected from your WooCommerce store. Some settings created in WooCommerce may be lost and can’t be restored.',
 				'google-listings-and-ads'
 			),
 			__(
-				'Any ongoing campaigns will continue to run. They can be managed, edited, or deleted manually from Google Ads (ads.google.com).',
+				'Your campaigns will keep running. To pause, edit, or delete them, go to Google Ads (ads.google.com).',
 				'google-listings-and-ads'
 			),
 		],
 	},
 
-	[ ADS_ACCOUNT ]: {
-		title: __( 'Disconnect Google Ads account', 'google-listings-and-ads' ),
+	[ YOUTUBE_ACCOUNT ]: {
+		title: __( 'Disconnect YouTube account?', 'google-listings-and-ads' ),
 		confirmButton: __(
-			'Disconnect Google Ads Account',
+			'Disconnect YouTube account',
 			'google-listings-and-ads'
 		),
 		confirmation: __(
-			'Yes, I want to disconnect my Google Ads account.',
+			'Yes, I want to disconnect my YouTube account.',
 			'google-listings-and-ads'
 		),
 		contents: [
 			__(
-				'I understand that I am disconnecting my Google Ads account from this WooCommerce extension.',
+				'Your YouTube account will be disconnected from your WooCommerce store.',
 				'google-listings-and-ads'
 			),
 			__(
-				'Any ongoing campaigns will continue to run. They can be managed, edited, or deleted manually from Google Ads (ads.google.com).',
-				'google-listings-and-ads'
-			),
-			__(
-				'Some configurations for Google Ads created through WooCommerce may be lost. This cannot be undone.',
+				'Your products will no longer be promoted on YouTube through Shopping ads. You can reconnect at any time.',
 				'google-listings-and-ads'
 			),
 		],
 	},
 };
 
+/**
+ * Clicking on the button to disconnect the YouTube account.
+ *
+ * @event gla_youtube_account_disconnect_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+ */
+
+/**
+ * Renders the disconnect confirmation modal.
+ *
+ * @fires gla_youtube_account_disconnect_button_click When the user confirms the disconnection of the YouTube account.
+ *
+ * @param {Object} props Component props.
+ * @param {string} props.disconnectTarget Which accounts the modal disconnects.
+ * @param {() => void} props.onRequestClose Called when the modal is dismissed.
+ * @param {() => void} props.onDisconnected Called after a successful disconnection.
+ * @param {() => Promise<*>} [props.disconnectAction] Overrides the disconnect action inferred from `disconnectTarget`.
+ * @return {JSX.Element} The confirmation modal.
+ */
 export default function ConfirmModal( {
 	disconnectTarget,
 	onRequestClose,
@@ -103,14 +114,16 @@ export default function ConfirmModal( {
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
 	let targetTextDict = ALL_ACCOUNTS;
-	if ( disconnectTarget === ADS_ACCOUNT ) {
-		targetTextDict = ADS_ACCOUNT;
+	if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
+		targetTextDict = YOUTUBE_ACCOUNT;
 	} else if ( disconnectTarget === ALL_ACCOUNTS && ! hasGoogleMCConnection ) {
 		targetTextDict = ADS_ONLY;
 	}
 
 	const { title, confirmButton, confirmation, contents } =
 		textDict[ targetTextDict ];
+
+	const isYouTubeTarget = disconnectTarget === YOUTUBE_ACCOUNT;
 
 	const handleRequestClose = () => {
 		if ( isDisconnecting ) {
@@ -120,10 +133,14 @@ export default function ConfirmModal( {
 	};
 
 	const handleConfirmClick = () => {
-		let disconnect =
-			disconnectTarget === ALL_ACCOUNTS
-				? dispatcher.disconnectAllAccounts
-				: dispatcher.disconnectGoogleAdsAccount;
+		let disconnect;
+		if ( disconnectTarget === ALL_ACCOUNTS ) {
+			disconnect = dispatcher.disconnectAllAccounts;
+		} else if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
+			disconnect = dispatcher.disconnectYouTubeAccount;
+		} else {
+			disconnect = dispatcher.disconnectGoogleAdsAccount;
+		}
 
 		if ( disconnectAction ) {
 			disconnect = disconnectAction;
@@ -157,7 +174,7 @@ export default function ConfirmModal( {
 					disabled={ isDisconnecting }
 					onClick={ handleRequestClose }
 				>
-					{ __( 'Never mind', 'google-listings-and-ads' ) }
+					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="2"
@@ -165,6 +182,12 @@ export default function ConfirmModal( {
 					isDestructive
 					loading={ isDisconnecting }
 					disabled={ ! isAgreed }
+					eventName={
+						isYouTubeTarget
+							? 'gla_youtube_account_disconnect_button_click'
+							: undefined
+					}
+					eventProps={ { context: 'settings-youtube' } }
 					onClick={ handleConfirmClick }
 				>
 					{ confirmButton }

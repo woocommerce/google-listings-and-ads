@@ -1,10 +1,13 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use DateInterval;
@@ -12,6 +15,7 @@ use WC_DateTime;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
+use WC_Tax;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,6 +23,15 @@ defined( 'ABSPATH' ) || exit;
  * Class WCProductInputAdapter
  *
  * Builds a Merchant API ProductInput directly from a WooCommerce product.
+ *
+ * Answers Content API-style camelCase getters through __call(), returning Merchant API value shapes.
+ *
+ * @method string|null getLink()
+ * @method string|null getTitle()
+ * @method string|null getDescription()
+ * @method string|null getImageLink()
+ * @method string      getOfferId()
+ * @method string|null getGtin()
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
@@ -55,6 +68,167 @@ class WCProductInputAdapter {
 		'adult',
 	];
 
+	/**
+	 * Merchant API product attribute keys (`ProductAttributes` in the `products_v1` schema).
+	 * Override filter keys outside this list are dropped.
+	 */
+	private const PRODUCT_ATTRIBUTE_KEYS = [
+		'additionalImageLinks',
+		'adsGrouping',
+		'adsLabels',
+		'adsRedirect',
+		'adult',
+		'ageGroup',
+		'amenityFeature',
+		'autoPricingMinPrice',
+		'availability',
+		'availabilityDate',
+		'bodyStyle',
+		'brand',
+		'canonicalLink',
+		'carrierShipping',
+		'certifications',
+		'certifiedPreOwned',
+		'cloudExportAdditionalProperties',
+		'co2Emissions',
+		'color',
+		'condition',
+		'costOfGoodsSold',
+		'customLabel0',
+		'customLabel1',
+		'customLabel2',
+		'customLabel3',
+		'customLabel4',
+		'dateFirstRegistered',
+		'description',
+		'disclosureDate',
+		'displayAddress',
+		'displayAdsId',
+		'displayAdsLink',
+		'displayAdsSimilarIds',
+		'displayAdsTitle',
+		'displayAdsValue',
+		'documentLinks',
+		'electricRange',
+		'emissionsStandard',
+		'energyConsumption',
+		'energyEfficiencyClass',
+		'engine',
+		'excludedDestinations',
+		'expirationDate',
+		'externalSellerId',
+		'freeShippingThreshold',
+		'fuelConsumption',
+		'fuelConsumptionDischargedBattery',
+		'gender',
+		'googleProductCategory',
+		'gtins',
+		'handlingCutoffTimes',
+		'identifierExists',
+		'imageLink',
+		'includedDestinations',
+		'installment',
+		'isBundle',
+		'itemGroupId',
+		'itemGroupTitle',
+		'latitude',
+		'leaseTerm',
+		'lifestyleImageLinks',
+		'link',
+		'linkTemplate',
+		'longitude',
+		'loyaltyPoints',
+		'loyaltyPrograms',
+		'material',
+		'maxEnergyEfficiencyClass',
+		'maxHandlingTime',
+		'maximumRetailPrice',
+		'mileage',
+		'minEnergyEfficiencyClass',
+		'minHandlingTime',
+		'minimumOrderValues',
+		'mobileLink',
+		'mobileLinkTemplate',
+		'model',
+		'mpn',
+		'multipack',
+		'neighborhood',
+		'numberOfBathrooms',
+		'numberOfBedrooms',
+		'numberOfUnits',
+		'pattern',
+		'pause',
+		'petPolicy',
+		'pickupCost',
+		'pickupMethod',
+		'pickupSla',
+		'popularityRank',
+		'price',
+		'productDetails',
+		'productFee',
+		'productHeight',
+		'productHighlights',
+		'productLength',
+		'productTypes',
+		'productWeight',
+		'productWidth',
+		'promotionIds',
+		'propertyName',
+		'propertyType',
+		'questionsAndAnswers',
+		'relatedProducts',
+		'returnPolicyLabel',
+		'returns',
+		'salePrice',
+		'salePriceEffectiveDate',
+		'sellOnGoogleQuantity',
+		'shipping',
+		'shippingHandlingBusinessDays',
+		'shippingHeight',
+		'shippingLabel',
+		'shippingLength',
+		'shippingTransitBusinessDays',
+		'shippingWeight',
+		'shippingWidth',
+		'shoppingAdsExcludedCountries',
+		'shortTitle',
+		'size',
+		'sizeSystem',
+		'sizeTypes',
+		'specialtyHousingType',
+		'structuredDescription',
+		'structuredTitle',
+		'subscriptionCost',
+		'sustainabilityIncentives',
+		'title',
+		'transitTimeLabel',
+		'trim',
+		'unitArea',
+		'unitPricingBaseMeasure',
+		'unitPricingMeasure',
+		'utilitiesIncluded',
+		'variantOptions',
+		'vehicleAllInPrice',
+		'vehicleExpenses',
+		'vehicleMandatoryInspectionIncluded',
+		'vehicleMsrp',
+		'vehiclePriceType',
+		'videoLinks',
+		'vin',
+		'virtualModelLink',
+		'warranty',
+		'year',
+	];
+
+	/**
+	 * Content API product keys accepted from the override filter, keyed to their Merchant API key.
+	 */
+	private const CONTENT_API_ATTRIBUTE_KEYS = [
+		'gtin'     => 'gtins',
+		'sizes'    => 'size',
+		'sizeType' => 'sizeTypes',
+	];
+
 	/** @var WC_Product */
 	protected $wc_product;
 
@@ -69,6 +243,21 @@ class WCProductInputAdapter {
 
 	/** @var string */
 	protected $feed_label;
+
+	/** @var string Country used for shipping entries and tax rules; may differ from the feed label. */
+	protected $target_country;
+
+	/** @var string Optional ISO 639-1 language override for the content language. */
+	protected $language = '';
+
+	/** @var string Optional ISO 4217 currency code overriding the store currency. */
+	protected $currency_override = '';
+
+	/** @var WPML|null WPML integration used for currency conversion when a currency override is set. */
+	protected $wpml = null;
+
+	/** @var float Fixed market exchange rate used when WPML conversion is unavailable; 0.0 when unset. */
+	protected $exchange_rate = 0.0;
 
 	/** @var bool */
 	protected $tax_excluded = false;
@@ -95,18 +284,28 @@ class WCProductInputAdapter {
 	 * WCProductInputAdapter constructor.
 	 *
 	 * @param WC_Product      $product            The WooCommerce product.
-	 * @param string          $target_country     Feed label.
+	 * @param string          $target_country     Country used for shipping and tax rules; also the default feed label.
 	 * @param WC_Product|null $parent_product     Parent product, required when $product is a variation.
 	 * @param string[]        $shipping_countries Additional target countries to add shipping entries for.
 	 * @param array           $gla_attributes     Per-product Google attribute values.
 	 * @param array           $mapping_rules      Attribute mapping rules to apply.
+	 * @param string          $feed_label         Optional feed label when it differs from the target country.
+	 * @param string          $language           Optional ISO 639-1 language code overriding the site locale.
+	 * @param string          $currency_override  Optional ISO 4217 currency code overriding the store currency.
+	 * @param WPML|null       $wpml               WPML integration used for currency conversion when a currency override is set.
+	 * @param float           $exchange_rate      Fixed market exchange rate used to convert prices when WPML conversion is unavailable; 0.0 when unset.
 	 *
 	 * @throws InvalidValue When $product is a variation and a valid parent product is not provided.
 	 */
-	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [], array $gla_attributes = [], array $mapping_rules = [] ) {
+	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [], array $gla_attributes = [], array $mapping_rules = [], string $feed_label = '', string $language = '', string $currency_override = '', ?WPML $wpml = null, float $exchange_rate = 0.0 ) {
 		$this->wc_product         = $product;
 		$this->parent_wc_product  = $parent_product;
-		$this->feed_label         = $target_country;
+		$this->target_country     = $target_country;
+		$this->feed_label         = '' !== $feed_label ? $feed_label : $target_country;
+		$this->language           = $language;
+		$this->currency_override  = $currency_override;
+		$this->wpml               = $wpml;
+		$this->exchange_rate      = $exchange_rate;
 		$this->shipping_countries = $shipping_countries;
 		$this->gla_attributes     = $gla_attributes;
 		$this->mapping_rules      = $mapping_rules;
@@ -194,11 +393,33 @@ class WCProductInputAdapter {
 	}
 
 	/**
+	 * Answer Content API-style camelCase getters (e.g. getLink()) for callbacks on the
+	 * `woocommerce_gla_product_attribute_values` filter.
+	 *
+	 * @param string $name      Method name.
+	 * @param array  $arguments Method arguments (unused).
+	 *
+	 * @return mixed The current value in its Merchant API shape, or null when it was never mapped.
+	 *
+	 * @throws \Error When $name is not a camelCase getter.
+	 */
+	public function __call( string $name, array $arguments ) {
+		if ( ! preg_match( '/^get([A-Z]\w*)$/', $name, $matches ) ) {
+			throw new \Error( sprintf( 'Call to undefined method %s::%s()', static::class, $name ) );
+		}
+
+		return $this->resolve_content_api_property( lcfirst( $matches[1] ) );
+	}
+
+	/**
 	 * Resolve the product identity (offer id and content language).
 	 */
 	protected function map_identity(): void {
-		$this->offer_id         = $this->get_offer_id( $this->wc_product->get_id() );
-		$this->content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) );
+		$this->offer_id = $this->get_offer_id( $this->wc_product->get_id() );
+
+		$language = '' !== $this->language ? $this->language : (string) get_locale();
+
+		$this->content_language = GoogleHelper::resolve_mc_content_language( $language );
 	}
 
 	/**
@@ -340,17 +561,47 @@ class WCProductInputAdapter {
 	}
 
 	/**
-	 * Map the regular price, applying tax inclusion/exclusion rules.
+	 * Map the regular price, applying the target country's tax
+	 * inclusion/exclusion rules.
+	 *
+	 * With a currency override set, the price is always the converted value
+	 * (WPML conversion when available, otherwise the market's fixed exchange
+	 * rate); when no converted value is available the price is left unset, so
+	 * a store-currency amount is never submitted under a non-store-currency
+	 * feed label.
 	 */
 	protected function map_price(): void {
 		$regular_price = $this->wc_product->get_regular_price();
+
+		if ( '' !== $this->currency_override ) {
+			$converted = null !== $this->wpml
+				? $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override )
+				: null;
+
+			if ( null === $converted && $this->exchange_rate > 0 && '' !== $regular_price ) {
+				$converted = (float) $regular_price * $this->exchange_rate;
+			}
+
+			// No price in the override currency: leave it unset so this currency's feed is skipped,
+			// not emitted with the store-currency price mislabelled.
+			if ( null === $converted ) {
+				return;
+			}
+
+			$price = $this->apply_tax_for_target_country( (float) $converted );
+
+			/** This filter is documented in src/Product/WCProductAdapter.php */
+			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
+
+			$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
+			return;
+		}
+
 		if ( '' === $regular_price ) {
 			return;
 		}
 
-		$price = $this->tax_excluded
-			? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $regular_price ] )
-			: wc_get_price_including_tax( $this->wc_product, [ 'price' => $regular_price ] );
+		$price = $this->apply_tax_for_target_country( (float) $regular_price );
 
 		$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
 
@@ -358,8 +609,80 @@ class WCProductInputAdapter {
 	}
 
 	/**
-	 * Map the sale price and sale price effective date, applying tax inclusion/exclusion rules.
-	 * Ported from WCProductAdapter::map_wc_product_sale_price to preserve behavior.
+	 * Apply tax to a price amount per the target country's own rate.
+	 *
+	 * Product sync runs in a background context where WooCommerce's price
+	 * helpers resolve the tax location to the store base address, never the
+	 * entry's target country, so the rate is looked up for the target country
+	 * directly. A country with no rate row in the tax tables yields zero tax,
+	 * matching how WooCommerce treats an unconfigured location.
+	 *
+	 * @param float $price Price amount in the entry's currency, as entered
+	 *                     (inclusive of the store base rate when the store
+	 *                     enters prices inclusive of tax).
+	 *
+	 * @return float
+	 */
+	protected function apply_tax_for_target_country( float $price ): float {
+		if ( ! $this->wc_product->is_taxable() ) {
+			return $price;
+		}
+
+		$base_location = wc_get_base_location();
+
+		// Use WooCommerce's complete location and filters for the base country.
+		if ( $this->target_country === ( $base_location['country'] ?? '' ) ) {
+			// The entered price already contains the base-country tax.
+			if ( wc_prices_include_tax() && ! $this->tax_excluded ) {
+				return round( $price, wc_get_price_decimals() );
+			}
+
+			$price = $this->tax_excluded
+				? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $price ] )
+				: wc_get_price_including_tax( $this->wc_product, [ 'price' => $price ] );
+
+			return round( (float) $price, wc_get_price_decimals() );
+		}
+
+		// Respect WooCommerce's fixed gross price behavior for other locations.
+		if (
+			wc_prices_include_tax()
+			&& ! $this->tax_excluded
+			&& ! apply_filters( 'woocommerce_adjust_non_base_location_prices', true )
+		) {
+			return round( $price, wc_get_price_decimals() );
+		}
+
+		// Remove base tax using WooCommerce's location and extension filters.
+		$price = (float) wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $price ] );
+
+		if ( $this->tax_excluded ) {
+			return round( $price, wc_get_price_decimals() );
+		}
+
+		$rates = WC_Tax::get_rates_from_location(
+			$this->wc_product->get_tax_class(),
+			[ $this->target_country, '', '', '' ]
+		);
+		$taxes = WC_Tax::calc_tax( $price, $rates, false );
+
+		$taxes_total = 'yes' === get_option( 'woocommerce_tax_round_at_subtotal' )
+			? array_sum( $taxes )
+			: array_sum( array_map( 'wc_round_tax_total', $taxes ) );
+
+		return round( $price + $taxes_total, wc_get_price_decimals() );
+	}
+
+	/**
+	 * Map the sale price and sale price effective date, applying the target
+	 * country's tax inclusion/exclusion rules.
+	 *
+	 * With a currency override set, the sale price is always the converted
+	 * value (WPML conversion when available, otherwise the market's fixed
+	 * exchange rate); when no converted value is available the sale price is
+	 * left unset, so a store-currency amount is never submitted under a
+	 * non-store-currency feed label. A sale that has already ended is never
+	 * converted or sent, and the effective dates come from the base product.
 	 */
 	protected function map_sale_price(): void {
 		// Grab the sale price of the base product. Some plugins (Dynamic pricing as an
@@ -379,13 +702,6 @@ class WCProductInputAdapter {
 			return;
 		}
 
-		$sale_price = $this->tax_excluded
-			? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $sale_price ] )
-			: wc_get_price_including_tax( $this->wc_product, [ 'price' => $sale_price ] );
-
-		/** This filter is documented in src/Product/WCProductAdapter.php */
-		$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $this->wc_product, $this->tax_excluded );
-
 		// If the sale price dates no longer apply, make sure we don't include a sale price.
 		$now                 = new WC_DateTime();
 		$sale_price_end_date = $this->wc_product->get_date_on_sale_to();
@@ -393,7 +709,30 @@ class WCProductInputAdapter {
 			return;
 		}
 
-		$this->attributes['salePrice'] = $this->to_money( (float) $sale_price, get_woocommerce_currency() );
+		if ( '' !== $this->currency_override ) {
+			$converted = null !== $this->wpml
+				? $this->wpml->get_product_sale_price_in_currency( $this->wc_product, $this->currency_override )
+				: null;
+
+			if ( null === $converted && $this->exchange_rate > 0 ) {
+				$converted = (float) $sale_price * $this->exchange_rate;
+			}
+
+			// No sale price in the override currency: leave it unset so a
+			// store-currency amount is never emitted under this feed label.
+			if ( null === $converted ) {
+				return;
+			}
+
+			$sale_price = $converted;
+		}
+
+		$sale_price = $this->apply_tax_for_target_country( (float) $sale_price );
+
+		/** This filter is documented in src/Product/WCProductAdapter.php */
+		$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $this->wc_product, $this->tax_excluded );
+
+		$this->attributes['salePrice'] = $this->to_money( (float) $sale_price, $this->effective_currency() );
 
 		$effective_date = $this->get_sale_price_effective_date();
 		if ( null !== $effective_date ) {
@@ -404,7 +743,8 @@ class WCProductInputAdapter {
 	/**
 	 * Return the sale effective dates for the WooCommerce product as a Merchant API
 	 * Interval (`startTime`/`endTime` RFC3339 timestamps), omitting either bound when
-	 * unset. Date-branch logic ported from WCProductAdapter::get_wc_product_sale_price_effective_date.
+	 * unset. Date-branch logic ported from WCProductAdapter::get_wc_product_sale_price_effective_date,
+	 * except that a missing start date uses the product's creation date instead of now.
 	 *
 	 * @return array|null
 	 */
@@ -413,13 +753,14 @@ class WCProductInputAdapter {
 		$end_date   = $this->wc_product->get_date_on_sale_to();
 
 		$now = new WC_DateTime();
-		// if we have a sale end date in the future, but no start date, set the start date to now()
+		// if we have a sale end date in the future, but no start date, start the sale at the product's
+		// creation date so the payload and its sync hash stay the same between syncs.
 		if (
 			! empty( $end_date ) &&
 			$end_date > $now &&
 			empty( $start_date )
 		) {
-			$start_date = $now;
+			$start_date = $this->get_stable_sale_start_date( $now );
 		}
 		// if we have a sale start date in the past, but no end date, do not include the start date.
 		if (
@@ -452,6 +793,27 @@ class WCProductInputAdapter {
 		}
 
 		return $effective_date;
+	}
+
+	/**
+	 * Return the creation date of the product, or of its parent for a variation without one,
+	 * to start a sale that has no start date. Falls back to now when that date is missing, not a date, or in the future.
+	 *
+	 * @param WC_DateTime $now
+	 *
+	 * @return WC_DateTime
+	 */
+	private function get_stable_sale_start_date( WC_DateTime $now ): WC_DateTime {
+		$created = $this->wc_product->get_date_created();
+		if ( ! $created instanceof WC_DateTime && $this->parent_wc_product instanceof WC_Product ) {
+			$created = $this->parent_wc_product->get_date_created();
+		}
+
+		if ( ! $created instanceof WC_DateTime || $created > $now ) {
+			return $now;
+		}
+
+		return $created;
 	}
 
 	/**
@@ -504,7 +866,7 @@ class WCProductInputAdapter {
 	protected function map_shipping(): void {
 		$is_virtual = $this->is_virtual();
 
-		$countries = array_values( array_unique( array_filter( array_merge( [ $this->feed_label ], $this->shipping_countries ) ) ) );
+		$countries = array_values( array_unique( array_filter( array_merge( [ $this->target_country ], $this->shipping_countries ) ) ) );
 
 		$shipping = [];
 		foreach ( $countries as $country ) {
@@ -512,7 +874,7 @@ class WCProductInputAdapter {
 
 			// Virtual products override any country shipping cost with zero.
 			if ( $is_virtual ) {
-				$entry['price'] = $this->to_money( 0.0, get_woocommerce_currency() );
+				$entry['price'] = $this->to_money( 0.0, $this->effective_currency() );
 			}
 
 			$shipping[] = $entry;
@@ -818,15 +1180,130 @@ class WCProductInputAdapter {
 		 * WCProductAdapter (Content API), and overrides must use Merchant API attribute
 		 * keys and value shapes.
 		 *
+		 * Returned keys must be Merchant API product attributes, as allowed by the
+		 * `woocommerce_gla_product_input_attribute_keys` filter. The Content API keys
+		 * `sizes`, `gtin` and `sizeType` are translated to `size` (first entry), `gtins`
+		 * and `sizeTypes`; a Merchant API key returned alongside its Content API
+		 * equivalent takes precedence. Every other key is dropped, and each translated
+		 * or dropped key is reported through `woocommerce_gla_debug_message`.
+		 *
+		 * The adapter answers Content API-style camelCase `get*` read accessors (e.g.
+		 * `getLink()`, `getTitle()`, `getOfferId()`), which return Merchant API value shapes
+		 * (e.g. money as `amountMicros`/`currencyCode`). The accessors are visible to
+		 * `is_callable()` but not `method_exists()`, and a misspelled getter returns null.
+		 *
 		 * @param array                 $overrides  Attribute values keyed by Merchant API attribute key.
 		 * @param WC_Product            $wc_product The WooCommerce product.
 		 * @param WCProductInputAdapter $adapter    The product input adapter.
 		 */
 		$overrides = apply_filters( 'woocommerce_gla_product_attribute_values', [], $this->wc_product, $this );
 
-		if ( is_array( $overrides ) ) {
-			$this->attributes = array_merge( $this->attributes, $overrides );
+		if ( empty( $overrides ) || ! is_array( $overrides ) ) {
+			return;
 		}
+
+		$allowed_keys = $this->get_product_attribute_keys();
+		$valid        = [];
+		$outcomes     = [];
+
+		foreach ( $overrides as $key => $value ) {
+			$key = (string) $key;
+
+			if ( isset( $allowed_keys[ $key ] ) ) {
+				$valid[ $key ] = $value;
+				continue;
+			}
+
+			if ( ! isset( self::CONTENT_API_ATTRIBUTE_KEYS[ $key ] ) ) {
+				$outcomes[ $key ] = 'dropped: not a Merchant API product attribute';
+				continue;
+			}
+
+			$mapi_key = self::CONTENT_API_ATTRIBUTE_KEYS[ $key ];
+			if ( array_key_exists( $mapi_key, $overrides ) ) {
+				$outcomes[ $key ] = sprintf( 'dropped: superseded by %s', $mapi_key );
+				continue;
+			}
+
+			$outcomes[ $key ] = 'sizes' === $key
+				? $this->translate_sizes_override( $value )
+				: $this->translate_scalar_override( $key, $value );
+		}
+
+		$this->attributes = array_merge( $this->attributes, $valid );
+
+		foreach ( $outcomes as $key => $outcome ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Attribute override "%s" for product (ID: %s) %s.', $key, $this->wc_product->get_id(), $outcome ),
+				__METHOD__
+			);
+		}
+	}
+
+	/**
+	 * Get the Merchant API product attribute keys allowed on the product input, as array keys.
+	 *
+	 * @return array
+	 */
+	protected function get_product_attribute_keys(): array {
+		/**
+		 * Filters the Merchant API product attribute keys the attribute-values override
+		 * filter may set. Keys outside this list are dropped from the product input.
+		 *
+		 * @param string[] $keys Merchant API product attribute keys.
+		 *
+		 * @since 3.10.0
+		 */
+		$keys = apply_filters( 'woocommerce_gla_product_input_attribute_keys', self::PRODUCT_ATTRIBUTE_KEYS );
+
+		if ( ! is_array( $keys ) ) {
+			$keys = self::PRODUCT_ATTRIBUTE_KEYS;
+		}
+
+		return array_fill_keys( array_filter( $keys, 'is_string' ), true );
+	}
+
+	/**
+	 * Translate a Content API `sizes` override to the Merchant API `size`, which takes one value.
+	 *
+	 * @param mixed $value A size string, or a list of sizes.
+	 *
+	 * @return string The outcome to report.
+	 */
+	protected function translate_sizes_override( $value ): string {
+		$size = is_array( $value ) ? reset( $value ) : $value;
+
+		if ( ! is_string( $size ) || '' === $size ) {
+			return 'dropped: value is not a non-empty string';
+		}
+
+		$this->set_attribute( 'size', $size );
+
+		$unsent = is_array( $value ) ? array_slice( $value, 1 ) : [];
+		if ( empty( $unsent ) ) {
+			return 'translated to size';
+		}
+
+		return sprintf( 'translated to size; entries not sent: %s', wp_json_encode( array_values( $unsent ) ) );
+	}
+
+	/**
+	 * Translate a scalar Content API override (`gtin`, `sizeType`) to its Merchant API key.
+	 *
+	 * @param string $key   Content API attribute key.
+	 * @param mixed  $value Override value.
+	 *
+	 * @return string The outcome to report.
+	 */
+	protected function translate_scalar_override( string $key, $value ): string {
+		if ( ! is_scalar( $value ) || is_bool( $value ) ) {
+			return 'dropped: value is not a string or number';
+		}
+
+		$this->set_attribute( $key, $value );
+
+		return sprintf( 'translated to %s', self::CONTENT_API_ATTRIBUTE_KEYS[ $key ] );
 	}
 
 	/**
@@ -876,9 +1353,18 @@ class WCProductInputAdapter {
 	 * @return bool
 	 */
 	protected function resolve_tax_excluded(): bool {
-		$tax_excluded = in_array( $this->feed_label, [ 'US', 'CA' ], true );
+		$tax_excluded = in_array( $this->target_country, [ 'US', 'CA' ], true );
 
 		return boolval( apply_filters( 'woocommerce_gla_tax_excluded', $tax_excluded ) );
+	}
+
+	/**
+	 * The currency this product input is priced in: the override when set, the store currency otherwise.
+	 *
+	 * @return string
+	 */
+	protected function effective_currency(): string {
+		return '' !== $this->currency_override ? strtoupper( $this->currency_override ) : get_woocommerce_currency();
 	}
 
 	/**
@@ -901,5 +1387,37 @@ class WCProductInputAdapter {
 	 */
 	protected function is_variation(): bool {
 		return $this->wc_product instanceof WC_Product_Variation;
+	}
+
+	/**
+	 * Resolve a Content API product property against the adapter's current state.
+	 *
+	 * Properties named differently in the Merchant API return the Content API shape.
+	 *
+	 * @param string $property Content API property name, e.g. `link`.
+	 *
+	 * @return mixed
+	 */
+	protected function resolve_content_api_property( string $property ) {
+		switch ( $property ) {
+			case 'offerId':
+				return $this->offer_id;
+			case 'contentLanguage':
+				return $this->content_language;
+			case 'feedLabel':
+				return $this->feed_label;
+			case 'targetCountry':
+				return $this->target_country;
+			case 'customAttributes':
+				return $this->custom_attributes;
+			case 'gtin':
+				return $this->attributes['gtins'][0] ?? null;
+			case 'sizeType':
+				return $this->attributes['sizeTypes'][0] ?? null;
+			case 'sizes':
+				return isset( $this->attributes['size'] ) ? [ $this->attributes['size'] ] : null;
+			default:
+				return $this->attributes[ $property ] ?? null;
+		}
 	}
 }

@@ -21,6 +21,11 @@ class Dashboard implements Service, Registerable {
 	public const MARKETING_MENU_SLUG = 'woocommerce-marketing';
 
 	/**
+	 * WooCommerce core's Marketing > Overview page path.
+	 */
+	public const MARKETING_OVERVIEW_PATH = '/marketing';
+
+	/**
 	 * Onboarding completed status.
 	 *
 	 * @var OnboardingCompleted

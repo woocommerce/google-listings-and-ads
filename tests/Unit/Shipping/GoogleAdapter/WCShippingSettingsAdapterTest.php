@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping\GoogleAdapter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
@@ -45,6 +46,50 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 		$this->assertCount( 1, $services[0]['rateGroups'] );
 		$this->assertArrayHasKey( 'postalCodeGroupNames', $services[0]['rateGroups'][0]['mainTable']['rowHeaders'] );
 		$this->assertArrayHasKey( '123456', $settings->get_regions() );
+	}
+
+	public function test_skips_country_without_delivery_time_and_reports_error() {
+		$reported = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$reported ) {
+				$reported[] = $message;
+			}
+		);
+
+		$location_rate_us = new LocationRate( new ShippingLocation( 1, 'US' ), new ShippingRate( 100 ) );
+
+		// The skipped country's rate is limited to a postcode region, proving
+		// its postcode list is excluded along with its prices.
+		$au_region        = new ShippingRegion( '654321', 'AU', [ new PostcodeRange( '2000' ) ] );
+		$location_rate_au = new LocationRate( new ShippingLocation( 2, 'AU', null, $au_region ), new ShippingRate( 50 ) );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'          => 'USD',
+				'rates_collections' => [
+					new CountryRatesCollection( 'US', [ $location_rate_us ] ),
+					new CountryRatesCollection( 'AU', [ $location_rate_au ] ),
+				],
+				'delivery_times'    => [
+					'US' => [
+						'time'     => 2,
+						'max_time' => 3,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		// The country without a shipping time is left out with an error naming
+		// it; the remaining country's service still syncs, and the skipped
+		// country's postcode region is not sent without its service.
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'US', $services[0]['deliveryCountries'][0] );
+		$this->assertCount( 0, $settings->get_regions() );
+		$this->assertCount( 1, $reported );
+		$this->assertStringContainsString( 'AU', $reported[0] );
 	}
 
 	public function test_creates_rate_group_for_state_rates() {
@@ -324,29 +369,6 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 		);
 	}
 
-	public function test_fails_if_delivery_time_not_provided_for_country() {
-		$this->expectException( InvalidValue::class );
-
-		$location_rate_1 = new LocationRate( new ShippingLocation( 1, 'US' ), new ShippingRate( 100 ) );
-		$location_rate_2 = new LocationRate( new ShippingLocation( 2, 'AU' ), new ShippingRate( 200 ) );
-
-		new WCShippingSettingsAdapter(
-			[
-				'currency'          => 'USD',
-				'rates_collections' => [
-					new CountryRatesCollection( 'US', [ $location_rate_1 ] ),
-					new CountryRatesCollection( 'AU', [ $location_rate_2 ] ),
-				],
-				'delivery_times'    => [
-					'AU' => [
-						'time'     => 1,
-						'max_time' => 1,
-					],
-				],
-			]
-		);
-	}
-
 	public function test_fails_if_invalid_rates_collections_provided() {
 		$this->expectException( InvalidValue::class );
 
@@ -362,5 +384,327 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 				'rates_collections' => [ new \stdClass() ],
 			]
 		);
+	}
+
+	public function test_country_currency_map_overrides_per_service_currency() {
+		$min_order_rate = new ShippingRate( 0 );
+		$min_order_rate->set_min_order_amount( 1000 );
+
+		$us_rate = new LocationRate( new ShippingLocation( 1, 'US' ), new ShippingRate( 100 ) );
+		$fr_rate = new LocationRate( new ShippingLocation( 2, 'FR' ), new ShippingRate( 50 ) );
+		$fr_min  = new LocationRate( new ShippingLocation( 2, 'FR' ), $min_order_rate );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'FR' => 'EUR',
+				],
+				'wpml'                 => $this->create_wpml_doubling_converter(),
+				'rates_collections'    => [
+					new CountryRatesCollection( 'US', [ $us_rate ] ),
+					new CountryRatesCollection( 'FR', [ $fr_rate, $fr_min ] ),
+				],
+				'delivery_times'       => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+					'FR' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services   = $settings->get_services();
+		$by_country = [];
+		foreach ( $services as $service ) {
+			$by_country[ $service['deliveryCountries'][0] ][] = $service;
+		}
+
+		$this->assertNotEmpty( $by_country['US'] );
+		$this->assertNotEmpty( $by_country['FR'] );
+
+		foreach ( $by_country['US'] as $service ) {
+			$this->assertEquals( 'USD', $service['currencyCode'] );
+			if ( isset( $service['minimumOrderValue'] ) ) {
+				$this->assertEquals( 'USD', $service['minimumOrderValue']['currencyCode'] );
+			}
+		}
+
+		foreach ( $by_country['FR'] as $service ) {
+			$this->assertEquals( 'EUR', $service['currencyCode'] );
+			if ( isset( $service['minimumOrderValue'] ) ) {
+				$this->assertEquals( 'EUR', $service['minimumOrderValue']['currencyCode'] );
+			}
+		}
+	}
+
+	public function test_rate_group_prices_use_the_service_currency_for_overridden_countries() {
+		$fr_country_rate = new LocationRate( new ShippingLocation( 2, 'FR' ), new ShippingRate( 50 ) );
+
+		$fr_region        = new ShippingRegion( '654321', 'FR', [ new PostcodeRange( '75000' ) ] );
+		$fr_postcode_rate = new LocationRate( new ShippingLocation( 2, 'FR', null, $fr_region ), new ShippingRate( 60 ) );
+
+		$fr_state_rate = new LocationRate( new ShippingLocation( 2, 'FR', 'IDF' ), new ShippingRate( 70 ) );
+
+		$us_country_rate = new LocationRate( new ShippingLocation( 1, 'US' ), new ShippingRate( 100 ) );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'FR' => 'EUR',
+				],
+				'wpml'                 => $this->create_wpml_doubling_converter(),
+				'rates_collections'    => [
+					new CountryRatesCollection( 'US', [ $us_country_rate ] ),
+					new CountryRatesCollection( 'FR', [ $fr_country_rate, $fr_postcode_rate, $fr_state_rate ] ),
+				],
+				'delivery_times'       => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+					'FR' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		foreach ( $settings->get_services() as $service ) {
+			$expected_currency = 'FR' === $service['deliveryCountries'][0] ? 'EUR' : 'USD';
+
+			foreach ( $service['rateGroups'] as $rate_group ) {
+				if ( isset( $rate_group['singleValue'] ) ) {
+					$this->assertEquals(
+						$expected_currency,
+						$rate_group['singleValue']['flatRate']['currencyCode']
+					);
+
+					// Non-store-currency amounts are the converted values, not
+					// the store-currency amounts relabelled: 50 USD doubles to
+					// 100 EUR under the test converter.
+					if ( 'EUR' === $expected_currency ) {
+						$this->assertSame( '100000000', $rate_group['singleValue']['flatRate']['amountMicros'] );
+					}
+				}
+
+				if ( isset( $rate_group['mainTable'] ) ) {
+					foreach ( $rate_group['mainTable']['rows'] as $row ) {
+						foreach ( $row['cells'] as $cell ) {
+							$this->assertEquals(
+								$expected_currency,
+								$cell['flatRate']['currencyCode']
+							);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public function test_creates_one_service_per_currency_for_a_multi_currency_country() {
+		$ae_rate = new LocationRate( new ShippingLocation( 1, 'AE' ), new ShippingRate( 50 ) );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'AE' => [ 'USD', 'AED' ],
+				],
+				'wpml'                 => $this->create_wpml_doubling_converter(),
+				'rates_collections'    => [
+					new CountryRatesCollection( 'AE', [ $ae_rate ] ),
+				],
+				'delivery_times'       => [
+					'AE' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 2, $services );
+
+		$by_currency = [];
+		foreach ( $services as $service ) {
+			$by_currency[ $service['currencyCode'] ] = $service;
+			$this->assertEquals( 'AE', $service['deliveryCountries'][0] );
+		}
+
+		// The store-currency service keeps the WooCommerce amount; the AED
+		// service carries the converted amount (50 doubled to 100).
+		$this->assertSame( '50000000', $by_currency['USD']['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] );
+		$this->assertSame( '100000000', $by_currency['AED']['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] );
+
+		// Service names must be unique within the Merchant Center account.
+		$this->assertNotEquals( $by_currency['USD']['serviceName'], $by_currency['AED']['serviceName'] );
+	}
+
+	public function test_fixed_exchange_rate_produces_a_service_without_wpml_conversion() {
+		$ae_rate = new LocationRate( new ShippingLocation( 1, 'AE' ), new ShippingRate( 50 ) );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'               => 'USD',
+				'country_currency_map'   => [
+					'AE' => [ 'AED' ],
+				],
+				'country_exchange_rates' => [
+					'AE' => 3.67,
+				],
+				'rates_collections'      => [
+					new CountryRatesCollection( 'AE', [ $ae_rate ] ),
+				],
+				'delivery_times'         => [
+					'AE' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'AED', $services[0]['currencyCode'] );
+		$this->assertSame( '183500000', $services[0]['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] );
+	}
+
+	public function test_fixed_rate_is_used_when_wpml_is_present_but_cannot_convert() {
+		$ae_rate = new LocationRate( new ShippingLocation( 1, 'AE' ), new ShippingRate( 50 ) );
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'convert_amount' )->willReturn( null );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'               => 'USD',
+				'country_currency_map'   => [
+					'AE' => [ 'AED' ],
+				],
+				'country_exchange_rates' => [
+					'AE' => 3.67,
+				],
+				'wpml'                   => $wpml,
+				'rates_collections'      => [
+					new CountryRatesCollection( 'AE', [ $ae_rate ] ),
+				],
+				'delivery_times'         => [
+					'AE' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'AED', $services[0]['currencyCode'] );
+		$this->assertSame( '183500000', $services[0]['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] );
+	}
+
+	public function test_wpml_conversion_still_wins_over_the_fixed_rate() {
+		// An unchanged market: WPML is available, so the configured rate is not consulted.
+		$ae_rate = new LocationRate( new ShippingLocation( 1, 'AE' ), new ShippingRate( 50 ) );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'               => 'USD',
+				'country_currency_map'   => [
+					'AE' => [ 'AED' ],
+				],
+				'country_exchange_rates' => [
+					'AE' => 3.67,
+				],
+				'wpml'                   => $this->create_wpml_doubling_converter(),
+				'rates_collections'      => [
+					new CountryRatesCollection( 'AE', [ $ae_rate ] ),
+				],
+				'delivery_times'         => [
+					'AE' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 100.0, $services[0]['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] / 1000000 );
+	}
+
+	public function test_leaves_out_non_store_currency_service_when_conversion_unavailable() {
+		$reported = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$reported ) {
+				$reported[] = $message;
+			}
+		);
+
+		$ae_rate = new LocationRate( new ShippingLocation( 1, 'AE' ), new ShippingRate( 50 ) );
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'convert_amount' )->willReturn( null );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'AE' => [ 'USD', 'AED' ],
+				],
+				'wpml'                 => $wpml,
+				'rates_collections'    => [
+					new CountryRatesCollection( 'AE', [ $ae_rate ] ),
+				],
+				'delivery_times'       => [
+					'AE' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		// The store-currency service still syncs; the unconvertible AED
+		// service is left out with an error naming the country and currency.
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'USD', $services[0]['currencyCode'] );
+		$this->assertCount( 1, $reported );
+		$this->assertStringContainsString( 'AED', $reported[0] );
+		$this->assertStringContainsString( 'AE', $reported[0] );
+	}
+
+	/**
+	 * Returns a WPML mock whose convert_amount() doubles the amount, making
+	 * converted values visible in assertions.
+	 *
+	 * @return WPML
+	 */
+	private function create_wpml_doubling_converter(): WPML {
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'convert_amount' )->willReturnCallback(
+			static function ( float $amount ): float {
+				return $amount * 2;
+			}
+		);
+
+		return $wpml;
 	}
 }

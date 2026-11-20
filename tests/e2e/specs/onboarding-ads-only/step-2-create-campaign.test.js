@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-const { test, expect } = require( '@playwright/test' );
+import { test, expect } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -415,6 +415,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 		test.describe( 'User skips paid ads creation', () => {
 			test.describe( 'With WooCommerce tracking disabled', () => {
 				test.beforeAll( async () => {
+					await dashboardPage.fulfillAdsCampaignsRequest( [] );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await dashboardPage.fulfillAdsCampaignsRequest( [] );
 					await createCampaignPage.goto();
@@ -532,6 +533,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 				} );
 
 				// @TODO: review when we have the onboarding completion flow updated.
+				// eslint-disable-next-line jest/no-commented-out-tests
 				// test( 'should send survey and complete setup', async () => {
 				// 	await createCampaignPage.clickSendAndCompleteSetupModalButton();
 				// 	await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );

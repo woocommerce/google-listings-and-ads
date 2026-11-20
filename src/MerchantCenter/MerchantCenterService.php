@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
@@ -11,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -35,6 +38,7 @@ defined( 'ABSPATH' ) || exit;
  * - AddressUtility
  * - AdsService
  * - ContactInformation
+ * - Manager
  * - Merchant
  * - MerchantAccountState
  * - MerchantStatuses
@@ -46,6 +50,7 @@ defined( 'ABSPATH' ) || exit;
  * - WP
  * - TargetAudience
  * - GoogleHelper
+ * - JetpackAuthCircuitBreaker
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
@@ -98,7 +103,9 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 	/**
 	 * Whether we are able to sync data to the Merchant Center account.
-	 * Account must be connected and the URL we claimed with must match the site URL.
+	 * Account must be connected, the WordPress.com connection must have an owner
+	 * and not be paused after an authentication failure, and the URL we claimed
+	 * with must match the site URL.
 	 * URL matches is stored in a transient to prevent it from being refetched in cases
 	 * where the site is unable to access account data.
 	 *
@@ -110,18 +117,73 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			return false;
 		}
 
+		if ( ! $this->is_jetpack_owner_connected() ) {
+			return false;
+		}
+
+		// Paused after the Connect Server rejected the Jetpack token.
+		if ( $this->container->get( JetpackAuthCircuitBreaker::class )->is_open() ) {
+			return false;
+		}
+
 		/** @var TransientsInterface $transients */
 		$transients  = $this->container->get( TransientsInterface::class );
 		$url_matches = $transients->get( TransientsInterface::URL_MATCHES );
 
 		if ( null === $url_matches ) {
 			$claimed_url_hash = $this->container->get( Merchant::class )->get_claimed_url_hash();
-			$site_url_hash    = md5( untrailingslashit( $this->get_site_url() ) );
-			$url_matches      = apply_filters( 'woocommerce_gla_ready_for_syncing', $claimed_url_hash === $site_url_hash ) ? 'yes' : 'no';
+			$site_url         = untrailingslashit( $this->get_site_url() );
+			$is_claimed_url   = in_array( $claimed_url_hash, array_map( 'md5', $this->get_claimable_site_urls( $site_url ) ), true );
+			$url_matches      = apply_filters( 'woocommerce_gla_ready_for_syncing', $is_claimed_url ) ? 'yes' : 'no';
 			$transients->set( TransientsInterface::URL_MATCHES, $url_matches, HOUR_IN_SECONDS * 12 );
+
+			if ( 'no' === $url_matches ) {
+				if ( null === $claimed_url_hash ) {
+					$reason = 'the URL claimed in Merchant Center could not be read.';
+				} elseif ( ! $is_claimed_url ) {
+					$reason = sprintf( 'the site URL %s does not match the URL claimed in Merchant Center.', $site_url );
+				} else {
+					$reason = 'the woocommerce_gla_ready_for_syncing filter returned false.';
+				}
+
+				do_action( 'woocommerce_gla_error', 'Syncing is paused for 12 hours: ' . $reason, __METHOD__ );
+			}
 		}
 
 		return 'yes' === $url_matches;
+	}
+
+	/**
+	 * URLs the store may have claimed in Merchant Center. With WPML a store may have
+	 * onboarded from any language, so the home URL of every active language counts.
+	 * The list is the same on every request, so the cached result can't flip.
+	 *
+	 * @param string $site_url The site URL, already converted to the default language.
+	 *
+	 * @return string[]
+	 */
+	private function get_claimable_site_urls( string $site_url ): array {
+		$urls = [ $site_url ];
+
+		/** @var WPML $wpml */
+		$wpml = $this->container->get( WPML::class );
+		if ( ! $wpml->is_active() ) {
+			return $urls;
+		}
+
+		$languages = apply_filters( 'wpml_active_languages', null, [ 'skip_missing' => 0 ] );
+		if ( ! is_array( $languages ) ) {
+			return $urls;
+		}
+
+		foreach ( array_keys( $languages ) as $language ) {
+			$url = apply_filters( 'wpml_permalink', get_home_url(), $language );
+			if ( is_string( $url ) && '' !== $url ) {
+				$urls[] = untrailingslashit( $url );
+			}
+		}
+
+		return array_values( array_unique( $urls ) );
 	}
 
 	/**
@@ -133,6 +195,27 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 */
 	public function should_push(): bool {
 		return $this->is_ready_for_syncing();
+	}
+
+	/**
+	 * Whether the WordPress.com (Jetpack) connection has a connected owner user.
+	 *
+	 * Every request to Google goes through the Connect Server proxy signed with the
+	 * site's blog token, and the proxy resolves the acting user from the connection
+	 * owner. A connection without an owner is therefore rejected with 401 on every
+	 * request, so syncing is gated on the owner here, before any job is scheduled or
+	 * request is sent. This is a local check: it cannot detect a token that
+	 * WordPress.com has revoked remotely.
+	 *
+	 * @since 3.9.3
+	 *
+	 * @return bool
+	 */
+	public function is_jetpack_owner_connected(): bool {
+		/** @var Manager $manager */
+		$manager = $this->container->get( Manager::class );
+
+		return $manager->is_connected() && $manager->has_connected_owner();
 	}
 
 	/**
@@ -232,7 +315,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		) {
 			$step = 'product_listings';
 
-			if ( $this->saved_target_audience() && $this->saved_shipping_and_tax_options() ) {
+			if ( $this->saved_target_audience() && $this->saved_shipping_options() ) {
 				$step = 'paid_ads';
 			}
 		}
@@ -338,20 +421,15 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
-	 * Check if the taxes + shipping rate and time + free shipping settings have been saved.
+	 * Check if the shipping rate and time + free shipping settings have been saved.
 	 *
 	 * @return bool If all required settings have been provided.
 	 *
 	 * @since 1.4.0
 	 */
-	protected function saved_shipping_and_tax_options(): bool {
+	protected function saved_shipping_options(): bool {
 		$merchant_center_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 		$target_countries         = $this->container->get( TargetAudience::class )->get_target_countries();
-
-		// Tax options saved if: not US (no taxes) or tax_rate has been set
-		if ( in_array( 'US', $target_countries, true ) && empty( $merchant_center_settings['tax_rate'] ) ) {
-			return false;
-		}
 
 		// Shipping time saved if: 'manual' OR records for all countries
 		if ( isset( $merchant_center_settings['shipping_time'] ) && 'manual' === $merchant_center_settings['shipping_time'] ) {

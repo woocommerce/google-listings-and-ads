@@ -332,6 +332,17 @@ class WP {
 	}
 
 	/**
+	 * Determines whether a script has been added to the given status.
+	 *
+	 * @param string $handle Name of the script.
+	 * @param string $status Status to check. Default 'enqueued'.
+	 * @return bool
+	 */
+	public function wp_script_is( string $handle, string $status = 'enqueued' ): bool {
+		return wp_script_is( $handle, $status );
+	}
+
+	/**
 	 * Prints an inline script tag.
 	 *
 	 * @param string $data       Data for script tag: JavaScript, importmap, speculationrules, etc.
@@ -387,25 +398,51 @@ class WP {
 	}
 
 	/**
-	 * Wrapper of get_site_transient.
+	 * Get the ID of the current user.
 	 *
-	 * @param string $transient Transient name.
-	 *
-	 * @return mixed Value of the transient, or false if it does not exist.
+	 * @return int The current user's ID, or 0 if no user is logged in.
 	 */
-	public function get_site_transient( string $transient ) {
-		return get_site_transient( $transient );
+	public function get_current_user_id(): int {
+		return get_current_user_id();
 	}
 
 	/**
-	 * Wrapper of current_user_can.
+	 * Wrapper of get_user_meta.
 	 *
-	 * @param string $capability Capability name.
-	 * @param mixed  ...$args    Optional further parameters, typically starting with an object ID.
+	 * @param int    $user_id User ID.
+	 * @param string $key     The meta key to retrieve.
+	 * @param bool   $single  Whether to return a single value. Default true.
 	 *
-	 * @return bool Whether the current user has the given capability.
+	 * @return mixed
 	 */
-	public function current_user_can( string $capability, ...$args ): bool {
-		return current_user_can( $capability, ...$args );
+	public function get_user_meta( int $user_id, string $key, bool $single = true ) {
+		return get_user_meta( $user_id, $key, $single );
+	}
+
+	/**
+	 * Wrapper of update_user_meta.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $key     The meta key to update.
+	 * @param mixed  $value   The new meta value.
+	 *
+	 * @return int|bool Meta ID if the key didn't exist, true on successful update, false on failure or no change.
+	 */
+	public function update_user_meta( int $user_id, string $key, $value ) {
+		return update_user_meta( $user_id, $key, $value );
+	}
+
+	/**
+	 * Whether consent has been granted for the given type, via the separate WP Consent API plugin.
+	 *
+	 * Returns true (fails open) when that plugin isn't installed, since there's no consent
+	 * framework governing the site to check against.
+	 *
+	 * @param string $type Consent type, e.g. 'marketing'.
+	 *
+	 * @return bool
+	 */
+	public function has_consent( string $type ): bool {
+		return ! function_exists( 'wp_has_consent' ) || wp_has_consent( $type );
 	}
 }

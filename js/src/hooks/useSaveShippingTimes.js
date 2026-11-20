@@ -47,13 +47,30 @@ const useSaveShippingTimes = () => {
 		 * This is done by removing the old shipping times first,
 		 * and then upserting the new shipping times.
 		 *
-		 * @param {Array<ShippingTime>} newShippingTimes
+		 * @param {Array<ShippingTime>} shippingTimesToSave
+		 * @param {Array<string>} [excludedCountryCodes=[]] Country codes to
+		 *   skip entirely — no deletes or upserts will be applied to them.
+		 *   Use this when the caller only manages a subset of markets (e.g. the
+		 *   primary market) so that times belonging to other markets are never
+		 *   accidentally deleted.
 		 * @throws Will throw an error if any request failed.
 		 */
-		async ( newShippingTimes ) => {
+		async ( shippingTimesToSave, excludedCountryCodes = [] ) => {
+			const excluded = new Set( excludedCountryCodes );
+
+			// Restrict both sides to the countries this call manages.
+			// Countries in `excludedCountryCodes` belong to other markets
+			// and must not be deleted or upserted.
+			const managedNewTimes = shippingTimesToSave.filter(
+				( shippingTime ) => ! excluded.has( shippingTime.countryCode )
+			);
+			const managedOldTimes = oldShippingTimes.filter(
+				( shippingTime ) => ! excluded.has( shippingTime.countryCode )
+			);
+
 			const deletedCountryCodes = getDeletedCountryCodes(
-				newShippingTimes,
-				oldShippingTimes
+				managedNewTimes,
+				managedOldTimes
 			);
 
 			if ( deletedCountryCodes.length ) {
@@ -61,8 +78,8 @@ const useSaveShippingTimes = () => {
 			}
 
 			const diffShippingTimes = getDifferentShippingTimes(
-				newShippingTimes,
-				oldShippingTimes
+				managedNewTimes,
+				managedOldTimes
 			);
 			if ( diffShippingTimes.length ) {
 				const promises = getShippingTimesGroups(

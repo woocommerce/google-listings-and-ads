@@ -132,10 +132,6 @@ jest.mock( '~/hooks/usePolling', () => ( {
 		} ),
 } ) );
 
-jest.mock( '~/components/tours/rebranding-tour', () =>
-	jest.fn().mockReturnValue( null ).mockName( 'RebrandingTour' )
-);
-
 jest.mock( '~/components/experience-rating-banner', () =>
 	jest.fn().mockName( 'ExperienceRatingBanner' )
 );
@@ -143,7 +139,7 @@ jest.mock( '~/components/experience-rating-banner', () =>
 /**
  * External dependencies
  */
-import { render, fireEvent, screen } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 
@@ -161,7 +157,6 @@ import {
 } from '~/data/actions';
 import AttributeMappingSync from './attribute-mapping-sync';
 import usePolling from '~/hooks/usePolling';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 
 describe( 'Attribute Mapping', () => {
 	test( 'Renders table', () => {
@@ -392,27 +387,5 @@ describe( 'Attribute Mapping', () => {
 
 		const { queryByText } = render( <AttributeMappingSync /> );
 		expect( queryByText( 'Scheduled for sync' ) ).toBeTruthy();
-	} );
-
-	describe( 'Rebranding Tour', () => {
-		test( 'Not rendered in UI', () => {
-			RebrandingTour.mockImplementation( () => {
-				return null;
-			} );
-
-			render( <AttributeMapping /> );
-			const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
-			expect( tour ).not.toBeInTheDocument();
-		} );
-
-		test( 'Rendered in UI', () => {
-			RebrandingTour.mockImplementation( () => {
-				return <div role="dialog" aria-label="tour" />;
-			} );
-
-			render( <AttributeMapping /> );
-			const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
-			expect( tour ).toBeInTheDocument();
-		} );
 	} );
 } );
