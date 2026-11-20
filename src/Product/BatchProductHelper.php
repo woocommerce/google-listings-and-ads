@@ -772,7 +772,7 @@ class BatchProductHelper implements Service {
 
 		// Clamp to the expiry-resubmission window so a filtered freshness can never let an
 		// unchanged product be skipped past the point it is due for resubmission.
-		$max_freshness = ProductRepository::RESUBMIT_EXPIRY_DAYS * DAY_IN_SECONDS;
+		$max_freshness = ProductRepository::get_resubmit_expiry_days() * DAY_IN_SECONDS;
 		$freshness     = min( (int) apply_filters( 'woocommerce_gla_sync_hash_freshness', $max_freshness ), $max_freshness );
 		$synced_at     = (int) $this->meta_handler->get_synced_at( $product );
 
