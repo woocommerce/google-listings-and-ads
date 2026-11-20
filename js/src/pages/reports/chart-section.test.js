@@ -9,6 +9,7 @@ import { Chart } from '@woocommerce/components';
  */
 import ChartSection from './chart-section';
 
+// Chart is mocked -- these only verify the props built for it, not its real rendering.
 jest.mock( '@woocommerce/components', () => ( {
 	Chart: jest.fn( () => null ).mockName( 'Chart' ),
 } ) );
@@ -34,6 +35,15 @@ const metrics = [
 		formatFn: ( value ) => {
 			return `${ value } clicks`;
 		},
+	},
+];
+
+// A CTR-shaped metric: its real values are always a 0-1 fraction.
+const ctrMetrics = [
+	{
+		key: 'ctr',
+		label: 'CTR',
+		formatFn: ( value ) => `${ value * 100 } raw%`,
 	},
 ];
 
@@ -81,6 +91,41 @@ describe( 'ChartSection', () => {
 
 			expect( getChartProps().data ).toEqual( [] );
 			expect( getChartProps().isRequesting ).toBe( true );
+		} );
+
+		it( 'scales an all-sub-1 metric up by a power of 10 before plotting, and formats back down', () => {
+			render(
+				<ChartSection
+					metrics={ ctrMetrics }
+					loaded
+					intervals={ [
+						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
+					] }
+				/>
+			);
+
+			// 0.05 × 1000 = 50 clears the ≥10 floor; formatFn divides back down to format it.
+			const props = getChartProps();
+			expect( props.data ).toEqual( [
+				{ date: '2026-10-01', CTR: { value: 50, label: 'CTR' } },
+			] );
+			expect( props.tooltipValueFormat( 50 ) ).toBe( '5 raw%' );
+		} );
+
+		it( 'leaves an already-safe metric unscaled', () => {
+			render(
+				<ChartSection
+					metrics={ metrics }
+					loaded
+					intervals={ [
+						{ interval: '2026-10-01', subtotals: { clicks: 30 } },
+					] }
+				/>
+			);
+
+			expect( getChartProps().data ).toEqual( [
+				{ date: '2026-10-01', Clicks: { value: 30, label: 'Clicks' } },
+			] );
 		} );
 	} );
 
@@ -181,6 +226,121 @@ describe( 'ChartSection', () => {
 				value: 0,
 				labelDate: undefined,
 			} );
+		} );
+
+		it( "scales an all-sub-1 metric by the smaller period's max, with headroom for either alone", () => {
+			render(
+				<ChartSection
+					metrics={ ctrMetrics }
+					loaded
+					intervals={ [
+						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
+					] }
+					comparison={ {
+						intervals: [
+							{
+								interval: '2025-10-01',
+								subtotals: { ctr: 0.02 },
+							},
+						],
+						totals: {
+							ctr: { value: 0.05, prevValue: 0.02 },
+						},
+						labels: {
+							primary: 'Month to date',
+							secondary: 'Previous year',
+						},
+					} }
+				/>
+			);
+
+			// The smaller max (0.02) sets the scale here, not the larger one (0.05).
+			const props = getChartProps();
+			expect( props.data ).toEqual( [
+				{
+					date: '2026-10-01T00:00:00',
+					primary: {
+						label: 'Month to date',
+						value: 50,
+						labelDate: '2026-10-01T00:00:00',
+					},
+					secondary: {
+						label: 'Previous year',
+						value: 20,
+						labelDate: '2025-10-01T00:00:00',
+					},
+				},
+			] );
+			expect( props.legendTotals ).toEqual( {
+				primary: 50,
+				secondary: 20,
+			} );
+			expect( props.yFormat( 50 ) ).toBe( '5 raw%' );
+			expect( props.yBelow1Format( 20 ) ).toBe( '2 raw%' );
+		} );
+
+		it( 'scales from the smaller period alone when the two periods are wildly lopsided', () => {
+			render(
+				<ChartSection
+					metrics={ ctrMetrics }
+					loaded
+					intervals={ [
+						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
+					] }
+					comparison={ {
+						intervals: [
+							{
+								interval: '2025-10-01',
+								subtotals: { ctr: 0.0001 },
+							},
+						],
+						totals: {
+							ctr: { value: 0.05, prevValue: 0.0001 },
+						},
+						labels: {
+							primary: 'Month to date',
+							secondary: 'Previous year',
+						},
+					} }
+				/>
+			);
+
+			// 0.0001 × 100000 = 10 clears the floor; scaling from 0.05 instead would not have.
+			const props = getChartProps();
+			expect( props.data[ 0 ].secondary.value ).toBe( 10 );
+			expect( props.data[ 0 ].primary.value ).toBe( 5000 );
+		} );
+
+		it( 'still clears the floor for a far more extreme gap between periods', () => {
+			render(
+				<ChartSection
+					metrics={ ctrMetrics }
+					loaded
+					intervals={ [
+						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
+					] }
+					comparison={ {
+						intervals: [
+							{
+								interval: '2025-10-01',
+								subtotals: { ctr: 0.0000001 },
+							},
+						],
+						totals: {
+							ctr: { value: 0.05, prevValue: 0.0000001 },
+						},
+						labels: {
+							primary: 'Month to date',
+							secondary: 'Previous year',
+						},
+					} }
+				/>
+			);
+
+			// A 500,000x gap, not just the 500x one above -- still clears the floor.
+			const props = getChartProps();
+			expect( props.data[ 0 ].secondary.value ).toBe( 10 );
+			expect( props.data[ 0 ].primary.value ).toBe( 5000000 );
 		} );
 	} );
 } );

@@ -39,6 +39,60 @@ function generateDateRange( start, end ) {
 }
 
 /**
+ * The largest value for `key` within one period's intervals, or 0 if there are none.
+ *
+ * @param {Array<IntervalsData>} [intervals] Intervals data of one period.
+ * @param {string} key Key of the metric to plot.
+ * @return {number} The largest value, or 0.
+ */
+function getPeriodMax( intervals, key ) {
+	return Math.max(
+		0,
+		...( intervals ?? [] ).map( ( { subtotals } ) => subtotals[ key ] ?? 0 )
+	);
+}
+
+/**
+ * Picks a power-of-10 scale factor so an all-sub-1 metric (e.g. CTR) stays out of the value
+ * domain where Chart's Y-axis breaks. Scales from the smaller period's own max, not the
+ * combined max, so the smaller one still clears the broken range if it's toggled on alone.
+ *
+ * @param {Array<IntervalsData>} intervals Intervals data of the selected period.
+ * @param {ChartComparison} [comparison] Data of the comparison period, if any.
+ * @param {string} key Key of the metric to plot.
+ * @return {number} Scale factor to multiply every plotted value by.
+ */
+function getChartValueScale( intervals, comparison, key ) {
+	const periodMaxes = [
+		getPeriodMax( intervals, key ),
+		getPeriodMax( comparison?.intervals, key ),
+	].filter( ( max ) => max > 0 );
+	const smallestMax = periodMaxes.length ? Math.min( ...periodMaxes ) : 0;
+
+	if ( smallestMax === 0 || smallestMax >= 1 ) {
+		return 1;
+	}
+
+	let scale = 1;
+	while ( smallestMax * scale < 10 ) {
+		scale *= 10;
+	}
+
+	return scale;
+}
+
+/**
+ * Multiplies a value by `scale`, passing `undefined` through unchanged.
+ *
+ * @param {number} [value] Value to scale.
+ * @param {number} scale Scale factor from {@see getChartValueScale}.
+ * @return {number|undefined} The scaled value.
+ */
+function scaleValue( value, scale ) {
+	return value === undefined ? undefined : value * scale;
+}
+
+/**
  * Renders a report chart.
  *
  * With `comparison`, it plots the selected and the comparison periods as two lines, each in
@@ -81,7 +135,10 @@ export default function ChartSection( {
 	const visibleCurrency = { ...storeCurrencyConfig, symbol: '' };
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
-	const localizedFormatFn = formatFn.bind( visibleMetric );
+	const scale = getChartValueScale( intervals, comparison, key );
+	// Formats an already-scaled value, for what Chart itself renders.
+	const localizedChartFormatFn = ( value ) =>
+		formatFn.call( visibleMetric, value / scale );
 
 	const chartData = useMemo( () => {
 		if ( ! loaded || ! intervals.length ) {
@@ -89,7 +146,7 @@ export default function ChartSection( {
 		}
 
 		if ( comparison ) {
-			return getComparisonChartData( intervals, comparison, key );
+			return getComparisonChartData( intervals, comparison, key, scale );
 		}
 
 		// Map existing intervals for quick lookup
@@ -112,21 +169,21 @@ export default function ChartSection( {
 			return {
 				date,
 				[ label ]: {
-					value: subtotals[ key ] ?? 0,
+					value: ( subtotals[ key ] ?? 0 ) * scale,
 					label,
 				},
 			};
 		} );
-	}, [ key, label, loaded, intervals, comparison ] );
+	}, [ key, label, loaded, intervals, comparison, scale ] );
 
 	const comparisonProps = comparison && {
-		yFormat: localizedFormatFn,
-		yBelow1Format: localizedFormatFn,
+		yFormat: localizedChartFormatFn,
+		yBelow1Format: localizedChartFormatFn,
 		interval: intervalUnit,
 		allowedIntervals,
 		legendTotals: {
-			primary: comparison.totals[ key ]?.value,
-			secondary: comparison.totals[ key ]?.prevValue,
+			primary: scaleValue( comparison.totals[ key ]?.value, scale ),
+			secondary: scaleValue( comparison.totals[ key ]?.prevValue, scale ),
 		},
 	};
 
@@ -138,7 +195,7 @@ export default function ChartSection( {
 			currency={ visibleCurrency }
 			chartType={ chartType }
 			valueType={ valueType }
-			tooltipValueFormat={ localizedFormatFn }
+			tooltipValueFormat={ localizedChartFormatFn }
 			isRequesting={ ! loaded }
 			emptyMessage={ emptyMessage }
 			legendPosition={ comparison ? undefined : 'hidden' }
