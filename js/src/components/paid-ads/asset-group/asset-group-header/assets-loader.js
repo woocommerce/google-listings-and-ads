@@ -171,22 +171,22 @@ export default function AssetsLoader( { onSelectFinalUrl } ) {
 					</>
 				}
 				placeholder={ __( 'Search page', 'google-listings-and-ads' ) }
-				isSearchable
-				hideBeforeSearch
 				excludeSelectedOptions={ false }
 				options={ [] } // The actual options will be provided via the callback results of `onSearch`.
 				selected={ selectedOptions }
 				onSearch={ debouncedHandleSearch }
 				onChange={ handleChange }
 				getSearchExpression={ allowAllResults }
+				isSearchable
+				hideBeforeSearch
 			/>
 			<AppButton
-				isSecondary
 				text={ __( 'Select', 'google-listings-and-ads' ) }
 				eventName="gla_import_assets_by_final_url_button_click"
 				eventProps={ { type: finalUrl?.type } }
 				disabled={ ! finalUrl }
 				onClick={ handleClick }
+				isSecondary
 			/>
 		</>
 	);
