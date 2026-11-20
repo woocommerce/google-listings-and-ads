@@ -202,11 +202,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 
 		$product_condition = function () {
 			$screen = get_current_screen();
-			if ( null === $screen ) {
-				return false;
-			}
-			// Block editor product edit: screen id is 'product'. Classic product edit: screen id is 'post', post_type is 'product'.
-			return ( 'product' === $screen->id || ( 'post' === $screen->id && 'product' === $screen->post_type ) );
+			return ( null !== $screen && 'product' === $screen->id );
 		};
 
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
