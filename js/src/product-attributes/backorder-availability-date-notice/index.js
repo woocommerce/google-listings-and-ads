@@ -8,6 +8,7 @@ import { createRoot, lazy, Suspense } from '@wordpress/element';
  */
 import { GLA_DATE_INPUT_ID, GLA_TIME_INPUT_ID } from './constants';
 import { glaProductData } from '~/constants';
+import './index.scss';
 
 const BackorderAvailabilityDateNotice = lazy(
 	() =>

@@ -1,0 +1,13 @@
+#woocommerce-product-data .gla-backorder-availability-date-notice {
+	margin: $grid-unit-20;
+
+	.components-notice {
+		margin: 0;
+		padding: $grid-unit-15 $grid-unit-15 $grid-unit-15 $grid-unit-20;
+	}
+
+	a {
+		color: $gla-color-blue-50;
+		font-weight: 500;
+	}
+}
