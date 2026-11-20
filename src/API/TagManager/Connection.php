@@ -153,6 +153,16 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Whether the connected container has a public ID, so its snippet can actually be injected
+	 * and the native Ads tag can give way to it.
+	 *
+	 * @return bool
+	 */
+	public function has_container_public_id(): bool {
+		return ! empty( $this->get_connection_data()['container_public_id'] );
+	}
+
+	/**
 	 * Update the stored Tag Manager connection data.
 	 *
 	 * Merges the given fields onto the existing stored data (or the defaults, if

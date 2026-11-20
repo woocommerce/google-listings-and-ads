@@ -329,6 +329,29 @@ class ConnectionTest extends UnitTest {
 		);
 	}
 
+	public function test_has_container_public_id_true_when_present() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'container_id'        => '456',
+				'container_public_id' => 'GTM-ABCDEF',
+			]
+		);
+
+		$this->assertTrue( $this->connection->has_container_public_id() );
+	}
+
+	public function test_has_container_public_id_false_when_missing() {
+		$this->options->method( 'get' )->willReturn( [ 'container_id' => '456' ] );
+
+		$this->assertFalse( $this->connection->has_container_public_id() );
+	}
+
+	public function test_has_container_public_id_false_when_no_container_connected_at_all() {
+		$this->options->method( 'get' )->willReturn( [] );
+
+		$this->assertFalse( $this->connection->has_container_public_id() );
+	}
+
 	public function test_get_status_returns_disconnected_without_checking_granted_scopes_after_a_local_disconnect() {
 		$this->options->method( 'get' )->willReturn( [ 'disconnected' => true ] );
 

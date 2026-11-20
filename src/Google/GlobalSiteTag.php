@@ -829,7 +829,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @return bool
 	 */
 	private function is_tag_manager_connected(): bool {
-		return ! empty( $this->tag_manager_connection->get_connection_data()['container_public_id'] );
+		return $this->tag_manager_connection->has_container_public_id();
 	}
 
 	/**

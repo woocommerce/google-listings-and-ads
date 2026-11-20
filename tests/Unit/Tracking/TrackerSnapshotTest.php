@@ -72,7 +72,10 @@ class TrackerSnapshotTest extends UnitTest {
 		$this->image_size_audit = $this->createMock( ProductImageSizeAudit::class );
 		$this->options          = $this->createMock( OptionsInterface::class );
 
-		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
+		$this->tag_manager_connection = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$this->tag_manager_connection->method( 'get_connection_data' )->willReturnCallback(
 			function () {
 				return $this->tag_manager_data;

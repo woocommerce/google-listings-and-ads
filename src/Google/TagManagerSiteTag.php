@@ -33,11 +33,11 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 	 * Register the service.
 	 */
 	public function register(): void {
-		$container_public_id = $this->connection->get_connection_data()['container_public_id'] ?? '';
-
-		if ( '' === $container_public_id ) {
+		if ( ! $this->connection->has_container_public_id() ) {
 			return;
 		}
+
+		$container_public_id = $this->connection->get_connection_data()['container_public_id'];
 
 		// GlobalSiteTag always registers whenever a container is connected, so it has already
 		// published the dataLayer/gtag() shim and consent defaults before this runs.
@@ -69,7 +69,7 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 	public function has_injection_failed(): bool {
 		$data = $this->connection->get_connection_data();
 
-		return ! empty( $data['container_id'] ) && empty( $data['container_public_id'] );
+		return ! empty( $data['container_id'] ) && ! $this->connection->has_container_public_id();
 	}
 
 	/**

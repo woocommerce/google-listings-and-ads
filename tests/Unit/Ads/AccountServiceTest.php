@@ -134,7 +134,10 @@ class AccountServiceTest extends UnitTest {
 		$this->options                = $this->createMock( OptionsInterface::class );
 		$this->transients             = $this->createMock( TransientsInterface::class );
 		$this->connection             = $this->createMock( Connection::class );
-		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
+		$this->tag_manager_connection = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 
 		// Connected by default so the conflict-only tests below don't need to opt in separately.
 		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn(
@@ -310,7 +313,10 @@ class AccountServiceTest extends UnitTest {
 		// $this->container wouldn't actually override the "connected" mock already shared in
 		// setUp() — the first definition registered still wins. A fresh container, built the
 		// same way as setUp()'s but with a disconnected Tag Manager mock, sidesteps that.
-		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
 		$disconnected_tag_manager->method( 'has_ads_conversion_conflict' )->willReturn( true );
 

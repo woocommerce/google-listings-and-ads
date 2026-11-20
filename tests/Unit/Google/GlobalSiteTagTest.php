@@ -75,7 +75,10 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->product_helper         = $this->createMock( ProductHelper::class );
 		$this->wc                     = $this->createMock( WC::class );
 		$this->wp                     = $this->createMock( WP::class );
-		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
+		$this->tag_manager_connection = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 
 		// Connected by default so the existing gtag.js-focused tests below don't all need to
 		// opt in — the dedicated tests further down cover the disconnected case explicitly.
@@ -332,7 +335,10 @@ class GlobalSiteTagTest extends UnitTest {
 		// A second `method()->willReturn()` on the same mock method doesn't override the one
 		// already set in setUp() — PHPUnit keeps whichever was configured first — so this needs
 		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
-		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
 		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
 		$tag->set_options_object( $this->options );
@@ -397,7 +403,10 @@ class GlobalSiteTagTest extends UnitTest {
 		// A second `method()->willReturn()` on the same mock method doesn't override the one
 		// already set in setUp() — PHPUnit keeps whichever was configured first — so this needs
 		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
-		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
 		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
 		$tag->set_options_object( $this->options );
@@ -694,7 +703,10 @@ class GlobalSiteTagTest extends UnitTest {
 		// This test is about the WCGA-framework fallback specifically -- disconnect Tag Manager
 		// (connected by default in setUp()) so its own parallel dataLayer push, covered by its
 		// own dedicated tests, doesn't also call add_inline_event_script() a second time here.
-		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
+		$this->tag_manager_connection = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn( [] );
 		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection );
 		$this->tag->set_options_object( $this->options );
@@ -1045,7 +1057,10 @@ class GlobalSiteTagTest extends UnitTest {
 		// own dedicated tests, doesn't also land in $this->inline_scripts here. A fresh mock,
 		// not a re-stub of setUp()'s shared one -- see register_with_conversion_action()'s own
 		// disconnected-mock tests for why re-stubbing doesn't work.
-		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
+		$this->tag_manager_connection = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn( [] );
 
 		$this->capture_inline_scripts();
@@ -1214,7 +1229,10 @@ class GlobalSiteTagTest extends UnitTest {
 		// exactly the blind spot that let the original bug through untested.
 		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
 
-		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
 			[ 'container_public_id' => 'GTM-TEST1234' ]
 		);
@@ -1259,7 +1277,10 @@ class GlobalSiteTagTest extends UnitTest {
 		// itself, not maybe_display_purchase_event_snippet() directly, for the same reason.
 		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
 
-		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
 			[ 'container_public_id' => 'GTM-TEST1234' ]
 		);
@@ -1296,7 +1317,10 @@ class GlobalSiteTagTest extends UnitTest {
 		// Regression guard: the shim used to only publish alongside the Ads-gated snippet.
 		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
 
-		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
 			[ 'container_public_id' => 'GTM-TEST1234' ]
 		);
@@ -1330,7 +1354,10 @@ class GlobalSiteTagTest extends UnitTest {
 		// happen to be absent for some other reason (e.g. the wp_head hook never firing).
 		$this->gtag_js->expects( $this->once() )->method( 'is_adding_framework' )->willReturn( true );
 
-		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
 			[ 'container_public_id' => 'GTM-TEST1234' ]
 		);
@@ -1463,7 +1490,10 @@ class GlobalSiteTagTest extends UnitTest {
 		// configured — the existing early return must still hold.
 		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
 
-		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
 
 		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );

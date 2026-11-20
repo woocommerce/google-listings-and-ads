@@ -31,7 +31,12 @@ class TagManagerSiteTagTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->connection = $this->createMock( Connection::class );
+		// A partial mock, not createMock(): has_container_public_id() keeps its real
+		// implementation, which reads the mocked get_connection_data() below.
+		$this->connection = $this->getMockBuilder( Connection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data' ] )
+			->getMock();
 		$this->tag        = new TagManagerSiteTag( $this->connection );
 	}
 

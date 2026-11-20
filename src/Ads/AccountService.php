@@ -114,7 +114,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$conversion_label       = $conversion_action['conversion_label'] ?? null;
 		$tag_manager_connection = $this->container->get( TagManagerConnection::class );
 
-		$container_tracks_same_conversion = ! empty( $tag_manager_connection->get_connection_data()['container_public_id'] )
+		$container_tracks_same_conversion = $tag_manager_connection->has_container_public_id()
 			&& $tag_manager_connection->has_ads_conversion_conflict();
 
 		return [
