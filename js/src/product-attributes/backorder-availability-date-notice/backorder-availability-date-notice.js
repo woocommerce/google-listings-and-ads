@@ -17,7 +17,7 @@ import {
 	INVENTORY_PRODUCT_DATA,
 	PRODUCT_TYPE_SELECT,
 } from './constants';
-import { isBackorderSelected, isProductTypeApplicable } from './utils';
+import { isOnBackorder, isProductTypeApplicable } from './utils';
 
 /**
  * Whether the notice should be shown for the current form state.
@@ -29,14 +29,14 @@ import { isBackorderSelected, isProductTypeApplicable } from './utils';
 const shouldShowNotice = ( productTypes, glaDateEl ) => {
 	return (
 		isProductTypeApplicable( productTypes ) &&
-		isBackorderSelected() &&
+		isOnBackorder() &&
 		glaDateEl.value.trim() === ''
 	);
 };
 
 /**
- * React component that renders a warning notice when backorder is selected
- * and no GLA availability date is set.
+ * React component that renders a warning notice when a product type that supports
+ * the availability date is on backorder and no GLA availability date is set.
  *
  * @param {Object}        props
  * @param {Array<string>} props.productTypes Product types the availability date applies to.

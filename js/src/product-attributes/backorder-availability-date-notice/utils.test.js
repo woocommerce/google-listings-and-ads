@@ -1,11 +1,7 @@
 /**
  * Internal dependencies
  */
-import {
-	getFieldValue,
-	isBackorderSelected,
-	isProductTypeApplicable,
-} from './utils';
+import { getFieldValue, isOnBackorder, isProductTypeApplicable } from './utils';
 
 describe( 'getFieldValue', () => {
 	afterEach( () => {
@@ -78,7 +74,7 @@ describe( 'getFieldValue', () => {
 	} );
 } );
 
-describe( 'isBackorderSelected', () => {
+describe( 'isOnBackorder', () => {
 	afterEach( () => {
 		document.body.innerHTML = '';
 	} );
@@ -117,13 +113,13 @@ describe( 'isBackorderSelected', () => {
 		it( 'returns true when stock status is "onbackorder"', () => {
 			renderInventoryFields( { stockStatus: 'onbackorder' } );
 
-			expect( isBackorderSelected() ).toBe( true );
+			expect( isOnBackorder() ).toBe( true );
 		} );
 
 		it( 'returns false when stock status is "instock"', () => {
 			renderInventoryFields( { stockStatus: 'instock' } );
 
-			expect( isBackorderSelected() ).toBe( false );
+			expect( isOnBackorder() ).toBe( false );
 		} );
 
 		it( 'ignores a stale backorders value', () => {
@@ -132,7 +128,7 @@ describe( 'isBackorderSelected', () => {
 				stockStatus: 'instock',
 			} );
 
-			expect( isBackorderSelected() ).toBe( false );
+			expect( isOnBackorder() ).toBe( false );
 		} );
 	} );
 
@@ -144,7 +140,7 @@ describe( 'isBackorderSelected', () => {
 				backorders: 'yes',
 			} );
 
-			expect( isBackorderSelected() ).toBe( true );
+			expect( isOnBackorder() ).toBe( true );
 		} );
 
 		it( 'returns true when backorders is "notify" and stock is negative', () => {
@@ -154,7 +150,7 @@ describe( 'isBackorderSelected', () => {
 				backorders: 'notify',
 			} );
 
-			expect( isBackorderSelected() ).toBe( true );
+			expect( isOnBackorder() ).toBe( true );
 		} );
 
 		it( 'returns false when backorders are allowed but stock is positive', () => {
@@ -164,7 +160,7 @@ describe( 'isBackorderSelected', () => {
 				backorders: 'yes',
 			} );
 
-			expect( isBackorderSelected() ).toBe( false );
+			expect( isOnBackorder() ).toBe( false );
 		} );
 
 		it( 'returns false when backorders is "no" and stock is zero', () => {
@@ -174,7 +170,7 @@ describe( 'isBackorderSelected', () => {
 				backorders: 'no',
 			} );
 
-			expect( isBackorderSelected() ).toBe( false );
+			expect( isOnBackorder() ).toBe( false );
 		} );
 
 		it( 'ignores a stale stock status value', () => {
@@ -185,7 +181,7 @@ describe( 'isBackorderSelected', () => {
 				stockStatus: 'onbackorder',
 			} );
 
-			expect( isBackorderSelected() ).toBe( false );
+			expect( isOnBackorder() ).toBe( false );
 		} );
 	} );
 } );

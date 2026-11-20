@@ -37,7 +37,7 @@ export const getFieldValue = ( name ) => {
  *
  * @return {boolean} True if the product would be on backorder, false otherwise.
  */
-export const isBackorderSelected = () => {
+export const isOnBackorder = () => {
 	const manageStock = document.querySelector(
 		`${ INVENTORY_PRODUCT_DATA } input[name="_manage_stock"]`
 	)?.checked;
