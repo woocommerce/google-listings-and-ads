@@ -919,6 +919,7 @@ class AccountServiceTest extends UnitTest {
 			->withConsecutive(
 				[ OptionsInterface::CONTACT_INFO_SETUP ],
 				[ OptionsInterface::MAPI_DATA_SOURCES ],
+				[ OptionsInterface::MAPI_FAILED_DATA_SOURCES ],
 				[ OptionsInterface::MAPI_RECREATED_DATA_SOURCES ],
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT ],
 				[ OptionsInterface::MERCHANT_ACCOUNT_STATE ],
