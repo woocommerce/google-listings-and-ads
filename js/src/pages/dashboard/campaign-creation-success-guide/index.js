@@ -54,9 +54,9 @@ export default function CampaignCreationSuccessGuide( {
 			buttons={ [
 				<AppButton
 					key="0"
-					isTertiary
 					data-action={ CTA_CREATE_ANOTHER_CAMPAIGN }
 					onClick={ onGuideRequestClose }
+					isTertiary
 				>
 					{ __(
 						'Create another campaign',
@@ -65,9 +65,9 @@ export default function CampaignCreationSuccessGuide( {
 				</AppButton>,
 				<AppButton
 					key="1"
-					isPrimary
 					data-action={ CTA_CONFIRM }
 					onClick={ onGuideRequestClose }
+					isPrimary
 				>
 					{ __( 'Got it', 'google-listings-and-ads' ) }
 				</AppButton>,

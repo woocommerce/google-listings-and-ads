@@ -31,9 +31,9 @@ const CreateAccountButton = ( { onCreateAccount } ) => {
 	return (
 		<>
 			<AppButton
-				isSecondary
 				text={ __( 'Create account', 'google-listings-and-ads' ) }
 				onClick={ handleButtonClick }
+				isSecondary
 			/>
 			{ isOpen && (
 				<TermsModal
