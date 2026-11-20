@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Tracking;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
@@ -42,6 +43,15 @@ class TrackerSnapshotTest extends UnitTest {
 	/** @var MockObject|ProductImageSizeAudit $image_size_audit */
 	protected $image_size_audit;
 
+	/** @var MockObject|TagManagerConnection $tag_manager_connection */
+	protected $tag_manager_connection;
+
+	/** @var array $tag_manager_data Connection data returned by the Tag Manager connection mock. */
+	protected $tag_manager_data = [];
+
+	/** @var bool $tag_manager_conflict Whether the Tag Manager connection mock reports an Ads conversion conflict. */
+	protected $tag_manager_conflict = false;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -62,6 +72,21 @@ class TrackerSnapshotTest extends UnitTest {
 		$this->image_size_audit = $this->createMock( ProductImageSizeAudit::class );
 		$this->options          = $this->createMock( OptionsInterface::class );
 
+		$this->tag_manager_connection = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
+		$this->tag_manager_connection->method( 'get_connection_data' )->willReturnCallback(
+			function () {
+				return $this->tag_manager_data;
+			}
+		);
+		$this->tag_manager_connection->method( 'has_ads_conversion_conflict' )->willReturnCallback(
+			function () {
+				return $this->tag_manager_conflict;
+			}
+		);
+
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [] );
 		$this->mc_service->method( 'is_connected' )->willReturn( false );
 		$this->ads_service->method( 'is_setup_started' )->willReturn( false );
@@ -80,6 +105,7 @@ class TrackerSnapshotTest extends UnitTest {
 		$container->addShared( TargetAudience::class, $this->target_audience );
 		$container->addShared( MarketService::class, $this->market_service );
 		$container->addShared( ProductImageSizeAudit::class, $this->image_size_audit );
+		$container->addShared( TagManagerConnection::class, $this->tag_manager_connection );
 
 		$this->snapshot = new TrackerSnapshot();
 		$this->snapshot->set_container( $container );
@@ -176,6 +202,61 @@ class TrackerSnapshotTest extends UnitTest {
 		$this->assertSame( 'no', $settings['reviews_badge_widget'] );
 	}
 
+	public function test_tag_manager_fields_are_no_when_no_container_is_connected() {
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'no', $settings['tag_manager_connected'] );
+		$this->assertSame( 'no', $settings['tag_manager_snippet_active'] );
+		$this->assertSame( 'no', $settings['tag_manager_ads_conversion_conflict'] );
+	}
+
+	public function test_tag_manager_snippet_active_is_yes_when_container_is_connected() {
+		$this->tag_manager_data = $this->get_connected_tag_manager_data();
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'yes', $settings['tag_manager_connected'] );
+		$this->assertSame( 'yes', $settings['tag_manager_snippet_active'] );
+	}
+
+	public function test_tag_manager_ads_conversion_conflict_is_yes_when_connected_container_conflicts() {
+		$this->tag_manager_data     = $this->get_connected_tag_manager_data();
+		$this->tag_manager_conflict = true;
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'yes', $settings['tag_manager_ads_conversion_conflict'] );
+	}
+
+	public function test_tag_manager_ads_conversion_conflict_is_no_when_connected_container_does_not_conflict() {
+		$this->tag_manager_data = $this->get_connected_tag_manager_data();
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'no', $settings['tag_manager_ads_conversion_conflict'] );
+	}
+
+	public function test_tag_manager_ads_conversion_conflict_is_no_when_no_container_is_connected() {
+		$this->tag_manager_conflict = true;
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'no', $settings['tag_manager_ads_conversion_conflict'] );
+	}
+
+	/**
+	 * Connection data for a connected Tag Manager container.
+	 *
+	 * @return array
+	 */
+	private function get_connected_tag_manager_data(): array {
+		return [
+			'account_id'          => '123',
+			'container_id'        => '456',
+			'container_public_id' => 'GTM-ABC1234',
+		];
+	}
+
 	public function test_feed_issue_counts_are_sent_from_the_saved_summary() {
 		$this->use_connected_merchant_center();
 		$this->set_feed_issue_summary( $this->get_feed_issue_summary() );
@@ -256,6 +337,7 @@ class TrackerSnapshotTest extends UnitTest {
 		$container->addShared( TargetAudience::class, $this->target_audience );
 		$container->addShared( MarketService::class, $this->market_service );
 		$container->addShared( ProductImageSizeAudit::class, $this->image_size_audit );
+		$container->addShared( TagManagerConnection::class, $this->tag_manager_connection );
 
 		$this->snapshot = new TrackerSnapshot();
 		$this->snapshot->set_container( $container );

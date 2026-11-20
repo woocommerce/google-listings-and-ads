@@ -52,6 +52,7 @@ interface OptionsInterface {
 	public const SYNCABLE_PRODUCTS_COUNT                   = 'syncable_products_count';
 	public const SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA = 'syncable_products_count_intermediate_data';
 	public const PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  = 'product_statuses_count_intermediate_data';
+	public const TAG_MANAGER                               = 'tag_manager';
 	public const FEED_ISSUE_TRACKING                       = 'feed_issue_tracking';
 	public const FEED_ISSUE_SUMMARY                        = 'feed_issue_summary';
 	public const TARGET_AUDIENCE                           = 'target_audience';
@@ -111,6 +112,7 @@ interface OptionsInterface {
 		self::SYNCABLE_PRODUCTS_COUNT                   => true,
 		self::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA => true,
 		self::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  => true,
+		self::TAG_MANAGER                               => true,
 		self::FEED_ISSUE_TRACKING                       => true,
 		self::FEED_ISSUE_SUMMARY                        => true,
 		self::TARGET_AUDIENCE                           => true,

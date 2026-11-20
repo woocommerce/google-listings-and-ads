@@ -1,0 +1,19 @@
+.gla-account-detail-row {
+	min-height: $grid-unit-60;
+	padding: $grid-unit-15 ($grid-unit-20 + $grid-unit-05);
+	border: 1px solid $gray-200;
+	border-radius: $grid-unit-10;
+
+	.gla-account-detail-row__text {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: $grid-unit-10;
+	}
+
+	.gla-account-detail-row__indicator {
+		display: flex;
+		align-items: center;
+		gap: $grid-unit-10;
+	}
+}
