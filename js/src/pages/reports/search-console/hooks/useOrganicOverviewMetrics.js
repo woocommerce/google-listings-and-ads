@@ -52,6 +52,17 @@ const useOrganicOverviewMetrics = () => {
 				formatFn: withFormat(
 					( value ) => `${ formatNumber( value * 100, 1 ) }%`
 				),
+				// `@woocommerce/components`'s Chart computes a Y-axis step that rounds down to
+				// exactly 0 whenever every plotted value is below 1 (its quarter-rounding branch
+				// in d3chart/utils/scales.js), which then divides into the axis limits and yields
+				// a NaN domain -- the chart silently renders nothing. CTR is the only metric here
+				// whose values are always a 0-1 fraction, so it's charted as a 0-100 percentage
+				// instead to stay out of that broken range; `chartFormatFn` formats that
+				// already-scaled value without multiplying by 100 again.
+				chartValueScale: 100,
+				chartFormatFn: withFormat(
+					( value ) => `${ formatNumber( value, 1 ) }%`
+				),
 			},
 			{
 				key: 'position',

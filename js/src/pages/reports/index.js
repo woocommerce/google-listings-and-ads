@@ -45,11 +45,16 @@ export default Reports;
  * @property {boolean} [isCurrency] Metric is a currency if true. Needed to adjust Chart's valueType => y-axis labels.
  * @property {boolean} [reverseTrend] Whether a decrease is an improvement, which reverses the trend colours.
  * @property {string} [labelTooltipText] Text of an info tooltip shown next to the metric's label.
+ * @property {number} [chartValueScale] Factor to multiply a raw value by before charting it, for
+ *   a metric whose real values stay below 1 (e.g. CTR) -- Chart's own Y-axis scaling breaks down
+ *   for an all-sub-1 value domain. Defaults to 1 (unscaled) when omitted.
  */
 
 /**
  * @typedef {Object} MetricFormatter Metric formatter structure.
- * @property {(value: number) => string} formatFn Function to format given value to the displayed text.
+ * @property {(value: number) => string} formatFn Function to format a raw (unscaled) value to the displayed text.
+ * @property {(value: number) => string} [chartFormatFn] Function to format an already `chartValueScale`-scaled
+ *   value, for Chart's own tooltip/axis/legend labels. Defaults to `formatFn` when omitted.
  *
  * @typedef {MetricSchema & MetricFormatter} Metric
  */
