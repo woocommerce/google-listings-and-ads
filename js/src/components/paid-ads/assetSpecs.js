@@ -68,6 +68,18 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Generate landscape images',
 			'google-listings-and-ads'
 		),
+		generateMoreButtonAriaLabel: __(
+			'Generate more landscape images',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonText: __(
+			'Generate with prompt',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonAriaLabel: __(
+			'Generate a landscape image with prompt',
+			'google-listings-and-ads'
+		),
 	},
 	{
 		key: ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE,
@@ -101,6 +113,18 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Generate square images',
 			'google-listings-and-ads'
 		),
+		generateMoreButtonAriaLabel: __(
+			'Generate more square images',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonText: __(
+			'Generate with prompt',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonAriaLabel: __(
+			'Generate a square image with prompt',
+			'google-listings-and-ads'
+		),
 	},
 	{
 		key: ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE,
@@ -132,6 +156,18 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 		),
 		generateButtonText: __(
 			'Generate portrait images',
+			'google-listings-and-ads'
+		),
+		generateMoreButtonAriaLabel: __(
+			'Generate more portrait images',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonText: __(
+			'Generate with prompt',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonAriaLabel: __(
+			'Generate a portrait image with prompt',
 			'google-listings-and-ads'
 		),
 	},
