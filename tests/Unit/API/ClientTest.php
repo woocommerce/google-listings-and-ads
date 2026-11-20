@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use ReflectionClass;
 use ReflectionMethod;
 
 defined( 'ABSPATH' ) || exit;
@@ -102,6 +103,70 @@ class ClientTest extends UnitTest {
 		$this->provider->register();
 
 		$this->assertNotNull( $this->container->get( GoogleAdsClient::class ) );
+	}
+
+	public function test_client_has_default_timeouts() {
+		$this->provider->register();
+
+		$client = $this->container->get( Client::class );
+
+		$this->assertSame( $this->get_provider_constant( 'REQUEST_TIMEOUT' ), $client->getConfig( 'timeout' ) );
+		$this->assertSame( $this->get_provider_constant( 'CONNECT_TIMEOUT' ), $client->getConfig( 'connect_timeout' ) );
+	}
+
+	public function test_client_timeouts_can_be_filtered() {
+		add_filter(
+			'woocommerce_gla_request_timeout',
+			function () {
+				return 45;
+			}
+		);
+		add_filter(
+			'woocommerce_gla_connect_timeout',
+			function () {
+				return '5';
+			}
+		);
+
+		try {
+			$this->provider->register();
+
+			$client = $this->container->get( Client::class );
+
+			$this->assertSame( 45.0, $client->getConfig( 'timeout' ) );
+			$this->assertSame( 5.0, $client->getConfig( 'connect_timeout' ) );
+		} finally {
+			remove_all_filters( 'woocommerce_gla_request_timeout' );
+			remove_all_filters( 'woocommerce_gla_connect_timeout' );
+		}
+	}
+
+	public function test_client_timeouts_fall_back_to_the_default_for_invalid_values() {
+		add_filter(
+			'woocommerce_gla_request_timeout',
+			function () {
+				return 0;
+			}
+		);
+		add_filter(
+			'woocommerce_gla_connect_timeout',
+			function () {
+				return 'invalid';
+			}
+		);
+
+		try {
+			$this->provider->register();
+
+			$client = $this->container->get( Client::class );
+
+			// Zero would remove the limit, so it falls back to the default too.
+			$this->assertSame( $this->get_provider_constant( 'REQUEST_TIMEOUT' ), $client->getConfig( 'timeout' ) );
+			$this->assertSame( $this->get_provider_constant( 'CONNECT_TIMEOUT' ), $client->getConfig( 'connect_timeout' ) );
+		} finally {
+			remove_all_filters( 'woocommerce_gla_request_timeout' );
+			remove_all_filters( 'woocommerce_gla_connect_timeout' );
+		}
 	}
 
 	/**
@@ -269,6 +334,118 @@ class ClientTest extends UnitTest {
 
 		// A connection error (no response) is retried.
 		$response = $client->request( 'GET', 'https://testing.local' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_retries_connect_timeouts_for_any_method() {
+		$request = new Request( 'POST', 'https://testing.local/datasources/v1/accounts/1/dataSources' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$this->timeout_exception( $request, 0 ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// Nothing was sent before the limit ran out, so even a non-idempotent POST is retried.
+		$response = $client->send( $request );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_retries_response_timeouts_on_idempotent_requests() {
+		$request = new Request( 'GET', 'https://testing.local/products/v1/accounts/1/products' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$this->timeout_exception( $request ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		$response = $client->send( $request );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_retries_response_timeouts_on_product_insert() {
+		$request = new Request( 'POST', 'https://testing.local/products/v1/accounts/1/productInputs:insert' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$this->timeout_exception( $request ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// productInputs.insert is an upsert, so a timed-out POST is safe to retry.
+		$response = $client->send( $request );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_does_not_retry_response_timeouts_on_non_idempotent_post() {
+		$request = new Request( 'POST', 'https://testing.local/datasources/v1/accounts/1/dataSources' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$this->timeout_exception( $request ),
+				new Response( 200, [], 'never sent' ),
+			]
+		);
+
+		// The POST may have been applied before the response timed out, so it surfaces.
+		$this->expectException( ConnectException::class );
+		$this->expectExceptionMessage( 'Operation timed out' );
+		$client->send( $request );
+	}
+
+	public function test_retry_on_transient_error_retries_a_response_timeout_only_once() {
+		$request = new Request( 'GET', 'https://testing.local/products/v1/accounts/1/products' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$this->timeout_exception( $request ),
+				$this->timeout_exception( $request ),
+				new Response( 200, [], 'never sent' ),
+			]
+		);
+
+		// A second slow response surfaces, even though the general retry limit allows more.
+		$this->expectException( ConnectException::class );
+		$client->send( $request );
+	}
+
+	public function test_retry_on_transient_error_does_not_retry_a_response_timeout_after_another_retry() {
+		$request = new Request( 'GET', 'https://testing.local/products/v1/accounts/1/products' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new Response( 503, [], 'unavailable' ),
+				$this->timeout_exception( $request ),
+				new Response( 200, [], 'never sent' ),
+			]
+		);
+
+		$this->expectException( ConnectException::class );
+		$client->send( $request );
+	}
+
+	public function test_retry_on_transient_error_retries_connect_timeouts_up_to_the_retry_limit() {
+		$request = new Request( 'GET', 'https://testing.local/products/v1/accounts/1/products' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$this->timeout_exception( $request, 0 ),
+				$this->timeout_exception( $request, 0 ),
+				$this->timeout_exception( $request, 0 ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// Timing out while connecting fails fast, so it keeps the general retry limit.
+		$response = $client->send( $request );
 
 		$this->assertEquals( 200, $response->getStatusCode() );
 	}
@@ -483,6 +660,37 @@ class ClientTest extends UnitTest {
 		$handler->setAccessible( true );
 
 		return $handler->invoke( $this->provider );
+	}
+
+	/**
+	 * Returns one of the provider's default constants.
+	 *
+	 * @param string $name The constant name.
+	 *
+	 * @return mixed
+	 */
+	protected function get_provider_constant( string $name ) {
+		return ( new ReflectionClass( GoogleServiceProvider::class ) )->getConstant( $name );
+	}
+
+	/**
+	 * Returns the exception Guzzle's cURL handler raises when a timeout runs out.
+	 *
+	 * @param Request $request      The request that timed out.
+	 * @param int     $request_size Bytes sent before the timeout. Zero means it timed out while connecting.
+	 *
+	 * @return ConnectException
+	 */
+	protected function timeout_exception( Request $request, int $request_size = 250 ): ConnectException {
+		return new ConnectException(
+			'cURL error 28: Operation timed out after 30000 milliseconds with 0 bytes received',
+			$request,
+			null,
+			[
+				'errno'        => 28,
+				'request_size' => $request_size,
+			]
+		);
 	}
 
 	/**
