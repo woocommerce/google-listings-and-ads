@@ -79,6 +79,13 @@ test.describe( 'Markets – non-multilingual store', () => {
 			).not.toBeAttached();
 		} );
 
+		test( 'table has the base DataViews styles on a direct load', async () => {
+			await expect( page.locator( '.dataviews-view-table' ) ).toHaveCSS(
+				'border-collapse',
+				'collapse'
+			);
+		} );
+
 		test( 'only the primary market row is visible', async () => {
 			await expect(
 				page.getByRole( 'cell', {

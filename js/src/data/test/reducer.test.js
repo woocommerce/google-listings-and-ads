@@ -1045,6 +1045,89 @@ describe( 'reducer', () => {
 
 			expect( state ).toHaveProperty( path, action.cyoIncentives );
 		} );
+
+		it( 'should mark an offer as applied and keep the offers', () => {
+			const incentives = [ { id: 123, offer: 'high' } ];
+			const originalState = prepareState( path, {
+				incentives,
+				has_applied_incentive: false,
+			} );
+
+			const state = reducer( originalState, {
+				type: TYPES.APPLY_CYO_INCENTIVE,
+			} );
+
+			expect( state ).toHaveProperty( path, {
+				incentives,
+				has_applied_incentive: true,
+			} );
+			expect( state ).not.toBe( originalState );
+		} );
+	} );
+
+	describe( 'Gen AI assets', () => {
+		describe( 'REPLACE_GEN_AI_MEDIA_ASSET', () => {
+			const url = 'https://example.com';
+			const path = [ 'gen_ai_assets', url, 'media', 'marketing_image' ];
+
+			it( 'swaps the source URL for the new URL at the same index', () => {
+				const state = prepareState( path, [
+					'https://example.com/a.png',
+					'https://example.com/source.png',
+					'https://example.com/c.png',
+				] );
+
+				const action = {
+					type: TYPES.REPLACE_GEN_AI_MEDIA_ASSET,
+					url,
+					assetType: 'marketing_image',
+					sourceUrl: 'https://example.com/source.png',
+					newUrl: 'https://example.com/new.png',
+				};
+
+				const nextState = reducer( state, action );
+
+				expect( nextState ).toHaveProperty( path, [
+					'https://example.com/a.png',
+					'https://example.com/new.png',
+					'https://example.com/c.png',
+				] );
+			} );
+
+			it( 'leaves state unchanged when the source URL is not present', () => {
+				const state = prepareState( path, [
+					'https://example.com/a.png',
+				] );
+
+				const action = {
+					type: TYPES.REPLACE_GEN_AI_MEDIA_ASSET,
+					url,
+					assetType: 'marketing_image',
+					sourceUrl: 'https://example.com/missing.png',
+					newUrl: 'https://example.com/new.png',
+				};
+
+				const nextState = reducer( state, action );
+
+				expect( nextState ).toBe( state );
+			} );
+
+			it( 'leaves state unchanged when there is no gen_ai_assets entry yet for the url/assetType', () => {
+				const state = prepareState();
+
+				const action = {
+					type: TYPES.REPLACE_GEN_AI_MEDIA_ASSET,
+					url,
+					assetType: 'marketing_image',
+					sourceUrl: 'https://example.com/source.png',
+					newUrl: 'https://example.com/new.png',
+				};
+
+				const nextState = reducer( state, action );
+
+				expect( nextState ).toBe( state );
+			} );
+		} );
 	} );
 
 	describe( 'Remaining actions simply update the data payload to the specific path of state and return the updated state', () => {
