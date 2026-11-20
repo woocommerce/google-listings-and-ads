@@ -102,7 +102,7 @@ const BackorderAvailabilityDateNotice = ( {
 
 	const message = createInterpolateElement(
 		__(
-			'Google requires an availability date for products on backorder. Set the Availability date in the <link>Google for WooCommerce tab</link> so your product can be submitted correctly.',
+			'Google requires an availability date for products on backorder. Set the availability date in the <link>Google for WooCommerce tab</link> so your product can be submitted correctly.',
 			'google-listings-and-ads'
 		),
 		{
