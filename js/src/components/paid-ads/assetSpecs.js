@@ -68,6 +68,18 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Generate landscape images',
 			'google-listings-and-ads'
 		),
+		generateMoreButtonAriaLabel: __(
+			'Generate more landscape images',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonText: __(
+			'Generate with prompt',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonAriaLabel: __(
+			'Generate a landscape image with prompt',
+			'google-listings-and-ads'
+		),
 	},
 	{
 		key: ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE,
@@ -101,6 +113,18 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Generate square images',
 			'google-listings-and-ads'
 		),
+		generateMoreButtonAriaLabel: __(
+			'Generate more square images',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonText: __(
+			'Generate with prompt',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonAriaLabel: __(
+			'Generate a square image with prompt',
+			'google-listings-and-ads'
+		),
 	},
 	{
 		key: ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE,
@@ -132,6 +156,18 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 		),
 		generateButtonText: __(
 			'Generate portrait images',
+			'google-listings-and-ads'
+		),
+		generateMoreButtonAriaLabel: __(
+			'Generate more portrait images',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonText: __(
+			'Generate with prompt',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonAriaLabel: __(
+			'Generate a portrait image with prompt',
 			'google-listings-and-ads'
 		),
 	},
@@ -377,6 +413,7 @@ const ASSET_TEXT_SPECS = [
 // outside this module.
 {
 	function concatenateAssetStrings( strings ) {
+		// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
 		const separator = _x(
 			', ',
 			'The separator for concatenating the types of assets',
@@ -493,7 +530,7 @@ const ASSET_TEXT_SPECS = [
 
 		if ( totalSelected === sharedMax ) {
 			return sprintf(
-				// translators: The shared maximum number of the grouped types of image assets.
+				// translators: %d: The shared maximum number of the grouped types of image assets.
 				__(
 					'The maximum number of images that can be uploaded is %d.',
 					'google-listings-and-ads'

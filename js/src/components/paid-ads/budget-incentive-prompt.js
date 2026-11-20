@@ -147,7 +147,7 @@ function BudgetIncentivePrompt( props, ref ) {
 					>
 						<h4>
 							{ sprintf(
-								// translators: The recommended amount in currency format.
+								// translators: %s: The recommended amount in currency format.
 								__(
 									'Increase your budget to %s and get it all back in FREE AD CREDIT*!',
 									'google-listings-and-ads'

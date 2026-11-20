@@ -97,7 +97,6 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {boolean} [offer_free_shipping] Whether if the merchant offers free shipping.
  * @property {'automatic'|'flat'|'manual'} [shipping_rate] Type of the shipping rate.
  * @property {'flat'|'manual'} [shipping_time] Type of the shipping time.
- * @property {string|null} [tax_rate] Type of tax rate, There are two possible values if US is selected: 'destination' and 'manual' otherwise will be null.
  */
 
 /**
@@ -397,7 +396,7 @@ export function* saveSettings( settings ) {
 }
 
 /**
- * Sync the shipping and tax rate settings to Google Merchant Center.
+ * Sync the shipping settings to Google Merchant Center.
  *
  * @throws Will throw an error if the request failed.
  */
@@ -1436,6 +1435,28 @@ export function receiveCYOIncentives( cyoIncentives ) {
 	};
 }
 
+/**
+ * Applies an Ads credit offer to the connected Google Ads account, then marks it as applied,
+ * so the offer picker hides without fetching the incentives again.
+ *
+ * Errors aren't handled here, so the caller decides how to handle a failed apply.
+ *
+ * @param {string} id The ID of the Ads credit offer to apply.
+ * @return {Object} Redux action with type `TYPES.APPLY_CYO_INCENTIVE`.
+ * @throws Will throw an error if the request failed.
+ */
+export function* applyCYOIncentive( id ) {
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/ads/incentives`,
+		method: 'POST',
+		data: { id },
+	} );
+
+	return {
+		type: TYPES.APPLY_CYO_INCENTIVE,
+	};
+}
+
 export function* receiveGenAIMediaAssets( url, data, assetType ) {
 	if ( ! data?.items ) {
 		return {
@@ -1451,6 +1472,26 @@ export function* receiveGenAIMediaAssets( url, data, assetType ) {
 		url,
 		assetType,
 		data: adaptGenAIAssets( data.items, 'temporary_image_url', assetType ),
+	};
+}
+
+/**
+ * Replaces one media asset's URL in place for a given final URL and asset type — used by the
+ * recontext (edit-with-prompt) flow, which regenerates a single image rather than adding one.
+ *
+ * @param {string} url The final URL the assets are keyed by.
+ * @param {string} assetType The asset type / aspect ratio, e.g. 'marketing_image'.
+ * @param {string} sourceUrl The `temporary_image_url` of the image being replaced.
+ * @param {string} newUrl The `temporary_image_url` of the newly generated image.
+ * @return {Object} Redux action with type `TYPES.REPLACE_GEN_AI_MEDIA_ASSET`.
+ */
+export function* replaceGenAIMediaAsset( url, assetType, sourceUrl, newUrl ) {
+	return {
+		type: TYPES.REPLACE_GEN_AI_MEDIA_ASSET,
+		url,
+		assetType,
+		sourceUrl,
+		newUrl,
 	};
 }
 

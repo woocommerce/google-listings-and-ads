@@ -60,6 +60,39 @@ class GoogleHelperTest extends UnitTest {
 		$this->assertNotEmpty( $supported );
 		$this->assertArrayHasKey( 'en', $supported );
 		$this->assertEquals( 'en', $supported['en'] );
+		// Hindi is supported by Merchant Center; keep it listed so those merchants are not
+		// downgraded to 'en' by resolve_mc_content_language().
+		$this->assertArrayHasKey( 'hi', $supported );
+	}
+
+	public function test_resolve_mc_content_language_uses_supported_code() {
+		$this->assertSame( 'fr', GoogleHelper::resolve_mc_content_language( 'fr_BE' ) );
+		// A region-suffixed multilingual plugin code resolves to its two-letter code.
+		$this->assertSame( 'pt', GoogleHelper::resolve_mc_content_language( 'pt-pt' ) );
+	}
+
+	public function test_resolve_mc_content_language_falls_back_to_en_when_unsupported() {
+		// Multilingual plugins can report non-ISO-639-1 codes, e.g. Albanian as 'als' -> 'al'.
+		$this->assertSame( 'en', GoogleHelper::resolve_mc_content_language( 'als' ) );
+		// Real languages the Merchant Center does not accept fall back too.
+		$this->assertSame( 'en', GoogleHelper::resolve_mc_content_language( 'sr' ) );
+	}
+
+	public function test_resolve_mc_content_language_falls_back_to_en_for_empty_locale() {
+		$this->assertSame( 'en', GoogleHelper::resolve_mc_content_language( '' ) );
+	}
+
+	public function test_find_mc_content_language_resolves_supported_codes() {
+		$this->assertSame( 'pt', GoogleHelper::find_mc_content_language( 'pt-pt' ) );
+		$this->assertSame( 'zh', GoogleHelper::find_mc_content_language( 'zh-hant' ) );
+		$this->assertSame( 'nb', GoogleHelper::find_mc_content_language( 'nb' ) );
+		$this->assertSame( 'fr', GoogleHelper::find_mc_content_language( 'FR_be' ) );
+	}
+
+	public function test_find_mc_content_language_returns_null_when_unsupported() {
+		$this->assertNull( GoogleHelper::find_mc_content_language( 'bg' ) );
+		$this->assertNull( GoogleHelper::find_mc_content_language( 'sr-latn' ) );
+		$this->assertNull( GoogleHelper::find_mc_content_language( '' ) );
 	}
 
 	public function test_is_country_supported() {

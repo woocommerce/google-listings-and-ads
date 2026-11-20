@@ -14,12 +14,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -71,6 +72,13 @@ class BatchProductHelper implements Service {
 	 * @var WPML
 	 */
 	protected $wpml;
+
+	/**
+	 * Language codes already reported as replaced, used to log each code once.
+	 *
+	 * @var array<string, bool>
+	 */
+	protected $reported_replaced_languages = [];
 
 	/**
 	 * @var AttributeManager
@@ -129,15 +137,43 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * @param BatchProductEntry $product_entry
+	 * Report once per language code, per instance, that a supplied product language was
+	 * replaced with a Merchant Center supported content language. Logging per code rather
+	 * than per product keeps a large sync batch from flooding the debug log.
+	 *
+	 * @param string $product_language The supplied product language code, or empty string.
 	 */
-	public function mark_as_synced( BatchProductEntry $product_entry ) {
+	protected function maybe_report_replaced_language( string $product_language ): void {
+		if ( '' === $product_language || isset( $this->reported_replaced_languages[ $product_language ] ) ) {
+			return;
+		}
+
+		$resolved_language = GoogleHelper::resolve_mc_content_language( $product_language );
+
+		if ( $resolved_language === $product_language ) {
+			return;
+		}
+
+		$this->reported_replaced_languages[ $product_language ] = true;
+
+		do_action(
+			'woocommerce_gla_debug_message',
+			sprintf( 'Product language "%s" is not a Merchant Center content language; sending "%s" instead.', $product_language, $resolved_language ),
+			__METHOD__
+		);
+	}
+
+	/**
+	 * @param BatchProductEntry $product_entry
+	 * @param string[]          $applicable_labels Feed labels the product can attain, computed at sync time.
+	 */
+	public function mark_as_synced( BatchProductEntry $product_entry, array $applicable_labels = [] ) {
 		$wc_product     = $this->product_helper->get_wc_product( $product_entry->get_wc_product_id() );
 		$google_product = $product_entry->get_google_product();
 
 		$this->validate_instanceof( $google_product, GoogleProduct::class );
 
-		$this->product_helper->mark_as_synced( $wc_product, $google_product );
+		$this->product_helper->mark_as_synced( $wc_product, $google_product, $applicable_labels );
 	}
 
 	/**
@@ -255,7 +291,7 @@ class BatchProductHelper implements Service {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string}>
+	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string, applicable_labels: string[]}>
 	 *
 	 * @throws AccountReconnect When the Connect Server rejects the Jetpack token while resolving a data source.
 	 */
@@ -279,9 +315,18 @@ class BatchProductHelper implements Service {
 
 				$product_language = $wpml_active ? $this->wpml->get_post_language( $product->get_id() ) : '';
 
+				$this->maybe_report_replaced_language( $product_language );
+
 				// Stage per product so a throw discards the whole product's entries (see the catch);
 				// a per-(language, currency) validation failure skips only that one feed.
 				$product_entries = [];
+
+				// Every feed label this product can attain in this pass. Carried on each
+				// entry so ProductHelper::mark_as_synced() compares what was attempted
+				// against what has succeeded. Includes feeds skipped as unchanged and
+				// feeds that failed validation; excludes feeds the product can never
+				// reach (unconvertible price, no currency enabled for its language).
+				$applicable_labels = [];
 
 				$primary_market = $this->market_service->get_primary_market();
 
@@ -291,6 +336,8 @@ class BatchProductHelper implements Service {
 					// kept bare for every language so existing entries keep their
 					// Merchant Center identity.
 					$main_feed_label = $this->market_service->get_main_feed_label();
+
+					$applicable_labels[] = $main_feed_label;
 
 					$validation_result = $this->validate_product(
 						$this->product_factory->create( $product, $main_feed_label, $mapping_rules, $main_feed_label, $product_language )
@@ -340,6 +387,8 @@ class BatchProductHelper implements Service {
 
 						$primary_currency_label = $this->market_service->get_market_feed_label( $main_feed_label, $product_language, $primary_currency );
 
+						$applicable_labels[] = $primary_currency_label;
+
 						$primary_currency_validation = $this->validate_product(
 							$this->product_factory->create( $product, $main_feed_label, $mapping_rules, $primary_currency_label, $product_language, $primary_currency )
 						);
@@ -386,12 +435,23 @@ class BatchProductHelper implements Service {
 
 					$product_entries = array_merge(
 						$product_entries,
-						$this->generate_secondary_market_entries( $product, (string) $market_id, $market, $product_language, $mapping_rules )
+						$this->generate_secondary_market_entries( $product, (string) $market_id, $market, $product_language, $mapping_rules, $applicable_labels )
 					);
 				}
 
 				if ( ! empty( $product_entries ) ) {
+					$applicable_labels = array_values( array_unique( $applicable_labels ) );
+
+					foreach ( $product_entries as &$product_entry ) {
+						$product_entry['applicable_labels'] = $applicable_labels;
+					}
+					unset( $product_entry );
+
 					array_push( $entries, ...$product_entries );
+				} elseif ( ! empty( $applicable_labels ) ) {
+					// No insert will run for this product, so nothing else would clear the pending
+					// status it was given when its sync was queued.
+					$this->product_helper->mark_as_unchanged( $product );
 				}
 			} catch ( AccountReconnect $exception ) {
 				// An authentication failure is account-wide, not specific to this product. Rethrow to
@@ -423,10 +483,11 @@ class BatchProductHelper implements Service {
 	 * @param array      $market
 	 * @param string     $product_language
 	 * @param array      $mapping_rules
+	 * @param string[]   $applicable_labels Collects every feed label the product can attain (by reference).
 	 *
 	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string}>
 	 */
-	protected function generate_secondary_market_entries( WC_Product $product, string $market_id, array $market, string $product_language, array $mapping_rules ): array {
+	protected function generate_secondary_market_entries( WC_Product $product, string $market_id, array $market, string $product_language, array $mapping_rules, array &$applicable_labels ): array {
 		// The derived label carries the entry's language and currency; a market with no languages
 		// uses the site-language label.
 		$market_language = empty( $market['language'] ) ? '' : $product_language;
@@ -441,9 +502,20 @@ class BatchProductHelper implements Service {
 			);
 		}
 
-		// A configured exchange rate converts any product's price at sync time, so it keeps a
-		// currency's entries flowing when WPML cannot convert for this product.
+		// A configured exchange rate converts any product's price (for validation and at sync
+		// time), so it keeps a currency's entries flowing when WPML cannot convert for this product.
+		// The market stores a single rate, so it can only describe one non-store currency: with
+		// several, applying it to all of them would mislabel prices, so those entries rely on WPML.
 		$market_exchange_rate = self::extract_exchange_rate( $market );
+		if ( $market_exchange_rate > 0 && self::count_non_store_currencies( $market ) > 1 ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Ignoring the exchange rate of secondary market %s: it lists more than one non-store currency, so the rate cannot tell which one it converts to.', $market_id ),
+				__METHOD__
+			);
+
+			$market_exchange_rate = 0.0;
+		}
 
 		foreach ( $currencies as $market_currency ) {
 			if ( ! $this->product_priced_in_currency( $product, $market_currency ) && $market_exchange_rate <= 0 ) {
@@ -458,12 +530,14 @@ class BatchProductHelper implements Service {
 
 			$market_feed_label = $this->market_service->get_market_feed_label( strtoupper( $market_id ), $market_language, $market_currency );
 
+			$applicable_labels[] = $market_feed_label;
+
 			// Store-currency entries need no conversion, so they carry no currency override and
 			// price exactly as a single-currency market's entries always have.
 			$currency_override = get_woocommerce_currency() === $market_currency ? '' : $market_currency;
 
 			$validation = $this->validate_product(
-				$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $currency_override )
+				$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $currency_override, $market_exchange_rate )
 			);
 			if ( $validation instanceof BatchInvalidProductEntry ) {
 				$this->mark_as_invalid( $validation );
@@ -582,6 +656,27 @@ class BatchProductHelper implements Service {
 		}
 
 		return null !== $this->wpml->get_product_price_in_currency( $product, $currency );
+	}
+
+	/**
+	 * Number of distinct currencies a market lists other than the store currency.
+	 *
+	 * @param array $market
+	 *
+	 * @return int
+	 */
+	private static function count_non_store_currencies( array $market ): int {
+		$configured = is_array( $market['currency'] ?? null ) ? $market['currency'] : [ $market['currency'] ?? '' ];
+		$store      = strtoupper( get_woocommerce_currency() );
+
+		$currencies = array_filter(
+			array_unique( array_map( 'strtoupper', array_map( 'strval', $configured ) ) ),
+			static function ( string $currency ) use ( $store ): bool {
+				return '' !== $currency && $store !== $currency;
+			}
+		);
+
+		return count( $currencies );
 	}
 
 	/**

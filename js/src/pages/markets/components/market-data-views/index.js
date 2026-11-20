@@ -3,12 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useMemo } from '@wordpress/element';
-import { Icon, edit, trash } from '@wordpress/icons';
+import { Icon, pencil, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import applyEqualColumnWidths from '~/utils/applyEqualColumnWidths';
+import AppDataViews from '~/components/app-data-views';
 import useMarketDataViewsConfig from '../../hooks/useMarketDataViewsConfig';
 import EditMarketModal from '../edit-market-modal';
 import DeleteMarketModal from '../delete-market-modal';
@@ -29,7 +30,7 @@ const DEFAULT_VIEW = {
  * and the per-row actions.
  */
 const MarketDataViews = () => {
-	const { DataViews, filterSortAndPaginate } = window.wp.dataviews;
+	const { filterSortAndPaginate } = window.wp.dataviews;
 	const { fields, data, hasFinishedResolution } = useMarketDataViewsConfig();
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 	const [ editingMarket, setEditingMarket ] = useState( null );
@@ -59,7 +60,7 @@ const MarketDataViews = () => {
 				id: 'edit',
 				label: () => (
 					<span className="gla-market-data-views__button-label">
-						<Icon icon={ edit } width={ 16 } height={ 16 } />
+						<Icon icon={ pencil } width={ 16 } height={ 16 } />
 						{ __( 'Edit', 'google-listings-and-ads' ) }
 					</span>
 				),
@@ -85,7 +86,7 @@ const MarketDataViews = () => {
 	return (
 		<>
 			<div className="gla-market-data-views">
-				<DataViews
+				<AppDataViews
 					getItemId={ ( item ) => item.id }
 					fields={ fields }
 					actions={ ACTIONS }

@@ -13,7 +13,6 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
 import { ContactInformationPreview } from '~/components/contact-information';
 import TargetAudienceSection from '~/components/target-audience-section';
-import SetupTaxRate from './setup-tax-rate';
 import ShippingRateSettings from './shipping-rate-settings';
 import Accounts from './accounts';
 import SettingsNav, { getSelectedSection } from './settings-nav';
@@ -122,7 +121,6 @@ const Settings = () => {
 							<GoogleCustomerReviewsSettings />
 							<ContactInformationPreview />
 							<ShippingRateSettings />
-							<SetupTaxRate />
 						</>
 					) }
 				</>

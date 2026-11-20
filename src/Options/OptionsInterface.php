@@ -19,6 +19,7 @@ interface OptionsInterface {
 	public const ADS_BILLING_URL                           = 'ads_billing_url';
 	public const ADS_HAS_UNCLAIMED_INCENTIVE               = 'ads_has_unclaimed_incentive';
 	public const ADS_ID                                    = 'ads_id';
+	public const ADS_INCENTIVE_APPLIED                     = 'ads_incentive_applied';
 	public const ADS_INCENTIVE_APPLY_ERROR                 = 'ads_incentive_apply_error';
 	public const ADS_CONVERSION_ACTION                     = 'ads_conversion_action';
 	public const ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    = 'ads_eu_political_declarations_complete';
@@ -37,6 +38,7 @@ interface OptionsInterface {
 	public const JETPACK_CONNECTED                         = 'jetpack_connected';
 	public const JETPACK_AUTH_FAILED_AT                    = 'jetpack_auth_failed_at';
 	public const MAPI_DATA_SOURCES                         = 'mapi_data_sources';
+	public const MAPI_RECREATED_DATA_SOURCES               = 'mapi_recreated_data_sources';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
 	public const MERCHANT_CENTER                           = 'merchant_center';
@@ -50,6 +52,8 @@ interface OptionsInterface {
 	public const SYNCABLE_PRODUCTS_COUNT                   = 'syncable_products_count';
 	public const SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA = 'syncable_products_count_intermediate_data';
 	public const PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  = 'product_statuses_count_intermediate_data';
+	public const FEED_ISSUE_TRACKING                       = 'feed_issue_tracking';
+	public const FEED_ISSUE_SUMMARY                        = 'feed_issue_summary';
 	public const TARGET_AUDIENCE                           = 'target_audience';
 	public const TOURS                                     = 'tours';
 	public const UPDATE_ALL_PRODUCTS_LAST_SYNC             = 'update_all_products_last_sync';
@@ -58,10 +62,13 @@ interface OptionsInterface {
 	public const YOUTUBE_ORDER_IDS_CACHE                   = 'youtube_export_order_ids';
 	public const YOUTUBE_EXPORT_FILES                      = 'youtube_export_files';
 	public const YOUTUBE_THIRD_PARTY_LINK                  = 'youtube_third_party_link';
+	public const YOUTUBE_REPORT_CLEANUP_FILES              = 'youtube_report_cleanup_files';
 	public const ONBOARDING_COMPLETED_AT                   = 'onboarding_completed_at';
 	public const NOTIFICATIONS_SITE_STATE                  = 'notifications_site_state';
 	public const WC_INSTALL_TIMESTAMP                      = 'wc_install_timestamp';
 	public const IS_SERVICE_BASED_MERCHANT                 = 'is_service_based_merchant';
+	public const SUPPORTED_PRODUCTS_CONFIRMED              = 'supported_products_confirmed';
+	public const PLUGIN_UPDATE_PENDING_JOBS                = 'plugin_update_pending_jobs';
 
 	public const VALID_OPTIONS = [
 		self::ADS_ACCOUNT_CURRENCY                      => true,
@@ -71,6 +78,7 @@ interface OptionsInterface {
 		self::ADS_BILLING_URL                           => true,
 		self::ADS_HAS_UNCLAIMED_INCENTIVE               => true,
 		self::ADS_ID                                    => true,
+		self::ADS_INCENTIVE_APPLIED                     => true,
 		self::ADS_INCENTIVE_APPLY_ERROR                 => true,
 		self::ADS_CONVERSION_ACTION                     => true,
 		self::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    => true,
@@ -88,6 +96,7 @@ interface OptionsInterface {
 		self::JETPACK_CONNECTED                         => true,
 		self::JETPACK_AUTH_FAILED_AT                    => true,
 		self::MAPI_DATA_SOURCES                         => true,
+		self::MAPI_RECREATED_DATA_SOURCES               => true,
 		self::MC_SETUP_COMPLETED_AT                     => true,
 		self::MERCHANT_ACCOUNT_STATE                    => true,
 		self::MERCHANT_CENTER                           => true,
@@ -102,6 +111,8 @@ interface OptionsInterface {
 		self::SYNCABLE_PRODUCTS_COUNT                   => true,
 		self::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA => true,
 		self::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  => true,
+		self::FEED_ISSUE_TRACKING                       => true,
+		self::FEED_ISSUE_SUMMARY                        => true,
 		self::TARGET_AUDIENCE                           => true,
 		self::TOURS                                     => true,
 		self::UPDATE_ALL_PRODUCTS_LAST_SYNC             => true,
@@ -110,10 +121,13 @@ interface OptionsInterface {
 		self::YOUTUBE_ORDER_IDS_CACHE                   => true,
 		self::YOUTUBE_EXPORT_FILES                      => true,
 		self::YOUTUBE_THIRD_PARTY_LINK                  => true,
+		self::YOUTUBE_REPORT_CLEANUP_FILES              => true,
 		self::ONBOARDING_COMPLETED_AT                   => true,
 		self::NOTIFICATIONS_SITE_STATE                  => true,
 		self::WC_INSTALL_TIMESTAMP                      => true,
 		self::IS_SERVICE_BASED_MERCHANT                 => true,
+		self::SUPPORTED_PRODUCTS_CONFIRMED              => true,
+		self::PLUGIN_UPDATE_PENDING_JOBS                => true,
 	];
 
 	public const OPTION_TYPES = [

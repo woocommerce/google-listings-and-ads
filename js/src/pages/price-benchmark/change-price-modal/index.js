@@ -122,9 +122,7 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 					</AppButton>,
 				] }
 			>
-				<p>
-					{ __( 'Product not found. ', 'google-listings-and-ads' ) }
-				</p>
+				<p>{ __( 'Product not found.', 'google-listings-and-ads' ) }</p>
 			</AppModal>
 		);
 	}

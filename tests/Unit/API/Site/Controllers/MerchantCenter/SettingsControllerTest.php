@@ -72,9 +72,10 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		$mc_options = [
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
-			'tax_rate'      => 'destination',
 		];
-		$this->mock_options( $mc_options );
+
+		// A tax_rate saved by an earlier version is left in the option but no longer returned.
+		$this->mock_options( $mc_options + [ 'tax_rate' => 'destination' ] );
 		$this->shipping_zone->expects( $this->once() )->method( 'get_shipping_rates_count' )->willReturn( 1 );
 
 		$expected = $mc_options + [ 'shipping_rates_count' => 1 ] + self::DEFAULT_GCR_OPTIONS;
@@ -86,6 +87,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_edit_settings() {
+		// A tax_rate saved by an earlier version is kept in the option as-is.
 		$mc_options = [
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
@@ -122,14 +124,13 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			[
 				'shipping_rate' => 'flat',
 				'shipping_time' => 'flat',
-				'tax_rate'      => 'destination',
 			]
 		);
 
 		$this->options->expects( $this->once() )->method( 'update' )
 			->with( OptionsInterface::MERCHANT_CENTER, $this->anything() );
 
-		$response = $this->do_request( self::ROUTE, 'POST', [ 'tax_rate' => 'origin' ] );
+		$response = $this->do_request( self::ROUTE, 'POST', [ 'shipping_time' => 'manual' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 	}
@@ -169,7 +170,6 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			[
 				'shipping_rate' => 'flat',
 				'shipping_time' => 'flat',
-				'tax_rate'      => 'destination',
 			]
 		);
 
@@ -193,11 +193,10 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			[
 				'shipping_rate' => 'flat',
 				'shipping_time' => 'flat',
-				'tax_rate'      => 'destination',
 			]
 		);
 
-		// Only the tax rate changed; the shipping method is unchanged, so no resync is scheduled.
+		// The shipping method is saved unchanged, so no resync is scheduled.
 		$this->market_service->expects( $this->never() )
 			->method( 'handle_global_shipping_method_change' );
 
@@ -205,28 +204,10 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			self::ROUTE,
 			'POST',
 			[
-				'tax_rate' => 'origin',
+				'shipping_rate' => 'flat',
 			]
 		);
 
-		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function test_default_tax_rate_settings() {
-		$this->mock_options();
-
-		$response = $this->do_request( self::ROUTE );
-
-		$this->assertEquals( 'destination', $response->get_data()['tax_rate'] );
-		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function test_default_tax_rate_settings_post() {
-		$this->mock_options();
-
-		$response = $this->do_request( self::ROUTE, 'POST', [] );
-
-		$this->assertEquals( 'destination', $response->get_data()['data']['tax_rate'] );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
@@ -243,7 +224,6 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		$mc_options = [
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
-			'tax_rate'      => 'destination',
 		];
 		$this->mock_options( $mc_options, self::DEFAULT_GCR_OPTIONS );
 
@@ -280,7 +260,6 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		$mc_options = [
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
-			'tax_rate'      => 'destination',
 		];
 		$this->mock_options( $mc_options, self::DEFAULT_GCR_OPTIONS );
 
@@ -317,7 +296,6 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		$mc_options = [
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
-			'tax_rate'      => 'destination',
 		];
 		$this->mock_options( $mc_options, self::DEFAULT_GCR_OPTIONS );
 
