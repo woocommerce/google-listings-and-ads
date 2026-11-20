@@ -166,7 +166,7 @@ export function addBaseToPerformance( performance, base ) {
  * @param {Array<IntervalsData>} intervals Intervals data of the selected period.
  * @param {ChartComparison} comparison Intervals data, totals and labels of the comparison period.
  * @param {string} key Key of the metric to plot.
- * @param {number} [valueScale] Factor to multiply each plotted value by (see `Metric.chartValueScale`). Defaults to 1.
+ * @param {number} [valueScale] Factor to multiply each plotted value by. Defaults to 1.
  * @return {Array<Object>} One data point per interval, holding the `primary` and `secondary` values.
  */
 export function getComparisonChartData(

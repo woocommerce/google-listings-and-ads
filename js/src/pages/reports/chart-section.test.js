@@ -9,6 +9,7 @@ import { Chart } from '@woocommerce/components';
  */
 import ChartSection from './chart-section';
 
+// Chart is mocked -- these only verify the props built for it, not its real rendering.
 jest.mock( '@woocommerce/components', () => ( {
 	Chart: jest.fn( () => null ).mockName( 'Chart' ),
 } ) );
@@ -37,8 +38,7 @@ const metrics = [
 	},
 ];
 
-// A CTR-shaped metric: its real values are always a 0-1 fraction, the value domain where
-// @woocommerce/components' Chart breaks (see chart-section.js's getChartValueScale).
+// A CTR-shaped metric: its real values are always a 0-1 fraction.
 const ctrMetrics = [
 	{
 		key: 'ctr',
@@ -104,9 +104,7 @@ describe( 'ChartSection', () => {
 				/>
 			);
 
-			// 0.05 is the only value, so it alone sets the scale: ×1000 brings it to 50
-			// (the smallest power of 10 that clears the ≥10 floor), and formatFn divides that
-			// back down to the real 0.05 before applying its own ×100 percentage formatting.
+			// 0.05 × 1000 = 50 clears the ≥10 floor; formatFn divides back down to format it.
 			const props = getChartProps();
 			expect( props.data ).toEqual( [
 				{ date: '2026-10-01', CTR: { value: 50, label: 'CTR' } },
@@ -230,7 +228,7 @@ describe( 'ChartSection', () => {
 			} );
 		} );
 
-		it( 'scales an all-sub-1 metric by the combined max of both periods, with headroom for either alone', () => {
+		it( "scales an all-sub-1 metric by the smaller period's max, with headroom for either alone", () => {
 			render(
 				<ChartSection
 					metrics={ ctrMetrics }
@@ -256,10 +254,7 @@ describe( 'ChartSection', () => {
 				/>
 			);
 
-			// The combined max across both periods (0.05) sets the scale (×1000), not either
-			// period alone -- so if the merchant unchecks "Month to date" in the legend, the
-			// remaining "Previous year" series (0.02 × 1000 = 20) is still comfortably clear
-			// of the value domain where Chart's Y-axis scale breaks.
+			// The smaller max (0.02) sets the scale here, not the larger one (0.05).
 			const props = getChartProps();
 			expect( props.data ).toEqual( [
 				{
@@ -282,6 +277,38 @@ describe( 'ChartSection', () => {
 			} );
 			expect( props.yFormat( 50 ) ).toBe( '5 raw%' );
 			expect( props.yBelow1Format( 20 ) ).toBe( '2 raw%' );
+		} );
+
+		it( 'scales from the smaller period alone when the two periods are wildly lopsided', () => {
+			render(
+				<ChartSection
+					metrics={ ctrMetrics }
+					loaded
+					intervals={ [
+						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
+					] }
+					comparison={ {
+						intervals: [
+							{
+								interval: '2025-10-01',
+								subtotals: { ctr: 0.0001 },
+							},
+						],
+						totals: {
+							ctr: { value: 0.05, prevValue: 0.0001 },
+						},
+						labels: {
+							primary: 'Month to date',
+							secondary: 'Previous year',
+						},
+					} }
+				/>
+			);
+
+			// 0.0001 × 100000 = 10 clears the floor; scaling from 0.05 instead would not have.
+			const props = getChartProps();
+			expect( props.data[ 0 ].secondary.value ).toBe( 10 );
+			expect( props.data[ 0 ].primary.value ).toBe( 5000 );
 		} );
 	} );
 } );

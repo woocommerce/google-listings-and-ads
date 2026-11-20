@@ -39,14 +39,23 @@ function generateDateRange( start, end ) {
 }
 
 /**
- * Picks a power-of-10 scale factor for a metric whose combined max across both periods is
- * below 1 (1, i.e. unscaled, for every other metric). Chart's own Y-axis scale (`calculateStep`
- * in `@woocommerce/components`) breaks and renders nothing for an all-sub-1 value domain;
- * metrics like CTR are always a 0-1 fraction, so they need this to chart at all.
+ * The largest value for `key` within one period's intervals, or 0 if there are none.
  *
- * Scaling to the combined max of both periods, with a ×10 margin rather than just ≥1, also
- * covers unchecking a legend series: Chart recomputes its Y-axis from only the still-visible
- * series, so the remaining one needs headroom even though it wasn't the one that set the scale.
+ * @param {Array<IntervalsData>} [intervals] Intervals data of one period.
+ * @param {string} key Key of the metric to plot.
+ * @return {number} The largest value, or 0.
+ */
+function getPeriodMax( intervals, key ) {
+	return Math.max(
+		0,
+		...( intervals ?? [] ).map( ( { subtotals } ) => subtotals[ key ] ?? 0 )
+	);
+}
+
+/**
+ * Picks a power-of-10 scale factor so an all-sub-1 metric (e.g. CTR) stays out of the value
+ * domain where Chart's Y-axis breaks. Scales from the smaller period's own max, not the
+ * combined max, so the smaller one still clears the broken range if it's toggled on alone.
  *
  * @param {Array<IntervalsData>} intervals Intervals data of the selected period.
  * @param {ChartComparison} [comparison] Data of the comparison period, if any.
@@ -54,20 +63,18 @@ function generateDateRange( start, end ) {
  * @return {number} Scale factor to multiply every plotted value by.
  */
 function getChartValueScale( intervals, comparison, key ) {
-	const maxValue = Math.max(
-		0,
-		...intervals.map( ( { subtotals } ) => subtotals[ key ] ?? 0 ),
-		...( comparison?.intervals ?? [] ).map(
-			( { subtotals } ) => subtotals[ key ] ?? 0
-		)
-	);
+	const periodMaxes = [
+		getPeriodMax( intervals, key ),
+		getPeriodMax( comparison?.intervals, key ),
+	].filter( ( max ) => max > 0 );
+	const smallestMax = periodMaxes.length ? Math.min( ...periodMaxes ) : 0;
 
-	if ( maxValue === 0 || maxValue >= 1 ) {
+	if ( smallestMax === 0 || smallestMax >= 1 ) {
 		return 1;
 	}
 
 	let scale = 1;
-	while ( maxValue * scale < 10 ) {
+	while ( smallestMax * scale < 10 ) {
 		scale *= 10;
 	}
 
@@ -129,9 +136,7 @@ export default function ChartSection( {
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
 	const scale = getChartValueScale( intervals, comparison, key );
-	// Formats a value already multiplied by `scale`, for everything Chart itself renders
-	// (tooltip, Y-axis, legend) -- as opposed to `formatFn`, which formats a raw value and is
-	// used by the summary cards above the chart instead.
+	// Formats an already-scaled value, for what Chart itself renders.
 	const localizedChartFormatFn = ( value ) =>
 		formatFn.call( visibleMetric, value / scale );
 
