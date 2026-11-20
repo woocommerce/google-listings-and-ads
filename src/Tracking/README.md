@@ -1049,10 +1049,12 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 `product_id` | `number` | The ID of the product whose price is being changed.
 `action` | `string` | The action taken to close the modal.
 #### Emitters
-- [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
+- [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L135) with `{ context: 'attribute-mapping-create-rule-modal', action }`
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
 - [`Dashboard`](../../js/src/pages/dashboard/index.js#L43) when CES modal is closed.
+- [`DeleteRuleButton`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L98) with `{ context: 'attribute-mapping-delete-rule-modal', action }`
+- [`EditRuleButton`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L60) with `{ context: 'attribute-mapping-manage-rule-modal', action }`
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L259) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -1064,10 +1066,12 @@ A modal is closed.
 `context` | `string` | Indicates which modal is closed
 `action` | `string` | Indicates the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, generic "Cancel" button, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked    - `confirm` is used when the button "Confirm", "Save"  or similar generic "Accept" button is clicked
 #### Emitters
-- [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
+- [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L135) with `{ context: 'attribute-mapping-create-rule-modal', action }`
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
 - [`Dashboard`](../../js/src/pages/dashboard/index.js#L43) when CES modal is closed.
+- [`DeleteRuleButton`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L98) with `{ context: 'attribute-mapping-delete-rule-modal', action }`
+- [`EditRuleButton`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L60) with `{ context: 'attribute-mapping-manage-rule-modal', action }`
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L259) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -1089,8 +1093,10 @@ Clicking on a text link within the modal content
 `context` | `string` | The context in which the event is triggered.
 `product_id` | `number` | The ID of the product whose price is being changed.
 #### Emitters
-- [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
+- [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L135) with `{ context: 'attribute-mapping-create-rule-modal' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
+- [`DeleteRuleButton`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L98) with `{ context: 'attribute-mapping-delete-rule-modal' }`
+- [`EditRuleButton`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L60) with `{ context: 'attribute-mapping-manage-rule-modal' }`
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L259) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
@@ -1101,8 +1107,10 @@ A modal is open
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates which modal is open
 #### Emitters
-- [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
+- [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L135) with `{ context: 'attribute-mapping-create-rule-modal' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
+- [`DeleteRuleButton`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L98) with `{ context: 'attribute-mapping-delete-rule-modal' }`
+- [`EditRuleButton`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L60) with `{ context: 'attribute-mapping-manage-rule-modal' }`
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L259) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 

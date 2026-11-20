@@ -12,7 +12,7 @@ import { useEffect } from '@wordpress/element';
 import Section from '~/components/section';
 import AppButton from '~/components/app-button';
 import AppTableCardDiv from '~/components/app-table-card-div';
-import AppButtonModalTrigger from '~/components/app-button-modal-trigger';
+import useToggle from '~/hooks/useToggle';
 import AttributeMappingTableCategories from './attribute-mapping-table-categories';
 import AttributeMappingRuleModal from './attribute-mapping-rule-modal';
 import AttributeMappingDeleteRuleModal from './attribute-mapping-delete-rule-modal';
@@ -50,10 +50,86 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 ];
 
 /**
+ * Renders an "Edit" button that opens the rule modal for an existing rule.
+ *
+ * @fires gla_modal_open with `{ context: 'attribute-mapping-manage-rule-modal' }`
+ * @fires gla_modal_closed with `{ context: 'attribute-mapping-manage-rule-modal', action }`
+ * @param {Object} props React props.
+ * @param {Object} props.rule The rule to edit.
+ */
+const EditRuleButton = ( { rule } ) => {
+	const [ isOpen, setOpen ] = useToggle();
+
+	return (
+		<>
+			<AppButton
+				isLink
+				text={ __( 'Edit', 'google-listings-and-ads' ) }
+				eventName="gla_modal_open"
+				eventProps={ {
+					context: 'attribute-mapping-manage-rule-modal',
+				} }
+				onClick={ () => setOpen( true ) }
+			/>
+			{ isOpen && (
+				<AttributeMappingRuleModal
+					rule={ rule }
+					onRequestClose={ ( action ) => {
+						setOpen( false );
+						recordGlaEvent( 'gla_modal_closed', {
+							context: 'attribute-mapping-manage-rule-modal',
+							action,
+						} );
+					} }
+				/>
+			) }
+		</>
+	);
+};
+
+/**
+ * Renders a "Delete" button that opens the delete confirmation modal for a rule.
+ *
+ * @fires gla_modal_open with `{ context: 'attribute-mapping-delete-rule-modal' }`
+ * @fires gla_modal_closed with `{ context: 'attribute-mapping-delete-rule-modal', action }`
+ * @param {Object} props React props.
+ * @param {Object} props.rule The rule to delete.
+ */
+const DeleteRuleButton = ( { rule } ) => {
+	const [ isOpen, setOpen ] = useToggle();
+
+	return (
+		<>
+			<AppButton
+				isLink
+				text={ __( 'Delete', 'google-listings-and-ads' ) }
+				eventName="gla_modal_open"
+				eventProps={ {
+					context: 'attribute-mapping-delete-rule-modal',
+				} }
+				onClick={ () => setOpen( true ) }
+			/>
+			{ isOpen && (
+				<AttributeMappingDeleteRuleModal
+					rule={ rule }
+					onRequestClose={ ( action ) => {
+						setOpen( false );
+						recordGlaEvent( 'gla_modal_closed', {
+							context: 'attribute-mapping-delete-rule-modal',
+							action,
+						} );
+					} }
+				/>
+			) }
+		</>
+	);
+};
+
+/**
  * Renders the Attribute Mapping table component
  *
- * @fires gla_modal_closed When any of the modals is closed
- * @fires gla_modal_open When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
+ * @fires gla_modal_closed with `{ context: 'attribute-mapping-create-rule-modal', action }`
+ * @fires gla_modal_open with `{ context: 'attribute-mapping-create-rule-modal' }`
  * @return {JSX.Element} The component
  */
 const AttributeMappingTable = () => {
@@ -68,6 +144,8 @@ const AttributeMappingTable = () => {
 		data: attributes,
 		hasFinishedResolution: attributesHasFinishedResolution,
 	} = useMappingAttributes();
+
+	const [ isCreateModalOpen, setCreateModalOpen ] = useToggle();
 
 	const parseDestinationName = ( destination ) =>
 		attributes.find( ( e ) => e.id === destination )?.label || '';
@@ -144,73 +222,11 @@ const AttributeMappingTable = () => {
 									display: (
 										<Flex justify="end">
 											<FlexItem>
-												<AppButtonModalTrigger
-													button={
-														<AppButton
-															isLink
-															text={ __(
-																'Edit',
-																'google-listings-and-ads'
-															) }
-															eventName="gla_modal_open"
-															eventProps={ {
-																context:
-																	'attribute-mapping-manage-rule-modal',
-															} }
-														/>
-													}
-													modal={
-														<AttributeMappingRuleModal
-															rule={ rule }
-															onRequestClose={ (
-																action
-															) => {
-																recordGlaEvent(
-																	'gla_modal_closed',
-																	{
-																		context:
-																			'attribute-mapping-manage-rule-modal',
-																		action,
-																	}
-																);
-															} }
-														/>
-													}
-												/>
+												<EditRuleButton rule={ rule } />
 											</FlexItem>
 											<FlexItem>
-												<AppButtonModalTrigger
-													button={
-														<AppButton
-															isLink
-															text={ __(
-																'Delete',
-																'google-listings-and-ads'
-															) }
-															eventName="gla_modal_open"
-															eventProps={ {
-																context:
-																	'attribute-mapping-delete-rule-modal',
-															} }
-														/>
-													}
-													modal={
-														<AttributeMappingDeleteRuleModal
-															rule={ rule }
-															onRequestClose={ (
-																action
-															) => {
-																recordGlaEvent(
-																	'gla_modal_closed',
-																	{
-																		context:
-																			'attribute-mapping-delete-rule-modal',
-																		action,
-																	}
-																);
-															} }
-														/>
-													}
+												<DeleteRuleButton
+													rule={ rule }
 												/>
 											</FlexItem>
 										</Flex>
@@ -224,33 +240,30 @@ const AttributeMappingTable = () => {
 					align="between"
 					className="gla-attribute-mapping__table-footer"
 				>
-					<AppButtonModalTrigger
-						button={
-							<AppButton
-								isSecondary
-								text={ __(
-									'Create attribute rule',
-									'google-listings-and-ads'
-								) }
-								eventName="gla_modal_open"
-								eventProps={ {
+					<AppButton
+						isSecondary
+						text={ __(
+							'Create attribute rule',
+							'google-listings-and-ads'
+						) }
+						eventName="gla_modal_open"
+						eventProps={ {
+							context: 'attribute-mapping-create-rule-modal',
+						} }
+						onClick={ () => setCreateModalOpen( true ) }
+					/>
+					{ isCreateModalOpen && (
+						<AttributeMappingRuleModal
+							onRequestClose={ ( action ) => {
+								setCreateModalOpen( false );
+								recordGlaEvent( 'gla_modal_closed', {
 									context:
 										'attribute-mapping-create-rule-modal',
-								} }
-							/>
-						}
-						modal={
-							<AttributeMappingRuleModal
-								onRequestClose={ ( action ) => {
-									recordGlaEvent( 'gla_modal_closed', {
-										context:
-											'attribute-mapping-create-rule-modal',
-										action,
-									} );
-								} }
-							/>
-						}
-					/>
+									action,
+								} );
+							} }
+						/>
+					) }
 					<Pagination
 						className="gla-attribute-mapping__pagination"
 						page={ page }
