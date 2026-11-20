@@ -43,18 +43,6 @@ describe( 'useRepairAdsAccountSetup', () => {
 		expect( upsertAdsAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'calls upsertAdsAccount once when the account is connected with access and step is conversion_action', () => {
-		useGoogleAdsAccountStatus.mockReturnValue( {
-			hasAccess: true,
-			step: 'conversion_action',
-			hasFinishedResolution: true,
-		} );
-
-		renderHook( () => useRepairAdsAccountSetup() );
-
-		expect( upsertAdsAccount ).toHaveBeenCalledTimes( 1 );
-	} );
-
 	it( 'does not call upsertAdsAccount while resolvers are pending', () => {
 		useGoogleAdsAccountStatus.mockReturnValue( {
 			hasAccess: null,
@@ -90,7 +78,7 @@ describe( 'useRepairAdsAccountSetup', () => {
 		expect( upsertAdsAccount ).not.toHaveBeenCalled();
 	} );
 
-	it.each( [ '', 'billing', 'link_merchant' ] )(
+	it.each( [ '', 'conversion_action', 'billing', 'link_merchant' ] )(
 		'does not call upsertAdsAccount when step is %j',
 		( step ) => {
 			useGoogleAdsAccountStatus.mockReturnValue( {
