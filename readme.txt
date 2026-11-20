@@ -5,7 +5,7 @@ Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.10.0
+Stable tag: 3.10.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -52,7 +52,7 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 = Minimum Requirements =
 
 * WordPress 6.8 or greater
-* WooCommerce 11.0 or greater
+* WooCommerce 11.1 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,6 +140,29 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.10.1 - 2026-11-16 =
+* Add - Allow regional WPML language codes in Markets and align supported languages with Google Merchant Center.
+* Add - Offer the Google Ads credit picker when creating a campaign after onboarding, and hide it after an offer is applied.
+* Add - Show the Programs report with Google Ads campaign data to merchants without a Merchant Center account.
+* Fix - Clear the "Pending" sync status when a product edit doesn't change the data sent to Google.
+* Fix - Configure Google Ads before early tracking events fire on block themes.
+* Fix - Preserve Google Ads purchase events when WooCommerce Analytics tracking is unavailable.
+* Fix - Prevent a fatal error on front-end URLs containing "wp-json/" when Enhanced Conversions is enabled.
+* Fix - Prevent a fatal error on wp-admin pages when the Google Ads API connection drops during the notification check.
+* Fix - Prevent number inputs from resetting amounts of 1,000 or more when the store's decimal and thousand separators match.
+* Fix - Prevent product sync failures with "Destinations of the data source are invalid: ORGANIC_EXPERIENCES" for Merchant Center accounts that can't use free listings.
+* Fix - Restore missing styles in the Markets tab.
+* Fix - Restrict the GTIN migration status REST endpoint to users with the `manage_woocommerce` capability.
+* Fix - Show Google Ads account creation errors during onboarding and clear stale errors when switching account actions.
+* Fix - Stop resubmitting unchanged products that have a sale end date but no sale start date on every sync.
+* Tweak - Add an event-level developer ID to all structured gtag ecommerce events.
+* Tweak - Add feed issue counts to the tracker snapshot: blocking account issues, disapproved products, products with error-level issues, products failing pre-sync validation, and synced products.
+* Tweak - Allow scripts and styles to share an asset handle.
+* Tweak - Bump WooCommerce "tested up to" version to 11.3.
+* Tweak - Remove leading and trailing spaces from admin strings so translators control spacing and word order.
+* Tweak - Update Google Ads credit offer copy, including the WooCommerce Inbox notes.
+* Tweak - Update the WordPress.com logo on the account connection card.
+
 = 3.10.0 - 2026-10-20 =
 * Add - Let merchants collect Google Customer Reviews after purchase and display their aggregate Google rating on the storefront.
 * Update - Remove the US tax rate setting, as Google is retiring the US Sales Tax service.
@@ -164,8 +187,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Settings tabs are no longer hidden behind the WooCommerce header after editing your store address or a paid ads campaign.
 * Fix - Record campaign-management FAQ interactions with the documented event name.
 * Fix - Support Content API-style getters (e.g. `getLink()`) on the adapter passed to `woocommerce_gla_product_attribute_values`, so extensions that read them no longer break product sync.
-
-= 3.9.5 - 2026-09-29 =
-* Fix - Fixed security issues.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

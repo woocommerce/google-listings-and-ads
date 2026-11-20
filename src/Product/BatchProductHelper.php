@@ -20,7 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -448,6 +448,10 @@ class BatchProductHelper implements Service {
 					unset( $product_entry );
 
 					array_push( $entries, ...$product_entries );
+				} elseif ( ! empty( $applicable_labels ) ) {
+					// No insert will run for this product, so nothing else would clear the pending
+					// status it was given when its sync was queued.
+					$this->product_helper->mark_as_unchanged( $product );
 				}
 			} catch ( AccountReconnect $exception ) {
 				// An authentication failure is account-wide, not specific to this product. Rethrow to
@@ -498,9 +502,20 @@ class BatchProductHelper implements Service {
 			);
 		}
 
-		// A configured exchange rate converts any product's price at sync time, so it keeps a
-		// currency's entries flowing when WPML cannot convert for this product.
+		// A configured exchange rate converts any product's price (for validation and at sync
+		// time), so it keeps a currency's entries flowing when WPML cannot convert for this product.
+		// The market stores a single rate, so it can only describe one non-store currency: with
+		// several, applying it to all of them would mislabel prices, so those entries rely on WPML.
 		$market_exchange_rate = self::extract_exchange_rate( $market );
+		if ( $market_exchange_rate > 0 && self::count_non_store_currencies( $market ) > 1 ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Ignoring the exchange rate of secondary market %s: it lists more than one non-store currency, so the rate cannot tell which one it converts to.', $market_id ),
+				__METHOD__
+			);
+
+			$market_exchange_rate = 0.0;
+		}
 
 		foreach ( $currencies as $market_currency ) {
 			if ( ! $this->product_priced_in_currency( $product, $market_currency ) && $market_exchange_rate <= 0 ) {
@@ -522,7 +537,7 @@ class BatchProductHelper implements Service {
 			$currency_override = get_woocommerce_currency() === $market_currency ? '' : $market_currency;
 
 			$validation = $this->validate_product(
-				$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $currency_override )
+				$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $currency_override, $market_exchange_rate )
 			);
 			if ( $validation instanceof BatchInvalidProductEntry ) {
 				$this->mark_as_invalid( $validation );
@@ -641,6 +656,27 @@ class BatchProductHelper implements Service {
 		}
 
 		return null !== $this->wpml->get_product_price_in_currency( $product, $currency );
+	}
+
+	/**
+	 * Number of distinct currencies a market lists other than the store currency.
+	 *
+	 * @param array $market
+	 *
+	 * @return int
+	 */
+	private static function count_non_store_currencies( array $market ): int {
+		$configured = is_array( $market['currency'] ?? null ) ? $market['currency'] : [ $market['currency'] ?? '' ];
+		$store      = strtoupper( get_woocommerce_currency() );
+
+		$currencies = array_filter(
+			array_unique( array_map( 'strtoupper', array_map( 'strval', $configured ) ) ),
+			static function ( string $currency ) use ( $store ): bool {
+				return '' !== $currency && $store !== $currency;
+			}
+		);
+
+		return count( $currencies );
 	}
 
 	/**

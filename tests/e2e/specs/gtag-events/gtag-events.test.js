@@ -24,6 +24,7 @@ import {
 import {
 	getDataLayerEventParams,
 	getEventData,
+	persistDataLayerEvents,
 	trackGtagEvent,
 } from '../../utils/track-event';
 const config = require( '../../config/default' );
@@ -111,6 +112,9 @@ test.describe( 'GTag events', () => {
 	test( 'Add to cart event is sent on a single product page', async ( {
 		page,
 	} ) => {
+		// The add to cart form submit reloads the page and resets the dataLayer.
+		await persistDataLayerEvents( page );
+
 		const event = trackGtagEvent( page, 'add_to_cart' );
 
 		await singleProductAddToCart( page, simpleProductID );

@@ -860,6 +860,10 @@ export function* getCYOIncentives() {
 	}
 }
 
+getCYOIncentives.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS;
+};
+
 export function* getYouTubeAccount() {
 	yield fetchYouTubeAccount();
 }

@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Stepper } from '@woocommerce/components';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,6 +12,7 @@ import { useAppDispatch } from '~/data';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useCompleteAdsSetup from '~/hooks/useCompleteAdsSetup';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
@@ -21,7 +22,7 @@ import AssetGroup from '~/components/paid-ads/asset-group';
 import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
 import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
-import { GUIDE_NAMES } from '~/constants';
+import { GUIDE_NAMES, INCENTIVE_APPLIED_QUERY } from '~/constants';
 import { ADS_ONLY_STEP_NAME_KEY_MAP } from '../constants';
 import { getDashboardUrl } from '~/utils/urls';
 import {
@@ -43,6 +44,8 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	const adminUrl = useAdminUrl();
 	const [ step, setStep ] = useState( savedStep );
 	const [ paidAdValues, setPaidAdValues ] = useState( {} );
+	const appliedIncentiveAdsIdRef = useRef( null );
+	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 	const { completeAdsSetup } = useCompleteAdsSetup();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
@@ -95,7 +98,14 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	};
 
 	const redirectToDashboard = () => {
-		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
+		// The merchant can go back to the accounts step and connect another Ads account after applying the offer.
+		const hasAppliedIncentive =
+			!! appliedIncentiveAdsIdRef.current &&
+			appliedIncentiveAdsIdRef.current === googleAdsAccount?.id;
+		const query = {
+			guide: GUIDE_NAMES.SUBMISSION_SUCCESS,
+			...( hasAppliedIncentive && INCENTIVE_APPLIED_QUERY ),
+		};
 		window.location.href = adminUrl + getDashboardUrl( query );
 	};
 
@@ -141,12 +151,24 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 		redirectToDashboard();
 	};
 
+	// The offer is applied on the "Create your campaign" step, but the redirect happens after a later step.
+	// Keep the Ads account the offer applied to, since going back and continuing again returns false.
+	const rememberAppliedIncentive = ( hasAppliedIncentive ) => {
+		if ( hasAppliedIncentive ) {
+			appliedIncentiveAdsIdRef.current = googleAdsAccount?.id;
+		}
+	};
+
 	const handleSetupPaidAdsSubmit = ( values ) => {
+		rememberAppliedIncentive( values.hasAppliedIncentive );
 		setPaidAdValues( values );
 		setStep( ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign );
 	};
 
-	const handleSetupPaidAdsSkipped = async () => {
+	const handleSetupPaidAdsSkipped = async ( skipValues ) => {
+		// Skipping the "Create your campaign" step calls this without values.
+		rememberAppliedIncentive( skipValues?.hasAppliedIncentive );
+
 		await completeAdsSetup();
 		await completeOnboarding();
 
