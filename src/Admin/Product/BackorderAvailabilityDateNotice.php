@@ -28,11 +28,6 @@ class BackorderAvailabilityDateNotice implements Service, Registerable, Conditio
 	use AdminConditional;
 
 	/**
-	 * GLA product data tab target (panel id and hash).
-	 */
-	private const GLA_TAB_TARGET = 'gla_attributes';
-
-	/**
 	 * @var AttributeManager
 	 */
 	protected $attribute_manager;
@@ -54,11 +49,6 @@ class BackorderAvailabilityDateNotice implements Service, Registerable, Conditio
 	}
 
 	/**
-	 * Product-attributes stylesheet handle (must match Admin::get_assets()).
-	 */
-	private const PRODUCT_ATTRIBUTES_STYLE_HANDLE = 'gla-product-attributes-css';
-
-	/**
 	 * Register a service.
 	 */
 	public function register(): void {
@@ -67,30 +57,9 @@ class BackorderAvailabilityDateNotice implements Service, Registerable, Conditio
 		}
 
 		add_action(
-			'admin_enqueue_scripts',
-			[ $this, 'enqueue_notice_styles' ],
-			20
-		);
-		add_action(
 			'woocommerce_product_options_inventory_product_data',
 			[ $this, 'render_notice' ]
 		);
-	}
-
-	/**
-	 * Enqueue the product-attributes stylesheet on product edit so the backorder notice is styled.
-	 * Runs on admin_enqueue_scripts so styles are enqueued in the correct place.
-	 */
-	public function enqueue_notice_styles(): void {
-		$screen = get_current_screen();
-		if ( null === $screen ) {
-			return;
-		}
-		$is_product_edit = ( 'product' === $screen->id || ( 'post' === $screen->id && 'product' === $screen->post_type ) );
-		if ( ! $is_product_edit || ! wp_style_is( self::PRODUCT_ATTRIBUTES_STYLE_HANDLE, 'registered' ) ) {
-			return;
-		}
-		wp_enqueue_style( self::PRODUCT_ATTRIBUTES_STYLE_HANDLE );
 	}
 
 	/**
