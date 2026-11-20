@@ -51,8 +51,14 @@ class AccountStateTest extends UnitTest {
 				]
 			);
 
-		$this->options->expects( $this->never() )
-			->method( 'get' );
+		// The cached copy is stale: it is missing the set_id completion.
+		$this->options->method( 'get' )
+			->willReturn(
+				[
+					'set_id'         => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'account_access' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
 
 		$this->options->expects( $this->once() )
 			->method( 'update' )
@@ -63,6 +69,23 @@ class AccountStateTest extends UnitTest {
 					'account_access' => [ 'status' => AdsAccountState::STEP_DONE ],
 				]
 			);
+
+		$this->state->complete_step( 'account_access' );
+	}
+
+	public function test_complete_step_skips_the_fresh_read_when_already_done() {
+		$this->options->method( 'get' )
+			->willReturn(
+				[
+					'account_access' => [ 'status' => AdsAccountState::STEP_DONE ],
+				]
+			);
+
+		$this->options->expects( $this->never() )
+			->method( 'get_fresh' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
 
 		$this->state->complete_step( 'account_access' );
 	}
@@ -86,6 +109,23 @@ class AccountStateTest extends UnitTest {
 			->willReturn( false );
 
 		$this->assertSame( [], $this->state->get_fresh() );
+	}
+
+	public function test_get_fresh_drops_steps_that_no_longer_exist() {
+		$this->options->expects( $this->once() )
+			->method( 'get_fresh' )
+			->with( OptionsInterface::ADS_ACCOUNT_STATE, [] )
+			->willReturn(
+				[
+					'set_id'      => [ 'status' => AdsAccountState::STEP_DONE ],
+					'legacy_step' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->assertSame(
+			[ 'set_id' => [ 'status' => AdsAccountState::STEP_DONE ] ],
+			$this->state->get_fresh()
+		);
 	}
 
 	public function test_get_fresh_falls_back_to_get_for_options_without_fresh_reads() {

@@ -45,13 +45,7 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	 * @return array The account creation steps and statuses.
 	 */
 	public function get( bool $initialize_if_not_found = true ): array {
-		// Entries for steps that were removed from account_creation_steps() can
-		// linger in the stored option after a plugin update. Drop them here so no
-		// caller reports or throws on a step that no longer exists.
-		$state = array_intersect_key(
-			(array) $this->options->get( $this->option_name(), [] ),
-			array_flip( $this->account_creation_steps() )
-		);
+		$state = $this->filter_known_steps( $this->options->get( $this->option_name(), [] ) );
 
 		if ( empty( $state ) && $initialize_if_not_found ) {
 			$state = [];
@@ -84,7 +78,24 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 			? $this->options->get_fresh( $this->option_name(), [] )
 			: $this->options->get( $this->option_name(), [] );
 
-		return $state ?: [];
+		return $this->filter_known_steps( $state );
+	}
+
+	/**
+	 * Drop entries for steps that are no longer in account_creation_steps().
+	 *
+	 * They can linger in the stored option after a plugin update, so no caller
+	 * should report or throw on a step that no longer exists.
+	 *
+	 * @param mixed $state The stored account state.
+	 *
+	 * @return array
+	 */
+	private function filter_known_steps( $state ): array {
+		return array_intersect_key(
+			(array) $state,
+			array_flip( $this->account_creation_steps() )
+		);
 	}
 
 	/**
@@ -102,6 +113,13 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	 * @param string $step Name of the completed step.
 	 */
 	public function complete_step( string $step ) {
+		// Skip the uncached read when the step is already done, since bypassing
+		// the caches forces the autoloaded options to be reloaded.
+		$cached = $this->get( false );
+		if ( self::STEP_DONE === ( $cached[ $step ]['status'] ?? null ) ) {
+			return;
+		}
+
 		$state = $this->get_fresh();
 
 		if ( isset( $state[ $step ] ) ) {
