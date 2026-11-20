@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure
  */
-final class Options implements WPAwareInterface, OptionsInterface, Service {
+final class Options implements WPAwareInterface, FreshReadOptionsInterface, Service {
 
 	use WPAwareTrait;
 	use PluginHelper;

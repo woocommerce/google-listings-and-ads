@@ -79,7 +79,12 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	 * @return array The account creation steps and statuses.
 	 */
 	public function get_fresh(): array {
-		return $this->options->get_fresh( $this->option_name(), [] ) ?: [];
+		// Fall back to the cached read for options objects that can't bypass the caches.
+		$state = $this->options instanceof FreshReadOptionsInterface
+			? $this->options->get_fresh( $this->option_name(), [] )
+			: $this->options->get( $this->option_name(), [] );
+
+		return $state ?: [];
 	}
 
 	/**

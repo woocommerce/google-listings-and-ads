@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\FreshReadOptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -20,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class AccountStateTest extends UnitTest {
 
-	/** @var MockObject|OptionsInterface $options */
+	/** @var MockObject|FreshReadOptionsInterface $options */
 	protected $options;
 
 	/** @var AdsAccountState $state */
@@ -32,7 +33,7 @@ class AccountStateTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options = $this->createMock( FreshReadOptionsInterface::class );
 		$this->state   = new AdsAccountState();
 		$this->state->set_options_object( $this->options );
 	}
@@ -85,6 +86,22 @@ class AccountStateTest extends UnitTest {
 			->willReturn( false );
 
 		$this->assertSame( [], $this->state->get_fresh() );
+	}
+
+	public function test_get_fresh_falls_back_to_get_for_options_without_fresh_reads() {
+		$options = $this->createMock( OptionsInterface::class );
+		$options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::ADS_ACCOUNT_STATE, [] )
+			->willReturn( [ 'set_id' => [ 'status' => AdsAccountState::STEP_DONE ] ] );
+
+		$state = new AdsAccountState();
+		$state->set_options_object( $options );
+
+		$this->assertSame(
+			[ 'set_id' => [ 'status' => AdsAccountState::STEP_DONE ] ],
+			$state->get_fresh()
+		);
 	}
 
 	public function test_last_incomplete_step_returns_first_step_not_done() {
