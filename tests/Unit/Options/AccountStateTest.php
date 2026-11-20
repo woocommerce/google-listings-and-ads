@@ -144,6 +144,47 @@ class AccountStateTest extends UnitTest {
 		);
 	}
 
+	public function test_update_steps_writes_only_the_given_steps_onto_freshly_read_state() {
+		// Another request completed account_access; writing set_id must not revert it.
+		$this->options->expects( $this->once() )
+			->method( 'get_fresh' )
+			->with( OptionsInterface::ADS_ACCOUNT_STATE, [] )
+			->willReturn(
+				[
+					'set_id'         => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'account_access' => [ 'status' => AdsAccountState::STEP_DONE ],
+				]
+			);
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::ADS_ACCOUNT_STATE,
+				[
+					'set_id'         => [ 'status' => AdsAccountState::STEP_DONE ],
+					'account_access' => [ 'status' => AdsAccountState::STEP_DONE ],
+				]
+			);
+
+		$this->state->update_steps(
+			[ 'set_id' => [ 'status' => AdsAccountState::STEP_DONE ] ]
+		);
+	}
+
+	public function test_update_steps_skips_steps_missing_from_the_stored_state() {
+		// A concurrent disconnect deleted the state, so nothing must be recreated.
+		$this->options->expects( $this->once() )
+			->method( 'get_fresh' )
+			->willReturn( [] );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		$this->state->update_steps(
+			[ 'set_id' => [ 'status' => AdsAccountState::STEP_DONE ] ]
+		);
+	}
+
 	public function test_last_incomplete_step_returns_first_step_not_done() {
 		$this->options->expects( $this->once() )
 			->method( 'get' )

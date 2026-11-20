@@ -607,7 +607,7 @@ class AccountServiceTest extends UnitTest {
 			->willThrowException( new Exception( 'error', 403 ) );
 
 		$this->state->expects( $this->once() )
-			->method( 'update' )
+			->method( 'update_steps' )
 			->with(
 				[
 					'claim' => [
@@ -779,7 +779,7 @@ class AccountServiceTest extends UnitTest {
 			->willReturn( $mc_account_state );
 
 		$this->state->expects( $this->once() )
-			->method( 'update' )
+			->method( 'update_steps' )
 			->with( $mc_account_state );
 
 		$this->middleware->expects( $this->never() )

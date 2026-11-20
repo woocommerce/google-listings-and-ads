@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Containe
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
+use wpdb;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -61,6 +62,9 @@ class AccountServiceTest extends UnitTest {
 
 	/** @var Connection $connection */
 	protected $connection;
+
+	/** @var MockObject|wpdb $wpdb */
+	protected $wpdb;
 
 	protected const TEST_ACCOUNT_ID        = 1234567890;
 	protected const TEST_ACCOUNT_OCID      = 9876543210;
@@ -123,6 +127,9 @@ class AccountServiceTest extends UnitTest {
 		$this->options           = $this->createMock( OptionsInterface::class );
 		$this->transients        = $this->createMock( TransientsInterface::class );
 		$this->connection        = $this->createMock( Connection::class );
+		$this->wpdb              = $this->createMock( wpdb::class );
+		$this->wpdb->dbname      = 'test_db';
+		$this->wpdb->prefix      = 'wp_';
 
 		$this->container = new Container();
 		$this->container->addShared( Ads::class, $this->ads );
@@ -132,6 +139,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->addShared( MerchantAccountState::class, $this->merchant_state );
 		$this->container->addShared( TransientsInterface::class, $this->transients );
 		$this->container->addShared( Connection::class, $this->connection );
+		$this->container->addShared( wpdb::class, $this->wpdb );
 
 		$this->account = new AccountService( $this->state );
 		$this->account->set_container( $this->container );
@@ -429,7 +437,7 @@ class AccountServiceTest extends UnitTest {
 			->willReturn( [ 'id' => self::TEST_ACCOUNT_ID ] );
 
 		$this->state->expects( $this->once() )
-			->method( 'update' );
+			->method( 'update_steps' );
 
 		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
 	}
@@ -659,7 +667,7 @@ class AccountServiceTest extends UnitTest {
 			->willReturn( $ads_account_state );
 
 		$this->state->expects( $this->once() )
-			->method( 'update' )
+			->method( 'update_steps' )
 			->with( $ads_account_state );
 
 		$this->middleware->expects( $this->never() )
@@ -681,6 +689,10 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
+		$this->wpdb->expects( $this->once() )
+			->method( 'get_var' )
+			->willReturn( '1' );
+
 		$this->conversion_action->expects( $this->once() )
 			->method( 'create_conversion_action' )
 			->willReturn( self::TEST_CONVERSION_ACTION );
@@ -691,6 +703,68 @@ class AccountServiceTest extends UnitTest {
 				OptionsInterface::ADS_CONVERSION_ACTION,
 				self::TEST_CONVERSION_ACTION
 			);
+
+		// The lock is released once the conversion action is stored.
+		$this->wpdb->expects( $this->once() )
+			->method( 'query' );
+
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
+	}
+
+	public function test_setup_account_step_conversion_action_locked_by_another_request() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'conversion_action' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->wpdb->expects( $this->once() )
+			->method( 'get_var' )
+			->willReturn( '0' );
+
+		$this->conversion_action->expects( $this->never() )
+			->method( 'create_conversion_action' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		// The lock isn't held by this request, so it must not release it.
+		$this->wpdb->expects( $this->never() )
+			->method( 'query' );
+
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
+	}
+
+	public function test_setup_account_step_conversion_action_without_lock_support() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'conversion_action' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		// GET_LOCK() returns NULL when locking isn't available.
+		$this->wpdb->expects( $this->once() )
+			->method( 'get_var' )
+			->willReturn( null );
+
+		$this->conversion_action->expects( $this->once() )
+			->method( 'create_conversion_action' )
+			->willReturn( self::TEST_CONVERSION_ACTION );
+
+		$this->wpdb->expects( $this->never() )
+			->method( 'query' );
 
 		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
 	}
@@ -717,6 +791,9 @@ class AccountServiceTest extends UnitTest {
 
 		$this->options->expects( $this->never() )
 			->method( 'update' );
+
+		$this->wpdb->expects( $this->never() )
+			->method( 'get_var' );
 
 		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
 	}

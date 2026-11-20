@@ -108,6 +108,23 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	}
 
 	/**
+	 * Write the given steps onto the stored state, leaving every other step as stored.
+	 *
+	 * Steps missing from the stored state are skipped, so a state deleted by a
+	 * concurrent disconnect is not partially recreated.
+	 *
+	 * @param array $steps Step data keyed by step name.
+	 */
+	public function update_steps( array $steps ) {
+		$state = $this->get_fresh();
+		$steps = array_intersect_key( $steps, $state );
+
+		if ( ! empty( $steps ) ) {
+			$this->update( array_merge( $state, $steps ) );
+		}
+	}
+
+	/**
 	 * Mark a step as completed.
 	 *
 	 * @param string $step Name of the completed step.
