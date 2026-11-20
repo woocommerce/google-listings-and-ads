@@ -70,6 +70,8 @@ final class Options implements WPAwareInterface, FreshReadOptionsInterface, Serv
 		$this->wp->wp_cache_delete( $this->prefix_name( $name ), 'options' );
 		// Autoloaded options are cached together at bootstrap; drop that cache too.
 		$this->wp->wp_cache_delete( 'alloptions', 'options' );
+		// Options found missing earlier in the request are cached as missing.
+		$this->wp->wp_cache_delete( 'notoptions', 'options' );
 
 		return $this->get( $name, $default_value );
 	}

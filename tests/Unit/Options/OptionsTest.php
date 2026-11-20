@@ -93,6 +93,7 @@ class OptionsTest extends UnitTest {
 			[
 				[ self::TEST_PREFIXED_OPTION, 'options' ],
 				[ 'alloptions', 'options' ],
+				[ 'notoptions', 'options' ],
 			],
 			$deleted
 		);
