@@ -2309,6 +2309,41 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertCount( 1, $entries2 );
 	}
 
+	public function test_resubmit_expiry_days_filter_also_shortens_the_skip_window() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product   = WC_Helper_Product::create_simple_product();
+		$entries   = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$entry_key = $entries[0]['input']->get_content_language() . '|' . $entries[0]['input']->get_feed_label();
+		$this->product_meta->update_sync_hash( $product, [ $entry_key => $entries[0]['hash'] ] );
+		// Synced 21 days ago: inside the default 25-day window, so the unchanged product is skipped.
+		$this->product_meta->update_synced_at( $product, time() - ( 21 * DAY_IN_SECONDS ) );
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+
+		// A 20-day resubmission window makes the product due. Skipping it would let
+		// ResubmitExpiringProducts pick it up and then send nothing.
+		$twenty_days = function () {
+			return 20;
+		};
+		add_filter( 'woocommerce_gla_resubmit_expiry_days', $twenty_days );
+		$entries2 = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		remove_filter( 'woocommerce_gla_resubmit_expiry_days', $twenty_days );
+
+		$this->assertCount( 1, $entries2 );
+	}
+
 	public function test_skip_is_scoped_to_the_entry_own_key() {
 		$this->set_up_market_service_stubs(
 			[ 'US', 'DE' ],

@@ -26,6 +26,8 @@ class ProductRepository implements Service {
 	 * Products whose synced_at is older than this many days are treated as nearly expired
 	 * and re-submitted (see find_expiring_product_ids). The delta-sync freshness window is
 	 * clamped to this so an unchanged product can never be skipped past its resubmission point.
+	 * Read the window through get_resubmit_expiry_days(), which applies the
+	 * woocommerce_gla_resubmit_expiry_days filter.
 	 */
 	public const RESUBMIT_EXPIRY_DAYS = 25;
 
@@ -345,7 +347,7 @@ class ProductRepository implements Service {
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
 					'compare' => '<',
-					'value'   => strtotime( '-' . self::RESUBMIT_EXPIRY_DAYS . ' days' ),
+					'value'   => strtotime( '-' . self::get_resubmit_expiry_days() . ' days' ),
 				],
 			],
 		];
@@ -384,6 +386,37 @@ class ProductRepository implements Service {
 		}
 
 		return $results;
+	}
+
+	/**
+	 * Get the number of days after its last sync that a product is resubmitted to Merchant Center.
+	 *
+	 * Google expires a product 30 days after its last update, so the filtered value can shorten
+	 * the window but not lengthen it past RESUBMIT_EXPIRY_DAYS.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return int Days, from 1 to RESUBMIT_EXPIRY_DAYS.
+	 */
+	public static function get_resubmit_expiry_days(): int {
+		/**
+		 * Filters the number of days after its last sync that a product is resubmitted to Merchant Center.
+		 *
+		 * The daily resubmission job picks up products last synced longer ago than this. The value
+		 * is clamped to between 1 and 25, so products are always resubmitted before Google expires
+		 * them 30 days after their last update. A non-numeric value falls back to the default.
+		 *
+		 * @since x.x.x
+		 *
+		 * @param int $days Days after the last sync. Default 25.
+		 */
+		$days = apply_filters( 'woocommerce_gla_resubmit_expiry_days', self::RESUBMIT_EXPIRY_DAYS );
+
+		if ( ! is_numeric( $days ) ) {
+			return self::RESUBMIT_EXPIRY_DAYS;
+		}
+
+		return max( 1, min( (int) $days, self::RESUBMIT_EXPIRY_DAYS ) );
 	}
 
 	/**

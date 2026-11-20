@@ -599,6 +599,53 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->assertEquals( [ $product_ids[1] ], $ids );
 	}
 
+	public function test_find_expiring_product_ids_applies_resubmit_expiry_days_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product, strtotime( '-21 days' ) );
+
+		// Inside the default 25-day window.
+		$this->assertEquals( [], $this->product_repository->find_expiring_product_ids() );
+
+		$twenty_days = function () {
+			return 20;
+		};
+		add_filter( 'woocommerce_gla_resubmit_expiry_days', $twenty_days );
+		$ids = $this->product_repository->find_expiring_product_ids();
+		remove_filter( 'woocommerce_gla_resubmit_expiry_days', $twenty_days );
+
+		$this->assertEquals( [ $product->get_id() ], $ids );
+	}
+
+	/**
+	 * @dataProvider resubmit_expiry_days_provider
+	 *
+	 * @param mixed $filtered The value the filter callback returns.
+	 * @param int   $expected The window get_resubmit_expiry_days() returns.
+	 */
+	public function test_get_resubmit_expiry_days_validates_filtered_value( $filtered, int $expected ) {
+		$callback = function () use ( $filtered ) {
+			return $filtered;
+		};
+		add_filter( 'woocommerce_gla_resubmit_expiry_days', $callback );
+		$days = ProductRepository::get_resubmit_expiry_days();
+		remove_filter( 'woocommerce_gla_resubmit_expiry_days', $callback );
+
+		$this->assertSame( $expected, $days );
+	}
+
+	public function resubmit_expiry_days_provider(): array {
+		return [
+			'shorter window'     => [ 10, 10 ],
+			'numeric string'     => [ '10', 10 ],
+			'above the default'  => [ 40, 25 ],
+			'zero'               => [ 0, 1 ],
+			'negative'           => [ -5, 1 ],
+			'non-numeric string' => [ 'ten', 25 ],
+			'null'               => [ null, 25 ],
+		];
+	}
+
 	public function test_find_expiring_product_ids_removes_its_where_filter() {
 		global $wp_filter;
 
