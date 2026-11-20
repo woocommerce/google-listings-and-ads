@@ -12,36 +12,53 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { INVENTORY_PRODUCT_DATA } from './constants';
-import { isBackorderSelected } from './utils';
+import {
+	GLA_TAB_TARGET,
+	INVENTORY_PRODUCT_DATA,
+	PRODUCT_TYPE_SELECT,
+} from './constants';
+import { isBackorderSelected, isProductTypeApplicable } from './utils';
+
+/**
+ * Whether the notice should be shown for the current form state.
+ *
+ * @param {Array<string>}    productTypes Product types the availability date applies to.
+ * @param {HTMLInputElement} glaDateEl    The GLA date input element.
+ * @return {boolean} True if the notice should be shown.
+ */
+const shouldShowNotice = ( productTypes, glaDateEl ) => {
+	return (
+		isProductTypeApplicable( productTypes ) &&
+		isBackorderSelected() &&
+		glaDateEl.value.trim() === ''
+	);
+};
 
 /**
  * React component that renders a warning notice when backorder is selected
  * and no GLA availability date is set.
  *
- * @param {Object}      props
- * @param {string}      props.tabTarget  The tab target ID to link to.
- * @param {HTMLElement} props.glaDateEl  The GLA date input element.
- * @param {HTMLElement} props.glaTimeEl  The GLA time input element.
+ * @param {Object}        props
+ * @param {Array<string>} props.productTypes Product types the availability date applies to.
+ * @param {HTMLElement}   props.glaDateEl    The GLA date input element.
+ * @param {HTMLElement}   props.glaTimeEl    The GLA time input element.
  */
 const BackorderAvailabilityDateNotice = ( {
-	tabTarget,
+	productTypes,
 	glaDateEl,
 	glaTimeEl,
 } ) => {
-	const [ isVisible, setIsVisible ] = useState(
-		() => isBackorderSelected() && glaDateEl.value.trim() === ''
+	const [ isVisible, setIsVisible ] = useState( () =>
+		shouldShowNotice( productTypes, glaDateEl )
 	);
 
 	useEffect( () => {
 		function updateVisibility() {
-			setIsVisible(
-				isBackorderSelected() && glaDateEl.value.trim() === ''
-			);
+			setIsVisible( shouldShowNotice( productTypes, glaDateEl ) );
 		}
 
 		const elements = document.querySelectorAll(
-			`${ INVENTORY_PRODUCT_DATA } [name="_backorders"], ${ INVENTORY_PRODUCT_DATA } [name="_stock_status"]`
+			`${ PRODUCT_TYPE_SELECT }, ${ INVENTORY_PRODUCT_DATA } [name="_backorders"], ${ INVENTORY_PRODUCT_DATA } [name="_stock_status"]`
 		);
 
 		elements.forEach( ( element ) =>
@@ -57,7 +74,7 @@ const BackorderAvailabilityDateNotice = ( {
 			glaDateEl.removeEventListener( 'change', updateVisibility );
 			glaTimeEl.removeEventListener( 'change', updateVisibility );
 		};
-	}, [ glaDateEl, glaTimeEl ] );
+	}, [ productTypes, glaDateEl, glaTimeEl ] );
 
 	if ( ! isVisible ) {
 		return null;
@@ -71,7 +88,9 @@ const BackorderAvailabilityDateNotice = ( {
 	function handleLinkClick( event ) {
 		event.preventDefault();
 		document
-			.querySelector( `.product_data_tabs a[href="#${ tabTarget }"]` )
+			.querySelector(
+				`.product_data_tabs a[href="#${ GLA_TAB_TARGET }"]`
+			)
 			?.click();
 	}
 
@@ -85,7 +104,7 @@ const BackorderAvailabilityDateNotice = ( {
 				// createInterpolateElement injects the translated text as children at runtime.
 				// eslint-disable-next-line jsx-a11y/anchor-has-content
 				<a
-					href={ `#${ tabTarget }` }
+					href={ `#${ GLA_TAB_TARGET }` }
 					className="gla-availability-date-tab-link"
 					onClick={ handleLinkClick }
 				></a>

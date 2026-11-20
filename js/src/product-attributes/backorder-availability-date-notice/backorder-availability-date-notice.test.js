@@ -13,11 +13,23 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 	let glaDateEl;
 	let glaTimeEl;
 
-	function renderInventoryFields( { backorders, stockStatus } ) {
+	function renderInventoryFields( {
+		backorders,
+		stockStatus,
+		productType = 'simple',
+	} ) {
 		// Setting `innerHTML` on an element re-creates all of its
 		// descendants, so this must run before `glaDateEl`/`glaTimeEl`
 		// are appended, otherwise their references would be detached.
 		document.body.innerHTML = `
+			<select id="product-type">
+				<option value="simple" ${
+					productType === 'simple' ? 'selected' : ''
+				}>Simple</option>
+				<option value="variable" ${
+					productType === 'variable' ? 'selected' : ''
+				}>Variable</option>
+			</select>
 			<div id="inventory_product_data">
 				<select name="_backorders">
 					<option value="no" ${ backorders === 'no' ? 'selected' : '' }>No</option>
@@ -53,7 +65,7 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 
 		render(
 			<BackorderAvailabilityDateNotice
-				tabTarget="gla_attributes"
+				productTypes={ [ 'simple' ] }
 				glaDateEl={ glaDateEl }
 				glaTimeEl={ glaTimeEl }
 			/>
@@ -73,7 +85,7 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 
 		const { container } = render(
 			<BackorderAvailabilityDateNotice
-				tabTarget="gla_attributes"
+				productTypes={ [ 'simple' ] }
 				glaDateEl={ glaDateEl }
 				glaTimeEl={ glaTimeEl }
 			/>
@@ -88,7 +100,7 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 
 		const { container } = render(
 			<BackorderAvailabilityDateNotice
-				tabTarget="gla_attributes"
+				productTypes={ [ 'simple' ] }
 				glaDateEl={ glaDateEl }
 				glaTimeEl={ glaTimeEl }
 			/>
@@ -97,13 +109,60 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 		expect( container.firstChild ).toBeNull();
 	} );
 
+	it( 'renders nothing when the product type does not support an availability date', () => {
+		renderInventoryFields( {
+			backorders: 'yes',
+			stockStatus: 'onbackorder',
+			productType: 'variable',
+		} );
+		glaDateEl.value = '';
+
+		const { container } = render(
+			<BackorderAvailabilityDateNotice
+				productTypes={ [ 'simple' ] }
+				glaDateEl={ glaDateEl }
+				glaTimeEl={ glaTimeEl }
+			/>
+		);
+
+		expect( container.firstChild ).toBeNull();
+	} );
+
+	it( 'shows the notice after the product type changes to a supported type', () => {
+		renderInventoryFields( {
+			backorders: 'yes',
+			stockStatus: 'onbackorder',
+			productType: 'variable',
+		} );
+		glaDateEl.value = '';
+
+		render(
+			<BackorderAvailabilityDateNotice
+				productTypes={ [ 'simple' ] }
+				glaDateEl={ glaDateEl }
+				glaTimeEl={ glaTimeEl }
+			/>
+		);
+
+		const productTypeSelect = document.querySelector( '#product-type' );
+		productTypeSelect.value = 'simple';
+		fireEvent.change( productTypeSelect );
+
+		expect(
+			screen.getByText(
+				'Google requires an availability date for products on backorder',
+				{ exact: false }
+			)
+		).toBeInTheDocument();
+	} );
+
 	it( 'shows the notice after backorder is selected via a change event', () => {
 		renderInventoryFields( { backorders: 'no', stockStatus: 'instock' } );
 		glaDateEl.value = '';
 
 		render(
 			<BackorderAvailabilityDateNotice
-				tabTarget="gla_attributes"
+				productTypes={ [ 'simple' ] }
 				glaDateEl={ glaDateEl }
 				glaTimeEl={ glaTimeEl }
 			/>
@@ -136,7 +195,7 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 
 		render(
 			<BackorderAvailabilityDateNotice
-				tabTarget="gla_attributes"
+				productTypes={ [ 'simple' ] }
 				glaDateEl={ glaDateEl }
 				glaTimeEl={ glaTimeEl }
 			/>
@@ -166,7 +225,7 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 
 		render(
 			<BackorderAvailabilityDateNotice
-				tabTarget="gla_attributes"
+				productTypes={ [ 'simple' ] }
 				glaDateEl={ glaDateEl }
 				glaTimeEl={ glaTimeEl }
 			/>
@@ -192,7 +251,7 @@ describe( 'BackorderAvailabilityDateNotice', () => {
 
 		const { unmount } = render(
 			<BackorderAvailabilityDateNotice
-				tabTarget="gla_attributes"
+				productTypes={ [ 'simple' ] }
 				glaDateEl={ glaDateEl }
 				glaTimeEl={ glaTimeEl }
 			/>

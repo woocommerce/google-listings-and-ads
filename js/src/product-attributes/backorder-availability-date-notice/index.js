@@ -9,10 +9,11 @@ import { createRoot, lazy, Suspense } from '@wordpress/element';
 import { GLA_DATE_INPUT_ID, GLA_TIME_INPUT_ID } from './constants';
 import { glaProductData } from '~/constants';
 
-const BackorderAvailabilityDateNotice = lazy( () =>
-	import(
-		/* webpackChunkName: "backorder-availability-date-notice" */ './backorder-availability-date-notice'
-	)
+const BackorderAvailabilityDateNotice = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "backorder-availability-date-notice" */ './backorder-availability-date-notice'
+		)
 );
 
 /**
@@ -36,12 +37,10 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		return;
 	}
 
-	const tabTarget = glaProductData.glaTabTarget || 'gla_attributes';
-
 	createRoot( container ).render(
 		<Suspense>
 			<BackorderAvailabilityDateNotice
-				tabTarget={ tabTarget }
+				productTypes={ glaProductData.availabilityDateProductTypes }
 				glaDateEl={ glaDateEl }
 				glaTimeEl={ glaTimeEl }
 			/>

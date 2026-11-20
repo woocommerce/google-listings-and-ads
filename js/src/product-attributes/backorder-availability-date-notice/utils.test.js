@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { getFieldValue, isBackorderSelected } from './utils';
+import {
+	getFieldValue,
+	isBackorderSelected,
+	isProductTypeApplicable,
+} from './utils';
 
 describe( 'getFieldValue', () => {
 	afterEach( () => {
@@ -139,5 +143,40 @@ describe( 'isBackorderSelected', () => {
 		} );
 
 		expect( isBackorderSelected() ).toBe( false );
+	} );
+} );
+
+describe( 'isProductTypeApplicable', () => {
+	afterEach( () => {
+		document.body.innerHTML = '';
+	} );
+
+	function renderProductTypeSelect( productType ) {
+		document.body.innerHTML = `
+			<select id="product-type">
+				<option value="simple" ${
+					productType === 'simple' ? 'selected' : ''
+				}>Simple</option>
+				<option value="variable" ${
+					productType === 'variable' ? 'selected' : ''
+				}>Variable</option>
+			</select>
+		`;
+	}
+
+	it( 'returns true when the selected product type is applicable', () => {
+		renderProductTypeSelect( 'simple' );
+
+		expect( isProductTypeApplicable( [ 'simple' ] ) ).toBe( true );
+	} );
+
+	it( 'returns false when the selected product type is not applicable', () => {
+		renderProductTypeSelect( 'variable' );
+
+		expect( isProductTypeApplicable( [ 'simple' ] ) ).toBe( false );
+	} );
+
+	it( 'returns false when there is no product type select', () => {
+		expect( isProductTypeApplicable( [ 'simple' ] ) ).toBe( false );
 	} );
 } );

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesForm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
@@ -15,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AvailabilityDate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
@@ -219,8 +221,8 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		) )->add_inline_script(
 			'glaProductData',
 			[
-				'applicableProductTypes' => ProductSyncer::get_supported_product_types(),
-				'glaTabTarget'           => 'gla_attributes',
+				'applicableProductTypes'       => ProductSyncer::get_supported_product_types(),
+				'availabilityDateProductTypes' => array_values( AttributesForm::get_attribute_product_types( AvailabilityDate::class )['visible'] ),
 			]
 		);
 
