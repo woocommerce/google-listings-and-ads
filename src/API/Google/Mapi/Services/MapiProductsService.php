@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiExcep
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Promise\EachPromise;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -34,60 +33,6 @@ class MapiProductsService implements OptionsAwareInterface {
 	 */
 	public function __construct( MerchantApiClient $client ) {
 		$this->client = $client;
-	}
-
-	/**
-	 * Fetch a single product by its Google product ID.
-	 *
-	 * @param string $google_product_id
-	 *
-	 * @return Product
-	 * @throws MerchantApiException On non-2xx response.
-	 */
-	public function get( string $google_product_id ): Product {
-		$body = $this->client->get( $this->build_path( $google_product_id ) );
-
-		return Product::from_array( $body );
-	}
-
-	/**
-	 * Fetch multiple products in parallel
-	 *
-	 * @param string[] $google_product_ids
-	 * @param int      $concurrency
-	 *
-	 * @return array<string, Product>
-	 */
-	public function get_many( array $google_product_ids, int $concurrency = 10 ): array {
-		$client   = $this->client;
-		$path_for = function ( string $id ): string {
-			return $this->build_path( $id );
-		};
-
-		$promises = function () use ( $google_product_ids, $client, $path_for ) {
-			foreach ( $google_product_ids as $id ) {
-				yield $id => $client->get_async( $path_for( $id ) );
-			}
-		};
-
-		$results = [];
-		( new EachPromise(
-			$promises(),
-			[
-				'concurrency' => $concurrency,
-				'fulfilled'   => function ( array $body, string $id ) use ( &$results ) {
-					$results[ $id ] = Product::from_array( $body );
-				},
-				'rejected'    => function ( $reason ) {
-					if ( ! $reason instanceof MerchantApiException ) {
-						do_action( 'woocommerce_gla_exception', $reason, __METHOD__ );
-					}
-					// MerchantApiException already fires woocommerce_gla_mc_client_exception.
-				},
-			]
-		) )->promise()->wait();
-
-		return $results;
 	}
 
 	/**
@@ -144,22 +89,6 @@ class MapiProductsService implements OptionsAwareInterface {
 			'products'        => $products,
 			'next_page_token' => is_string( $next_token ) && '' !== $next_token ? $next_token : null,
 		];
-	}
-
-	/**
-	 * Build the resource path for a product.
-	 *
-	 * @param string $google_product_id
-	 *
-	 * @return string
-	 */
-	protected function build_path( string $google_product_id ): string {
-		return sprintf(
-			'%s/accounts/%s/products/%s',
-			MapiPaths::PRODUCTS,
-			$this->options->get_merchant_id(),
-			$google_product_id
-		);
 	}
 
 	/**
