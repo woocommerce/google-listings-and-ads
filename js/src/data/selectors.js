@@ -25,7 +25,6 @@ import {
  * @typedef {import('~/data/types.js').GoogleTagManagerConnection} GoogleTagManagerConnection
  * @typedef {import('~/data/types.js').GoogleTagManagerAccount} GoogleTagManagerAccount
  * @typedef {import('~/data/types.js').GoogleTagManagerContainer} GoogleTagManagerContainer
- * @typedef {import('~/data/types.js').GoogleTagManagerSettings} GoogleTagManagerSettings
  */
 
 // A stable empty array for selectors to return when there is no data, so that
@@ -154,15 +153,6 @@ export const getExistingGoogleTagManagerAccounts = ( state ) => {
  */
 export const getGoogleTagManagerContainers = ( state ) => {
 	return state.google_tag_manager.containers;
-};
-
-/**
- * @param {Object} state The root state.
- * @return {GoogleTagManagerSettings|null} The Google Tag Manager settings. Returns `null` before
- *   the data has been fetched.
- */
-export const getGoogleTagManagerSettings = ( state ) => {
-	return state.google_tag_manager.settings;
 };
 
 /**

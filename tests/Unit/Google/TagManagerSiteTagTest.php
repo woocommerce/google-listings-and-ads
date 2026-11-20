@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -21,9 +20,6 @@ class TagManagerSiteTagTest extends UnitTest {
 	/** @var MockObject|Connection $connection */
 	protected $connection;
 
-	/** @var MockObject|Settings $settings */
-	protected $settings;
-
 	/** @var TagManagerSiteTag $tag */
 	protected $tag;
 
@@ -35,9 +31,13 @@ class TagManagerSiteTagTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->connection = $this->createMock( Connection::class );
-		$this->settings   = $this->createMock( Settings::class );
-		$this->tag        = new TagManagerSiteTag( $this->connection, $this->settings );
+		// A partial mock, not createMock(): has_container_public_id() keeps its real
+		// implementation, which reads the mocked get_connection_data() below.
+		$this->connection = $this->getMockBuilder( Connection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data' ] )
+			->getMock();
+		$this->tag        = new TagManagerSiteTag( $this->connection );
 	}
 
 	public function test_register_injects_script_when_container_connected() {
@@ -47,7 +47,6 @@ class TagManagerSiteTagTest extends UnitTest {
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
-		$this->settings->method( 'is_snippet_active' )->willReturn( true );
 
 		$this->tag->register();
 
@@ -61,7 +60,6 @@ class TagManagerSiteTagTest extends UnitTest {
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
-		$this->settings->method( 'is_snippet_active' )->willReturn( true );
 
 		$this->tag->register();
 
@@ -73,21 +71,6 @@ class TagManagerSiteTagTest extends UnitTest {
 
 	public function test_register_does_not_inject_when_no_container_connected() {
 		$this->connection->method( 'get_connection_data' )->willReturn( [] );
-
-		$this->tag->register();
-
-		$this->assertStringNotContainsString( 'googletagmanager.com', $this->get_wp_head() );
-		$this->assertStringNotContainsString( 'googletagmanager.com', $this->get_wp_body_open() );
-	}
-
-	public function test_register_does_not_inject_when_the_snippet_is_not_active() {
-		$this->connection->method( 'get_connection_data' )->willReturn(
-			[
-				'container_id'        => '98765432',
-				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
-			]
-		);
-		$this->settings->method( 'is_snippet_active' )->willReturn( false );
 
 		$this->tag->register();
 

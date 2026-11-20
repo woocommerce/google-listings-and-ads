@@ -84,7 +84,6 @@ function getRecordedConnectionEventNames() {
 describe( 'ConnectContainer', () => {
 	let fetchSelectContainer;
 	let fetchGoogleTagManagerAccount;
-	let fetchGoogleTagManagerSettings;
 	let createNotice;
 
 	beforeEach( () => {
@@ -112,13 +111,8 @@ describe( 'ConnectContainer', () => {
 			.fn()
 			.mockName( 'fetchGoogleTagManagerAccount' )
 			.mockResolvedValue();
-		fetchGoogleTagManagerSettings = jest
-			.fn()
-			.mockName( 'fetchGoogleTagManagerSettings' )
-			.mockResolvedValue();
 		useAppDispatch.mockReturnValue( {
 			fetchGoogleTagManagerAccount,
-			fetchGoogleTagManagerSettings,
 			fetchGoogleAdsAccount: jest
 				.fn()
 				.mockName( 'fetchGoogleAdsAccount' ),
@@ -464,20 +458,13 @@ describe( 'ConnectContainer', () => {
 
 	describe( 'when the selected container is checked for a Google Ads conversion tag', () => {
 		/**
-		 * Mocks the account and settings refetched after saving.
+		 * Mocks the account refetched after saving.
 		 *
 		 * @param {boolean} adsConversionConflict Whether the account reports a conflict.
-		 * @param {boolean} snippetInjectionEnabled Whether the settings report the snippet as enabled.
 		 */
-		const mockRefetched = (
-			adsConversionConflict,
-			snippetInjectionEnabled
-		) => {
+		const mockRefetched = ( adsConversionConflict ) => {
 			fetchGoogleTagManagerAccount.mockResolvedValue( {
 				account: { status: 'connected', adsConversionConflict },
-			} );
-			fetchGoogleTagManagerSettings.mockResolvedValue( {
-				settings: { snippetInjectionEnabled },
 			} );
 		};
 
@@ -492,15 +479,14 @@ describe( 'ConnectContainer', () => {
 			await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 		};
 
-		it( 'refetches the account and the settings after saving', async () => {
+		it( 'refetches the account after saving', async () => {
 			await saveContainer();
 
 			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
-			expect( fetchGoogleTagManagerSettings ).toHaveBeenCalledTimes( 1 );
 		} );
 
 		it( "explains that the plugin doesn't add its own Google Ads tag when the container has one", async () => {
-			mockRefetched( true, true );
+			mockRefetched( true );
 
 			await saveContainer();
 
@@ -515,7 +501,7 @@ describe( 'ConnectContainer', () => {
 		} );
 
 		it( 'shows a snackbar confirming the snippet was added when no conflict was found', async () => {
-			mockRefetched( false, true );
+			mockRefetched( false );
 
 			await saveContainer();
 
@@ -529,11 +515,11 @@ describe( 'ConnectContainer', () => {
 			expect( createNotice ).toHaveBeenCalledTimes( 1 );
 		} );
 
-		it( 'shows no snackbar and reports no error when the refetches fail', async () => {
+		it( 'shows no snackbar and reports no error when the refetch fails', async () => {
 			await saveContainer();
 
 			await waitFor( () => {
-				expect( fetchGoogleTagManagerSettings ).toHaveBeenCalled();
+				expect( fetchGoogleTagManagerAccount ).toHaveBeenCalled();
 			} );
 			expect( createNotice ).not.toHaveBeenCalled();
 			expect( handleApiError ).not.toHaveBeenCalled();

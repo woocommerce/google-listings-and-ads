@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Tracking;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
@@ -47,17 +46,11 @@ class TrackerSnapshotTest extends UnitTest {
 	/** @var MockObject|TagManagerConnection $tag_manager_connection */
 	protected $tag_manager_connection;
 
-	/** @var MockObject|TagManagerSettings $tag_manager_settings */
-	protected $tag_manager_settings;
-
 	/** @var array $tag_manager_data Connection data returned by the Tag Manager connection mock. */
 	protected $tag_manager_data = [];
 
 	/** @var bool $tag_manager_conflict Whether the Tag Manager connection mock reports an Ads conversion conflict. */
 	protected $tag_manager_conflict = false;
-
-	/** @var bool $tag_manager_snippet_active Whether the Tag Manager settings mock reports the snippet as active. */
-	protected $tag_manager_snippet_active = false;
 
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
@@ -79,7 +72,10 @@ class TrackerSnapshotTest extends UnitTest {
 		$this->image_size_audit = $this->createMock( ProductImageSizeAudit::class );
 		$this->options          = $this->createMock( OptionsInterface::class );
 
-		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
+		$this->tag_manager_connection = $this->getMockBuilder( TagManagerConnection::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_connection_data', 'has_ads_conversion_conflict' ] )
+			->getMock();
 		$this->tag_manager_connection->method( 'get_connection_data' )->willReturnCallback(
 			function () {
 				return $this->tag_manager_data;
@@ -88,13 +84,6 @@ class TrackerSnapshotTest extends UnitTest {
 		$this->tag_manager_connection->method( 'has_ads_conversion_conflict' )->willReturnCallback(
 			function () {
 				return $this->tag_manager_conflict;
-			}
-		);
-
-		$this->tag_manager_settings = $this->createMock( TagManagerSettings::class );
-		$this->tag_manager_settings->method( 'is_snippet_active' )->willReturnCallback(
-			function () {
-				return $this->tag_manager_snippet_active;
 			}
 		);
 
@@ -117,7 +106,6 @@ class TrackerSnapshotTest extends UnitTest {
 		$container->addShared( MarketService::class, $this->market_service );
 		$container->addShared( ProductImageSizeAudit::class, $this->image_size_audit );
 		$container->addShared( TagManagerConnection::class, $this->tag_manager_connection );
-		$container->addShared( TagManagerSettings::class, $this->tag_manager_settings );
 
 		$this->snapshot = new TrackerSnapshot();
 		$this->snapshot->set_container( $container );
@@ -222,23 +210,13 @@ class TrackerSnapshotTest extends UnitTest {
 		$this->assertSame( 'no', $settings['tag_manager_ads_conversion_conflict'] );
 	}
 
-	public function test_tag_manager_snippet_active_is_yes_when_the_snippet_is_active() {
-		$this->tag_manager_data           = $this->get_connected_tag_manager_data();
-		$this->tag_manager_snippet_active = true;
-
-		$settings = $this->invoke_get_settings();
-
-		$this->assertSame( 'yes', $settings['tag_manager_connected'] );
-		$this->assertSame( 'yes', $settings['tag_manager_snippet_active'] );
-	}
-
-	public function test_tag_manager_snippet_active_is_no_when_the_snippet_is_not_active() {
+	public function test_tag_manager_snippet_active_is_yes_when_container_is_connected() {
 		$this->tag_manager_data = $this->get_connected_tag_manager_data();
 
 		$settings = $this->invoke_get_settings();
 
 		$this->assertSame( 'yes', $settings['tag_manager_connected'] );
-		$this->assertSame( 'no', $settings['tag_manager_snippet_active'] );
+		$this->assertSame( 'yes', $settings['tag_manager_snippet_active'] );
 	}
 
 	public function test_tag_manager_ads_conversion_conflict_is_yes_when_connected_container_conflicts() {
@@ -360,7 +338,6 @@ class TrackerSnapshotTest extends UnitTest {
 		$container->addShared( MarketService::class, $this->market_service );
 		$container->addShared( ProductImageSizeAudit::class, $this->image_size_audit );
 		$container->addShared( TagManagerConnection::class, $this->tag_manager_connection );
-		$container->addShared( TagManagerSettings::class, $this->tag_manager_settings );
 
 		$this->snapshot = new TrackerSnapshot();
 		$this->snapshot->set_container( $container );

@@ -5,13 +5,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\TagManager;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
@@ -269,19 +267,14 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( 'Successfully disconnected.', $message );
 	}
 
-	public function test_disconnect_also_clears_the_settings_and_the_conflict_check() {
+	public function test_disconnect_also_clears_the_conflict_check() {
 		$job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );
 		$job->expects( $this->once() )->method( 'unschedule' );
 		$repository = $this->createMock( JobRepository::class );
 		$repository->method( 'get' )->with( RefreshTagManagerAdsConversionConflict::class )->willReturn( $job );
 		$this->container->add( JobRepository::class, $repository );
 
-		// Disconnect no longer deletes the TAG_MANAGER option -- it persists the marker instead
-		// (covered by the test above) -- only the settings option is actually deleted.
 		$this->options->method( 'get' )->willReturn( [] );
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
 
 		$this->connection->disconnect();
 	}
@@ -294,9 +287,6 @@ class ConnectionTest extends UnitTest {
 		$this->container->add( JobRepository::class, $repository );
 
 		$this->options->method( 'get' )->willReturn( [] );
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
 
 		$this->assertSame( 'Successfully disconnected.', $this->connection->disconnect() );
 	}
@@ -337,6 +327,29 @@ class ConnectionTest extends UnitTest {
 			$fired,
 			did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' )
 		);
+	}
+
+	public function test_has_container_public_id_true_when_present() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'container_id'        => '456',
+				'container_public_id' => 'GTM-ABCDEF',
+			]
+		);
+
+		$this->assertTrue( $this->connection->has_container_public_id() );
+	}
+
+	public function test_has_container_public_id_false_when_missing() {
+		$this->options->method( 'get' )->willReturn( [ 'container_id' => '456' ] );
+
+		$this->assertFalse( $this->connection->has_container_public_id() );
+	}
+
+	public function test_has_container_public_id_false_when_no_container_connected_at_all() {
+		$this->options->method( 'get' )->willReturn( [] );
+
+		$this->assertFalse( $this->connection->has_container_public_id() );
 	}
 
 	public function test_get_status_returns_disconnected_without_checking_granted_scopes_after_a_local_disconnect() {
@@ -1138,7 +1151,7 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( '456', $stored['container_id'] );
 		$this->assertNull( $stored['pending_container_id'] );
 
-		$site_tag = new TagManagerSiteTag( $this->connection, $this->createMock( Settings::class ), $this->createMock( GoogleGtagJs::class ) );
+		$site_tag = new TagManagerSiteTag( $this->connection );
 		$this->assertTrue( $site_tag->has_injection_failed() );
 	}
 

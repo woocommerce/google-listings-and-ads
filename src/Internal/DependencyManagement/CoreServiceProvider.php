@@ -44,7 +44,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDat
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
@@ -157,7 +156,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		GlobalSiteTag::class                 => true,
 		TagManagerSiteTag::class             => true,
 		TagManagerConnection::class          => true,
-		TagManagerSettings::class            => true,
 		EstimatedDeliveryTimeResolver::class => true,
 		ReviewsOptIn::class                  => true,
 		BadgeWidget::class                   => true,
@@ -290,8 +288,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( EventTracking::class );
 		$this->share_with_tags( RESTControllers::class );
 		$this->share_with_tags( CompleteSetupTask::class );
-		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class, TagManagerConnection::class, TagManagerSettings::class );
-		$this->conditionally_share_with_tags( TagManagerSiteTag::class, TagManagerConnection::class, TagManagerSettings::class );
+		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class, TagManagerConnection::class );
+		$this->conditionally_share_with_tags( TagManagerSiteTag::class, TagManagerConnection::class );
 		$this->share_with_tags( EstimatedDeliveryTimeResolver::class, MapiAccountShippingSettingsService::class );
 		$this->share_with_tags( ReviewsOptIn::class, EstimatedDeliveryTimeResolver::class, WP::class );
 		$this->share_with_tags( BadgeWidget::class );
@@ -302,7 +300,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
 		$this->share_with_tags( YouTubeConnection::class );
 		$this->share_with_tags( TagManagerConnection::class, TagManagerApiClient::class );
-		$this->share_with_tags( TagManagerSettings::class, TagManagerConnection::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );

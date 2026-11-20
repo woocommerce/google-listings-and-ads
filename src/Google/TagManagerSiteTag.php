@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -12,8 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Injects the Google Tag Manager container snippet on the storefront once a container is connected,
- * unless the merchant has turned snippet injection off.
+ * Injects the Google Tag Manager container snippet on the storefront once a container is connected.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
@@ -22,29 +20,24 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 	/** @var Connection */
 	protected $connection;
 
-	/** @var Settings */
-	protected $settings;
-
 	/**
 	 * TagManagerSiteTag constructor.
 	 *
 	 * @param Connection $connection
-	 * @param Settings   $settings
 	 */
-	public function __construct( Connection $connection, Settings $settings ) {
+	public function __construct( Connection $connection ) {
 		$this->connection = $connection;
-		$this->settings   = $settings;
 	}
 
 	/**
 	 * Register the service.
 	 */
 	public function register(): void {
-		$container_public_id = $this->connection->get_connection_data()['container_public_id'] ?? '';
-
-		if ( ! $this->settings->is_snippet_active() ) {
+		if ( ! $this->connection->has_container_public_id() ) {
 			return;
 		}
+
+		$container_public_id = $this->connection->get_connection_data()['container_public_id'];
 
 		// GlobalSiteTag always registers whenever a container is connected, so it has already
 		// published the dataLayer/gtag() shim and consent defaults before this runs.
@@ -76,7 +69,7 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 	public function has_injection_failed(): bool {
 		$data = $this->connection->get_connection_data();
 
-		return ! empty( $data['container_id'] ) && empty( $data['container_public_id'] );
+		return ! empty( $data['container_id'] ) && ! $this->connection->has_container_public_id();
 	}
 
 	/**

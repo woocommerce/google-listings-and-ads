@@ -888,7 +888,7 @@ Clicking on the button to start a fresh Google Tag Manager connection attempt af
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/connection-error-notice.js#L46)
 
-### [`gla_google_tag_manager_container_connected`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L22)
+### [`gla_google_tag_manager_container_connected`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L17)
 A Google Tag Manager container has been connected.
 #### Properties
 | name | type | description |
@@ -896,7 +896,7 @@ A Google Tag Manager container has been connected.
 `context` | `string` | Indicates from which page the container was connected. Possible value: 'settings-tag-manager'.
 `gtm_account_id` | `string` | The connected Google Tag Manager account ID.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L63)
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L49)
 
 ### [`gla_google_tag_manager_container_select_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/select-container/index.js#L18)
 Clicking on the button to save the selected Google Tag Manager container.
@@ -926,7 +926,7 @@ Clicking the link that opens the modal to create a new Google Tag Manager contai
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/create-new-container-button/index.js#L33)
 
-### [`gla_google_tag_manager_injection_failure`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L30)
+### [`gla_google_tag_manager_injection_failure`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L25)
 A connected Google Tag Manager container has no public ID, so its snippet can't be injected.
 #### Properties
 | name | type | description |
@@ -934,17 +934,7 @@ A connected Google Tag Manager container has no public ID, so its snippet can't 
 `context` | `string` | Indicates from which page the container was connected. Possible value: 'settings-tag-manager'.
 `gtm_account_id` | `string` | The connected Google Tag Manager account ID.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L63)
-
-### [`gla_google_tag_manager_snippet_toggle`](../../js/src/pages/settings/google-tag-manager-snippet/index.js#L20)
-The Google Tag Manager snippet is turned on or off from the Settings page.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`enabled` | `boolean` | Whether the snippet was turned on or off.
-`context` | `string` | Indicates from which page the snippet was toggled. Possible value: 'settings-tag-manager'.
-#### Emitters
-- [`GoogleTagManagerSnippet`](../../js/src/pages/settings/google-tag-manager-snippet/index.js#L34) after the snippet setting is saved.
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L49)
 
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.

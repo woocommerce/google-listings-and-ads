@@ -3,21 +3,16 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useCallback, useState } from '@wordpress/element';
-import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../constants';
-import {
-	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS,
-	SETTINGS_SECTIONS,
-} from '~/constants';
+import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import { useAppDispatch } from '~/data';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import { recordGlaEvent } from '~/utils/tracks';
-import { getSettingsUrl } from '~/utils/urls';
 
 /**
  * A Google Tag Manager container has been connected.
@@ -36,19 +31,10 @@ import { getSettingsUrl } from '~/utils/urls';
  */
 
 /**
- * Opens the Google Tag Manager snippet setting in Settings > General.
- */
-const openGeneralSettings = () => {
-	getHistory().push(
-		getSettingsUrl( { section: SETTINGS_SECTIONS.GENERAL } )
-	);
-};
-
-/**
- * A hook returning a function that refreshes the Google Tag Manager connection and snippet settings
- * after a container was connected, records the connection, reloads the Google Ads connection, and
- * shows a snackbar either confirming the snippet was added, or explaining that the plugin doesn't
- * add its own Google Ads tag because the container already has one.
+ * A hook returning a function that refreshes the Google Tag Manager connection after a container
+ * was connected, records the connection, reloads the Google Ads connection, and shows a snackbar
+ * either confirming the snippet was added, or explaining that the plugin doesn't add its own
+ * Google Ads tag because the container already has one.
  *
  * The refreshed connection is returned because the connection of the render that calls it still
  * holds the state from before the refresh.
@@ -61,11 +47,8 @@ const openGeneralSettings = () => {
  * be loaded, and `loading`, which is `true` while a refresh is in progress.
  */
 export default function useRefreshGoogleTagManagerConnection() {
-	const {
-		fetchGoogleTagManagerAccount,
-		fetchGoogleTagManagerSettings,
-		fetchGoogleAdsAccount,
-	} = useAppDispatch();
+	const { fetchGoogleTagManagerAccount, fetchGoogleAdsAccount } =
+		useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const [ loading, setLoading ] = useState( false );
@@ -74,13 +57,9 @@ export default function useRefreshGoogleTagManagerConnection() {
 		setLoading( true );
 
 		let accountAction;
-		let settingsAction;
 
 		try {
-			[ accountAction, settingsAction ] = await Promise.all( [
-				fetchGoogleTagManagerAccount(),
-				fetchGoogleTagManagerSettings(),
-			] );
+			accountAction = await fetchGoogleTagManagerAccount();
 		} finally {
 			setLoading( false );
 		}
@@ -138,8 +117,7 @@ export default function useRefreshGoogleTagManagerConnection() {
 		if (
 			isConnected &&
 			! leavesOutAdsTag &&
-			! refreshedAccount.injectionFailed &&
-			settingsAction?.settings?.snippetInjectionEnabled === true
+			! refreshedAccount.injectionFailed
 		) {
 			createNotice(
 				'success',
@@ -147,22 +125,13 @@ export default function useRefreshGoogleTagManagerConnection() {
 					'The Google Tag Manager snippet has been successfully added to your site.',
 					'google-listings-and-ads'
 				),
-				{
-					type: 'snackbar',
-					actions: [
-						{
-							label: __( 'View', 'google-listings-and-ads' ),
-							onClick: openGeneralSettings,
-						},
-					],
-				}
+				{ type: 'snackbar' }
 			);
 		}
 
 		return refreshedAccount;
 	}, [
 		fetchGoogleTagManagerAccount,
-		fetchGoogleTagManagerSettings,
 		fetchGoogleAdsAccount,
 		createNotice,
 		hasGoogleAdsConnection,

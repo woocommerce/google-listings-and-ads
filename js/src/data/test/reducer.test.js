@@ -27,7 +27,6 @@ describe( 'reducer', () => {
 			},
 			google_tag_manager: {
 				containers: null,
-				settings: null,
 			},
 			mc: {
 				target_audience: null,
@@ -470,7 +469,6 @@ describe( 'reducer', () => {
 		const connectionPath = 'accounts.google_tag_manager';
 		const accountsPath = 'accounts.existing_google_tag_manager';
 		const containersPath = 'google_tag_manager.containers';
-		const settingsPath = 'google_tag_manager.settings';
 
 		it( 'should return with received Google Tag Manager connection', () => {
 			const action = {
@@ -502,17 +500,7 @@ describe( 'reducer', () => {
 			expect( state ).toHaveProperty( containersPath, action.containers );
 		} );
 
-		it( 'should return with received Google Tag Manager settings', () => {
-			const action = {
-				type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_SETTINGS,
-				settings: { snippetInjectionEnabled: false },
-			};
-			const state = reducer( prepareState(), action );
-
-			expect( state ).toHaveProperty( settingsPath, action.settings );
-		} );
-
-		it( 'should clear the connection, accounts, containers, and settings state on disconnect', () => {
+		it( 'should clear the connection, accounts, and containers state on disconnect', () => {
 			const originalState = prepareState( connectionPath, {
 				id: '111',
 				status: 'connected',
@@ -526,12 +514,8 @@ describe( 'reducer', () => {
 				type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_CONTAINERS,
 				containers: [ { id: 'c1', publicId: 'GTM-ABC123' } ],
 			} );
-			const stateWithSettings = reducer( stateWithContainers, {
-				type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_SETTINGS,
-				settings: { snippetInjectionEnabled: false },
-			} );
 
-			const state = reducer( stateWithSettings, {
+			const state = reducer( stateWithContainers, {
 				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
 			} );
 
@@ -545,10 +529,6 @@ describe( 'reducer', () => {
 			expect( state ).toHaveProperty(
 				containersPath,
 				get( defaultState, containersPath )
-			);
-			expect( state ).toHaveProperty(
-				settingsPath,
-				get( defaultState, settingsPath )
 			);
 		} );
 	} );

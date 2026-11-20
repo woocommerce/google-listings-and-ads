@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -110,12 +109,13 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	 * @return array
 	 */
 	private function get_conversion_tag(): array {
-		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
-		$conversion_id     = $conversion_action['conversion_id'] ?? null;
-		$conversion_label  = $conversion_action['conversion_label'] ?? null;
+		$conversion_action      = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+		$conversion_id          = $conversion_action['conversion_id'] ?? null;
+		$conversion_label       = $conversion_action['conversion_label'] ?? null;
+		$tag_manager_connection = $this->container->get( TagManagerConnection::class );
 
-		$container_tracks_same_conversion = $this->container->get( TagManagerSettings::class )->is_snippet_active()
-			&& $this->container->get( TagManagerConnection::class )->has_ads_conversion_conflict();
+		$container_tracks_same_conversion = $tag_manager_connection->has_container_public_id()
+			&& $tag_manager_connection->has_ads_conversion_conflict();
 
 		return [
 			'id'      => $conversion_id,

@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagManager\AccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
@@ -29,9 +28,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|TagManagerSiteTag $site_tag */
 	protected $site_tag;
 
-	/** @var MockObject|Settings $settings */
-	protected $settings;
-
 	/** @var MockObject|RefreshTagManagerAdsConversionConflict $conflict_job */
 	protected $conflict_job;
 
@@ -42,14 +38,12 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_CONNECTION = '/wc/gla/tag-manager/connection';
 	protected const ROUTE_ACCOUNTS   = '/wc/gla/tag-manager/accounts';
 	protected const ROUTE_CONTAINERS = '/wc/gla/tag-manager/containers';
-	protected const ROUTE_SETTINGS   = '/wc/gla/tag-manager/settings';
 
 	public function setUp(): void {
 		parent::setUp();
 
 		$this->connection   = $this->createMock( Connection::class );
 		$this->site_tag     = $this->createMock( TagManagerSiteTag::class );
-		$this->settings     = $this->createMock( Settings::class );
 		$this->conflict_job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );
 
 		$job_repository = $this->createMock( JobRepository::class );
@@ -57,7 +51,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->with( RefreshTagManagerAdsConversionConflict::class )
 			->willReturn( $this->conflict_job );
 
-		$this->controller = new AccountController( $this->server, $this->connection, $this->site_tag, $this->settings, $job_repository );
+		$this->controller = new AccountController( $this->server, $this->connection, $this->site_tag, $job_repository );
 		$this->controller->register();
 	}
 
@@ -184,59 +178,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function test_get_settings_reads_stored_data_only() {
-		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( false );
-		$this->connection->expects( $this->never() )->method( 'refresh_ads_conversion_conflict' );
-
-		$response = $this->do_request( self::ROUTE_SETTINGS, 'GET' );
-
-		$this->assertEquals( [ 'snippetInjectionEnabled' => false ], $response->get_data() );
-		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function test_update_settings_disables_snippet_injection() {
-		$this->connection->method( 'get_connection_data' )->willReturn( [ 'container_id' => '456' ] );
-		$this->settings->expects( $this->once() )
-			->method( 'set_snippet_injection_enabled' )
-			->with( false )
-			->willReturn( true );
-		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( false );
-
-		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [ 'snippet_injection_enabled' => false ] );
-
-		$this->assertEquals( [ 'snippetInjectionEnabled' => false ], $response->get_data() );
-		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function test_update_settings_returns_stored_value_when_unchanged() {
-		$this->connection->method( 'get_connection_data' )->willReturn( [ 'container_id' => '456' ] );
-		$this->settings->method( 'set_snippet_injection_enabled' )->willReturn( false );
-		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( true );
-
-		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [ 'snippet_injection_enabled' => true ] );
-
-		$this->assertEquals( [ 'snippetInjectionEnabled' => true ], $response->get_data() );
-		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function test_update_settings_rejects_when_no_container_connected() {
-		$this->connection->method( 'get_connection_data' )->willReturn( [] );
-		$this->settings->expects( $this->never() )->method( 'set_snippet_injection_enabled' );
-
-		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [ 'snippet_injection_enabled' => false ] );
-
-		$this->assertEquals( 400, $response->get_status() );
-	}
-
-	public function test_update_settings_requires_snippet_injection_enabled() {
-		$this->settings->expects( $this->never() )->method( 'set_snippet_injection_enabled' );
-
-		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [] );
-
-		$this->assertEquals( 'rest_missing_callback_param', $response->get_data()['code'] );
-		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_get_accounts() {

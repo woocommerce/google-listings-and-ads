@@ -153,6 +153,16 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Whether the connected container has a public ID, so its snippet can actually be injected
+	 * and the native Ads tag can give way to it.
+	 *
+	 * @return bool
+	 */
+	public function has_container_public_id(): bool {
+		return ! empty( $this->get_connection_data()['container_public_id'] );
+	}
+
+	/**
 	 * Update the stored Tag Manager connection data.
 	 *
 	 * Merges the given fields onto the existing stored data (or the defaults, if
@@ -337,8 +347,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * down that shared connection instead of just Tag Manager's own state.
 	 * Revoking the shared scope grant would do the same, so an explicit
 	 * disconnect marker is persisted instead of deleting the option. Everything
-	 * stored locally is cleared: the account/container selection, the settings
-	 * that belong to that connection, and the recurring conflict check.
+	 * stored locally is cleared: the account/container selection and the
+	 * recurring conflict check.
 	 *
 	 * @return string
 	 */
@@ -349,9 +359,6 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			OptionsInterface::TAG_MANAGER,
 			array_merge( self::DEFAULT_CONNECTION_DATA, [ 'disconnected' => true ] )
 		);
-
-		// The settings belong to this connection, so the next one starts from the defaults.
-		$this->options->delete( OptionsInterface::TAG_MANAGER_SETTINGS );
 
 		// Reconnecting goes through select_account(), which can't see this conflict once it's cleared here.
 		if ( $had_conflict ) {

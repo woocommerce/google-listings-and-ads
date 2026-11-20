@@ -6,7 +6,6 @@ import {
 	getGoogleTagManagerAccount,
 	getExistingGoogleTagManagerAccounts,
 	getGoogleTagManagerContainers,
-	getGoogleTagManagerSettings,
 } from '~/data/resolvers';
 import TYPES from '~/data/action-types';
 
@@ -97,24 +96,5 @@ describe( 'getGoogleTagManagerContainers.shouldInvalidate', () => {
 				invalidateRelatedState: true,
 			} )
 		).toBeFalsy();
-	} );
-} );
-
-describe( 'getGoogleTagManagerSettings.shouldInvalidate', () => {
-	it( 'invalidates on a Google Tag Manager disconnect, since that resets the stored settings', () => {
-		expect(
-			getGoogleTagManagerSettings.shouldInvalidate( {
-				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
-			} )
-		).toBe( true );
-	} );
-
-	it( 'does not invalidate on an unrelated action', () => {
-		expect(
-			getGoogleTagManagerSettings.shouldInvalidate( {
-				type: TYPES.DISCONNECT_ACCOUNTS_YOUTUBE,
-				invalidateRelatedState: true,
-			} )
-		).toBe( false );
 	} );
 } );

@@ -49,7 +49,6 @@ jest.mock(
 	'./enhanced-conversions/setup-enhanced-conversions',
 	() => () => null
 );
-jest.mock( './google-tag-manager-snippet', () => () => null );
 jest.mock( './google-customer-reviews', () => () => (
 	<div data-testid="google-customer-reviews-settings" />
 ) );
