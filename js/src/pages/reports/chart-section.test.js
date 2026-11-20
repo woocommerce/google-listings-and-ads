@@ -310,5 +310,37 @@ describe( 'ChartSection', () => {
 			expect( props.data[ 0 ].secondary.value ).toBe( 10 );
 			expect( props.data[ 0 ].primary.value ).toBe( 5000 );
 		} );
+
+		it( 'still clears the floor for a far more extreme gap between periods', () => {
+			render(
+				<ChartSection
+					metrics={ ctrMetrics }
+					loaded
+					intervals={ [
+						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
+					] }
+					comparison={ {
+						intervals: [
+							{
+								interval: '2025-10-01',
+								subtotals: { ctr: 0.0000001 },
+							},
+						],
+						totals: {
+							ctr: { value: 0.05, prevValue: 0.0000001 },
+						},
+						labels: {
+							primary: 'Month to date',
+							secondary: 'Previous year',
+						},
+					} }
+				/>
+			);
+
+			// A 500,000x gap, not just the 500x one above -- still clears the floor.
+			const props = getChartProps();
+			expect( props.data[ 0 ].secondary.value ).toBe( 10 );
+			expect( props.data[ 0 ].primary.value ).toBe( 5000000 );
+		} );
 	} );
 } );
