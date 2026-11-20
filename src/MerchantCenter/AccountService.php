@@ -354,8 +354,8 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 						// Continue to next step if Ads account is not connected yet.
 						if ( ! $this->options->get_ads_id() ) {
 							// Save step as pending and continue the foreach loop with `continue 2`.
-							$state[ $name ]['status'] = MerchantAccountState::STEP_PENDING;
-							$this->state->update( $state );
+							$step['status'] = MerchantAccountState::STEP_PENDING;
+							$this->state->update_steps( [ $name => $step ] );
 							continue 2;
 						}
 
@@ -372,10 +372,11 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				}
 				$step['status']  = MerchantAccountState::STEP_DONE;
 				$step['message'] = '';
-				$this->state->update( $state );
+				$this->state->update_steps( [ $name => $step ] );
 			} catch ( Exception $e ) {
 				$step['status']  = MerchantAccountState::STEP_ERROR;
 				$step['message'] = $e->getMessage();
+				$changed_steps   = [];
 
 				// URL already claimed.
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
@@ -405,11 +406,13 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				} elseif ( 'link' === $name && 401 === $e->getCode() ) {
 					// New sub-account not yet manipulable.
 					$state['set_id']['data']['created_timestamp'] = time();
+					$changed_steps['set_id']                      = $state['set_id'];
 
 					$e = ApiNotReady::retry_after( MerchantAccountState::MC_DELAY_AFTER_CREATE );
 				}
 
-				$this->state->update( $state );
+				$changed_steps[ $name ] = $step;
+				$this->state->update_steps( $changed_steps );
 				throw $e;
 			}
 		}
