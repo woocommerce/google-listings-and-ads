@@ -22,7 +22,6 @@ const DEFAULT_STATE = {
 	},
 	google_tag_manager: {
 		containers: null,
-		settings: null,
 	},
 	mc: {
 		target_audience: null,
