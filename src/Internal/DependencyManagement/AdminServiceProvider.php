@@ -30,6 +30,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
@@ -96,6 +97,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 			OnboardingCompleted::class,
 			ServiceBasedMerchantState::class,
 			MarketService::class,
+			SearchConsoleConnection::class,
 		);
 		$this->share_with_tags( PHPViewFactory::class );
 		$this->share_with_tags( Redirect::class, WP::class, OnboardingCompleted::class );

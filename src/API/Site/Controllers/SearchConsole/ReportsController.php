@@ -1,0 +1,276 @@
+<?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Exception;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class ReportsController
+ *
+ * ContainerAware used for:
+ * - WP (in parent class)
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole
+ */
+class ReportsController extends BaseReportsController {
+
+	/** @var Connection */
+	protected $connection;
+
+	/** @var SearchAnalyticsService */
+	protected $search_analytics;
+
+	/**
+	 * ReportsController constructor.
+	 *
+	 * @param RESTServer             $server
+	 * @param Connection             $connection
+	 * @param SearchAnalyticsService $search_analytics
+	 */
+	public function __construct( RESTServer $server, Connection $connection, SearchAnalyticsService $search_analytics ) {
+		parent::__construct( $server );
+
+		$this->connection       = $connection;
+		$this->search_analytics = $search_analytics;
+	}
+
+	/**
+	 * Register rest routes with WordPress.
+	 */
+	public function register_routes(): void {
+		$this->register_route(
+			'search-console/reports/queries',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_queries_report_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_collection_params(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+
+		$this->register_route(
+			'search-console/reports/overview',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_overview_report_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_overview_collection_params(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+	}
+
+	/**
+	 * Get the callback function for the top queries report request.
+	 *
+	 * @return callable
+	 */
+	protected function get_queries_report_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				$property = $this->connection->get_connected_property();
+				$args     = $this->prepare_query_arguments( $request );
+				$limit    = $this->search_analytics->get_top_queries_limit();
+
+				return $this->prepare_report_response(
+					[
+						'queries' => $this->search_analytics->get_top_queries( $property, $args['after'], $args['before'], $limit ),
+						'limit'   => $limit,
+					],
+					$request,
+					[ 'queries', 'limit' ]
+				);
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for the organic overview report request.
+	 *
+	 * @return callable
+	 */
+	protected function get_overview_report_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				$property = $this->connection->get_connected_property();
+				$args     = $this->prepare_query_arguments( $request );
+
+				return $this->prepare_report_response(
+					$this->search_analytics->get_overview( $property, $args['after'], $args['before'] ),
+					$request,
+					[ 'totals', 'intervals' ]
+				);
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Prepare a report response that contains only the fields the route returns.
+	 *
+	 * Both routes share one schema, so `prepare_item_for_response()` fills the fields of the other
+	 * route with `null`. This removes them from the response body.
+	 *
+	 * @param array   $item    Report data.
+	 * @param Request $request Request object.
+	 * @param array   $keys    Response fields the route returns.
+	 */
+	protected function prepare_report_response( array $item, Request $request, array $keys ): Response {
+		$response = $this->prepare_item_for_response( $item, $request );
+
+		$response->set_data( array_intersect_key( $response->get_data(), array_flip( $keys ) ) );
+
+		return $response;
+	}
+
+	/**
+	 * Get the query params for collections.
+	 *
+	 * @return array
+	 */
+	public function get_collection_params(): array {
+		return array_intersect_key(
+			parent::get_collection_params(),
+			array_flip( [ 'context', 'after', 'before' ] )
+		);
+	}
+
+	/**
+	 * Query params for the overview route, which also accepts `interval`.
+	 *
+	 * @return array
+	 */
+	protected function get_overview_collection_params(): array {
+		return $this->get_collection_params() + [
+			'interval' => [
+				'description'       => __( 'Time interval to use for segments in the returned data.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'enum'              => [ 'day' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
+	}
+
+	/**
+	 * Get the item schema for the controller.
+	 *
+	 * @return array
+	 */
+	protected function get_schema_properties(): array {
+		return [
+			'queries'   => [
+				'type'        => 'array',
+				'description' => __( 'Top search queries, ranked by clicks.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'items'       => [
+					'type'       => 'object',
+					'properties' => array_merge(
+						[
+							'query' => [
+								'type'        => 'string',
+								'description' => __( 'Search query.', 'google-listings-and-ads' ),
+								'context'     => [ 'view' ],
+							],
+						],
+						$this->get_performance_schema()
+					),
+				],
+			],
+			'limit'     => [
+				'type'        => 'integer',
+				'description' => __( 'Maximum number of queries the report returns.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'totals'    => [
+				'type'        => 'object',
+				'description' => __( 'Overview totals for the requested date range.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'properties'  => $this->get_performance_schema(),
+			],
+			'intervals' => [
+				'type'        => 'array',
+				'description' => __( 'The overview totals broken down by day, oldest first.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'items'       => [
+					'type'       => 'object',
+					'properties' => [
+						'interval'  => [
+							'type'        => 'string',
+							'description' => __( 'ISO 8601 date of this segment.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'subtotals' => [
+							'type'        => 'object',
+							'description' => __( 'Totals for this segment.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+							'properties'  => $this->get_performance_schema(),
+						],
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Get the shared schema for a Search Analytics performance measurement: clicks, impressions,
+	 * CTR and average position.
+	 *
+	 * `ctr` and `position` are `null` with no impressions (see `SearchAnalyticsService::map_performance_row()`).
+	 *
+	 * @return array
+	 */
+	protected function get_performance_schema(): array {
+		return [
+			'clicks'      => [
+				'type'        => 'integer',
+				'description' => __( 'Clicks.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'impressions' => [
+				'type'        => 'integer',
+				'description' => __( 'Impressions.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'ctr'         => [
+				'type'        => [ 'number', 'null' ],
+				'description' => __( 'Click-through rate, as a fraction between 0 and 1. Null with no impressions.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'position'    => [
+				'type'        => [ 'number', 'null' ],
+				'description' => __( 'Average position. Null with no impressions.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+		];
+	}
+
+	/**
+	 * Get the item schema name for the controller.
+	 *
+	 * Used for building the API response schema.
+	 *
+	 * @return string
+	 */
+	protected function get_schema_title(): string {
+		return 'search_console_reports';
+	}
+}

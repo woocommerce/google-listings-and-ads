@@ -1,0 +1,243 @@
+/**
+ * External dependencies
+ */
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { getQueryArgs } from '@wordpress/url';
+
+/**
+ * Internal dependencies
+ */
+import GoogleSearchConsoleAccountCard from './index';
+import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
+import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
+import FocusableAccountCard from '~/components/focusable-account-card';
+import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
+import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
+import { SEARCH_CONSOLE_EVENT_CONTEXT } from './constants';
+import { queueRecordGlaEvent } from '~/utils/tracks';
+
+jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
+	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
+);
+jest.mock( '~/utils/tracks', () => ( {
+	queueRecordGlaEvent: jest.fn().mockName( 'queueRecordGlaEvent' ),
+} ) );
+jest.mock( '~/hooks/useGoogleAccount', () =>
+	jest
+		.fn()
+		.mockName( 'useGoogleAccount' )
+		.mockReturnValue( { google: undefined } )
+);
+jest.mock( '~/components/focusable-account-card', () =>
+	jest.fn( ( { children } ) => children ).mockName( 'FocusableAccountCard' )
+);
+jest.mock( './connect-google-search-console-account-card', () =>
+	jest
+		.fn( () => <div>Connect Google Search Console account card</div> )
+		.mockName( 'ConnectGoogleSearchConsoleAccountCard' )
+);
+jest.mock( './incomplete-google-search-console-account-card', () =>
+	jest
+		.fn( () => <div>Incomplete Google Search Console account card</div> )
+		.mockName( 'IncompleteGoogleSearchConsoleAccountCard' )
+);
+jest.mock( './connected-success-notice', () =>
+	jest
+		.fn( () => <div>Connected success notice</div> )
+		.mockName( 'ConnectedSuccessNotice' )
+);
+
+const { CONNECTED, DISCONNECTED, INCOMPLETE } =
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
+
+/**
+ * Mocks `useGoogleSearchConsoleAccount`.
+ *
+ * @param {Object} account The account payload to mock.
+ * @param {boolean} [hasFinishedResolution] Whether resolution has finished. Defaults to `true`.
+ */
+function mockAccount( account, hasFinishedResolution = true ) {
+	useGoogleSearchConsoleAccount.mockReturnValue( {
+		account,
+		hasFinishedResolution,
+	} );
+}
+
+describe( 'GoogleSearchConsoleAccountCard', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+		useGoogleAccount.mockReturnValue( { google: undefined } );
+	} );
+
+	it( 'renders nothing while the account is still resolving', () => {
+		mockAccount( undefined, false );
+
+		const { container } = render( <GoogleSearchConsoleAccountCard /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	it( 'delegates disconnected status to ConnectGoogleSearchConsoleAccountCard', () => {
+		mockAccount( { status: DISCONNECTED } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect( ConnectGoogleSearchConsoleAccountCard ).toHaveBeenCalled();
+		expect(
+			screen.getByText( 'Connect Google Search Console account card' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'renders the connected badge, with no property link or success notice when the backend sends no site_url', () => {
+		mockAccount( { status: CONNECTED } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect( screen.getByText( 'Connected' ) ).toBeInTheDocument();
+		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Connected success notice' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'calls onDisconnect when the Disconnect menu item is clicked', async () => {
+		const user = userEvent.setup();
+		const onDisconnect = jest.fn().mockName( 'onDisconnect' );
+
+		mockAccount( { status: CONNECTED } );
+
+		render(
+			<GoogleSearchConsoleAccountCard onDisconnect={ onDisconnect } />
+		);
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Account actions for Google Search Console',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'menuitem', { name: 'Disconnect' } )
+		);
+
+		expect( onDisconnect ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'renders a plain, unwrapped link to the connected property when the connected Google account email is not yet known', () => {
+		mockAccount( { status: CONNECTED, site_url: 'https://example.com/' } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByRole( 'link', { name: /https:\/\/example\.com\// } )
+		).toHaveAttribute(
+			'href',
+			'https://search.google.com/search-console?resource_id=https%3A%2F%2Fexample.com%2F'
+		);
+	} );
+
+	it( 'renders a link to the connected property, wrapped for the connected Google account, when its email is known', () => {
+		useGoogleAccount.mockReturnValue( {
+			google: { email: 'merchant@example.com' },
+		} );
+		mockAccount( { status: CONNECTED, site_url: 'https://example.com/' } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByRole( 'link', { name: /https:\/\/example\.com\// } )
+		).toHaveAttribute(
+			'href',
+			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Fsearch.google.com%2Fsearch-console%3Fresource_id%3Dhttps%253A%252F%252Fexample.com%252F&Email=merchant%40example.com'
+		);
+	} );
+
+	it( 'renders a reports menu action that opens the Organic search report, even when the backend sends no site_url', async () => {
+		const user = userEvent.setup();
+
+		mockAccount( { status: CONNECTED } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Account actions for Google Search Console',
+			} )
+		);
+
+		const menuItem = screen.getByRole( 'menuitem', {
+			name: 'View Organic Search report',
+		} );
+
+		expect( getQueryArgs( menuItem.getAttribute( 'href' ) ) ).toEqual( {
+			page: 'wc-admin',
+			path: '/google/reports',
+			reportKey: 'search-console',
+		} );
+		expect( menuItem ).not.toHaveAttribute( 'target' );
+	} );
+
+	it( 'records an event when the reports menu action is clicked', async () => {
+		const user = userEvent.setup();
+
+		mockAccount( { status: CONNECTED } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Account actions for Google Search Console',
+			} )
+		);
+
+		const menuItem = screen.getByRole( 'menuitem', {
+			name: 'View Organic Search report',
+		} );
+		// Keep jsdom from attempting the navigation the link would trigger.
+		menuItem.addEventListener( 'click', ( event ) => {
+			event.preventDefault();
+		} );
+
+		await user.click( menuItem );
+
+		expect( queueRecordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_search_console_view_report_menu_item_click',
+			{ context: SEARCH_CONSOLE_EVENT_CONTEXT }
+		);
+	} );
+
+	it( 'renders the one-time success notice when the backend reports just_resolved', () => {
+		mockAccount( { status: CONNECTED, just_resolved: true } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByText( 'Connected success notice' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'delegates any incomplete status to IncompleteGoogleSearchConsoleAccountCard', () => {
+		mockAccount( { status: INCOMPLETE } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect( IncompleteGoogleSearchConsoleAccountCard ).toHaveBeenCalled();
+		expect(
+			screen.getByText( 'Incomplete Google Search Console account card' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'wraps the card in a FocusableAccountCard keyed to Search Console', () => {
+		mockAccount( { status: DISCONNECTED } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect( FocusableAccountCard ).toHaveBeenCalledWith(
+			expect.objectContaining( { id: 'search-console' } ),
+			expect.anything()
+		);
+	} );
+} );
