@@ -1,5 +1,11 @@
 {
 	"phpVersion": "8.0",
+	"port": 8889,
+	"testsEnvironment": false,
+	"config": {
+		"WP_DEBUG": false,
+		"SCRIPT_DEBUG": false
+	},
 	"plugins": [
 		"https://github.com/WP-API/Basic-Auth/archive/master.zip",
 		"./tests/e2e/test-data",
@@ -11,6 +17,7 @@
 	},
 	"lifecycleScripts": {
 		"afterStart": "./tests/e2e/bin/test-env-setup.sh",
-		"afterClean": "./tests/e2e/bin/test-env-setup.sh"
+		"afterClean": "./tests/e2e/bin/test-env-setup.sh",
+		"afterReset": "./tests/e2e/bin/test-env-setup.sh"
 	}
 }

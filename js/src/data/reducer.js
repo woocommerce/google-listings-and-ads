@@ -682,6 +682,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, [ 'ads', 'cyo_incentives' ], cyoIncentives );
 		}
 
+		case TYPES.APPLY_CYO_INCENTIVE: {
+			return setIn(
+				state,
+				[ 'ads', 'cyo_incentives', 'has_applied_incentive' ],
+				true
+			);
+		}
+
 		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {
 			const { url, data, assetType } = action;
 			const existingMedia = state.gen_ai_assets?.[ url ]?.media ?? {};
@@ -695,16 +703,37 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 								...( data[ assetType ] ?? [] ),
 							] ),
 						],
-				  }
+					}
 				: {
 						...existingMedia,
 						...data,
-				  };
+					};
 
 			return setIn(
 				state,
 				[ 'gen_ai_assets', url, 'media' ],
 				updatedMedia
+			);
+		}
+
+		case TYPES.REPLACE_GEN_AI_MEDIA_ASSET: {
+			const { url, assetType, sourceUrl, newUrl } = action;
+			const existingAssets =
+				state.gen_ai_assets?.[ url ]?.media?.[ assetType ] ?? [];
+			const sourceIndex = existingAssets.indexOf( sourceUrl );
+
+			// Source URL isn't in the store for this url/assetType — nothing to swap.
+			if ( sourceIndex === -1 ) {
+				return state;
+			}
+
+			const updatedAssets = [ ...existingAssets ];
+			updatedAssets[ sourceIndex ] = newUrl;
+
+			return setIn(
+				state,
+				[ 'gen_ai_assets', url, 'media', assetType ],
+				updatedAssets
 			);
 		}
 
@@ -719,11 +748,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 							...( existingText[ assetType ] ?? [] ),
 							...( data[ assetType ] ?? [] ),
 						],
-				  }
+					}
 				: {
 						...existingText,
 						...data,
-				  };
+					};
 
 			return setIn(
 				state,

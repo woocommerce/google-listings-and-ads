@@ -366,6 +366,36 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->assertCount( 2, $ids );
 	}
 
+	public function test_find_queued_update_ids() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_meta->update_sync_queued_at( $product_1, time() );
+
+		$variable_product = WC_Helper_Product::create_variation_product();
+		$variation        = wc_get_product( $variable_product->get_children()[0] );
+		$this->product_meta->update_sync_queued_at( $variation, time() );
+
+		$draft_product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->product_meta->update_sync_queued_at( $draft_product, time() );
+
+		WC_Helper_Product::create_simple_product();
+
+		$this->assertEquals(
+			[ $product_1->get_id(), $variation->get_id(), $draft_product->get_id() ],
+			$this->product_repository->find_queued_update_ids()
+		);
+	}
+
+	public function test_find_queued_update_ids_respects_limit() {
+		for ( $i = 0; $i < 3; $i++ ) {
+			$product = WC_Helper_Product::create_simple_product();
+			$this->product_meta->update_sync_queued_at( $product, time() );
+		}
+
+		$ids = $this->product_repository->find_queued_update_ids( 2 );
+
+		$this->assertCount( 2, $ids );
+	}
+
 	public function test_find_expiring_product_ids_excludes_dont_sync_visibility() {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );

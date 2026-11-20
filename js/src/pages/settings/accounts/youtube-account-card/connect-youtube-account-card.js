@@ -10,10 +10,12 @@ import { ExternalLink } from '@wordpress/components';
  */
 import { API_NAMESPACE } from '~/data/constants';
 import { recordGlaEvent } from '~/utils/tracks';
+import { redirectTo } from '~/utils/urls';
 import AppButton from '~/components/app-button';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './connect-youtube-account-card.scss';
 
 /**
@@ -28,9 +30,17 @@ const TERMS_URL = 'https://www.youtube.com/t/merchant_terms';
 /**
  * @fires gla_youtube_account_connect_button_click
  * @fires gla_documentation_link_click with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
+ * @return {JSX.Element} YouTube connection card.
  */
 const ConnectYouTubeAccountCard = () => {
 	const { createNotice } = useDispatchCoreNotices();
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const disabled = ! hasGoogleMCConnection;
+	const disabledReason = __(
+		'Connect a Google Merchant Center account before connecting YouTube.',
+		'google-listings-and-ads'
+	);
+	const connectButtonLabel = __( 'Connect', 'google-listings-and-ads' );
 
 	const query = { next_page_name: 'setup-youtube' };
 	const path = addQueryArgs( `${ API_NAMESPACE }/youtube/connect`, query );
@@ -41,7 +51,7 @@ const ConnectYouTubeAccountCard = () => {
 	const handleConnectClick = async () => {
 		try {
 			const response = await fetchYouTubeConnect();
-			window.location.href = response.url;
+			redirectTo( response.url );
 		} catch ( error ) {
 			createNotice(
 				'error',
@@ -61,9 +71,29 @@ const ConnectYouTubeAccountCard = () => {
 		} );
 	};
 
+	const connectButton = (
+		<AppButton
+			// Show spinner while the API request is in progress or while the user is being redirected to YouTube for authentication.
+			loading={ loading || !! data }
+			disabled={ disabled }
+			__experimentalIsFocusable={ disabled }
+			showTooltip={ disabled }
+			label={ disabled ? disabledReason : undefined }
+			aria-label={ connectButtonLabel }
+			describedBy={ disabled ? disabledReason : undefined }
+			eventName="gla_youtube_account_connect_button_click"
+			eventProps={ { context: 'settings-youtube' } }
+			onClick={ handleConnectClick }
+			isSecondary
+		>
+			{ connectButtonLabel }
+		</AppButton>
+	);
+
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.YOUTUBE }
+			helper={ disabled ? <span>{ disabledReason }</span> : undefined }
 			description={
 				<div className="gla-connect-youtube-account-card__description">
 					<p>
@@ -80,18 +110,7 @@ const ConnectYouTubeAccountCard = () => {
 					</ExternalLink>
 				</div>
 			}
-			indicator={
-				<AppButton
-					// Show spinner while the API request is in progress or while the user is being redirected to YouTube for authentication.
-					loading={ loading || !! data }
-					eventName="gla_youtube_account_connect_button_click"
-					eventProps={ { context: 'settings-youtube' } }
-					onClick={ handleConnectClick }
-					isSecondary
-				>
-					{ __( 'Connect', 'google-listings-and-ads' ) }
-				</AppButton>
-			}
+			indicator={ connectButton }
 		/>
 	);
 };

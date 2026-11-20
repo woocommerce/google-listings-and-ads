@@ -353,6 +353,30 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * Find the IDs of products queued for a delayed update job, ordered by ID ascending.
+	 *
+	 * Note: Includes product variations.
+	 *
+	 * @param int $limit Maximum number of results to retrieve or -1 for unlimited.
+	 *
+	 * @return int[] Array of WooCommerce product IDs ordered by ID ASC.
+	 */
+	public function find_queued_update_ids( int $limit = -1 ): array {
+		$args = [
+			'orderby'    => 'ID',
+			'order'      => 'ASC',
+			'meta_query' => [
+				[
+					'key'     => ProductMetaHandler::KEY_SYNC_QUEUED_AT,
+					'compare' => 'EXISTS',
+				],
+			],
+		];
+
+		return $this->find_ids( $args, $limit );
+	}
+
+	/**
 	 * Find all simple and variable product IDs regardless of MC status or visibility.
 	 *
 	 * @since 2.6.4

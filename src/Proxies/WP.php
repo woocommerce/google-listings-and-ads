@@ -332,6 +332,17 @@ class WP {
 	}
 
 	/**
+	 * Determines whether a script has been added to the given status.
+	 *
+	 * @param string $handle Name of the script.
+	 * @param string $status Status to check. Default 'enqueued'.
+	 * @return bool
+	 */
+	public function wp_script_is( string $handle, string $status = 'enqueued' ): bool {
+		return wp_script_is( $handle, $status );
+	}
+
+	/**
 	 * Prints an inline script tag.
 	 *
 	 * @param string $data       Data for script tag: JavaScript, importmap, speculationrules, etc.
@@ -428,29 +439,6 @@ class WP {
 	 */
 	public function update_user_meta( int $user_id, string $key, $value ) {
 		return update_user_meta( $user_id, $key, $value );
-	}
-
-	/**
-	 * Wrapper of get_site_transient.
-	 *
-	 * @param string $transient Transient name.
-	 *
-	 * @return mixed Value of the transient, or false if it does not exist.
-	 */
-	public function get_site_transient( string $transient ) {
-		return get_site_transient( $transient );
-	}
-
-	/**
-	 * Wrapper of current_user_can.
-	 *
-	 * @param string $capability Capability name.
-	 * @param mixed  ...$args    Optional further parameters, typically starting with an object ID.
-	 *
-	 * @return bool Whether the current user has the given capability.
-	 */
-	public function current_user_can( string $capability, ...$args ): bool {
-		return current_user_can( $capability, ...$args );
 	}
 
 	/**

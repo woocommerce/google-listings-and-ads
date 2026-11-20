@@ -12,7 +12,7 @@ import {
 } from '@wordpress/element';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import CurrencyFactory from '@woocommerce/currency';
-import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
+import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies

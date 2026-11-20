@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClien
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -22,11 +23,20 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	protected const MERCHANT_ID = 12345;
 	protected const LIST_PATH   = 'datasources/v1/accounts/12345/dataSources';
 
+	/** How long a confirmed data source stays trusted before the next check. */
+	protected const VERIFY_TTL = 12 * HOUR_IN_SECONDS;
+
 	/** @var MockObject|MerchantApiClient */
 	protected $client;
 
 	/** @var MockObject|OptionsInterface */
 	protected $options;
+
+	/** @var MockObject|TransientsInterface */
+	protected $transients;
+
+	/** @var array Backing store for the stateful transients mock. */
+	protected $stored_transients = [];
 
 	/** @var MapiDataSourcesService */
 	protected $service;
@@ -38,8 +48,37 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->options = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'get_merchant_id' )->willReturn( self::MERCHANT_ID );
 
+		// Stateful, so a verification recorded by one resolution is visible to the next.
+		$this->stored_transients = [];
+		$this->transients        = $this->createMock( TransientsInterface::class );
+		$this->transients->method( 'get' )->willReturnCallback(
+			function ( string $name, $default_value = null ) {
+				return $this->stored_transients[ $name ] ?? $default_value;
+			}
+		);
+		$this->transients->method( 'set' )->willReturnCallback(
+			function ( string $name, $value ) {
+				$this->stored_transients[ $name ] = $value;
+				return true;
+			}
+		);
+		$this->transients->method( 'delete' )->willReturnCallback(
+			function ( string $name ) {
+				unset( $this->stored_transients[ $name ] );
+				return true;
+			}
+		);
+
 		$this->service = new MapiDataSourcesService( $this->client );
 		$this->service->set_options_object( $this->options );
+		$this->service->set_transients_object( $this->transients );
+	}
+
+	/**
+	 * @return array<string, int> Verification timestamps currently stored, keyed by data source name.
+	 */
+	protected function verified_timestamps(): array {
+		return $this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] ?? [];
 	}
 
 	public function test_returns_cached_value_after_verifying_it_exists() {
@@ -59,6 +98,102 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			'accounts/12345/dataSources/999',
 			$this->service->ensure_data_source_for( 'en', 'US' )
 		);
+		// The verification is recorded so later requests skip the dataSources.get.
+		$this->assertArrayHasKey( 'accounts/12345/dataSources/999', $this->verified_timestamps() );
+	}
+
+	public function test_cache_hit_verified_within_ttl_makes_no_api_call() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999' => time() - self::VERIFY_TTL + HOUR_IN_SECONDS,
+		];
+
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_cache_hit_verified_longer_ago_than_ttl_is_verified_again() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$expired = time() - self::VERIFY_TTL - 1;
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999'  => $expired,
+			'accounts/12345/dataSources/gone' => $expired,
+		];
+
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/999' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/999' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+
+		// The re-verified name gets a fresh timestamp; other expired entries are pruned.
+		$timestamps = $this->verified_timestamps();
+		$this->assertSame( [ 'accounts/12345/dataSources/999' ], array_keys( $timestamps ) );
+		$this->assertGreaterThan( $expired, $timestamps['accounts/12345/dataSources/999'] );
+	}
+
+	public function test_failed_verification_other_than_404_keeps_the_name_but_does_not_record_it() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->willThrowException( new MerchantApiException( 503, [], 'get' ) );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame( [], $this->verified_timestamps() );
+	}
+
+	public function test_clear_verifications_makes_the_next_cache_hit_check_the_account_again() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999' => time() - HOUR_IN_SECONDS,
+		];
+
+		// Only the resolution after clear_verifications() checks the account.
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/999' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/999' ] );
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->service->ensure_data_source_for( 'en', 'US' );
+		$this->service->clear_verifications();
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+		// The cached name is kept, and the new check is recorded again.
+		$this->assertGreaterThan( time() - HOUR_IN_SECONDS, $this->verified_timestamps()['accounts/12345/dataSources/999'] );
 	}
 
 	public function test_verifies_cached_name_only_once_per_request() {
@@ -136,6 +271,11 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			}
 		);
 
+		// forget() also drops the name's verification, so the transient keeps no stale names.
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999' => time(),
+		];
+
 		// forget() clears the entry; the next resolution then discovers rather than verifying a cache hit.
 		$this->client->expects( $this->once() )
 			->method( 'get' )
@@ -165,6 +305,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			[ 'product|en|US' => 'accounts/12345/dataSources/new' ],
 			$stored[ OptionsInterface::MAPI_DATA_SOURCES ]
 		);
+		$this->assertSame( [ 'accounts/12345/dataSources/new' ], array_keys( $this->verified_timestamps() ) );
 	}
 
 	public function test_forget_promotion_data_source_for_removes_only_the_promotion_entry() {
@@ -212,6 +353,166 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			)
 		);
 		$this->assertFalse( MapiDataSourcesService::is_missing_data_source_failure( null ) );
+	}
+
+	public function test_is_channel_mismatch_failure_only_matches_the_channel_mismatch_400() {
+		$this->assertTrue(
+			MapiDataSourcesService::is_channel_mismatch_failure(
+				new MerchantApiException( 400, [ 'error' => [ 'message' => '[dataSource] The provided data source channel does not match product channel.' ] ], __METHOD__ )
+			)
+		);
+		// A 400 about something else, and a non-400, are both left alone.
+		$this->assertFalse(
+			MapiDataSourcesService::is_channel_mismatch_failure(
+				new MerchantApiException( 400, [ 'error' => [ 'message' => 'Invalid price.' ] ], __METHOD__ )
+			)
+		);
+		$this->assertFalse(
+			MapiDataSourcesService::is_channel_mismatch_failure(
+				new MerchantApiException( 404, [ 'error' => [ 'message' => 'The provided data source channel does not match product channel.' ] ], __METHOD__ )
+			)
+		);
+		$this->assertFalse( MapiDataSourcesService::is_channel_mismatch_failure( null ) );
+	}
+
+	public function test_recreate_data_source_for_bypasses_discovery_and_forces_a_fresh_online_source() {
+		// A channel-mismatch 400 means the cached/matched source cannot be trusted,
+		// but simply forgetting the cache and re-resolving would deterministically re-list and
+		// re-adopt the exact same undetectable-as-local-only source again. recreate_data_source_for()
+		// skips discovery entirely and forces a fresh API-created source with explicit online
+		// destinations, guaranteeing forward progress.
+		$stored = [
+			OptionsInterface::MAPI_DATA_SOURCES => [ 'product|en|US' => 'accounts/12345/dataSources/500' ],
+		];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				self::LIST_PATH,
+				$this->callback(
+					function ( $body ) {
+						return 'en' === ( $body['primaryProductDataSource']['contentLanguage'] ?? null )
+							&& 'US' === ( $body['primaryProductDataSource']['feedLabel'] ?? null )
+							&& ! empty( $body['primaryProductDataSource']['destinations'] );
+					}
+				)
+			)
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/700' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/700',
+			$this->service->recreate_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame(
+			[ 'product|en|US' => 'accounts/12345/dataSources/700' ],
+			$stored[ OptionsInterface::MAPI_DATA_SOURCES ]
+		);
+		$this->assertArrayHasKey( 'product|en|US', $stored[ OptionsInterface::MAPI_RECREATED_DATA_SOURCES ] );
+	}
+
+	public function test_recreate_data_source_for_does_not_create_again_within_the_rate_limit_window() {
+		// An explicit-destinations source that still mismatches (e.g. some other cause) must not
+		// accumulate a fresh duplicate on every batch/sync. Within the rate-limit window,
+		// recreate_data_source_for() logs and returns null instead of creating another source.
+		$stored = [
+			OptionsInterface::MAPI_DATA_SOURCES           => [ 'product|en|US' => 'accounts/12345/dataSources/700' ],
+			OptionsInterface::MAPI_RECREATED_DATA_SOURCES => [ 'product|en|US' => time() - 10 ],
+		];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$logged   = [];
+		$callback = static function ( $message ) use ( &$logged ) {
+			$logged[] = $message;
+		};
+		add_action( 'woocommerce_gla_error', $callback );
+
+		$this->assertNull( $this->service->recreate_data_source_for( 'en', 'US' ) );
+
+		remove_action( 'woocommerce_gla_error', $callback );
+		$this->assertNotEmpty( $logged );
+	}
+
+	public function test_recreate_data_source_for_creates_again_once_the_rate_limit_window_has_passed() {
+		$stored = [
+			OptionsInterface::MAPI_DATA_SOURCES           => [ 'product|en|US' => 'accounts/12345/dataSources/700' ],
+			OptionsInterface::MAPI_RECREATED_DATA_SOURCES => [ 'product|en|US' => time() - ( DAY_IN_SECONDS + 10 ) ],
+		];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/800' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/800',
+			$this->service->recreate_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_recreate_data_source_for_clears_the_rate_limit_mark_when_create_fails() {
+		// A failed create must not lock the pair out of recovery for the rest of the window: the
+		// mark written before the call is cleared again when create_data_source() throws.
+		$stored = [];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+		$call = 0;
+		$this->client->method( 'post' )->willReturnCallback(
+			function () use ( &$call ) {
+				++$call;
+				if ( 1 === $call ) {
+					throw new MerchantApiException( 500, [], 'post' );
+				}
+				return [ 'name' => 'accounts/12345/dataSources/800' ];
+			}
+		);
+
+		try {
+			$this->service->recreate_data_source_for( 'en', 'US' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( 500, $exception->get_http_status() );
+		}
+
+		$this->assertSame(
+			'accounts/12345/dataSources/800',
+			$this->service->recreate_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame( 2, $call );
 	}
 
 	public function test_reuses_existing_data_source_matching_language_and_feed() {
@@ -585,6 +886,868 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_drops_cached_promotion_data_source_when_its_verification_404s() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'promotion|en|US' => 'accounts/12345/dataSources/300',
+			]
+		);
+		// The shared verification runs for promotion sources too, and a 404 falls through to a list.
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ 'datasources/v1/accounts/12345/dataSources/300' ],
+				[ self::LIST_PATH ]
+			)
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new MerchantApiException( 404, [ 'error' => [ 'message' => 'Promotion data source 300 was not found.' ] ], 'get' ) ),
+				[ 'dataSources' => [] ]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/777' ] );
+		// The stale entry is cleared, then the re-resolved name is written back.
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::MAPI_DATA_SOURCES, [] ],
+				[ OptionsInterface::MAPI_DATA_SOURCES, [ 'promotion|en|US' => 'accounts/12345/dataSources/777' ] ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/777',
+			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_file_input_data_sources_when_matching_product_sources() {
+		// A pre-existing legacy file-feed data source matching the
+		// (language, country) pair is skipped in favor of a new API-created source
+		// rather than being adopted, since MAPI item inserts are rejected with a 400
+		// ("API data sources cannot have a fileInput field set") on a file-input source.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Legacy file feed (en/US)',
+							'fileInput'                => [ 'latestUploadedSource' => [] ] ,
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/600' ] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|en|US' => 'accounts/12345/dataSources/600' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_a_non_api_source_with_no_file_input_field() {
+		// A source whose `input` is `UI` (or `AUTOFEED`) is also rejected with
+		// "the data source must have an API input type", but carries no `fileInput` field at all.
+		// Checking `input` directly (not just falling back to fileInput) catches this too.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/505',
+							'displayName'              => 'Added via Merchant Center UI (en/US)',
+							'input'                    => 'UI',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/605' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/605',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_drops_cached_file_input_product_data_source_and_re_resolves() {
+		// Recovery side: a cache entry pointing to a file-input source
+		// — the bug scenario, where a pre-store-upgrade file feed had been cached as the
+		// plugin's own product source — is replaced with a fresh API-created source
+		// rather than being trusted, so the first write no longer 400s.
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/500',
+			]
+		);
+		// The cache-hit check queries the stale entry by name; the source is still on the
+		// account with fileInput set, so the entry is evicted and a new API source is created
+		// instead of adopting the file source (which would 400 on the next insert).
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ 'datasources/v1/accounts/12345/dataSources/500' ],
+				[ self::LIST_PATH ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					'name'                     => 'accounts/12345/dataSources/500',
+					'displayName'              => 'Legacy file feed (en/US)',
+					'fileInput'                => [
+						'latestUploadedSource' => [],
+					],
+					'primaryProductDataSource' => [
+						'contentLanguage' => 'en',
+						'feedLabel'       => 'US',
+					],
+				],
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Legacy file feed (en/US)',
+							'fileInput'                => [
+								'latestUploadedSource' => [],
+							],
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/600' ] );
+		// The stale entry is cleared, then the re-resolved name is written back.
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::MAPI_DATA_SOURCES, [] ],
+				[ OptionsInterface::MAPI_DATA_SOURCES, [ 'product|en|US' => 'accounts/12345/dataSources/600' ] ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+		// The unusable source was reachable but must not be trusted for the verify window; only the new one is.
+		$this->assertSame( [ 'accounts/12345/dataSources/600' ], array_keys( $this->verified_timestamps() ) );
+	}
+
+	public function test_ignores_file_input_data_sources_when_matching_promotion_sources() {
+		// A legacy file-feed data source matching the promotion
+		// (language, country) pair must not be adopted, since promotion inserts are rejected
+		// with a 400 ("API data sources cannot have a fileInput field set") on a file-input source.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                => 'accounts/12345/dataSources/550',
+							'displayName'         => 'Legacy promo file feed (en/US)',
+							'fileInput'           => [
+								'latestUploadedSource' => [],
+							],
+							'promotionDataSource' => [
+								'contentLanguage' => 'en',
+								'targetCountry'   => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/650' ] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'promotion|en|US' => 'accounts/12345/dataSources/650' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/650',
+			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_drops_cached_file_input_promotion_data_source_and_re_resolves() {
+		// Recovery side, for the promotion path: a cache entry pointing
+		// to a file-input source is replaced with a fresh API-created promotion source.
+		$this->options->method( 'get' )->willReturn(
+			[
+				'promotion|en|US' => 'accounts/12345/dataSources/550',
+			]
+		);
+		// The cache-hit check queries the stale entry by name; the source is still on the
+		// account with fileInput set, so the entry is evicted and a new API source is created
+		// instead of adopting the file source.
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ 'datasources/v1/accounts/12345/dataSources/550' ],
+				[ self::LIST_PATH ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					'name'                => 'accounts/12345/dataSources/550',
+					'displayName'         => 'Legacy promo file feed (en/US)',
+					'fileInput'           => [
+						'latestUploadedSource' => [],
+					],
+					'promotionDataSource' => [
+						'contentLanguage' => 'en',
+						'targetCountry'   => 'US',
+					],
+				],
+				[
+					'dataSources' => [
+						[
+							'name'                => 'accounts/12345/dataSources/550',
+							'displayName'         => 'Legacy promo file feed (en/US)',
+							'fileInput'           => [
+								'latestUploadedSource' => [],
+							],
+							'promotionDataSource' => [
+								'contentLanguage' => 'en',
+								'targetCountry'   => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/650' ] );
+		// The stale entry is cleared, then the re-resolved name is written back.
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::MAPI_DATA_SOURCES, [] ],
+				[ OptionsInterface::MAPI_DATA_SOURCES, [ 'promotion|en|US' => 'accounts/12345/dataSources/650' ] ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/650',
+			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_keeps_cached_source_with_an_explicit_api_input_type() {
+		// Regression check: a source with input explicitly set to 'API' must still be trusted,
+		// not caught by the (now input-aware) non-API-source check.
+		$this->options->method( 'get' )->willReturn(
+			[ 'product|en|US' => 'accounts/12345/dataSources/901' ]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/901' )
+			->willReturn(
+				[
+					'name'                     => 'accounts/12345/dataSources/901',
+					'displayName'              => 'Google for WooCommerce (en/US)',
+					'input'                    => 'API',
+					'primaryProductDataSource' => [
+						'contentLanguage' => 'en',
+						'feedLabel'       => 'US',
+					],
+				]
+			);
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/901',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_keeps_cached_source_which_has_no_file_input() {
+		// A cached source without fileInput is trusted as-is: the file-input skip must not
+		// regress the standard cache-hit path (no rename, no re-creation — it was already
+		// settled when it was first discovered/adopted).
+		$this->options->method( 'get' )->willReturn(
+			[ 'product|en|US' => 'accounts/12345/dataSources/900' ]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/900' )
+			->willReturn(
+				[
+					'name'                     => 'accounts/12345/dataSources/900',
+					'displayName'              => 'Google for WooCommerce (en/US)',
+					'primaryProductDataSource' => [
+						'contentLanguage' => 'en',
+						'feedLabel'       => 'US',
+					],
+				]
+			);
+		$this->client->expects( $this->never() )->method( 'patch' );
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/900',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_local_channel_data_sources_when_matching_product_sources() {
+		// A pre-existing data source whose destinations are all local (e.g. Google
+		// inferred LOCAL_PRODUCTS at creation because the account has local inventory) is skipped
+		// in favor of a new API-created source, since MAPI item inserts into it are rejected with
+		// a 400 ("The provided data source channel does not match product channel").
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'destinations'    => [
+									[
+										'destination' => 'LOCAL_INVENTORY_ADS',
+										'state'       => 'ENABLED',
+									],
+									[
+										'destination' => 'FREE_LOCAL_LISTINGS',
+										'state'       => 'ENABLED',
+									],
+								],
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/600' ] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|en|US' => 'accounts/12345/dataSources/600' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_a_local_source_carrying_an_unrecognised_destination() {
+		// Local-only detection takes an enabled destination as proof of
+		// online capability only when it is one Google is known to serve online products
+		// through. A destination outside both lists (here a hypothetical future one) is no
+		// evidence either way, so a source that is otherwise all-local is still skipped.
+		// Reading "not local" as "online" would re-adopt the source and kill sync again.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'destinations'    => [
+									[
+										'destination' => 'LOCAL_INVENTORY_ADS',
+										'state'       => 'ENABLED',
+									],
+									[
+										'destination' => 'FREE_LOCAL_LISTINGS',
+										'state'       => 'ENABLED',
+									],
+									[
+										'destination' => 'SOME_FUTURE_SURFACE',
+										'state'       => 'ENABLED',
+									],
+								],
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/600' ] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|en|US' => 'accounts/12345/dataSources/600' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_adopts_a_source_whose_online_destination_is_one_the_plugin_never_requests() {
+		// The flip side: a merchant-configured source may reach online shoppers through a
+		// destination the plugin would never ask for when creating one of its own. That is still
+		// positive evidence of online capability, so the source is adopted rather than skipped.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'destinations'    => [
+									[
+										'destination' => 'FREE_LOCAL_LISTINGS',
+										'state'       => 'ENABLED',
+									],
+									[
+										'destination' => 'YOUTUBE_SHOPPING',
+										'state'       => 'ENABLED',
+									],
+								],
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|en|US' => 'accounts/12345/dataSources/500' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/500',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_legacy_local_data_sources_when_matching_product_sources() {
+		// A data source flagged legacyLocal (Google's own "products of this data
+		// source are only targeting local destinations" marker) is skipped even without an
+		// explicit destinations list, since it is unusable for online item inserts either way.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/510',
+							'displayName'              => 'Local Feed Partnership',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'legacyLocal'     => true,
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/610' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/610',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_a_source_that_is_both_file_input_and_local_only() {
+		// is_unusable_data_source() composes the non-API-source check and the local-only check
+		// with OR. This locks in that
+		// the composition still skips a source exhibiting both properties at once, so a future
+		// change to either sub-check can't silently stop covering this combination.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/520',
+							'displayName'              => 'Legacy local file feed (en/US)',
+							'fileInput'                => [ 'latestUploadedSource' => [] ],
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'legacyLocal'     => true,
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/620' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/620',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_drops_cached_local_channel_product_data_source_and_re_resolves() {
+		// Recovery side: a cache entry pointing to a data source that turns out to
+		// be local-only is replaced with a fresh API-created source rather than trusted, so the
+		// first write no longer 400s on a channel mismatch.
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/500',
+			]
+		);
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ 'datasources/v1/accounts/12345/dataSources/500' ],
+				[ self::LIST_PATH ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					'name'                     => 'accounts/12345/dataSources/500',
+					'displayName'              => 'Google for WooCommerce (en/US)',
+					'primaryProductDataSource' => [
+						'contentLanguage' => 'en',
+						'feedLabel'       => 'US',
+						'destinations'    => [
+							[
+								'destination' => 'LOCAL_INVENTORY_ADS',
+								'state'       => 'ENABLED',
+							],
+						],
+					],
+				],
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'destinations'    => [
+									[
+										'destination' => 'LOCAL_INVENTORY_ADS',
+										'state'       => 'ENABLED',
+									],
+								],
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/600' ] );
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::MAPI_DATA_SOURCES, [] ],
+				[ OptionsInterface::MAPI_DATA_SOURCES, [ 'product|en|US' => 'accounts/12345/dataSources/600' ] ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_creates_new_product_data_source_with_online_destinations_only() {
+		// Without an explicit destinations list, Google may infer local-only
+		// destinations at creation time on an account with local inventory. Explicitly requesting
+		// only the online destinations prevents that inheritance.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				self::LIST_PATH,
+				$this->callback(
+					function ( $body ) {
+						return [
+							[
+								'destination' => 'SHOPPING_ADS',
+								'state'       => 'ENABLED',
+							],
+							[
+								'destination' => 'FREE_LISTINGS',
+								'state'       => 'ENABLED',
+							],
+						] === ( $body['primaryProductDataSource']['destinations'] ?? null );
+					}
+				)
+			)
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/700' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/700',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_creates_product_data_source_with_shopping_ads_only_when_free_listings_is_rejected() {
+		// An account that can't use free listings rejects the FREE_LISTINGS destination (reported
+		// by Google under its internal name ORGANIC_EXPERIENCES) and creates nothing. Retrying
+		// with the online destination it does accept keeps product sync working.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+
+		$requested = [];
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function ( $path, $body ) use ( &$requested ) {
+					$requested[] = array_column( $body['primaryProductDataSource']['destinations'], 'destination' );
+					if ( 1 === count( $requested ) ) {
+						throw $this->invalid_destinations_exception();
+					}
+					return [ 'name' => 'accounts/12345/dataSources/720' ];
+				}
+			);
+
+		$logged   = [];
+		$callback = static function ( $message ) use ( &$logged ) {
+			$logged[] = $message;
+		};
+		add_action( 'woocommerce_gla_error', $callback );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/720',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+
+		remove_action( 'woocommerce_gla_error', $callback );
+		$this->assertSame( [ [ 'SHOPPING_ADS', 'FREE_LISTINGS' ], [ 'SHOPPING_ADS' ] ], $requested );
+		$this->assertCount( 1, $logged );
+		$this->assertStringContainsString( 'retrying with [SHOPPING_ADS]', $logged[0] );
+	}
+
+	public function test_throws_without_a_no_destinations_attempt_when_every_online_destination_is_rejected() {
+		// A create without destinations is what produced local-only sources, and an account that
+		// rejects even SHOPPING_ADS would likely get one, so the error surfaces instead.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+
+		$requested = [];
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function ( $path, $body ) use ( &$requested ) {
+					$requested[] = array_column( $body['primaryProductDataSource']['destinations'], 'destination' );
+					throw $this->invalid_destinations_exception(
+						2 === count( $requested ) ? 'SHOPPING_ADS' : 'ORGANIC_EXPERIENCES'
+					);
+				}
+			);
+
+		$logged   = [];
+		$callback = static function ( $message ) use ( &$logged ) {
+			$logged[] = $message;
+		};
+		add_action( 'woocommerce_gla_error', $callback );
+
+		try {
+			$this->service->ensure_data_source_for( 'en', 'US' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( 400, $exception->get_http_status() );
+		} finally {
+			remove_action( 'woocommerce_gla_error', $callback );
+		}
+
+		$this->assertSame( [ [ 'SHOPPING_ADS', 'FREE_LISTINGS' ], [ 'SHOPPING_ADS' ] ], $requested );
+		$this->assertCount( 2, $logged );
+		$this->assertStringContainsString(
+			'rejected every destination list tried for data source en|US ([SHOPPING_ADS, FREE_LISTINGS], [SHOPPING_ADS])',
+			$logged[1]
+		);
+	}
+
+	public function test_rethrows_a_different_error_from_the_fallback_create_without_retrying_again() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+
+		$call = 0;
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function () use ( &$call ) {
+					++$call;
+					if ( 1 === $call ) {
+						throw $this->invalid_destinations_exception();
+					}
+					throw new MerchantApiException( 500, [], 'post' );
+				}
+			);
+
+		try {
+			$this->service->ensure_data_source_for( 'en', 'US' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( 500, $exception->get_http_status() );
+		}
+	}
+
+	public function test_does_not_retry_product_data_source_creation_for_other_errors() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willThrowException(
+				new MerchantApiException( 400, [ 'error' => [ 'message' => '[displayName] Invalid display name.' ] ], 'post' )
+			);
+
+		$this->expectException( MerchantApiException::class );
+
+		$this->service->ensure_data_source_for( 'en', 'US' );
+	}
+
+	public function test_does_not_retry_for_a_400_that_mentions_destinations_outside_the_destinations_field() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willThrowException(
+				new MerchantApiException( 400, [ 'error' => [ 'message' => '[primaryProductDataSource.feedLabel] Feed label is not valid for the requested destinations.' ] ], 'post' )
+			);
+
+		$this->expectException( MerchantApiException::class );
+
+		$this->service->ensure_data_source_for( 'en', 'US' );
+	}
+
+	public function test_recreate_data_source_for_falls_back_to_shopping_ads_when_free_listings_is_rejected() {
+		$stored = [];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+
+		$requested = [];
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnCallback(
+				function ( $path, $body ) use ( &$requested ) {
+					$requested[] = array_column( $body['primaryProductDataSource']['destinations'], 'destination' );
+					if ( 1 === count( $requested ) ) {
+						throw $this->invalid_destinations_exception();
+					}
+					return [ 'name' => 'accounts/12345/dataSources/740' ];
+				}
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/740',
+			$this->service->recreate_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame( [ [ 'SHOPPING_ADS', 'FREE_LISTINGS' ], [ 'SHOPPING_ADS' ] ], $requested );
+		$this->assertSame(
+			[ 'product|en|US' => 'accounts/12345/dataSources/740' ],
+			$stored[ OptionsInterface::MAPI_DATA_SOURCES ]
+		);
+	}
+
+	public function test_creates_new_promotion_data_source_without_destinations_field() {
+		// PromotionDataSource has no destinations field in the Merchant API; sending one would be
+		// an invalid request, so promotion creation must never include it.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				self::LIST_PATH,
+				$this->callback(
+					function ( $body ) {
+						return ! isset( $body['promotionDataSource']['destinations'] );
+					}
+				)
+			)
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/710' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/710',
+			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_keeps_cached_name_when_verification_returns_a_non_404_error() {
+		// The "only a 404 proves absence" contract on verify_cached_source() must hold even with
+		// the composed unusable-source check now sitting next to the exception handling: a
+		// transient error (auth, 5xx) must not evict a cached name that might otherwise be usable.
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/999' )
+			->willThrowException( new MerchantApiException( 500, [], 'get' ) );
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
 	public function test_promotion_and_product_caches_do_not_collide() {
 		// A product data source is cached under 'product|en|US'; resolving a promotion for the
 		// same language/country must use a distinct key and never return the product source.
@@ -608,6 +1771,23 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->assertSame(
 			'accounts/12345/dataSources/300',
 			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	/**
+	 * The rejection Google returns when a data source requests a destination the account can't
+	 * use. The ORGANIC_EXPERIENCES form is the one reported by merchants; other destination names
+	 * follow the same shape.
+	 *
+	 * @param string $destination The destination Google names as invalid.
+	 *
+	 * @return MerchantApiException
+	 */
+	private function invalid_destinations_exception( string $destination = 'ORGANIC_EXPERIENCES' ): MerchantApiException {
+		return new MerchantApiException(
+			400,
+			[ 'error' => [ 'message' => "[primaryProductDataSource.destinations] Destinations of the data source are invalid: {$destination}." ] ],
+			'post'
 		);
 	}
 }
