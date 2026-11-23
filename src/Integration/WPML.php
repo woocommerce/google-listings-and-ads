@@ -18,6 +18,20 @@ defined( 'ABSPATH' ) || exit;
 class WPML implements IntegrationInterface {
 
 	/**
+	 * Query arg that carries the active language codes a product query is restricted to.
+	 *
+	 * @var string
+	 */
+	private const ALL_LANGUAGES_QUERY_ARG = 'gla_wpml_all_languages';
+
+	/**
+	 * Product post types whose WPML language decides whether a query returns them.
+	 *
+	 * @var string[]
+	 */
+	private const PRODUCT_POST_TYPES = [ 'product', 'product_variation' ];
+
+	/**
 	 * Returns whether the integration is active or not.
 	 *
 	 * @return bool
@@ -47,20 +61,6 @@ class WPML implements IntegrationInterface {
 	}
 
 	/**
-	 * Query arg that marks a product query for the active-languages WHERE condition.
-	 *
-	 * @var string
-	 */
-	private const ALL_LANGUAGES_QUERY_ARG = 'gla_wpml_all_languages';
-
-	/**
-	 * Product post types whose WPML language decides whether a query returns them.
-	 *
-	 * @var string[]
-	 */
-	private const PRODUCT_POST_TYPES = [ 'product', 'product_variation' ];
-
-	/**
 	 * Runs the given callback with WPML switched to the "all languages" context.
 	 *
 	 * WPML restricts every post query to the current language, so any product query
@@ -87,15 +87,18 @@ class WPML implements IntegrationInterface {
 			return $callback();
 		}
 
-		$condition    = $this->get_active_languages_where_condition();
-		$where_filter = static function ( $where, $query = null ) use ( $condition ) {
-			if ( ! is_string( $where ) || '' === $condition || ! $query instanceof WP_Query ) {
+		$where_filter = function ( $where, $query = null ) {
+			if ( ! is_string( $where ) || ! $query instanceof WP_Query || ! is_array( $query->query ) ) {
 				return $where;
 			}
 
-			$query_args = is_array( $query->query ) ? $query->query : [];
+			$languages = $query->query[ self::ALL_LANGUAGES_QUERY_ARG ] ?? null;
 
-			return empty( $query_args[ self::ALL_LANGUAGES_QUERY_ARG ] ) ? $where : $where . $condition;
+			if ( ! is_array( $languages ) ) {
+				return $where;
+			}
+
+			return $where . $this->get_active_languages_where_condition( array_values( array_filter( $languages, 'is_string' ) ) );
 		};
 
 		add_filter( 'posts_where', $where_filter, 10, 2 );
@@ -134,19 +137,26 @@ class WPML implements IntegrationInterface {
 	 * - `lang` set to `all` is WPML 5.x's documented way to query every language in any request.
 	 * - `wpml_lang` set to the default language stops WPML's query parser from swapping
 	 *   requested product IDs for their translations in the current language.
+	 * - `gla_wpml_all_languages` carries the active language codes for the WHERE condition.
 	 *
 	 * @return array Query args, or an empty array when WPML is inactive or reports no active
 	 *               languages (the query then keeps WPML's own language filter).
 	 */
 	public function get_all_languages_query_args(): array {
-		if ( ! $this->is_active() || empty( $this->get_active_language_codes() ) ) {
+		if ( ! $this->is_active() ) {
+			return [];
+		}
+
+		$languages = $this->get_active_language_codes();
+
+		if ( empty( $languages ) ) {
 			return [];
 		}
 
 		$args = [
 			'lang'                                => 'all',
 			'suppress_wpml_where_and_join_filter' => true,
-			self::ALL_LANGUAGES_QUERY_ARG         => true,
+			self::ALL_LANGUAGES_QUERY_ARG         => $languages,
 		];
 
 		$default_language = $this->get_default_language_code();
@@ -177,7 +187,6 @@ class WPML implements IntegrationInterface {
 	protected function has_scoped_language_switch(): bool {
 		$version = $this->get_wpml_version();
 
-		// Compared against a dev pre-release so that 5.0 betas and release candidates count.
 		return '' !== $version && version_compare( $version, '5.0.0-dev', '>=' );
 	}
 
@@ -225,26 +234,21 @@ class WPML implements IntegrationInterface {
 	}
 
 	/**
-	 * Builds the WHERE condition that keeps translated products in an active WPML language.
+	 * Builds the WHERE condition that keeps translated products in the given WPML languages.
 	 *
-	 * Rows of product post types WPML does not translate pass unchanged, matching WPML's
-	 * own all-languages clause.
+	 * @param string[] $languages Language codes to keep.
 	 *
 	 * @return string SQL starting with ` AND`, or an empty string when there is nothing to restrict.
 	 */
-	private function get_active_languages_where_condition(): string {
+	private function get_active_languages_where_condition( array $languages ): string {
 		global $wpdb;
 
 		$post_types = $this->get_translated_product_post_types();
-		$languages  = $this->get_active_language_codes();
 
 		if ( empty( $post_types ) || empty( $languages ) ) {
 			return '';
 		}
 
-		// WPML stores a post's type as `post_<post type>`. The element types are passed as
-		// values rather than built from the posts column in SQL, so the comparison never mixes
-		// the two tables' collations.
 		$element_types = array_map(
 			static function ( string $post_type ): string {
 				return 'post_' . $post_type;

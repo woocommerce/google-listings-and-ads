@@ -746,18 +746,13 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->assertSame( [ 101, 202 ], $repository->find_ids( [ 'status' => 'publish' ] ) );
 	}
 
-	/**
-	 * The all-languages args are added after `woocommerce_gla_product_query_args`, so its
-	 * callbacks see the same args as before, a key a callback sets is kept, and the rest
-	 * reach WP_Query.
-	 */
 	public function test_all_languages_query_args_are_added_after_the_query_args_filter() {
 		$wpml = $this->createMock( WPML::class );
 		$wpml->method( 'get_all_languages_query_args' )->willReturn(
 			[
 				'lang'                                => 'all',
 				'suppress_wpml_where_and_join_filter' => true,
-				'gla_wpml_all_languages'              => true,
+				'gla_wpml_all_languages'              => [ 'en', 'fr' ],
 			]
 		);
 		$wpml->method( 'run_in_all_languages' )->willReturnCallback(
@@ -792,14 +787,9 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->assertArrayNotHasKey( 'suppress_wpml_where_and_join_filter', $filtered_args );
 		$this->assertSame( 'fr', $wp_query_args['lang'] );
 		$this->assertTrue( $wp_query_args['suppress_wpml_where_and_join_filter'] );
-		$this->assertTrue( $wp_query_args['gla_wpml_all_languages'] );
+		$this->assertSame( [ 'en', 'fr' ], $wp_query_args['gla_wpml_all_languages'] );
 	}
 
-	/**
-	 * Outside wp-admin WPML ignores the 'all' switch, so the query args and WHERE condition
-	 * must return translations in every active language, and nothing in an inactive language
-	 * or without a WPML language record, as WPML's own all-languages context does.
-	 */
 	public function test_all_languages_query_returns_products_in_active_languages_only() {
 		global $wpdb;
 
@@ -836,9 +826,9 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$german     = WC_Helper_Product::create_simple_product();
 		$unrecorded = WC_Helper_Product::create_simple_product();
 
-		// The test framework turns this into a temporary table. Its collation deliberately differs
-		// from the posts table's, as on sites whose tables were created at different times.
-		$wpdb->query( "CREATE TABLE {$wpdb->prefix}icl_translations ( translation_id bigint(20) NOT NULL AUTO_INCREMENT PRIMARY KEY, element_type varchar(60) NOT NULL, element_id bigint(20) DEFAULT NULL, trid bigint(20) NOT NULL, language_code varchar(7) NOT NULL ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange
+		// The test framework turns this into a temporary table.
+		$collation_unlike_posts_table = 'utf8mb4_general_ci';
+		$wpdb->query( "CREATE TABLE {$wpdb->prefix}icl_translations ( translation_id bigint(20) NOT NULL AUTO_INCREMENT PRIMARY KEY, element_type varchar(60) NOT NULL, element_id bigint(20) DEFAULT NULL, trid bigint(20) NOT NULL, language_code varchar(7) NOT NULL ) DEFAULT CHARACTER SET utf8mb4 COLLATE {$collation_unlike_posts_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange
 
 		try {
 			$languages = [

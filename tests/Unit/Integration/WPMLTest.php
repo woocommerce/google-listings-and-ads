@@ -101,7 +101,6 @@ class WPMLTest extends UnitTest {
 		);
 
 		$this->assertSame( 'done', $result );
-		// WPML 4.x keeps one language slot, so the captured language is restored by name.
 		$this->assertSame( [ 'all', 'fr' ], $this->switched );
 		$this->assertSame( 'all', $language_in_scope );
 	}
@@ -124,7 +123,6 @@ class WPMLTest extends UnitTest {
 			}
 		);
 
-		// WPML 5.x nests switches; naming 'fr' would open a second scope instead of closing ours.
 		$this->assertSame( [ 'all', null ], $this->switched );
 	}
 
@@ -155,7 +153,6 @@ class WPMLTest extends UnitTest {
 	}
 
 	public function test_run_in_all_languages_does_not_switch_where_wpml_ignores_all(): void {
-		// WP-Cron, REST and front-end requests: WPML only honors 'all' in wp-admin and WP-CLI.
 		$integration = $this->create_language_integration( false, '5.4.0' );
 
 		$this->record_language_switches();
@@ -227,7 +224,6 @@ class WPMLTest extends UnitTest {
 	}
 
 	public function test_get_all_languages_query_args_is_empty_without_active_languages(): void {
-		// Without active languages there is nothing to restrict the bypass to, so keep WPML's filter.
 		add_filter(
 			'wpml_active_languages',
 			function () {
@@ -245,7 +241,7 @@ class WPMLTest extends UnitTest {
 			[
 				'lang'                                => 'all',
 				'suppress_wpml_where_and_join_filter' => true,
-				'gla_wpml_all_languages'              => true,
+				'gla_wpml_all_languages'              => [ 'en', 'fr' ],
 				'wpml_lang'                           => 'en',
 			],
 			$this->create_integration( true )->get_all_languages_query_args()
@@ -995,15 +991,6 @@ class WPMLTest extends UnitTest {
 	}
 
 	/**
-	 * @param bool                        $is_active
-	 * @param string[]                    $currency_codes
-	 * @param bool|null                   $wcml_multi_currency_on When non-null, stubs is_wcml_multi_currency_on() to this value.
-	 * @param array<string, string>|false $custom_prices          Return value for get_wcml_custom_prices() (default false = auto mode).
-	 * @param array|null                  $wcml_settings          When non-null, stubs get_wcml_settings() to this WCML settings map.
-	 *
-	 * @return WPML&MockObject
-	 */
-	/**
 	 * Creates an active integration with the request context and WPML version fixed.
 	 *
 	 * @param bool   $can_switch_to_all Whether WPML would honor 'all' (wp-admin or WP-CLI).
@@ -1074,6 +1061,15 @@ class WPMLTest extends UnitTest {
 		return array_sum( array_map( 'count', $wp_filter['posts_where']->callbacks ) );
 	}
 
+	/**
+	 * @param bool                        $is_active
+	 * @param string[]                    $currency_codes
+	 * @param bool|null                   $wcml_multi_currency_on When non-null, stubs is_wcml_multi_currency_on() to this value.
+	 * @param array<string, string>|false $custom_prices          Return value for get_wcml_custom_prices() (default false = auto mode).
+	 * @param array|null                  $wcml_settings          When non-null, stubs get_wcml_settings() to this WCML settings map.
+	 *
+	 * @return WPML&MockObject
+	 */
 	private function create_integration( bool $is_active, array $currency_codes = [], ?bool $wcml_multi_currency_on = null, $custom_prices = false, ?array $wcml_settings = null ): WPML {
 		$methods = [ 'is_active', 'get_wcml_custom_prices' ];
 
