@@ -29,6 +29,13 @@ jest.mock(
 		}
 );
 jest.mock(
+	'./status-error-card',
+	() =>
+		function MockStatusErrorCard() {
+			return <div>Status error card</div>;
+		}
+);
+jest.mock(
 	'./connect-google-business-profile-account-card',
 	() =>
 		function MockConnectGoogleBusinessProfileAccountCard() {
@@ -96,6 +103,33 @@ describe( 'GoogleBusinessProfileAccountCard', () => {
 		const { container } = render( <GoogleBusinessProfileAccountCard /> );
 
 		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	it( 'shows the status error card, not the connect card, when the connection could not be loaded', () => {
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			account: null,
+			hasFinishedResolution: true,
+		} );
+
+		render( <GoogleBusinessProfileAccountCard /> );
+
+		expectCardToBeFocusable( 'Status error card' );
+		expect( screen.queryByText( 'Connect card' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'shows the allow-access card when the scope is missing, even if the connection could not be loaded', () => {
+		useGoogleAccount.mockReturnValue( {
+			scope: { gbpRequired: false },
+			hasFinishedResolution: true,
+		} );
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			account: null,
+			hasFinishedResolution: true,
+		} );
+
+		render( <GoogleBusinessProfileAccountCard /> );
+
+		expectCardToBeFocusable( 'Allow access card' );
 	} );
 
 	it( 'shows the connect card when no location is connected', () => {
