@@ -380,9 +380,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$this->campaign_label->assign_label_to_campaign_by_label_name( $campaign_id, $params['label'] );
 			}
 
-			// Clear cached campaign count and highest spend campaign.
+			// Clear cached campaign counts and highest spend campaign.
 			$transients = $this->container->get( TransientsInterface::class );
 			$transients->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			$transients->delete( TransientsInterface::ADS_SERVING_CAMPAIGN_COUNT );
 			$transients->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 
 			return [
@@ -555,9 +556,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$this->delete_operation( $campaign_resource_name ),
 			];
 
-			// Clear cached campaign count and highest spend campaign.
+			// Clear cached campaign counts and highest spend campaign.
 			$transients = $this->container->get( TransientsInterface::class );
 			$transients->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			$transients->delete( TransientsInterface::ADS_SERVING_CAMPAIGN_COUNT );
 			$transients->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 
 			return $this->mutate( $operations );
