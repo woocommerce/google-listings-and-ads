@@ -60,7 +60,6 @@ const ConnectGoogleAccountCard = () => {
 			alignIndicator="top"
 			indicator={
 				<AppButton
-					isSecondary
 					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
 					eventProps={ {
@@ -69,6 +68,7 @@ const ConnectGoogleAccountCard = () => {
 					} }
 					text={ __( 'Connect', 'google-listings-and-ads' ) }
 					onClick={ handleConnect }
+					isSecondary
 				/>
 			}
 		/>
