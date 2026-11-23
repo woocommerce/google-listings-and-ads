@@ -103,6 +103,11 @@ module.exports = [
 			'@wordpress/i18n-translator-comments': 'warn',
 			'@wordpress/i18n-hyphenated-range': 'warn',
 			'react/react-in-jsx-scope': 'off',
+			// `noSortAlphabetically` turns off the rule's default alphabetical sort.
+			'react/jsx-sort-props': [
+				'error',
+				{ shorthandLast: true, noSortAlphabetically: true },
+			],
 			'react-hooks/exhaustive-deps': [
 				'warn',
 				{
@@ -130,6 +135,7 @@ module.exports = [
 					definedTypes: [
 						...definedTypes,
 						'JSX',
+						'gla_campaign_with_cyo_incentive_selected',
 						'gla_datepicker_update',
 						'gla_documentation_link_click',
 						'gla_faq',

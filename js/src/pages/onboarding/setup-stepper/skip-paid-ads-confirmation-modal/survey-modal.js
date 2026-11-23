@@ -93,8 +93,8 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 						buttons={ [
 							<AppButton
 								key="cancel"
-								isSecondary
 								onClick={ onRequestClose }
+								isSecondary
 							>
 								{ __( 'Cancel', 'google-listings-and-ads' ) }
 							</AppButton>,

@@ -268,7 +268,6 @@ class FilterPicker extends Component {
 				<Dropdown
 					contentClassName="woocommerce-filters-filter__content"
 					position="bottom"
-					expandOnMobile
 					headerTitle={ __(
 						'filter report to show:',
 						'woocommerce'
@@ -327,6 +326,7 @@ class FilterPicker extends Component {
 							) }
 						</AnimationSlider>
 					) }
+					expandOnMobile
 				/>
 			</div>
 		);

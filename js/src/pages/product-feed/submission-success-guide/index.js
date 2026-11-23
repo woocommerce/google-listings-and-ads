@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { getHistory } from '@woocommerce/navigation';
+import { getHistory, getQuery } from '@woocommerce/navigation';
 import { createInterpolateElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -12,7 +12,12 @@ import Guide from '~/components/external/wordpress/guide';
 import GuidePageContent, { ContentLink } from '~/components/guide-page-content';
 import AppButton from '~/components/app-button';
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
-import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '~/constants';
+import {
+	glaData,
+	GUIDE_NAMES,
+	INCENTIVE_APPLIED_QUERY,
+	LOCAL_STORAGE_KEYS,
+} from '~/constants';
 import localStorage from '~/utils/localStorage';
 import {
 	getDashboardUrl,
@@ -27,10 +32,16 @@ import './index.scss';
 const EVENT_NAME = 'gla_modal_closed';
 
 const handleGuideFinish = ( e ) => {
+	// Keep the one-time arg for the Ads credit offer notice, which waits until this guide is closed.
+	const query =
+		getQuery()?.incentive === INCENTIVE_APPLIED_QUERY.incentive
+			? INCENTIVE_APPLIED_QUERY
+			: {};
+
 	// If there is no connected MC account, redirect to dashboard, otherwise to product feed.
 	const url = glaData.mcSetupComplete
-		? getProductFeedUrl()
-		: getDashboardUrl();
+		? getProductFeedUrl( query )
+		: getDashboardUrl( query );
 	getHistory().replace( url );
 
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
@@ -114,9 +125,9 @@ const pages = [
 		),
 		action: glaData.adsSetupComplete ? (
 			<AppButton
-				isPrimary
 				data-action="view-product-feed"
 				onClick={ handleGuideFinish }
+				isPrimary
 			>
 				{ __( 'View product feed', 'google-listings-and-ads' ) }
 			</AppButton>
@@ -157,7 +168,6 @@ const pages = [
 		),
 		actions: (
 			<AppButton
-				isPrimary
 				data-action="view-enhanced-conversions-settings"
 				eventName={ EVENT_NAME }
 				eventProps={ {
@@ -165,6 +175,7 @@ const pages = [
 					action: 'view-enhanced-conversions-settings',
 				} }
 				onClick={ handleSetupEnhancedConversionsOnClick }
+				isPrimary
 			>
 				{ __(
 					'Set up Enhanced Conversions',
@@ -178,20 +189,20 @@ const pages = [
 		content: (
 			<GuidePageContent
 				title={ __(
-					'Spend $500 to get $500 in Google Ads credits',
+					'Get $500 USD or more in Google Ads credit',
 					'google-listings-and-ads'
 				) }
 			>
 				<p>
 					{ __(
-						'New to Google Ads? Get $500 in ad credit when you spend $500 within your first 60 days* You can edit or cancel your campaign at any time.',
+						'New to Google Ads? Choose an Ads credit offer when you create your campaign. You’ll get the credit once you meet the offer’s minimum spend in your first 60 days. You can edit or remove your campaign anytime.',
 						'google-listings-and-ads'
 					) }
 				</p>
 				<cite>
 					{ createInterpolateElement(
 						__(
-							'*Full terms and conditions <link>here</link>.',
+							'Full terms and conditions <link>here</link>.',
 							'google-listings-and-ads'
 						),
 						{
@@ -209,14 +220,13 @@ const pages = [
 		actions: (
 			<>
 				<AppButton
-					isSecondary
 					data-action="maybe-later"
 					onClick={ handleGuideFinish }
+					isSecondary
 				>
 					{ __( 'Maybe later', 'google-listings-and-ads' ) }
 				</AppButton>
 				<AddPaidCampaignButton
-					isPrimary
 					isSecondary={ false }
 					isSmall={ false }
 					eventName={ EVENT_NAME }
@@ -224,6 +234,7 @@ const pages = [
 						context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 						action: 'create-paid-campaign',
 					} }
+					isPrimary
 				>
 					{ __( 'Create campaign', 'google-listings-and-ads' ) }
 				</AddPaidCampaignButton>
