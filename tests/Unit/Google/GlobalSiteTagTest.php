@@ -210,7 +210,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 	/**
 	 * The WP Consent API bridge is the only GLA script that lifts the consent default
-	 * printed with GLA's own tag, so it must load whenever that tag is printed,
+	 * printed with GLA's own tag, so GLA enqueues it whenever it prints that tag,
 	 * whether or not Woo Analytics is active.
 	 *
 	 * @dataProvider wp_consent_api_bridge_provider
@@ -221,12 +221,26 @@ class GlobalSiteTagTest extends UnitTest {
 	 * @param bool $wcga_adds_framework  Whether Woo Analytics adds its framework for this visitor.
 	 * @param bool $wcga_handle_enqueued Whether the Woo Analytics script handle is enqueued.
 	 * @param bool $run_head             Whether the template calls wp_head.
-	 * @param bool $expect_bridge        Whether the WP Consent API bridge should be enqueued.
+	 * @param bool $expect_bridge        Whether GLA prints its own tag and enqueues the WP Consent API bridge.
+	 * @param bool $override_display     Whether a subclass replaces display_global_site_tag() without calling the parent.
 	 */
-	public function test_wp_consent_api_bridge_follows_printed_global_site_tag( bool $wcga_active, bool $wcga_adds_framework, bool $wcga_handle_enqueued, bool $run_head, bool $expect_bridge ) {
+	public function test_wp_consent_api_bridge_follows_printed_global_site_tag( bool $wcga_active, bool $wcga_adds_framework, bool $wcga_handle_enqueued, bool $run_head, bool $expect_bridge, bool $override_display = false ) {
 		require_once dirname( __DIR__, 2 ) . '/data/wp-consent-api-functions.php';
 		if ( $wcga_active && ! class_exists( '\\WC_Google_Gtag_JS', false ) ) {
 			class_alias( self::class, 'WC_Google_Gtag_JS' );
+		}
+
+		if ( $override_display ) {
+			$this->tag = $this->getMockBuilder( GlobalSiteTag::class )
+				->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ] )
+				->onlyMethods( [ 'display_global_site_tag' ] )
+				->getMock();
+			$this->tag->method( 'display_global_site_tag' )->willReturnCallback(
+				function () {
+					echo '<!-- Global site tag (gtag.js) - printed by a subclass -->';
+				}
+			);
+			$this->tag->set_options_object( $this->options );
 		}
 
 		$this->gtag_js->ga4w_v2 = true;
@@ -284,8 +298,10 @@ class GlobalSiteTagTest extends UnitTest {
 			'Woo Analytics not installed'                  => [ false, false, false, true, true ],
 			'Woo Analytics active, not adding a framework' => [ true, false, false, true, true ],
 			'Woo Analytics active, handle not enqueued'    => [ true, true, false, true, true ],
-			'Woo Analytics active, template without head'  => [ true, false, false, false, true ],
+			// Without wp_head, WordPress never fires wp_enqueue_scripts, so the bridge is enqueued but never printed.
+			'Woo Analytics active, no wp_head'             => [ true, false, false, false, true ],
 			'Woo Analytics carries the Ads configuration'  => [ true, true, true, true, false ],
+			'Subclass replaces display_global_site_tag()'  => [ true, false, false, true, true, true ],
 		];
 	}
 

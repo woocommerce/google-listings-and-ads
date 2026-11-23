@@ -86,7 +86,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/** @var bool|null Whether Ads configuration was attached to Woo Analytics; null before activation. */
 	private $use_wcga_handle = null;
 
-	/** @var bool Whether this request printed GLA's own gtag.js snippet, including its consent default. */
+	/**
+	 * Whether this request printed GLA's own gtag.js snippet, including its consent default.
+	 * Set where display_global_site_tag() is called, so an override that skips the parent keeps the consent bridge.
+	 *
+	 * @var bool
+	 */
 	private $printed_global_site_tag = false;
 
 	/**
@@ -141,6 +146,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			function () use ( $ads_conversion_id ) {
 				if ( $this->defer_events && $this->pending_events ) {
 					// A custom template may omit wp_head, including Woo Analytics' framework output.
+					$this->printed_global_site_tag = true;
 					$this->display_global_site_tag( $ads_conversion_id );
 					$this->use_wcga_handle = false;
 					$this->flush_pending_events();
@@ -300,6 +306,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		}
 
+		$this->printed_global_site_tag = true;
 		$this->display_global_site_tag( $ads_conversion_id );
 	}
 
@@ -309,8 +316,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $ads_conversion_id ) {
-		$this->printed_global_site_tag = true;
-
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
