@@ -45,6 +45,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/** @var string Google Analytics for WooCommerce script handle */
 	private const WCGA_SCRIPT_HANDLE = 'woocommerce-google-analytics-integration';
 
+	/** @var string Site Kit by Google gtag.js script handle */
+	private const SITE_KIT_GTAG_HANDLE = 'google_gtagjs';
+
 	/**
 	 * @var AssetsHandlerInterface
 	 */
@@ -256,8 +259,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 	/**
 	 * Activate the Global Site Tag framework:
-	 * - Insert GST code, or
-	 * - Include the Google Ads conversion ID in WooCommerce Google Analytics for WooCommerce output, if available
+	 * - Include the Google Ads conversion ID in WooCommerce Google Analytics for WooCommerce output, if available, or
+	 * - Configure Google Ads on the gtag.js library Site Kit by Google already printed, if available, or
+	 * - Insert GST code
 	 *
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
@@ -295,7 +299,59 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		}
 
+		if ( $this->should_reuse_site_kit_gtag() ) {
+			$this->display_site_kit_gtag_config( $ads_conversion_id );
+			return;
+		}
+
 		$this->display_global_site_tag( $ads_conversion_id );
+	}
+
+	/**
+	 * Whether to configure Google Ads on the gtag.js library Site Kit by Google already printed on this page,
+	 * instead of loading a second copy of the library.
+	 *
+	 * @return bool
+	 */
+	private function should_reuse_site_kit_gtag(): bool {
+		if ( ! $this->wp->wp_script_is( self::SITE_KIT_GTAG_HANDLE, 'done' ) ) {
+			return false;
+		}
+
+		/**
+		 * Filters whether Google for WooCommerce reuses the gtag.js library already loaded by Site Kit by Google.
+		 *
+		 * Return false to load a separate copy of gtag.js for Google Ads.
+		 *
+		 * @since x.x.x
+		 *
+		 * @param bool $reuse Whether to reuse Site Kit's gtag.js. Default true.
+		 */
+		return true === apply_filters( 'woocommerce_gla_reuse_site_kit_gtag', true );
+	}
+
+	/**
+	 * Print the Google Ads configuration for the gtag.js library Site Kit by Google already loaded.
+	 * Matches display_global_site_tag(), without loading the library or repeating Site Kit's gtag('js') call.
+	 *
+	 * @param string $ads_conversion_id Google Ads account conversion ID.
+	 */
+	private function display_site_kit_gtag_config( string $ads_conversion_id ): void {
+		$inline_script = implode(
+			"\n",
+			array_filter(
+				[
+					'window.dataLayer = window.dataLayer || [];',
+					'function gtag() { dataLayer.push(arguments); }',
+					$this->get_consent_mode_config(),
+					sprintf( "gtag('set', 'developer_id.%s', true);", esc_js( self::DEVELOPER_ID ) ),
+					$this->get_gtag_config( $ads_conversion_id ),
+					$this->get_enhanced_conversion_tag(),
+				]
+			)
+		);
+
+		$this->wp->wp_print_inline_script_tag( $inline_script );
 	}
 
 	/**
