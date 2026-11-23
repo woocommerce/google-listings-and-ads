@@ -35,15 +35,15 @@ const PauseProgramModal = ( props ) => {
 			buttons={ [
 				<AppButton
 					key="1"
-					isSecondary
 					onClick={ handleKeepActiveClick }
+					isSecondary
 				>
 					{ __( 'Keep Active', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="2"
-					isPrimary
 					onClick={ handlePauseCampaignClick }
+					isPrimary
 				>
 					{ __( 'Pause Campaign', 'google-listings-and-ads' ) }
 				</AppButton>,

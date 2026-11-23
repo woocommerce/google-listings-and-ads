@@ -19,8 +19,8 @@ const EditProgramButton = ( props ) => {
 			button={
 				<AppButton
 					{ ...buttonProps }
-					isLink
 					className={ classnames( className ) }
+					isLink
 				>
 					{ __( 'Edit', 'google-listings-and-ads' ) }
 				</AppButton>

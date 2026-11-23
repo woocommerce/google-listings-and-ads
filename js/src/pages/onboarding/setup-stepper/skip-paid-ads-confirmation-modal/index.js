@@ -45,7 +45,7 @@ const SkipPaidAdsConfirmationModal = ( {
 		<AppModal
 			title={ __( 'Skip setting up ads?', 'google-listings-and-ads' ) }
 			buttons={ [
-				<AppButton key="cancel" isSecondary onClick={ onRequestClose }>
+				<AppButton key="cancel" onClick={ onRequestClose } isSecondary>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
