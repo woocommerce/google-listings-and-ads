@@ -124,9 +124,9 @@ test.describe( 'Programs report for Ads only setup', () => {
 		).toBeVisible();
 	} );
 
-	test( 'Should display only the "Programs" sub-tab', async () => {
+	test( 'Should display the "Programs" and "Organic search" sub-tabs, without "Products"', async () => {
 		const titles = await reportsPage.getSubNavTitles();
-		expect( titles ).toEqual( [ 'Programs' ] );
+		expect( titles ).toEqual( [ 'Programs', 'Organic search' ] );
 	} );
 
 	test( 'Should list the Ads campaign without a "Product Feed" row', async () => {
@@ -149,7 +149,7 @@ test.describe( 'Programs report for Ads only setup', () => {
 		await reportsPage.goto( 'products' );
 
 		const titles = await reportsPage.getSubNavTitles();
-		expect( titles ).toEqual( [ 'Programs' ] );
+		expect( titles ).toEqual( [ 'Programs', 'Organic search' ] );
 		await expect(
 			reportsPage.programsTable.getByText( campaignName )
 		).toBeVisible();
