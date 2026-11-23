@@ -166,9 +166,15 @@ export function addBaseToPerformance( performance, base ) {
  * @param {Array<IntervalsData>} intervals Intervals data of the selected period.
  * @param {ChartComparison} comparison Intervals data, totals and labels of the comparison period.
  * @param {string} key Key of the metric to plot.
+ * @param {number} [valueScale] Factor to multiply each plotted value by. Defaults to 1.
  * @return {Array<Object>} One data point per interval, holding the `primary` and `secondary` values.
  */
-export function getComparisonChartData( intervals, comparison, key ) {
+export function getComparisonChartData(
+	intervals,
+	comparison,
+	key,
+	valueScale = 1
+) {
 	return intervals.map( ( primary, index ) => {
 		const secondary = comparison.intervals[ index ];
 		const date = `${ primary.interval }T00:00:00`;
@@ -177,12 +183,12 @@ export function getComparisonChartData( intervals, comparison, key ) {
 			date,
 			primary: {
 				label: comparison.labels.primary,
-				value: primary.subtotals[ key ] ?? 0,
+				value: ( primary.subtotals[ key ] ?? 0 ) * valueScale,
 				labelDate: date,
 			},
 			secondary: {
 				label: comparison.labels.secondary,
-				value: secondary?.subtotals[ key ] ?? 0,
+				value: ( secondary?.subtotals[ key ] ?? 0 ) * valueScale,
 				labelDate: secondary
 					? `${ secondary.interval }T00:00:00`
 					: undefined,
