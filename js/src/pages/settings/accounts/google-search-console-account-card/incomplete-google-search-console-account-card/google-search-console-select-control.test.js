@@ -104,8 +104,8 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 						usable: true,
 					},
 				] }
-				autoSelectFirstOption
 				onChange={ onChange }
+				autoSelectFirstOption
 			/>
 		);
 
@@ -133,8 +133,8 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 						usable: true,
 					},
 				] }
-				autoSelectFirstOption
 				onChange={ onChange }
+				autoSelectFirstOption
 			/>
 		);
 

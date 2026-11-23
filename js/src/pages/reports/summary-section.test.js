@@ -36,10 +36,10 @@ describe( 'SummarySection', () => {
 	it( 'renders each metric without a reversed trend or a tooltip by default', () => {
 		render(
 			<SummarySection
-				loaded
 				metrics={ [ { key: 'clicks', label: 'Clicks' } ] }
 				totals={ totals }
 				trackEventId="reports-programs"
+				loaded
 			/>
 		);
 
@@ -52,7 +52,6 @@ describe( 'SummarySection', () => {
 	it( 'passes a metric’s reversed trend and tooltip on to its card', () => {
 		render(
 			<SummarySection
-				loaded
 				metrics={ [
 					{ key: 'clicks', label: 'Clicks' },
 					{
@@ -64,6 +63,7 @@ describe( 'SummarySection', () => {
 				] }
 				totals={ totals }
 				trackEventId="reports-search-console"
+				loaded
 			/>
 		);
 
