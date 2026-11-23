@@ -237,7 +237,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 				return $this->is_issue_code_map(
 					$value,
 					function ( $severity ) {
-						return in_array( $severity, [ 'critical', 'error' ], true );
+						return in_array( $severity, MerchantStatuses::BLOCKING_SEVERITIES, true );
 					}
 				);
 
