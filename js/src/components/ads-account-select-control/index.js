@@ -29,8 +29,6 @@ const AdsAccountSelectControl = ( props ) => {
 
 		return (
 			<AppSelectControl
-				autoSelectFirstOption
-				nonInteractive
 				value={ googleAdsAccount.id }
 				options={ [
 					{
@@ -43,6 +41,8 @@ const AdsAccountSelectControl = ( props ) => {
 						),
 					},
 				] }
+				autoSelectFirstOption
+				nonInteractive
 			/>
 		);
 	}

@@ -95,11 +95,11 @@ const EditStoreAddress = () => {
 				<Section>
 					<Flex justify="flex-end">
 						<AppButton
-							isPrimary
 							loading={ isSaving }
 							disabled={ ! isReadyToSave }
 							eventName="gla_contact_information_save_button_click"
 							onClick={ handleSaveClick }
+							isPrimary
 						>
 							{ __( 'Save details', 'google-listings-and-ads' ) }
 						</AppButton>
