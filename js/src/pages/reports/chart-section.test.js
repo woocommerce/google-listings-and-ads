@@ -110,9 +110,12 @@ describe( 'ChartSection', () => {
 				{ date: '2026-10-01', CTR: { value: 50, label: 'CTR' } },
 			] );
 			expect( props.tooltipValueFormat( 50 ) ).toBe( '5 raw%' );
+			// Scaled, so the Y-axis needs the same un-scaling formatFn, not Chart's own default.
+			expect( props.yFormat( 50 ) ).toBe( '5 raw%' );
+			expect( props.yBelow1Format( 50 ) ).toBe( '5 raw%' );
 		} );
 
-		it( 'leaves an already-safe metric unscaled', () => {
+		it( 'leaves an already-safe metric unscaled, and lets Chart format its own Y-axis', () => {
 			render(
 				<ChartSection
 					metrics={ metrics }
@@ -123,9 +126,12 @@ describe( 'ChartSection', () => {
 				/>
 			);
 
-			expect( getChartProps().data ).toEqual( [
+			const props = getChartProps();
+			expect( props.data ).toEqual( [
 				{ date: '2026-10-01', Clicks: { value: 30, label: 'Clicks' } },
 			] );
+			expect( props.yFormat ).toBeUndefined();
+			expect( props.yBelow1Format ).toBeUndefined();
 		} );
 	} );
 

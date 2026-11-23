@@ -176,9 +176,14 @@ export default function ChartSection( {
 		} );
 	}, [ key, label, loaded, intervals, comparison, scale ] );
 
-	const comparisonProps = comparison && {
+	// Comparison charts always had their own Y-axis format (unchanged here); a non-comparison
+	// chart only needs one when scaled, so every other report keeps Chart's own default format.
+	const yAxisFormatProps = ( comparison || scale !== 1 ) && {
 		yFormat: localizedChartFormatFn,
 		yBelow1Format: localizedChartFormatFn,
+	};
+
+	const comparisonProps = comparison && {
 		interval: intervalUnit,
 		allowedIntervals,
 		legendTotals: {
@@ -199,6 +204,7 @@ export default function ChartSection( {
 			isRequesting={ ! loaded }
 			emptyMessage={ emptyMessage }
 			legendPosition={ comparison ? undefined : 'hidden' }
+			{ ...yAxisFormatProps }
 			{ ...comparisonProps }
 		/>
 	);
