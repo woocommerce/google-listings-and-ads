@@ -266,6 +266,8 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 		$this->options->delete( OptionsInterface::CLAIMED_URL_HASH );
+		// Nothing synced is left to migrate, and setting up again runs a full sync.
+		$this->options->delete( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS );
 
 		$this->container->get( MarketService::class )->reset_markets();
 		$this->container->get( MerchantStatuses::class )->delete();

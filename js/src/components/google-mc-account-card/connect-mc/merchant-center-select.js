@@ -40,8 +40,6 @@ const MerchantCenterSelect = ( { isConnected, ...rest } ) => {
 
 		return (
 			<AppSelectControl
-				autoSelectFirstOption
-				nonInteractive
 				value={ googleMCAccount.id }
 				options={ [
 					{
@@ -54,6 +52,8 @@ const MerchantCenterSelect = ( { isConnected, ...rest } ) => {
 						),
 					},
 				] }
+				autoSelectFirstOption
+				nonInteractive
 			/>
 		);
 	}

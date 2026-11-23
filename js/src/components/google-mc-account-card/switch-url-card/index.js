@@ -95,13 +95,13 @@ const SwitchUrlCard = ( {
 			) }
 			indicator={
 				<AppButton
-					isSecondary
 					disabled={ loading }
 					eventName="gla_mc_account_switch_account_button_click"
 					eventProps={ {
 						context: 'switch-url',
 					} }
 					onClick={ handleUseDifferentMCClick }
+					isSecondary
 				>
 					{ __( 'Switch account', 'google-listings-and-ads' ) }
 				</AppButton>
@@ -126,12 +126,12 @@ const SwitchUrlCard = ( {
 					) }
 				</Subsection.Body>
 				<ContentButtonLayout>
-					<AppInputLinkControl disabled value={ homeUrl } />
+					<AppInputLinkControl value={ homeUrl } disabled />
 					<AppButton
-						isSecondary
 						loading={ loading }
 						eventName="gla_mc_account_switch_url_button_click"
 						onClick={ handleSwitch }
+						isSecondary
 					>
 						{ __(
 							'Switch to this new URL',

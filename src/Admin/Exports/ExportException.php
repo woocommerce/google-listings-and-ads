@@ -54,4 +54,24 @@ class ExportException extends RuntimeException implements GoogleListingsAndAdsEx
 	public static function failed_to_create_file( string $file_path ): ExportException {
 		return new static( sprintf( 'Failed to create CSV file: %s', esc_html( $file_path ) ) );
 	}
+
+	/**
+	 * Return a new instance when a subfolder name is invalid.
+	 *
+	 * @param string $subfolder The invalid subfolder name.
+	 * @return static
+	 */
+	public static function invalid_subfolder( string $subfolder ): ExportException {
+		return new static( sprintf( 'Invalid export subfolder: "%s"', esc_html( $subfolder ) ) );
+	}
+
+	/**
+	 * Return a new instance when moving a file fails.
+	 *
+	 * @param string $file_path The file path that failed to be moved.
+	 * @return static
+	 */
+	public static function failed_to_move_file( string $file_path ): ExportException {
+		return new static( sprintf( 'Failed to move CSV file: %s', esc_html( $file_path ) ) );
+	}
 }

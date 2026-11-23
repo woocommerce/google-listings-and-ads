@@ -68,12 +68,12 @@ const IssuesTableData = ( { data } ) => {
 						<AppButtonModalTrigger
 							button={
 								<AppButton
-									isLink
 									eventName="gla_click_read_more_about_issue"
 									eventProps={ {
 										context: 'issues-to-resolve',
 										issue: el.code,
 									} }
+									isLink
 								>
 									{ readMore }
 								</AppButton>
