@@ -38,7 +38,7 @@ class WPMLTest extends UnitTest {
 		remove_all_filters( 'wpml_is_translated_post_type' );
 		remove_all_actions( 'wpml_switch_language' );
 
-		unset( $GLOBALS['woocommerce_wpml'] );
+		unset( $GLOBALS['woocommerce_wpml'], $GLOBALS['sitepress'] );
 
 		parent::tearDown();
 	}
@@ -79,7 +79,7 @@ class WPMLTest extends UnitTest {
 	}
 
 	public function test_run_in_all_languages_switches_to_all_and_restores_previous_language_on_wpml_4(): void {
-		$integration = $this->create_language_integration( true, '4.9.2' );
+		$integration = $this->create_language_integration( '4.9.2' );
 
 		// Pretend the site is currently in French.
 		add_filter(
@@ -106,7 +106,7 @@ class WPMLTest extends UnitTest {
 	}
 
 	public function test_run_in_all_languages_closes_the_switch_with_null_on_wpml_5(): void {
-		$integration = $this->create_language_integration( true, '5.4.0' );
+		$integration = $this->create_language_integration( '5.4.0' );
 
 		add_filter(
 			'wpml_current_language',
@@ -127,7 +127,7 @@ class WPMLTest extends UnitTest {
 	}
 
 	public function test_run_in_all_languages_restores_language_even_when_callback_throws(): void {
-		$integration = $this->create_language_integration( true, '4.9.2' );
+		$integration = $this->create_language_integration( '4.9.2' );
 
 		add_filter(
 			'wpml_current_language',
@@ -152,24 +152,8 @@ class WPMLTest extends UnitTest {
 		$this->assertSame( [ 'all', 'en' ], $this->switched );
 	}
 
-	public function test_run_in_all_languages_does_not_switch_where_wpml_ignores_all(): void {
-		$integration = $this->create_language_integration( false, '5.4.0' );
-
-		$this->record_language_switches();
-
-		$result = $integration->run_in_all_languages(
-			function () {
-				return 'done';
-			}
-		);
-
-		$this->assertSame( 'done', $result );
-		$this->assertSame( [], $this->switched );
-	}
-
 	public function test_run_in_all_languages_removes_its_where_filter_afterwards(): void {
-		$integration = $this->create_language_integration( false, '5.4.0' );
-		$this->add_language_filters( [ 'en', 'fr' ] );
+		$integration = $this->create_language_integration( '5.4.0' );
 
 		$callbacks_before = $this->count_posts_where_callbacks();
 		$callbacks_inside = null;
@@ -218,24 +202,39 @@ class WPMLTest extends UnitTest {
 	}
 
 	public function test_get_all_languages_query_args_is_empty_when_not_active(): void {
-		$this->add_language_filters( [ 'en', 'fr' ] );
+		$this->fake_wpml_languages( [ 'en', 'fr' ] );
 
 		$this->assertSame( [], $this->create_integration( false )->get_all_languages_query_args() );
 	}
 
 	public function test_get_all_languages_query_args_is_empty_without_active_languages(): void {
-		add_filter(
-			'wpml_active_languages',
-			function () {
-				return null;
-			}
-		);
+		$this->fake_wpml_languages( [] );
 
 		$this->assertSame( [], $this->create_integration( true )->get_all_languages_query_args() );
 	}
 
+	public function test_get_all_languages_query_args_is_empty_before_wpml_setup_is_complete(): void {
+		$this->fake_wpml_languages( [ 'en', 'fr' ], false );
+
+		$this->assertSame( [], $this->create_integration( true )->get_all_languages_query_args() );
+	}
+
+	public function test_get_all_languages_query_args_ignores_the_language_switcher_list(): void {
+		$this->fake_wpml_languages( [ 'en', 'fr' ] );
+		add_filter(
+			'wpml_active_languages',
+			function () {
+				return [ 'en' => [] ];
+			}
+		);
+
+		$args = $this->create_integration( true )->get_all_languages_query_args();
+
+		$this->assertSame( [ 'en', 'fr' ], $args['gla_wpml_all_languages'] );
+	}
+
 	public function test_get_all_languages_query_args_when_active(): void {
-		$this->add_language_filters( [ 'en', 'fr' ] );
+		$this->fake_wpml_languages( [ 'en', 'fr' ] );
 
 		$this->assertSame(
 			[
@@ -249,7 +248,7 @@ class WPMLTest extends UnitTest {
 	}
 
 	public function test_get_all_languages_query_args_omits_wpml_lang_without_default_language(): void {
-		$this->add_language_filters( [ 'en', 'fr' ] );
+		$this->fake_wpml_languages( [ 'en', 'fr' ] );
 		add_filter(
 			'wpml_default_language',
 			function () {
@@ -991,17 +990,15 @@ class WPMLTest extends UnitTest {
 	}
 
 	/**
-	 * Creates an active integration with the request context and WPML version fixed.
+	 * Creates an active integration with the WPML version fixed.
 	 *
-	 * @param bool   $can_switch_to_all Whether WPML would honor 'all' (wp-admin or WP-CLI).
-	 * @param string $wpml_version      The WPML version to report.
+	 * @param string $wpml_version The WPML version to report.
 	 *
 	 * @return WPML|MockObject
 	 */
-	private function create_language_integration( bool $can_switch_to_all, string $wpml_version ): WPML {
-		$integration = $this->createPartialMock( WPML::class, [ 'is_active', 'can_switch_to_all_languages', 'get_wpml_version' ] );
+	private function create_language_integration( string $wpml_version ): WPML {
+		$integration = $this->createPartialMock( WPML::class, [ 'is_active', 'get_wpml_version' ] );
 		$integration->method( 'is_active' )->willReturn( true );
-		$integration->method( 'can_switch_to_all_languages' )->willReturn( $can_switch_to_all );
 		$integration->method( 'get_wpml_version' )->willReturn( $wpml_version );
 
 		return $integration;
@@ -1021,17 +1018,46 @@ class WPMLTest extends UnitTest {
 	}
 
 	/**
-	 * Fakes WPML's language filters: active languages, English as default, translated products.
+	 * Fakes WPML's languages: the active languages and setup state on a stand-in for WPML's
+	 * global `$sitepress`, English as default, and translated product types.
 	 *
-	 * @param string[] $active_codes Active language codes.
+	 * @param string[] $active_codes   Active language codes.
+	 * @param bool     $setup_complete Whether the WPML setup wizard is complete.
 	 */
-	private function add_language_filters( array $active_codes ): void {
-		add_filter(
-			'wpml_active_languages',
-			function () use ( $active_codes ) {
-				return array_fill_keys( $active_codes, [ 'native_name' => 'Language' ] );
+	private function fake_wpml_languages( array $active_codes, bool $setup_complete = true ): void {
+		// phpcs:ignore Universal.Classes.RequireAnonClassParentheses.Missing
+		$sitepress = new class {
+			/**
+			 * @var array
+			 */
+			public $active_languages = [];
+
+			/**
+			 * @var bool
+			 */
+			public $setup_complete = true;
+
+			/**
+			 * @return array
+			 */
+			public function get_active_languages(): array {
+				return $this->active_languages;
 			}
-		);
+
+			/**
+			 * @param string $key WPML setting key.
+			 *
+			 * @return mixed
+			 */
+			public function get_setting( string $key ) {
+				return 'setup_complete' === $key ? $this->setup_complete : null;
+			}
+		};
+
+		$sitepress->active_languages = array_fill_keys( $active_codes, [] );
+		$sitepress->setup_complete   = $setup_complete;
+		$GLOBALS['sitepress']        = $sitepress;
+
 		add_filter(
 			'wpml_default_language',
 			function () {
