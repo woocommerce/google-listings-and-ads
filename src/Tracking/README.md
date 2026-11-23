@@ -608,7 +608,7 @@ When a documentation link is clicked.
 	- with `{ context: 'edit-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
 - [`FaqLink`](../../js/src/pages/price-benchmark/faq-link.js#L20) with `{ context: 'price-benchmark-suggestions', link_id: 'price-benchmark-suggestions-faq' }` and the URL.
 - [`Faqs`](../../js/src/components/paid-ads/asset-group/faqs.js#L22) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
-- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L448)
+- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L447)
 	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
 	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#google-merchant-center-requirements' }`.
@@ -663,7 +663,7 @@ Triggered when edit links are clicked from product feed table.
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65)
 
-### [`gla_edit_product_issue_click`](../../js/src/pages/product-feed/issues-table-card/index.js#L44)
+### [`gla_edit_product_issue_click`](../../js/src/pages/product-feed/issues-table-card/index.js#L43)
 Triggered when edit links are clicked from Issues to resolve table.
 #### Properties
 | name | type | description |
@@ -722,7 +722,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'campaign-management', id: 'what-will-my-ads-look-like', action: 'expand' | 'collapse' }`.
 	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-service-ads', action: 'expand' | 'collapse' }`.
 	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
-- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L448)
+- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L447)
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'expand' }`.
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
 	- with `{ context: 'get-started', id: 'what-if-i-already-have-free-listings', action: 'expand' }`.
@@ -1072,6 +1072,15 @@ Turning the "Share on my Business Profile" toggle on or off.
 `is_shared` | `boolean` | Whether the post has already been shared to Google Business Profile.
 #### Emitters
 - [`exports`](../../js/src/components/business-profile-share-control/index.js#L62) with `{ context, status, is_shared }`.
+
+### [`gla_google_business_profile_status_try_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/status-error-card.js#L19)
+Clicking "Try again" after the Google Business Profile connection status couldn't be loaded.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/status-error-card.js#L35) with `{ context: 'settings-business-profile' }`.
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
 Clicking on a Google Merchant Center link.

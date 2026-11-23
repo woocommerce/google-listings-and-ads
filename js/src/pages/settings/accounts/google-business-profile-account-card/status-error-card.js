@@ -10,13 +10,25 @@ import { useState } from '@wordpress/element';
 import { useAppDispatch } from '~/data';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
-import { GOOGLE_BUSINESS_PROFILE_DESCRIPTION } from './constants';
+import {
+	GOOGLE_BUSINESS_PROFILE_DESCRIPTION,
+	GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
+} from './constants';
 import NoticeDetail from './notice-detail';
+
+/**
+ * Clicking "Try again" after the Google Business Profile connection status couldn't be loaded.
+ *
+ * @event gla_google_business_profile_status_try_again_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+ */
 
 /**
  * Renders the card shown when the Google Business Profile connection status couldn't be loaded.
  * The status is unknown, so the card shows neither the connected nor the not-connected state, only
  * an error notice with a "Try again" refetch of the status.
+ *
+ * @fires gla_google_business_profile_status_try_again_button_click with `{ context: 'settings-business-profile' }`.
  *
  * @return {JSX.Element} The account card.
  */
@@ -50,6 +62,11 @@ export default function StatusErrorCard() {
 					actions={ [
 						<AppButton
 							key="try-again"
+							eventName="gla_google_business_profile_status_try_again_button_click"
+							eventProps={ {
+								context:
+									GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
+							} }
 							onClick={ handleTryAgainClick }
 							loading={ isRefreshing }
 							isSecondary

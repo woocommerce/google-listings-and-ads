@@ -10,10 +10,15 @@ import userEvent from '@testing-library/user-event';
  */
 import StatusErrorCard from './status-error-card';
 import { useAppDispatch } from '~/data';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
+} ) );
+
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
 } ) );
 
 describe( 'StatusErrorCard', () => {
@@ -53,5 +58,17 @@ describe( 'StatusErrorCard', () => {
 				1
 			);
 		} );
+	} );
+
+	it( 'records the event when "Try again" is clicked', async () => {
+		const user = userEvent.setup();
+		render( <StatusErrorCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_status_try_again_button_click',
+			{ context: 'settings-business-profile' }
+		);
 	} );
 } );
