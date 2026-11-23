@@ -93,7 +93,7 @@ describe( 'ChartSection', () => {
 			expect( getChartProps().isRequesting ).toBe( true );
 		} );
 
-		it( 'scales an all-sub-1 metric up by a power of 10 before plotting, and formats back down', () => {
+		it( 'leaves an all-sub-1 metric unscaled without a comparison period, and lets Chart format its own Y-axis', () => {
 			render(
 				<ChartSection
 					metrics={ ctrMetrics }
@@ -104,15 +104,13 @@ describe( 'ChartSection', () => {
 				/>
 			);
 
-			// 0.05 × 1000 = 50 clears the ≥10 floor; formatFn divides back down to format it.
 			const props = getChartProps();
 			expect( props.data ).toEqual( [
-				{ date: '2026-10-01', CTR: { value: 50, label: 'CTR' } },
+				{ date: '2026-10-01', CTR: { value: 0.05, label: 'CTR' } },
 			] );
-			expect( props.tooltipValueFormat( 50 ) ).toBe( '5 raw%' );
-			// Scaled, so the Y-axis needs the same un-scaling formatFn, not Chart's own default.
-			expect( props.yFormat( 50 ) ).toBe( '5 raw%' );
-			expect( props.yBelow1Format( 50 ) ).toBe( '5 raw%' );
+			expect( props.tooltipValueFormat( 0.05 ) ).toBe( '5 raw%' );
+			expect( props.yFormat ).toBeUndefined();
+			expect( props.yBelow1Format ).toBeUndefined();
 		} );
 
 		it( 'leaves an already-safe metric unscaled, and lets Chart format its own Y-axis', () => {

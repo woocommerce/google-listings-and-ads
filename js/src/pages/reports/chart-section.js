@@ -48,7 +48,9 @@ function generateDateRange( start, end ) {
 function getPeriodMax( intervals, key ) {
 	return Math.max(
 		0,
-		...( intervals ?? [] ).map( ( { subtotals } ) => subtotals[ key ] ?? 0 )
+		...( intervals ?? [] ).map( ( { subtotals } ) => {
+			return subtotals[ key ] ?? 0;
+		} )
 	);
 }
 
@@ -58,15 +60,17 @@ function getPeriodMax( intervals, key ) {
  * combined max, so the smaller one still clears the broken range if it's toggled on alone.
  *
  * @param {Array<IntervalsData>} intervals Intervals data of the selected period.
- * @param {ChartComparison} [comparison] Data of the comparison period, if any.
+ * @param {ChartComparison} comparison Data of the comparison period.
  * @param {string} key Key of the metric to plot.
  * @return {number} Scale factor to multiply every plotted value by.
  */
 function getChartValueScale( intervals, comparison, key ) {
 	const periodMaxes = [
 		getPeriodMax( intervals, key ),
-		getPeriodMax( comparison?.intervals, key ),
-	].filter( ( max ) => max > 0 );
+		getPeriodMax( comparison.intervals, key ),
+	].filter( ( max ) => {
+		return max > 0;
+	} );
 	const smallestMax = periodMaxes.length ? Math.min( ...periodMaxes ) : 0;
 
 	if ( smallestMax === 0 || smallestMax >= 1 ) {
@@ -85,7 +89,7 @@ function getChartValueScale( intervals, comparison, key ) {
  * Multiplies a value by `scale`, passing `undefined` through unchanged.
  *
  * @param {number} [value] Value to scale.
- * @param {number} scale Scale factor from {@see getChartValueScale}.
+ * @param {number} scale Scale factor from {@link getChartValueScale}.
  * @return {number|undefined} The scaled value.
  */
 function scaleValue( value, scale ) {
@@ -135,10 +139,14 @@ export default function ChartSection( {
 	const visibleCurrency = { ...storeCurrencyConfig, symbol: '' };
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
-	const scale = getChartValueScale( intervals, comparison, key );
+	// Only comparison charts are scaled, so a chart without a comparison period plots and formats its values as given.
+	const scale = comparison
+		? getChartValueScale( intervals, comparison, key )
+		: 1;
 	// Formats an already-scaled value, for what Chart itself renders.
-	const localizedChartFormatFn = ( value ) =>
-		formatFn.call( visibleMetric, value / scale );
+	const localizedChartFormatFn = ( value ) => {
+		return formatFn.call( visibleMetric, value / scale );
+	};
 
 	const chartData = useMemo( () => {
 		if ( ! loaded || ! intervals.length ) {
@@ -169,21 +177,16 @@ export default function ChartSection( {
 			return {
 				date,
 				[ label ]: {
-					value: ( subtotals[ key ] ?? 0 ) * scale,
+					value: subtotals[ key ] ?? 0,
 					label,
 				},
 			};
 		} );
 	}, [ key, label, loaded, intervals, comparison, scale ] );
 
-	// Comparison charts always had their own Y-axis format (unchanged here); a non-comparison
-	// chart only needs one when scaled, so every other report keeps Chart's own default format.
-	const yAxisFormatProps = ( comparison || scale !== 1 ) && {
+	const comparisonProps = comparison && {
 		yFormat: localizedChartFormatFn,
 		yBelow1Format: localizedChartFormatFn,
-	};
-
-	const comparisonProps = comparison && {
 		interval: intervalUnit,
 		allowedIntervals,
 		legendTotals: {
@@ -204,7 +207,6 @@ export default function ChartSection( {
 			isRequesting={ ! loaded }
 			emptyMessage={ emptyMessage }
 			legendPosition={ comparison ? undefined : 'hidden' }
-			{ ...yAxisFormatProps }
 			{ ...comparisonProps }
 		/>
 	);
