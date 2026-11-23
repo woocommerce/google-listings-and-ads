@@ -10,6 +10,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
  */
 interface TransientsInterface {
 
+	public const ADS_BILLING_STATUS          = 'ads_billing_status';
 	public const ADS_BUDGET_METRICS          = 'ads_budget_metrics';
 	public const ADS_CAMPAIGN_COUNT          = 'ads_campaign_count';
 	public const ADS_HIGHEST_SPEND_CAMPAIGN  = 'ads_highest_spend_campaign';
@@ -28,6 +29,7 @@ interface TransientsInterface {
 	public const URL_MATCHES                 = 'url_matches';
 
 	public const VALID_OPTIONS = [
+		self::ADS_BILLING_STATUS          => true,
 		self::ADS_BUDGET_METRICS          => true,
 		self::ADS_CAMPAIGN_COUNT          => true,
 		self::ADS_HIGHEST_SPEND_CAMPAIGN  => true,
