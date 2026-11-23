@@ -1391,8 +1391,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				continue;
 			}
 
-			// An issue that lists no countries applies to every country.
-			$covers_all = $covers_all || empty( $countries );
+			// An issue that lists no countries, or the CLDR "001" (World) region the Merchant API
+			// uses for account-wide issues, applies to every country.
+			$covers_all = $covers_all || empty( $countries ) || in_array( '001', $countries, true );
 			foreach ( $countries as $country ) {
 				if ( is_string( $country ) ) {
 					$covered_countries[ $country ] = true;

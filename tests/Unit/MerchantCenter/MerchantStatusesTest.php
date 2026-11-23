@@ -2064,6 +2064,8 @@ class MerchantStatusesTest extends UnitTest {
 				'yes',
 				2,
 			],
+			'the World region covers all'          => [ [ $this->account_issue_row( 'a', 'critical', '["001"]' ) ], 'yes', 1 ],
+			'the World region on an error issue'   => [ [ $this->account_issue_row( 'a', 'error', '["001"]' ) ], 'no', 0 ],
 			'issues together cover every target'   => [
 				[
 					$this->account_issue_row( 'a', 'critical', '["US"]' ),
