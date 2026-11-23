@@ -747,6 +747,133 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 	}
 
 	/**
+	 * The all-languages args are added after `woocommerce_gla_product_query_args`, so its
+	 * callbacks see the same args as before, a key a callback sets is kept, and the rest
+	 * reach WP_Query.
+	 */
+	public function test_all_languages_query_args_are_added_after_the_query_args_filter() {
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_all_languages_query_args' )->willReturn(
+			[
+				'lang'                                => 'all',
+				'suppress_wpml_where_and_join_filter' => true,
+				'gla_wpml_all_languages'              => true,
+			]
+		);
+		$wpml->method( 'run_in_all_languages' )->willReturnCallback(
+			function ( callable $callback ) {
+				return $callback();
+			}
+		);
+
+		$filtered_args = null;
+		add_filter(
+			'woocommerce_gla_product_query_args',
+			function ( $args ) use ( &$filtered_args ) {
+				$filtered_args = $args;
+				$args['lang']  = 'fr';
+				return $args;
+			}
+		);
+
+		$wp_query_args = null;
+		$capture       = function ( $query ) use ( &$wp_query_args ) {
+			$wp_query_args = $query->query;
+		};
+		add_action( 'pre_get_posts', $capture );
+
+		$repository = new ProductRepository( $this->product_meta, $this->container->get( ProductFilter::class ), $wpml );
+		$repository->find_ids( [ 'status' => 'publish' ] );
+
+		remove_all_filters( 'woocommerce_gla_product_query_args' );
+		remove_action( 'pre_get_posts', $capture );
+
+		$this->assertArrayNotHasKey( 'lang', $filtered_args );
+		$this->assertArrayNotHasKey( 'suppress_wpml_where_and_join_filter', $filtered_args );
+		$this->assertSame( 'fr', $wp_query_args['lang'] );
+		$this->assertTrue( $wp_query_args['suppress_wpml_where_and_join_filter'] );
+		$this->assertTrue( $wp_query_args['gla_wpml_all_languages'] );
+	}
+
+	/**
+	 * Outside wp-admin WPML ignores the 'all' switch, so the query args and WHERE condition
+	 * must return translations in every active language, and nothing in an inactive language
+	 * or without a WPML language record, as WPML's own all-languages context does.
+	 */
+	public function test_all_languages_query_returns_products_in_active_languages_only() {
+		global $wpdb;
+
+		$wpml = $this->createPartialMock( WPML::class, [ 'is_active', 'can_switch_to_all_languages' ] );
+		$wpml->method( 'is_active' )->willReturn( true );
+		$wpml->method( 'can_switch_to_all_languages' )->willReturn( false );
+
+		add_filter(
+			'wpml_active_languages',
+			function () {
+				return [
+					'en' => [],
+					'fr' => [],
+				];
+			}
+		);
+		add_filter(
+			'wpml_default_language',
+			function () {
+				return 'en';
+			}
+		);
+		add_filter(
+			'wpml_is_translated_post_type',
+			function ( $translated, $post_type ) {
+				return in_array( $post_type, [ 'product', 'product_variation' ], true );
+			},
+			10,
+			2
+		);
+
+		$english    = WC_Helper_Product::create_simple_product();
+		$french     = WC_Helper_Product::create_simple_product();
+		$german     = WC_Helper_Product::create_simple_product();
+		$unrecorded = WC_Helper_Product::create_simple_product();
+
+		// The test framework turns this into a temporary table. Its collation deliberately differs
+		// from the posts table's, as on sites whose tables were created at different times.
+		$wpdb->query( "CREATE TABLE {$wpdb->prefix}icl_translations ( translation_id bigint(20) NOT NULL AUTO_INCREMENT PRIMARY KEY, element_type varchar(60) NOT NULL, element_id bigint(20) DEFAULT NULL, trid bigint(20) NOT NULL, language_code varchar(7) NOT NULL ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange
+
+		try {
+			$languages = [
+				'en' => $english,
+				'fr' => $french,
+				'de' => $german,
+			];
+
+			foreach ( $languages as $language => $product ) {
+				$wpdb->insert(
+					"{$wpdb->prefix}icl_translations",
+					[
+						'element_type'  => 'post_product',
+						'element_id'    => $product->get_id(),
+						'trid'          => 1,
+						'language_code' => $language,
+					]
+				);
+			}
+
+			$repository = new ProductRepository( $this->product_meta, $this->container->get( ProductFilter::class ), $wpml );
+
+			$this->assertEqualsCanonicalizing(
+				[ $english->get_id(), $french->get_id() ],
+				$repository->find_ids( [ 'include' => [ $english->get_id(), $french->get_id(), $german->get_id(), $unrecorded->get_id() ] ] )
+			);
+		} finally {
+			$wpdb->query( "DROP TABLE {$wpdb->prefix}icl_translations" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange
+			remove_all_filters( 'wpml_active_languages' );
+			remove_all_filters( 'wpml_default_language' );
+			remove_all_filters( 'wpml_is_translated_post_type' );
+		}
+	}
+
+	/**
 	 * Runs before each test is executed.
 	 */
 	public function setUp(): void {

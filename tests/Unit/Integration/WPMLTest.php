@@ -21,6 +21,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class WPMLTest extends UnitTest {
 
+	/**
+	 * Language codes passed to `wpml_switch_language`, in call order.
+	 *
+	 * @var array
+	 */
+	private $switched = [];
+
 	public function tearDown(): void {
 		remove_all_filters( 'wpml_active_languages' );
 		remove_all_filters( 'wpml_default_language' );
@@ -28,6 +35,7 @@ class WPMLTest extends UnitTest {
 		remove_all_filters( 'wcml_raw_price_amount' );
 		remove_all_filters( 'woocommerce_gla_language_currencies' );
 		remove_all_filters( 'wpml_current_language' );
+		remove_all_filters( 'wpml_is_translated_post_type' );
 		remove_all_actions( 'wpml_switch_language' );
 
 		unset( $GLOBALS['woocommerce_wpml'] );
@@ -59,13 +67,7 @@ class WPMLTest extends UnitTest {
 	public function test_run_in_all_languages_does_not_switch_language_when_not_active(): void {
 		$integration = $this->create_integration( false );
 
-		$switched = [];
-		add_action(
-			'wpml_switch_language',
-			function ( $code ) use ( &$switched ) {
-				$switched[] = $code;
-			}
-		);
+		$this->record_language_switches();
 
 		$integration->run_in_all_languages(
 			function () {
@@ -73,11 +75,11 @@ class WPMLTest extends UnitTest {
 			}
 		);
 
-		$this->assertSame( [], $switched );
+		$this->assertSame( [], $this->switched );
 	}
 
-	public function test_run_in_all_languages_switches_to_all_and_restores_when_active(): void {
-		$integration = $this->create_integration( true );
+	public function test_run_in_all_languages_switches_to_all_and_restores_previous_language_on_wpml_4(): void {
+		$integration = $this->create_language_integration( true, '4.9.2' );
 
 		// Pretend the site is currently in French.
 		add_filter(
@@ -87,31 +89,47 @@ class WPMLTest extends UnitTest {
 			}
 		);
 
-		$switched          = [];
+		$this->record_language_switches();
 		$language_in_scope = null;
-		add_action(
-			'wpml_switch_language',
-			function ( $code ) use ( &$switched ) {
-				$switched[] = $code;
-			}
-		);
 
 		$result = $integration->run_in_all_languages(
-			function () use ( &$switched, &$language_in_scope ) {
+			function () use ( &$language_in_scope ) {
 				// The switch to 'all' must have happened before the callback runs.
-				$language_in_scope = end( $switched );
+				$language_in_scope = end( $this->switched );
 				return 'done';
 			}
 		);
 
 		$this->assertSame( 'done', $result );
-		// Switched to 'all' before the callback, then restored to the captured language.
-		$this->assertSame( [ 'all', 'fr' ], $switched );
+		// WPML 4.x keeps one language slot, so the captured language is restored by name.
+		$this->assertSame( [ 'all', 'fr' ], $this->switched );
 		$this->assertSame( 'all', $language_in_scope );
 	}
 
+	public function test_run_in_all_languages_closes_the_switch_with_null_on_wpml_5(): void {
+		$integration = $this->create_language_integration( true, '5.4.0' );
+
+		add_filter(
+			'wpml_current_language',
+			function () {
+				return 'fr';
+			}
+		);
+
+		$this->record_language_switches();
+
+		$integration->run_in_all_languages(
+			function () {
+				return null;
+			}
+		);
+
+		// WPML 5.x nests switches; naming 'fr' would open a second scope instead of closing ours.
+		$this->assertSame( [ 'all', null ], $this->switched );
+	}
+
 	public function test_run_in_all_languages_restores_language_even_when_callback_throws(): void {
-		$integration = $this->create_integration( true );
+		$integration = $this->create_language_integration( true, '4.9.2' );
 
 		add_filter(
 			'wpml_current_language',
@@ -120,13 +138,7 @@ class WPMLTest extends UnitTest {
 			}
 		);
 
-		$switched = [];
-		add_action(
-			'wpml_switch_language',
-			function ( $code ) use ( &$switched ) {
-				$switched[] = $code;
-			}
-		);
+		$this->record_language_switches();
 
 		try {
 			$integration->run_in_all_languages(
@@ -139,7 +151,118 @@ class WPMLTest extends UnitTest {
 			$this->assertSame( 'boom', $e->getMessage() );
 		}
 
-		$this->assertSame( [ 'all', 'en' ], $switched );
+		$this->assertSame( [ 'all', 'en' ], $this->switched );
+	}
+
+	public function test_run_in_all_languages_does_not_switch_where_wpml_ignores_all(): void {
+		// WP-Cron, REST and front-end requests: WPML only honors 'all' in wp-admin and WP-CLI.
+		$integration = $this->create_language_integration( false, '5.4.0' );
+
+		$this->record_language_switches();
+
+		$result = $integration->run_in_all_languages(
+			function () {
+				return 'done';
+			}
+		);
+
+		$this->assertSame( 'done', $result );
+		$this->assertSame( [], $this->switched );
+	}
+
+	public function test_run_in_all_languages_removes_its_where_filter_afterwards(): void {
+		$integration = $this->create_language_integration( false, '5.4.0' );
+		$this->add_language_filters( [ 'en', 'fr' ] );
+
+		$callbacks_before = $this->count_posts_where_callbacks();
+		$callbacks_inside = null;
+
+		try {
+			$integration->run_in_all_languages(
+				function () use ( &$callbacks_inside ) {
+					$callbacks_inside = $this->count_posts_where_callbacks();
+					throw new \RuntimeException( 'boom' );
+				}
+			);
+		} catch ( \RuntimeException $e ) {
+			$this->assertSame( 'boom', $e->getMessage() );
+		}
+
+		$this->assertSame( $callbacks_before + 1, $callbacks_inside );
+		$this->assertSame( $callbacks_before, $this->count_posts_where_callbacks() );
+	}
+
+	/**
+	 * @dataProvider provide_wpml_versions
+	 *
+	 * @param string $version  WPML version string.
+	 * @param bool   $expected Whether that version nests language switches.
+	 */
+	public function test_has_scoped_language_switch( string $version, bool $expected ): void {
+		$integration = $this->createPartialMock( WPML::class, [ 'get_wpml_version' ] );
+		$integration->method( 'get_wpml_version' )->willReturn( $version );
+
+		$method = new ReflectionMethod( WPML::class, 'has_scoped_language_switch' );
+		$method->setAccessible( true );
+
+		$this->assertSame( $expected, $method->invoke( $integration ) );
+	}
+
+	public function provide_wpml_versions(): array {
+		return [
+			'not loaded'     => [ '', false ],
+			'4.x'            => [ '4.9.2', false ],
+			'5.0 beta'       => [ '5.0.0-b.1', true ],
+			'5.0'            => [ '5.0.0', true ],
+			'5.4'            => [ '5.4.0', true ],
+			'two-part 5.x'   => [ '5.2', true ],
+			'later 4.x line' => [ '4.10.0', false ],
+		];
+	}
+
+	public function test_get_all_languages_query_args_is_empty_when_not_active(): void {
+		$this->add_language_filters( [ 'en', 'fr' ] );
+
+		$this->assertSame( [], $this->create_integration( false )->get_all_languages_query_args() );
+	}
+
+	public function test_get_all_languages_query_args_is_empty_without_active_languages(): void {
+		// Without active languages there is nothing to restrict the bypass to, so keep WPML's filter.
+		add_filter(
+			'wpml_active_languages',
+			function () {
+				return null;
+			}
+		);
+
+		$this->assertSame( [], $this->create_integration( true )->get_all_languages_query_args() );
+	}
+
+	public function test_get_all_languages_query_args_when_active(): void {
+		$this->add_language_filters( [ 'en', 'fr' ] );
+
+		$this->assertSame(
+			[
+				'lang'                                => 'all',
+				'suppress_wpml_where_and_join_filter' => true,
+				'gla_wpml_all_languages'              => true,
+				'wpml_lang'                           => 'en',
+			],
+			$this->create_integration( true )->get_all_languages_query_args()
+		);
+	}
+
+	public function test_get_all_languages_query_args_omits_wpml_lang_without_default_language(): void {
+		$this->add_language_filters( [ 'en', 'fr' ] );
+		add_filter(
+			'wpml_default_language',
+			function () {
+				return '';
+			},
+			20
+		);
+
+		$this->assertArrayNotHasKey( 'wpml_lang', $this->create_integration( true )->get_all_languages_query_args() );
 	}
 
 	public function test_get_languages_returns_empty_when_not_active(): void {
@@ -880,6 +1003,77 @@ class WPMLTest extends UnitTest {
 	 *
 	 * @return WPML&MockObject
 	 */
+	/**
+	 * Creates an active integration with the request context and WPML version fixed.
+	 *
+	 * @param bool   $can_switch_to_all Whether WPML would honor 'all' (wp-admin or WP-CLI).
+	 * @param string $wpml_version      The WPML version to report.
+	 *
+	 * @return WPML|MockObject
+	 */
+	private function create_language_integration( bool $can_switch_to_all, string $wpml_version ): WPML {
+		$integration = $this->createPartialMock( WPML::class, [ 'is_active', 'can_switch_to_all_languages', 'get_wpml_version' ] );
+		$integration->method( 'is_active' )->willReturn( true );
+		$integration->method( 'can_switch_to_all_languages' )->willReturn( $can_switch_to_all );
+		$integration->method( 'get_wpml_version' )->willReturn( $wpml_version );
+
+		return $integration;
+	}
+
+	/**
+	 * Records every language code passed to the `wpml_switch_language` action in $this->switched.
+	 */
+	private function record_language_switches(): void {
+		$this->switched = [];
+		add_action(
+			'wpml_switch_language',
+			function ( $code ) {
+				$this->switched[] = $code;
+			}
+		);
+	}
+
+	/**
+	 * Fakes WPML's language filters: active languages, English as default, translated products.
+	 *
+	 * @param string[] $active_codes Active language codes.
+	 */
+	private function add_language_filters( array $active_codes ): void {
+		add_filter(
+			'wpml_active_languages',
+			function () use ( $active_codes ) {
+				return array_fill_keys( $active_codes, [ 'native_name' => 'Language' ] );
+			}
+		);
+		add_filter(
+			'wpml_default_language',
+			function () {
+				return 'en';
+			}
+		);
+		add_filter(
+			'wpml_is_translated_post_type',
+			function ( $translated, $post_type ) {
+				return in_array( $post_type, [ 'product', 'product_variation' ], true );
+			},
+			10,
+			2
+		);
+	}
+
+	/**
+	 * @return int The number of callbacks currently hooked to `posts_where`.
+	 */
+	private function count_posts_where_callbacks(): int {
+		global $wp_filter;
+
+		if ( ! isset( $wp_filter['posts_where'] ) ) {
+			return 0;
+		}
+
+		return array_sum( array_map( 'count', $wp_filter['posts_where']->callbacks ) );
+	}
+
 	private function create_integration( bool $is_active, array $currency_codes = [], ?bool $wcml_multi_currency_on = null, $custom_prices = false, ?array $wcml_settings = null ): WPML {
 		$methods = [ 'is_active', 'get_wcml_custom_prices' ];
 

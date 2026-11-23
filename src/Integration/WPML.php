@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 use DateTime;
 use WC_DateTime;
 use WC_Product;
+use WP_Query;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -46,13 +47,31 @@ class WPML implements IntegrationInterface {
 	}
 
 	/**
+	 * Query arg that marks a product query for the active-languages WHERE condition.
+	 *
+	 * @var string
+	 */
+	private const ALL_LANGUAGES_QUERY_ARG = 'gla_wpml_all_languages';
+
+	/**
+	 * Product post types whose WPML language decides whether a query returns them.
+	 *
+	 * @var string[]
+	 */
+	private const PRODUCT_POST_TYPES = [ 'product', 'product_variation' ];
+
+	/**
 	 * Runs the given callback with WPML switched to the "all languages" context.
 	 *
 	 * WPML restricts every post query to the current language, so any product query
 	 * the plugin runs in a background job (sync, delete, cleanup, stale detection,
-	 * disconnect) would otherwise only ever see one language's products. Switching to
-	 * the reserved `all` language code makes WPML emit an all-languages WHERE clause
-	 * and stop translating queried IDs, so the plugin operates on every translation.
+	 * disconnect) would otherwise only ever see one language's products.
+	 *
+	 * WPML honors the reserved `all` language code only in wp-admin and WP-CLI. Elsewhere
+	 * (WP-Cron, REST, front end) it ignores it and keeps the current language, so queries
+	 * that must see every language also carry the args from get_all_languages_query_args().
+	 * While the callback runs, those queries get a WHERE condition that keeps products in
+	 * WPML's active languages, the same result WPML's own `all` context gives in wp-admin.
 	 *
 	 * When WPML is not active the callback is simply invoked, leaving single-language
 	 * and non-multilingual sites behaving exactly as before.
@@ -68,16 +87,186 @@ class WPML implements IntegrationInterface {
 			return $callback();
 		}
 
-		$previous_language = apply_filters( 'wpml_current_language', null );
+		$condition    = $this->get_active_languages_where_condition();
+		$where_filter = static function ( $where, $query = null ) use ( $condition ) {
+			if ( ! is_string( $where ) || '' === $condition || ! $query instanceof WP_Query ) {
+				return $where;
+			}
 
-		do_action( 'wpml_switch_language', 'all' );
+			$query_args = is_array( $query->query ) ? $query->query : [];
+
+			return empty( $query_args[ self::ALL_LANGUAGES_QUERY_ARG ] ) ? $where : $where . $condition;
+		};
+
+		add_filter( 'posts_where', $where_filter, 10, 2 );
+
+		// Only switch where WPML accepts `all`. Elsewhere it ignores the switch, and since
+		// WPML 5.0 an ignored switch may open no scope for the closing call to match.
+		$switched          = $this->can_switch_to_all_languages();
+		$previous_language = $switched ? apply_filters( 'wpml_current_language', null ) : null;
+
+		if ( $switched ) {
+			do_action( 'wpml_switch_language', 'all' );
+		}
 
 		try {
 			return $callback();
 		} finally {
-			// Restore the language that was active before we switched.
-			do_action( 'wpml_switch_language', $previous_language );
+			remove_filter( 'posts_where', $where_filter, 10 );
+
+			if ( $switched ) {
+				// WPML 5.0+ nests language switches and only `null` closes one; naming the
+				// previous language would open a second scope. WPML 4.x keeps a single slot,
+				// so it restores the language that was active before the switch.
+				do_action( 'wpml_switch_language', $this->has_scoped_language_switch() ? null : $previous_language );
+			}
 		}
+	}
+
+	/**
+	 * Returns the extra query args a product query needs to see every active WPML language.
+	 *
+	 * Use them only for queries run inside run_in_all_languages(), which adds the
+	 * active-languages WHERE condition these args turn on.
+	 *
+	 * - `suppress_wpml_where_and_join_filter` turns off WPML's own language JOIN and WHERE
+	 *   clauses, which use the current language outside wp-admin and WP-CLI.
+	 * - `lang` set to `all` is WPML 5.x's documented way to query every language in any request.
+	 * - `wpml_lang` set to the default language stops WPML's query parser from swapping
+	 *   requested product IDs for their translations in the current language.
+	 *
+	 * @return array Query args, or an empty array when WPML is inactive or reports no active
+	 *               languages (the query then keeps WPML's own language filter).
+	 */
+	public function get_all_languages_query_args(): array {
+		if ( ! $this->is_active() || empty( $this->get_active_language_codes() ) ) {
+			return [];
+		}
+
+		$args = [
+			'lang'                                => 'all',
+			'suppress_wpml_where_and_join_filter' => true,
+			self::ALL_LANGUAGES_QUERY_ARG         => true,
+		];
+
+		$default_language = $this->get_default_language_code();
+
+		if ( '' !== $default_language ) {
+			$args['wpml_lang'] = $default_language;
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Whether WPML accepts the `all` language code in the current request.
+	 *
+	 * Mirrors WPML's own rule: `all` is honored in wp-admin (including admin-ajax) and WP-CLI.
+	 *
+	 * @return bool
+	 */
+	protected function can_switch_to_all_languages(): bool {
+		return is_admin() || ( defined( 'WP_CLI' ) && WP_CLI );
+	}
+
+	/**
+	 * Whether WPML nests language switches, so that only a `null` switch closes one (WPML 5.0+).
+	 *
+	 * @return bool
+	 */
+	protected function has_scoped_language_switch(): bool {
+		$version = $this->get_wpml_version();
+
+		// Compared against a dev pre-release so that 5.0 betas and release candidates count.
+		return '' !== $version && version_compare( $version, '5.0.0-dev', '>=' );
+	}
+
+	/**
+	 * Returns the installed WPML Multilingual CMS version.
+	 *
+	 * @return string Version string, or empty when WPML is not loaded.
+	 */
+	protected function get_wpml_version(): string {
+		return defined( 'ICL_SITEPRESS_VERSION' ) ? (string) ICL_SITEPRESS_VERSION : '';
+	}
+
+	/**
+	 * Returns the codes of WPML's active languages.
+	 *
+	 * Like WPML's own all-languages query, hidden languages are only included when the
+	 * current user may see them.
+	 *
+	 * @return string[]
+	 */
+	protected function get_active_language_codes(): array {
+		$languages = apply_filters( 'wpml_active_languages', null, [ 'skip_missing' => 0 ] );
+
+		if ( ! is_array( $languages ) ) {
+			return [];
+		}
+
+		return array_values( array_filter( array_map( 'strval', array_keys( $languages ) ) ) );
+	}
+
+	/**
+	 * Returns the product post types WPML translates.
+	 *
+	 * @return string[]
+	 */
+	protected function get_translated_product_post_types(): array {
+		return array_values(
+			array_filter(
+				self::PRODUCT_POST_TYPES,
+				static function ( string $post_type ): bool {
+					return (bool) apply_filters( 'wpml_is_translated_post_type', null, $post_type );
+				}
+			)
+		);
+	}
+
+	/**
+	 * Builds the WHERE condition that keeps translated products in an active WPML language.
+	 *
+	 * Rows of product post types WPML does not translate pass unchanged, matching WPML's
+	 * own all-languages clause.
+	 *
+	 * @return string SQL starting with ` AND`, or an empty string when there is nothing to restrict.
+	 */
+	private function get_active_languages_where_condition(): string {
+		global $wpdb;
+
+		$post_types = $this->get_translated_product_post_types();
+		$languages  = $this->get_active_language_codes();
+
+		if ( empty( $post_types ) || empty( $languages ) ) {
+			return '';
+		}
+
+		// WPML stores a post's type as `post_<post type>`. The element types are passed as
+		// values rather than built from the posts column in SQL, so the comparison never mixes
+		// the two tables' collations.
+		$element_types = array_map(
+			static function ( string $post_type ): string {
+				return 'post_' . $post_type;
+			},
+			$post_types
+		);
+
+		$post_type_placeholders = implode( ', ', array_fill( 0, count( $post_types ), '%s' ) );
+		$language_placeholders  = implode( ', ', array_fill( 0, count( $languages ), '%s' ) );
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		return $wpdb->prepare(
+			" AND ( {$wpdb->posts}.post_type NOT IN ( {$post_type_placeholders} )
+				OR EXISTS (
+					SELECT 1 FROM {$wpdb->prefix}icl_translations AS gla_wpml_translations
+					WHERE gla_wpml_translations.element_id = {$wpdb->posts}.ID
+					AND gla_wpml_translations.element_type IN ( {$post_type_placeholders} )
+					AND gla_wpml_translations.language_code IN ( {$language_placeholders} )
+				) )",
+			...array_merge( $post_types, $element_types, $languages )
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 	}
 
 	/**

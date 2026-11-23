@@ -513,7 +513,12 @@ class ProductRepository implements Service {
 
 		// WPML scopes every post query to the current language. The plugin manages
 		// products across all languages (each translation is its own Merchant Center
-		// entry), so run the query in the all-languages context. No-op without WPML.
+		// entry), so run the query in the all-languages context. Outside wp-admin WPML
+		// ignores that context, so the query also carries args that make it see every
+		// active language. Added after the args filter so callbacks see the args they
+		// always have, and a key a callback set itself is kept. No-op without WPML.
+		$query_args += $this->wpml->get_all_languages_query_args();
+
 		return $this->wpml->run_in_all_languages(
 			static function () use ( $query_args ) {
 				return wc_get_products( $query_args );
