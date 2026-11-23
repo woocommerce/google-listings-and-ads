@@ -321,8 +321,9 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 	 * Get the billing setup status of the connected Ads account, cached for 12 hours.
 	 *
 	 * The status passes through the `woocommerce_gla_ads_billing_setup_status` filter, so any value
-	 * that isn't a known status is sent and cached as unknown. A failed read is sent as unknown and
-	 * isn't cached.
+	 * that isn't a known status is sent and cached as unknown. Ads::get_billing_status() also returns
+	 * unknown when the Ads API request fails, and that value is cached like any other status. Only an
+	 * error thrown while reading is sent as unknown without being cached.
 	 *
 	 * @since x.x.x
 	 *

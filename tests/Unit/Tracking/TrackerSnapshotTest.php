@@ -527,6 +527,19 @@ class TrackerSnapshotTest extends UnitTest {
 		];
 	}
 
+	public function test_ads_billing_status_is_cached_as_unknown_when_the_ads_request_fails() {
+		$this->use_connected_ads_account();
+		// Ads::get_billing_status() catches API failures and returns unknown instead of throwing.
+		$this->ads->method( 'get_billing_status' )->willReturn( 'unknown' );
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::ADS_BILLING_STATUS, 'unknown', 12 * HOUR_IN_SECONDS );
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'unknown', $settings['ads_billing_status'] );
+	}
+
 	public function test_ads_billing_status_is_unknown_and_not_cached_when_fetching_throws() {
 		$this->use_connected_ads_account();
 		$this->ads->method( 'get_billing_status' )->willThrowException( new Error( 'Filter returned an array' ) );
