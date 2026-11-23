@@ -1073,6 +1073,15 @@ Turning the "Share on my Business Profile" toggle on or off.
 #### Emitters
 - [`exports`](../../js/src/components/business-profile-share-control/index.js#L62) with `{ context, status, is_shared }`.
 
+### [`gla_google_business_profile_status_try_again_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/status-error-card.js#L19)
+Clicking "Try again" after the Google Business Profile connection status couldn't be loaded.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/status-error-card.js#L35) with `{ context: 'settings-business-profile' }`.
+
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
 Clicking on a Google Merchant Center link.
 #### Properties
