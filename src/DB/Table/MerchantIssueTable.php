@@ -164,10 +164,15 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	 * @return array[]|null Rows with `code`, `severity`, `applicable_countries` (stored JSON) and `source`, or null when the query fails.
 	 */
 	public function get_account_issue_rows(): ?array {
-		$query = "SELECT `code`, `severity`, `applicable_countries`, `source` FROM %i WHERE `type` = 'account' AND `source` IN ('mc', 'filter')";
-
-		// $this->wpdb is the injected wpdb instance and the query is prepared inline.
-		$rows = $this->wpdb->get_results( $this->wpdb->prepare( $query, $this->get_sql_safe_name() ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$rows = $this->wpdb->get_results(
+			$this->wpdb->prepare(
+				"SELECT `code`, `severity`, `applicable_countries`, `source` FROM %i WHERE `type` = 'account' AND `source` IN ('mc', 'filter')",
+				$this->get_sql_safe_name()
+			),
+			ARRAY_A
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 
 		// get_results() returns an empty array when the query fails.
 		return $this->wpdb->last_error ? null : $rows;
