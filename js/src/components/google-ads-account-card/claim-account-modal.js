@@ -38,8 +38,8 @@ const ClaimAccountModal = ( { onRequestClose } ) => {
 			buttons={ [
 				<ClaimAccountButton
 					key="1"
-					isPrimary
 					onClick={ onRequestClose }
+					isPrimary
 				>
 					{ __(
 						'Claim account in Google Ads',
