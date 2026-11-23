@@ -96,12 +96,12 @@ class AttributesForm extends Form {
 		 *
 		 * @see AttributeManager::map_attribute_types
 		 */
-		$applicable_product_types = apply_filters( "woocommerce_gla_attribute_applicable_product_types_{$attribute_id}", $applicable_product_types, $attribute_type );
+		$applicable_product_types = (array) apply_filters( "woocommerce_gla_attribute_applicable_product_types_{$attribute_id}", $applicable_product_types, $attribute_type );
 
 		/**
 		 * Filters the list of product types to hide the attribute for.
 		 */
-		$hidden_product_types = apply_filters( "woocommerce_gla_attribute_hidden_product_types_{$attribute_id}", [] );
+		$hidden_product_types = (array) apply_filters( "woocommerce_gla_attribute_hidden_product_types_{$attribute_id}", [] );
 
 		$visible_product_types = array_diff( $applicable_product_types, $hidden_product_types );
 

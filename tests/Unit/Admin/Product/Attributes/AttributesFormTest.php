@@ -170,6 +170,22 @@ class AttributesFormTest extends ContainerAwareUnitTest {
 		);
 	}
 
+	public function test_get_attribute_product_types_with_non_array_filter_values() {
+		$attribute_types       = $this->attribute_manager->get_attribute_types_for_product_types( [ 'simple' ] );
+		$bundle_attribute_type = $attribute_types['isBundle'];
+
+		add_filter( 'woocommerce_gla_attribute_applicable_product_types_isBundle', '__return_null' );
+		add_filter( 'woocommerce_gla_attribute_hidden_product_types_isBundle', '__return_null' );
+
+		$this->assertEquals(
+			[
+				'visible' => [],
+				'hidden'  => [],
+			],
+			AttributesForm::get_attribute_product_types( $bundle_attribute_type )
+		);
+	}
+
 	public function test_get_view_data() {
 		add_filter(
 			'woocommerce_gla_attribute_hidden_product_types_isBundle',
