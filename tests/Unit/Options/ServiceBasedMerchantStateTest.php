@@ -269,8 +269,10 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		remove_filter( 'woocommerce_product_needs_shipping', '__return_false' );
 
 		// The second batch repeats the first one, so the loop must end instead of running forever.
-		$this->assertFalse( $result );
 		$this->assertSame( 2, $queries );
+
+		// The scan could not complete, so the store must not be classified as service-based.
+		$this->assertTrue( $result );
 
 		// Cleanup
 		foreach ( $products as $product ) {
@@ -308,7 +310,7 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 
 		remove_filter( 'woocommerce_product_data_store_cpt_get_products_query', $ignore_offset );
 
-		// Virtual products are not part of the query, so the physical one is found in the first batch.
+		// The physical product is never reached, but an incomplete scan must not report a store without physical products.
 		$this->assertTrue( $result );
 
 		// Cleanup
