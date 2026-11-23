@@ -21,19 +21,25 @@ import NoticeDetail from '../../notice-detail';
 
 /**
  * Renders the notice shown when the Google Business Profile locations couldn't be loaded, with a
- * "Try again" refetch.
+ * "Try again" refetch of the locations and the connection status.
  *
  * @fires gla_google_business_profile_locations_try_again_button_click with `{ context: 'settings-business-profile' }`.
  *
  * @return {JSX.Element} The notice.
  */
 export default function LocationsErrorNotice() {
-	const { fetchGoogleBusinessProfileLocations } = useAppDispatch();
+	const {
+		fetchGoogleBusinessProfileAccount,
+		fetchGoogleBusinessProfileLocations,
+	} = useAppDispatch();
 	const [ isRefreshing, setIsRefreshing ] = useState( false );
 
 	const handleTryAgainClick = async () => {
 		setIsRefreshing( true );
-		await fetchGoogleBusinessProfileLocations();
+		await Promise.all( [
+			fetchGoogleBusinessProfileAccount(),
+			fetchGoogleBusinessProfileLocations(),
+		] );
 		setIsRefreshing( false );
 	};
 

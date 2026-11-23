@@ -21,10 +21,16 @@ jest.mock( '~/utils/tracks', () => ( {
 } ) );
 
 describe( 'LocationsErrorCard', () => {
+	let fetchGoogleBusinessProfileAccount;
+	let fetchGoogleBusinessProfileLocations;
+
 	beforeEach( () => {
 		jest.clearAllMocks();
+		fetchGoogleBusinessProfileAccount = jest.fn();
+		fetchGoogleBusinessProfileLocations = jest.fn();
 		useAppDispatch.mockReturnValue( {
-			fetchGoogleBusinessProfileLocations: jest.fn(),
+			fetchGoogleBusinessProfileAccount,
+			fetchGoogleBusinessProfileLocations,
 		} );
 	} );
 
@@ -49,6 +55,18 @@ describe( 'LocationsErrorCard', () => {
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_google_business_profile_locations_try_again_button_click',
 			{ context: 'settings-business-profile' }
+		);
+	} );
+
+	it( 'refetches both the connection status and the locations when "Try again" is clicked', async () => {
+		const user = userEvent.setup();
+		render( <LocationsErrorCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
+
+		expect( fetchGoogleBusinessProfileAccount ).toHaveBeenCalledTimes( 1 );
+		expect( fetchGoogleBusinessProfileLocations ).toHaveBeenCalledTimes(
+			1
 		);
 	} );
 } );
