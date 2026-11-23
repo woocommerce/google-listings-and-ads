@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -9,42 +9,48 @@ import { useEffect, useState } from '@wordpress/element';
 import { useAppDispatch } from '~/data';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 
-const selectorName = 'getGoogleSearchConsoleAccount';
+// Shortest time between two status checks that are not caused by opening the report.
+export const MIN_RECHECK_INTERVAL = 30 * 1000;
 
 /**
- * Re-checks the Search Console connection when the Organic search report opens, if the page already
- * holds a status from earlier, and again each time the browser tab becomes visible while the report
- * stays open. The property can change at Google while the page stays open, and a stale `connected`
- * status would otherwise keep showing reports that cannot load.
+ * Re-checks the Search Console connection when the Organic search report opens and when the
+ * browser tab is shown again, since the property can change at Google while the page stays open.
  *
- * @return {{ isRefreshPending: boolean }} Whether the stored status still has to be discarded, so the report content must wait.
+ * @return {{ isRefreshPending: boolean }} Whether the status held from an earlier visit is still being checked, so the report content must wait.
  */
 const useRefreshGoogleSearchConsoleAccount = () => {
 	const { hasFinishedResolution } = useGoogleSearchConsoleAccount();
-	const { invalidateResolution, fetchGoogleSearchConsoleAccount } =
-		useAppDispatch();
+	const { refreshGoogleSearchConsoleAccount } = useAppDispatch();
 	const [ isRefreshPending, setIsRefreshPending ] = useState(
 		hasFinishedResolution
 	);
+	const lastCheckedAt = useRef( Date.now() );
 
 	useEffect( () => {
 		if ( ! isRefreshPending ) {
 			return;
 		}
 
-		invalidateResolution( selectorName, [] );
-		setIsRefreshPending( false );
-		// Only the status held when the report opened is refreshed.
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [] );
+		// A failed check keeps the stored status, so the report is never held back for good.
+		Promise.resolve( refreshGoogleSearchConsoleAccount() ).finally( () => {
+			setIsRefreshPending( false );
+		} );
+	}, [ isRefreshPending, refreshGoogleSearchConsoleAccount ] );
 
 	useEffect( () => {
 		const handleVisibilityChange = () => {
-			if ( document.visibilityState === 'visible' ) {
-				// Fetched in place, without discarding the stored status, so the reports stay on screen
-				// until the new status says otherwise.
-				fetchGoogleSearchConsoleAccount();
+			const now = Date.now();
+
+			if (
+				document.visibilityState !== 'visible' ||
+				now - lastCheckedAt.current < MIN_RECHECK_INTERVAL
+			) {
+				return;
 			}
+
+			lastCheckedAt.current = now;
+			// Fetched in place, so the reports stay on screen until the new status says otherwise.
+			refreshGoogleSearchConsoleAccount();
 		};
 
 		document.addEventListener( 'visibilitychange', handleVisibilityChange );
@@ -55,7 +61,7 @@ const useRefreshGoogleSearchConsoleAccount = () => {
 				handleVisibilityChange
 			);
 		};
-	}, [ fetchGoogleSearchConsoleAccount ] );
+	}, [ refreshGoogleSearchConsoleAccount ] );
 
 	return { isRefreshPending };
 };

@@ -1561,6 +1561,28 @@ export function* fetchGoogleSearchConsoleAccount() {
 }
 
 /**
+ * Fetch the connection state of the Google Search Console account again, keeping the stored state
+ * when the request fails. A failed re-check says nothing about the connection itself, so unlike
+ * `fetchGoogleSearchConsoleAccount` it neither shows an error nor falls back to a disconnected state.
+ *
+ * @return {Object|undefined} Action object to receive the Google Search Console account connection data, or nothing when the request failed.
+ */
+export function* refreshGoogleSearchConsoleAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/search-console/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
+			account: response,
+		};
+	} catch ( error ) {
+		return undefined;
+	}
+}
+
+/**
  * Fetch the candidate Google Search Console properties the merchant can choose between to
  * complete the connection. A read-only listing, separate from the connection status itself.
  *
