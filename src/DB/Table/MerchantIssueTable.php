@@ -195,7 +195,8 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	 */
 	public function get_top_issue_codes( string $source, array $excluded_severities = [], int $limit = 5 ): ?array {
 		// MerchantStatuses::parse_presync_issue_text() emits 'presync_error_attrib_' . md5( $text ) for unparsed text.
-		$query  = "SELECT CASE WHEN i.`code` REGEXP %s THEN 'presync_error_other' ELSE SUBSTRING_INDEX( i.`code`, '[', 1 ) END AS issue_code,
+		// INSTR/SUBSTR rather than SUBSTRING_INDEX, which the SQLite integration (Studio, Playground) lacks.
+		$query  = "SELECT CASE WHEN i.`code` REGEXP %s THEN 'presync_error_other' WHEN INSTR( i.`code`, '[' ) > 0 THEN SUBSTR( i.`code`, 1, INSTR( i.`code`, '[' ) - 1 ) ELSE i.`code` END AS issue_code,
 				COUNT( DISTINCT IF( p.`post_type` = 'product_variation' AND p.`post_parent` > 0, p.`post_parent`, i.`product_id` ) ) AS product_count
 			FROM %i i LEFT JOIN %i p ON p.`ID` = i.`product_id`
 			WHERE i.`type` = 'product' AND i.`source` = %s";
