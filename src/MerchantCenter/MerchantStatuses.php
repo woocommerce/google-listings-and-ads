@@ -46,6 +46,7 @@ use WC_Product;
  * - MerchantIssueTable
  * - ProductHelper
  * - ProductRepository
+ * - TargetAudience
  * - TransientsInterface
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
@@ -106,6 +107,18 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		'error_issue_product_count',
 		'presync_error_product_count',
 		'synced_product_count',
+	];
+
+	/**
+	 * GLA's own account issue codes, added through the `woocommerce_gla_custom_merchant_issues` filter,
+	 * that the feed issue summary reports when present. Codes other extensions add stay out.
+	 *
+	 * @since x.x.x
+	 */
+	public const PLUGIN_ACCOUNT_ISSUE_CODES = [
+		'missing_contact_information',
+		'shipping_settings_sync_failed',
+		'incompatible_google_product_feed',
 	];
 
 	/**
@@ -1254,7 +1267,195 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			return;
 		}
 
+		$summary += $this->get_feed_issue_details( $issue_table, $product_meta_query_helper );
+
 		$this->options->update( OptionsInterface::FEED_ISSUE_SUMMARY, $summary );
+	}
+
+	/**
+	 * Get the issue codes and approved product count of the completed status check, saved beside the feed issue counts.
+	 *
+	 * Only codes, counts, an enum and a timestamp are returned. A failed read leaves its own keys null,
+	 * and any error leaves every key null, so a failure here never discards the feed issue counts.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param MerchantIssueTable     $issue_table
+	 * @param ProductMetaQueryHelper $product_meta_query_helper
+	 *
+	 * @return array
+	 */
+	private function get_feed_issue_details( MerchantIssueTable $issue_table, ProductMetaQueryHelper $product_meta_query_helper ): array {
+		$details = array_fill_keys(
+			[
+				'feed_issue_summary_checked_at',
+				'approved_product_count',
+				'critical_account_issue_count',
+				'account_issue_codes',
+				'critical_covers_all_targets',
+				'plugin_issue_codes',
+				'top_product_issue_codes',
+				'top_presync_issue_codes',
+			],
+			null
+		);
+
+		try {
+			$details['feed_issue_summary_checked_at'] = time();
+			$details['approved_product_count']        = $product_meta_query_helper->count_products_by_value(
+				ProductMetaHandler::KEY_MC_STATUS,
+				[ MCStatus::APPROVED, MCStatus::PARTIALLY_APPROVED ]
+			);
+
+			$account_rows = $issue_table->get_account_issue_rows();
+			if ( null !== $account_rows ) {
+				$details = array_merge( $details, $this->summarize_account_issues( $account_rows ) );
+			}
+
+			$top_codes = [
+				'top_product_issue_codes' => $issue_table->get_top_issue_codes( 'mc', self::WARNING_SEVERITIES, 5 ),
+				'top_presync_issue_codes' => $issue_table->get_top_issue_codes( 'pre-sync', [], 5 ),
+			];
+			foreach ( $top_codes as $key => $codes ) {
+				if ( null === $codes ) {
+					continue;
+				}
+
+				$details[ $key ] = [];
+				foreach ( $codes as $code => $product_count ) {
+					// Codes are ordered by count, so a sanitized code that collides keeps the higher count.
+					$details[ $key ] += [ $this->sanitize_feed_issue_code( (string) $code ) => $product_count ];
+				}
+			}
+		} catch ( Throwable $e ) {
+			do_action( 'woocommerce_gla_debug_message', 'Unable to read feed issue details: ' . $e->getMessage(), __METHOD__ );
+			return array_fill_keys( array_keys( $details ), null );
+		}
+
+		$failed_details = array_keys( $details, null, true );
+		if ( ! empty( $failed_details ) ) {
+			do_action( 'woocommerce_gla_debug_message', 'Unable to read feed issue details: ' . implode( ', ', $failed_details ), __METHOD__ );
+		}
+
+		return $details;
+	}
+
+	/**
+	 * Summarize the stored account issues for the feed issue summary.
+	 *
+	 * Merchant Center rows give the critical count, the blocking codes and the critical coverage of
+	 * the target countries; filter rows give which of GLA's own account issue codes are present.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array[] $rows Rows from MerchantIssueTable::get_account_issue_rows().
+	 *
+	 * @return array
+	 */
+	private function summarize_account_issues( array $rows ): array {
+		$critical_count    = 0;
+		$codes             = [];
+		$covered_countries = [];
+		$covers_all        = false;
+		$plugin_codes      = [];
+
+		foreach ( $rows as $row ) {
+			$code     = (string) $row['code'];
+			$severity = $row['severity'];
+
+			if ( 'filter' === $row['source'] ) {
+				if ( in_array( $code, self::PLUGIN_ACCOUNT_ISSUE_CODES, true ) ) {
+					$plugin_codes[ $code ] = $code;
+				}
+				continue;
+			}
+
+			if ( 'mc' !== $row['source'] || ! in_array( $severity, self::BLOCKING_SEVERITIES, true ) ) {
+				continue;
+			}
+
+			$code = $this->sanitize_feed_issue_code( $code );
+			if ( 'critical' !== ( $codes[ $code ] ?? '' ) ) {
+				$codes[ $code ] = $severity;
+			}
+
+			if ( 'critical' !== $severity ) {
+				continue;
+			}
+
+			++$critical_count;
+
+			// Some rows are stored as JSON objects; an empty string or invalid JSON holds no country data.
+			$countries = json_decode( (string) $row['applicable_countries'], true );
+			if ( ! is_array( $countries ) ) {
+				continue;
+			}
+
+			// An issue that lists no countries applies to every country.
+			$covers_all = $covers_all || empty( $countries );
+			foreach ( $countries as $country ) {
+				if ( is_string( $country ) ) {
+					$covered_countries[ $country ] = true;
+				}
+			}
+		}
+
+		// Keep at most 10 codes: critical codes first, then error codes, each in code order.
+		ksort( $codes, SORT_STRING );
+		$codes = array_slice( array_intersect( $codes, [ 'critical' ] ) + $codes, 0, 10, true );
+
+		sort( $plugin_codes );
+
+		return [
+			'critical_account_issue_count' => $critical_count,
+			'account_issue_codes'          => $codes,
+			'critical_covers_all_targets'  => $this->get_critical_target_coverage( $covers_all, array_keys( $covered_countries ) ),
+			'plugin_issue_codes'           => $plugin_codes,
+		];
+	}
+
+	/**
+	 * Get how much of the target countries the critical account issues cover.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param bool     $covers_all        Whether a critical issue applies to every country.
+	 * @param string[] $covered_countries Countries listed by the critical issues.
+	 *
+	 * @return string 'yes' when every target country is covered, 'partial' when some are, otherwise 'no'.
+	 */
+	private function get_critical_target_coverage( bool $covers_all, array $covered_countries ): string {
+		if ( $covers_all ) {
+			return 'yes';
+		}
+
+		if ( empty( $covered_countries ) ) {
+			return 'no';
+		}
+
+		/** @var TargetAudience $target_audience */
+		$target_audience  = $this->container->get( TargetAudience::class );
+		$target_countries = array_unique( $target_audience->get_target_countries() );
+		$covered_targets  = array_intersect( $target_countries, $covered_countries );
+
+		if ( empty( $covered_targets ) ) {
+			return 'no';
+		}
+
+		return count( $covered_targets ) === count( $target_countries ) ? 'yes' : 'partial';
+	}
+
+	/**
+	 * Replace any character outside [A-Za-z0-9_] in an issue code with `_` and cap it at 64 characters.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $code
+	 *
+	 * @return string
+	 */
+	private function sanitize_feed_issue_code( string $code ): string {
+		return substr( (string) preg_replace( '/[^A-Za-z0-9_]/', '_', $code ), 0, 64 );
 	}
 
 
