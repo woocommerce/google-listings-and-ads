@@ -52,7 +52,7 @@ const CreateAccount = ( props ) => {
 					? __( 'Creating…', 'google-listings-and-ads' )
 					: __( 'Updating…', 'google-listings-and-ads' );
 
-			return <AppButton loading text={ text } />;
+			return <AppButton text={ text } loading />;
 		}
 
 		if ( shouldClaimGoogleAdsAccount ) {
@@ -77,9 +77,9 @@ const CreateAccount = ( props ) => {
 			{ allowShowExisting && ! shouldClaimGoogleAdsAccount && (
 				<Section.Card.Footer>
 					<AppButton
-						isLink
 						disabled={ loading }
 						onClick={ onShowExisting }
+						isLink
 					>
 						{ __(
 							'Or, use your existing Google Ads account',

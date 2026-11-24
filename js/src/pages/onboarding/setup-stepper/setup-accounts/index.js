@@ -176,11 +176,11 @@ const SetupAccounts = ( props ) => {
 			<StepContentFooter>
 				<StepContentActions>
 					<AppButton
-						isPrimary
 						disabled={ isContinueButtonDisabled }
 						loading={ isSubmitting }
 						text={ __( 'Continue', 'google-listings-and-ads' ) }
 						onClick={ handleSubmitCallback }
+						isPrimary
 					/>
 				</StepContentActions>
 			</StepContentFooter>
