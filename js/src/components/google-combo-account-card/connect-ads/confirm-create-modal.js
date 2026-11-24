@@ -29,13 +29,13 @@ const ConfirmCreateModal = ( { onContinue, onRequestClose } ) => {
 				'google-listings-and-ads'
 			) }
 			buttons={ [
-				<AppButton key="confirm" isSecondary onClick={ onContinue }>
+				<AppButton key="confirm" onClick={ onContinue } isSecondary>
 					{ __(
 						'Yes, I want a new account',
 						'google-listings-and-ads'
 					) }
 				</AppButton>,
-				<AppButton key="cancel" isPrimary onClick={ onRequestClose }>
+				<AppButton key="cancel" onClick={ onRequestClose } isPrimary>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }

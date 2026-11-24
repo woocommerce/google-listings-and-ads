@@ -27,7 +27,6 @@ const IssuesTableDataModal = ( { issue, onRequestClose = () => {} } ) => {
 			buttons={ [
 				<AppButton
 					key="learn-more"
-					isPrimary
 					target="_blank"
 					href={ issue.action_url }
 					text={ __( 'Learn more', 'google-listings-and-ads' ) }
@@ -38,6 +37,7 @@ const IssuesTableDataModal = ( { issue, onRequestClose = () => {} } ) => {
 						href: issue.action_url,
 					} }
 					icon={ <GridiconExternal /> }
+					isPrimary
 				/>,
 			] }
 		>

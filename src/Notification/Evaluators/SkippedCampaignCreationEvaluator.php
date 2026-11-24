@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\InvalidatableNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
@@ -38,7 +39,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class SkippedCampaignCreationEvaluator implements InvalidatableNotificationEvaluatorInterface, AdsAwareInterface, OptionsAwareInterface, Service {
+class SkippedCampaignCreationEvaluator implements CachedNotificationEvaluatorInterface, InvalidatableNotificationEvaluatorInterface, AdsAwareInterface, OptionsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use CachedNotificationEvaluatorTrait;

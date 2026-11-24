@@ -196,6 +196,25 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 8.0, $adapted->getPrice()->getValue() );
 	}
 
+	public function test_create_with_exchange_rate_converts_price_when_wpml_returns_null() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 55.61,
+				'regular_price' => 55.61,
+			]
+		);
+
+		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
+		$this->wpml->method( 'get_product_price_in_currency' )->willReturn( null );
+		$this->wpml->method( 'get_product_sale_price_in_currency' )->willReturn( null );
+
+		$adapted = $this->product_factory->create( $product, 'CZ', [], 'CZ', '', 'CZK', 5.6354 );
+
+		$this->assertEquals( 'CZK', $adapted->getPrice()->getCurrency() );
+		$this->assertEqualsWithDelta( 313.38, $adapted->getPrice()->getValue(), 0.01 );
+	}
+
 	public function test_factory_constructs_without_wpml_for_backward_compatibility() {
 		$factory = new ProductFactory( $this->attribute_manager, $this->wc );
 

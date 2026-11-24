@@ -58,20 +58,20 @@ const SetupAccounts = ( props ) => {
 			>
 				<ConnectedGoogleAccountCard
 					googleAccount={ google }
-					hideAccountSwitch
 					helper={ __(
 						'This Google account is connected to your store’s product feed.',
 						'google-listings-and-ads'
 					) }
+					hideAccountSwitch
 				/>
 				<GoogleAdsAccountCard />
 			</Section>
 			<StepContentFooter>
 				<StepContentActions>
 					<AppButton
-						isPrimary
 						disabled={ isContinueButtonDisabled }
 						onClick={ onContinue }
+						isPrimary
 					>
 						{ __( 'Continue', 'google-listings-and-ads' ) }
 					</AppButton>

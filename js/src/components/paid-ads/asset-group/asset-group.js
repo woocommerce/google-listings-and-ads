@@ -188,7 +188,6 @@ export default function AssetGroup( {
 									// to delete the asset entity group, so it needs to hide the skip button if the editing
 									// asset group is not considered empty.
 									<AppButton
-										isTertiary
 										data-action={
 											ACTION_SUBMIT_CAMPAIGN_ONLY
 										}
@@ -204,6 +203,7 @@ export default function AssetGroup( {
 												ACTION_SUBMIT_CAMPAIGN_ONLY
 										}
 										onClick={ handleSkipClick }
+										isTertiary
 									>
 										{ __(
 											'Skip this step',
@@ -212,7 +212,6 @@ export default function AssetGroup( {
 									</AppButton>
 								) }
 							<AppButton
-								isPrimary
 								data-action={
 									ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
 								}
@@ -230,6 +229,7 @@ export default function AssetGroup( {
 										ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
 								}
 								onClick={ handleLaunchClick }
+								isPrimary
 							>
 								{ isCreation
 									? __(
