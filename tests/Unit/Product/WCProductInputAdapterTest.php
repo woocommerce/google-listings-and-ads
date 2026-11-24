@@ -510,9 +510,26 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$variation = wc_get_product( $variation_id );
 
+		$messages = [];
+		$capture  = static function ( $message ) use ( &$messages ) {
+			$messages[] = $message;
+		};
+		add_action( 'woocommerce_gla_debug_message', $capture );
+
 		$attrs = ( new WCProductInputAdapter( $variation, 'US', $variable ) )->get_product_input()->get_attributes();
 
+		remove_action( 'woocommerce_gla_debug_message', $capture );
+
 		$this->assertSame( wp_get_attachment_image_url( $parent_image ), $attrs['imageLink'] ?? null );
+		$this->assertCount( 1, $messages );
+		$this->assertSame(
+			sprintf(
+				'Image (ID: %s) for variation (ID: %s) does not resolve to a URL, falling back to the parent product images.',
+				999999,
+				$variation_id
+			),
+			$messages[0]
+		);
 	}
 
 	public function test_variation_falls_back_to_parent_image_when_image_id_resolves_to_empty() {
@@ -586,9 +603,18 @@ class WCProductInputAdapterTest extends UnitTest {
 		$variation->set_image_id( $variation_image );
 		$variation->save();
 
+		$messages = [];
+		$capture  = static function ( $message ) use ( &$messages ) {
+			$messages[] = $message;
+		};
+		add_action( 'woocommerce_gla_debug_message', $capture );
+
 		$attrs = ( new WCProductInputAdapter( $variation, 'US', $variable ) )->get_product_input()->get_attributes();
 
+		remove_action( 'woocommerce_gla_debug_message', $capture );
+
 		$this->assertSame( wp_get_attachment_image_url( $variation_image ), $attrs['imageLink'] ?? null );
+		$this->assertSame( [], $messages );
 	}
 
 	public function test_variation_image_is_omitted_when_no_usable_image_exists() {

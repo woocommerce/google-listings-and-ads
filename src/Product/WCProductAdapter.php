@@ -382,7 +382,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		// check if we can use the parent product image if it's a variation
 		if ( $this->is_variation() ) {
-			// `??` only covers null, but get_image_id() returns 0 or '' when no image is set.
+			// get_image_id() returns 0 or '' when no image is set, not null.
 			if ( empty( $image_id ) ) {
 				$image_id = $this->parent_wc_product->get_image_id();
 			}
@@ -406,6 +406,16 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		// truthy in that case, so fall back here to the same sources they would have used rather
 		// than sending a blank imageLink.
 		if ( empty( $image_link ) && $this->is_variation() ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf(
+					'Image (ID: %s) for variation (ID: %s) does not resolve to a URL, falling back to the parent product images.',
+					$image_id,
+					$this->wc_product->get_id()
+				),
+				__METHOD__
+			);
+
 			foreach ( [ $this->parent_wc_product->get_image_id(), $gallery_image_ids[0] ?? 0 ] as $fallback_image_id ) {
 				if ( empty( $fallback_image_id ) || $fallback_image_id === $image_id ) {
 					continue;
