@@ -140,6 +140,9 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.11.0 - 2026-11-24 =
+
+
 = 3.10.1 - 2026-11-16 =
 * Add - Allow regional WPML language codes in Markets and align supported languages with Google Merchant Center.
 * Add - Offer the Google Ads credit picker when creating a campaign after onboarding, and hide it after an offer is applied.
@@ -174,18 +177,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Validate the product and coupon content language against Merchant Center supported languages, falling back to English, so unsupported locale or WPML codes no longer block syncing.
 * Fix - Translate Content API keys and drop unknown keys returned by the `woocommerce_gla_product_attribute_values` filter, so products still sync to Merchant Center.
 * Fix - Product status refresh failing with a TypeError when a variable product holds both its own and its variations' pre-sync errors.
-
-= 3.9.6 - 2026-10-12 =
-* Add - Show a dismissible Google Ads promo on the WooCommerce Analytics Overview page when product revenue or products sold decline.
-* Add - Add multilingual and multicurrency market counts in the tracker snapshot.
-* Add - Notify merchants when synced products have main images smaller than 500 x 500 pixels.
-* Tweak - Replace channel visibility select with a toggle control.
-* Tweak - Bump WooCommerce "tested up to" version 11.2.
-* Tweak - Bump WooCommerce minimum supported version to 11.0.
-* Fix - Skip ads settings fetch when no Google Ads account connected.
-* Fix - Show the notification count bubble on the correct menu item after returning from Settings.
-* Fix - Settings tabs are no longer hidden behind the WooCommerce header after editing your store address or a paid ads campaign.
-* Fix - Record campaign-management FAQ interactions with the documented event name.
-* Fix - Support Content API-style getters (e.g. `getLink()`) on the adapter passed to `woocommerce_gla_product_attribute_values`, so extensions that read them no longer break product sync.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

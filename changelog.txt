@@ -1,5 +1,8 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.11.0 - 2026-11-24 =
+
+
 = 3.10.1 - 2026-11-16 =
 * Add - Allow regional WPML language codes in Markets and align supported languages with Google Merchant Center.
 * Add - Offer the Google Ads credit picker when creating a campaign after onboarding, and hide it after an offer is applied.
