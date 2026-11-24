@@ -738,6 +738,10 @@ class AccountServiceTest extends UnitTest {
 		$this->wpdb->expects( $this->never() )
 			->method( 'query' );
 
+		// The step stays pending, so a later setup retries it if the other request fails.
+		$this->state->expects( $this->never() )
+			->method( 'update_steps' );
+
 		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
 	}
 

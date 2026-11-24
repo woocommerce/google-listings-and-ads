@@ -184,7 +184,12 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 						break;
 
 					case 'conversion_action':
-						$this->create_conversion_action();
+						if ( ! $this->create_conversion_action() ) {
+							// Another request is creating the conversion action and records
+							// this step when it finishes. Leave the step unchanged, so a later
+							// setup retries it if that request fails.
+							continue 2;
+						}
 						break;
 
 					case 'link_merchant':
@@ -410,14 +415,15 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	/**
 	 * Create the generic GLA conversion action and store the details as an option.
 	 *
+	 * @return bool True when a conversion action is stored, false when another request is creating it.
 	 * @throws Exception If the conversion action can't be created.
 	 */
-	private function create_conversion_action(): void {
+	private function create_conversion_action(): bool {
 		// A conversion action can already be stored when resuming a setup whose
 		// recorded state was reverted; creating another would leave a duplicate
 		// in the Google Ads account.
 		if ( ! empty( $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION ) ) ) {
-			return;
+			return true;
 		}
 
 		/** @var wpdb $wpdb */
@@ -432,7 +438,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		// "0" means another request is creating the conversion action and will
 		// record the outcome. NULL means locking isn't available, so carry on unlocked.
 		if ( '0' === $locked ) {
-			return;
+			return false;
 		}
 
 		try {
@@ -442,11 +448,13 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				: $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
 
 			if ( ! empty( $stored ) ) {
-				return;
+				return true;
 			}
 
 			$action = $this->container->get( AdsConversionAction::class )->create_conversion_action();
 			$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $action );
+
+			return true;
 		} finally {
 			if ( '1' === $locked ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
