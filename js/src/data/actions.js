@@ -20,6 +20,7 @@ import {
 	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS,
 } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
+import { logError } from '~/utils/console';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
 import { convertKeysFromSnakeCaseToCamelCase } from './utils';
@@ -1577,6 +1578,30 @@ export function* fetchGoogleSearchConsoleAccount() {
 				status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
 			},
 		};
+	}
+}
+
+/**
+ * Fetch the connection state of the Google Search Console account again, keeping the stored state
+ * when the request fails. A failed re-check says nothing about the connection itself, so unlike
+ * `fetchGoogleSearchConsoleAccount` it only logs the error, with no notice and no fallback to a
+ * disconnected state.
+ *
+ * @return {Object|undefined} Action object to receive the Google Search Console account connection data, or nothing when the request failed.
+ */
+export function* refreshGoogleSearchConsoleAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/search-console/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
+			account: response,
+		};
+	} catch ( error ) {
+		logError( error );
+		return undefined;
 	}
 }
 
