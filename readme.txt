@@ -145,26 +145,24 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Add - Ask eligible merchants for feedback on the Google Ads sign-up offer through Marketing notifications.
 * Add - Edit AI-generated images with a prompt.
 * Add - Generate marketing images from a custom prompt in the Performance Max asset group editor.
-* Add - GOOWOO-911: Add recontext (edit-with-prompt) support for GenAI.
 * Add - Opt-in `woocommerce_gla_product_update_batch_window` filter that groups product updates from separate requests into fewer sync jobs.
 * Add - Show a confirmation before replacing an AI-generated image when editing it with a prompt.
 * Add - Track the "Generate with prompt" and "Edit image" GenAI flows.
+* Tweak - Remove the temporary Merchant API migration notice.
 * Fix - Allow closing the image generation modals with the keyboard while an image is generating.
 * Fix - Apply WP Consent API consent updates when Google Analytics for WooCommerce is active but not tracking.
 * Fix - Count handling time and business days in the Google Customer Reviews estimated delivery date.
 * Fix - Delete YouTube conversion report CSVs left in the uploads export folder on update. Sites that keep these files with `woocommerce_gla_youtube_orders_csv_delete_on_complete` will have the existing ones removed.
 * Fix - Fatal error when another plugin loads a newer version of Symfony Validator.
 * Fix - Get Started page crash when the store's default country cannot be loaded.
-* Fix - GOOWOO-1099: Cap Ads image downloads and request sizes.
-* Fix - GOOWOO-1201: Keep angle brackets in image generation prompts.
-* Fix - GOOWOO-910: Gen AI prompt driven generation.
+* Fix - Cap Ads image downloads and request sizes.
+* Fix - Keep angle brackets in image generation prompts.
 * Fix - Missing focus on edit button when edit modal is closed.
 * Fix - Prevent the daily expiring products resubmission from stalling for hours on large catalogs.
 * Fix - Product sync pausing for 12 hours on WPML stores after a request in a non-default language.
 * Fix - Products in secondary markets with a fixed exchange rate are no longer skipped with "[price] This value should not be null" when WPML cannot convert the price.
 * Fix - Reduce Merchant Center data source checks during product sync, so busy stores no longer reach the daily Merchant API quota.
 * Fix - Refresh notification results in the background so admin pages load faster.
-* Fix - Remove the temporary Merchant API migration notice.
 * Fix - Retry product re-sync migrations that couldn't be scheduled during a plugin update because the store wasn't ready to sync.
 * Fix - Saving an asset group no longer fails when the same logo is re-uploaded on a campaign with Brand Guidelines enabled.
 * Fix - Schedule product updates from one request in batches, instead of one background job per product.
