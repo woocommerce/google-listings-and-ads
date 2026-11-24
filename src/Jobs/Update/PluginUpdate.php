@@ -91,7 +91,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 * The retry runs after the installer's admin_init callback (default priority), so an
 	 * upgrade's own attempt always comes first in the same request.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 */
 	public function register(): void {
 		add_action(
@@ -130,7 +130,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 * Runs on every admin request. With nothing pending it costs one read of the autoloaded
 	 * option (created by install()). A pending job is retried at most once per RETRY_INTERVAL.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 */
 	public function retry_pending_jobs(): void {
 		if ( defined( 'IFRAME_REQUEST' ) || wp_doing_ajax() ) {
@@ -213,7 +213,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 * Stamp the pending jobs about to be attempted with the time of this attempt, and save them
 	 * before attempting anything, so a concurrent admin request sees them as not due.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param string[] $jobs Job class names about to be attempted.
 	 *
@@ -233,7 +233,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	/**
 	 * Remove a job that was scheduled from the pending jobs.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param string $job     Job class name.
 	 * @param int[]  $pending Pending jobs.
@@ -252,7 +252,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	/**
 	 * Keep a job that couldn't be scheduled yet as pending, stamped with this attempt.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param string $job            Job class name.
 	 * @param int[]  $pending        Pending jobs.
@@ -276,7 +276,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	/**
 	 * Discard the pending jobs, for a store whose Merchant Center setup isn't complete.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param int[] $pending Pending jobs.
 	 *
@@ -296,7 +296,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 * `schedule()` silently does nothing when the job can't be scheduled, so ask the job first
 	 * through `can_schedule()`. The `null` args match the job running with any arguments.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param string $job Job class name.
 	 *
@@ -330,7 +330,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 * first batch may have started before the upgrade, so the job stays pending and runs in
 	 * full once that run finishes.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param ActionSchedulerJobInterface $job The job.
 	 *
@@ -353,7 +353,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 * Only job classes listed in the updates are returned, so a stale or unexpected
 	 * value in the option is never passed on to the job repository.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @return int[] Time of the last attempt to schedule each job, keyed by job class.
 	 */
@@ -382,7 +382,7 @@ class PluginUpdate implements Service, Registerable, InstallableInterface, Optio
 	 * when it changes: Options::update() fires an options-updated hook on every call, and this
 	 * runs from admin requests while a job is pending.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param int[] $jobs Time of the last attempt to schedule each job, keyed by job class.
 	 */
