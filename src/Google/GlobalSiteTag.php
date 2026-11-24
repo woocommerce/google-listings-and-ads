@@ -93,6 +93,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	private $use_wcga_handle = null;
 
 	/**
+	 * Whether this request printed GLA's own gtag.js snippet, including its consent default.
+	 * Set where display_global_site_tag() is called, so an override that skips the parent keeps the consent bridge.
+	 *
+	 * @var bool
+	 */
+	private $printed_global_site_tag = false;
+
+	/**
 	 * Global Site Tag constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
@@ -175,6 +183,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			function () use ( $ads_conversion_id ) {
 				if ( $this->defer_events && $this->pending_events ) {
 					// A custom template may omit wp_head, including Woo Analytics' framework output.
+					$this->printed_global_site_tag = true;
 					$this->display_global_site_tag( $ads_conversion_id );
 					$this->use_wcga_handle = false;
 					$this->flush_pending_events();
@@ -338,7 +347,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$this->register_js_for_fast_refresh_dev();
 				$this->assets_handler->enqueue( $gtag_events );
 
-				if ( ! class_exists( '\WC_Google_Gtag_JS' ) && function_exists( 'wp_has_consent' ) ) {
+				// Woo Analytics may be active without printing its tag, so follow GLA's own tag:
+				// this bridge is the only GLA script that lifts the consent default it prints.
+				if ( $this->printed_global_site_tag && function_exists( 'wp_has_consent' ) ) {
 					$this->assets_handler->enqueue( $wp_consent_api );
 				}
 			}
@@ -386,6 +397,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		}
 
+		$this->printed_global_site_tag = true;
 		$this->display_global_site_tag( $ads_conversion_id );
 	}
 

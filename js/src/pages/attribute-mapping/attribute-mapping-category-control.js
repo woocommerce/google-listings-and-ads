@@ -63,7 +63,6 @@ const AttributeMappingCategoryControl = ( {
 					CATEGORY_CONDITION_SELECT_TYPES.EXCEPT ) && (
 				<SearchableSelectControl
 					options={ categories }
-					isSearchable
 					placeholder={ __(
 						'Type for search',
 						'google-listings-and-ads'
@@ -76,6 +75,7 @@ const AttributeMappingCategoryControl = ( {
 					}
 					multiple={ true }
 					inlineTags={ true }
+					isSearchable
 				/>
 			) }
 		</>

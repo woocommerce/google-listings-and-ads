@@ -180,10 +180,10 @@ const CompareTableCard = ( {
 		<AppTableCard
 			actions={
 				<AppButton
-					isSecondary
 					disabled={ isLoading || selectedRows.size <= 1 }
 					title={ compareButtonTitle }
 					onClick={ compareSelected }
+					isSecondary
 				>
 					{ __( 'Compare', 'google-listings-and-ads' ) }
 				</AppButton>
