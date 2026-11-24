@@ -3,7 +3,12 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { ExternalLink, Flex, ToggleControl } from '@wordpress/components';
+import {
+	ExternalLink,
+	Flex,
+	Spinner,
+	ToggleControl,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -13,6 +18,7 @@ import { buildSummary } from './utils/summaryText';
 import SummaryField from './summary-field';
 import GenerateFromPostButton from './generate-from-post-button';
 import SyncStatus from './sync-status';
+import CheckFailureNotice from './check-failure-notice';
 import ConfirmUnshareModal from './confirm-unshare-modal';
 import './index.scss';
 
@@ -41,7 +47,8 @@ import './index.scss';
  * hosting them: the "Share on my Business Profile" toggle, the status of the post's last send to
  * Google, a link to the post on Google once it has one, and — while sharing is on — the field
  * holding the text sent to Google with its "Generate from post" action. On a post already shared,
- * the toggle explains that changes made here aren't sent to Google.
+ * the toggle explains that changes made here aren't sent to Google. While the editor checks that
+ * the shared post still exists on Google, a loading state shows instead of the controls.
  *
  * @param {Object} props Component props.
  * @param {string} props.context The editor hosting the controls, sent with tracking events. Possible values: 'business-profile-share-panel', 'business-profile-share-meta-box'.
@@ -54,6 +61,8 @@ import './index.scss';
  * @param {string} [props.searchUrl] The post's link on Google, once Google provides one.
  * @param {boolean} [props.isShared] Whether the post has already been shared to Google.
  * @param {SyncOutcome|null} [props.syncOutcome] The post's latest sync outcome.
+ * @param {boolean} [props.isChecking] Whether the editor is checking that the shared post still exists on Google.
+ * @param {'reconnect'|'error'|null} [props.checkFailure] Why that check failed, or `null` when it didn't.
  * @return {JSX.Element} The controls.
  *
  * @fires gla_google_business_profile_share_toggle_click with `{ context, status, is_shared }`.
@@ -70,6 +79,8 @@ export default function BusinessProfileShareControl( {
 	searchUrl,
 	isShared = false,
 	syncOutcome = null,
+	isChecking = false,
+	checkFailure = null,
 } ) {
 	const [ showUnshareConfirm, setShowUnshareConfirm ] = useState( false );
 
@@ -132,6 +143,20 @@ export default function BusinessProfileShareControl( {
 				locationName
 			);
 
+	if ( isChecking ) {
+		return (
+			<Flex justify="flex-start" gap={ 2 }>
+				<Spinner />
+				<span>
+					{ __(
+						'Checking Google Business Profile…',
+						'google-listings-and-ads'
+					) }
+				</span>
+			</Flex>
+		);
+	}
+
 	return (
 		<>
 			<Flex
@@ -149,6 +174,7 @@ export default function BusinessProfileShareControl( {
 					onChange={ handleShareEnabledChange }
 					__nextHasNoMarginBottom
 				/>
+				<CheckFailureNotice checkFailure={ checkFailure } />
 				<SyncStatus syncOutcome={ syncOutcome } />
 				{ searchUrl && (
 					<ExternalLink
