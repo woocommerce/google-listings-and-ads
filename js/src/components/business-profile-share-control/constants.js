@@ -37,8 +37,7 @@ export const SYNC_OUTCOME_UNSHARE_QUEUED = 'unshare-queued';
 export const HEARTBEAT_SYNC_STATUS_KEY = 'gla_gbp_sync_status';
 
 /**
- * Why checking a shared post on Google failed: the Google account or the Jetpack connection needs
- * reconnecting.
+ * Why checking a shared post on Google failed: the Google account needs reconnecting.
  */
 export const CHECK_FAILURE_RECONNECT = 'reconnect';
 

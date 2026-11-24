@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class LocalPostController extends BaseController {
 
-	/** @var string Why a check failed: the Google account or the Jetpack connection needs reconnecting. */
+	/** @var string Why a check failed: the Google account needs reconnecting. */
 	public const CHECK_FAILURE_RECONNECT = 'reconnect';
 
 	/** @var string Why a check failed: any other failure. */
@@ -106,9 +106,7 @@ class LocalPostController extends BaseController {
 			} catch ( Exception $exception ) {
 				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 
-				$failure = $exception instanceof AccountReconnect ? self::CHECK_FAILURE_RECONNECT : self::CHECK_FAILURE_ERROR;
-
-				return $this->get_share_state( $post_id, false, $failure );
+				return $this->get_share_state( $post_id, false, self::get_check_failure( $exception ) );
 			}
 
 			return $this->get_share_state( $post_id, true, null );
@@ -147,6 +145,22 @@ class LocalPostController extends BaseController {
 		$outcome = $this->local_post_service->get_sync_outcome( $post_id )['outcome'] ?? null;
 
 		return SyncOutcome::QUEUED !== $outcome && SyncOutcome::UNSHARE_QUEUED !== $outcome;
+	}
+
+	/**
+	 * Get why a check failed. Only a lost Google grant asks the merchant to reconnect their Google
+	 * account, as `SyncOutcome::for_failure()` does. A lost Jetpack connection is a plain error,
+	 * since reconnecting Google wouldn't fix it.
+	 *
+	 * @param Exception $exception The exception the check threw.
+	 *
+	 * @return string
+	 */
+	private static function get_check_failure( Exception $exception ): string {
+		$is_google_disconnected = $exception instanceof AccountReconnect
+			&& AccountReconnect::GOOGLE_DISCONNECTED_CODE === ( $exception->get_response_data()['code'] ?? null );
+
+		return $is_google_disconnected ? self::CHECK_FAILURE_RECONNECT : self::CHECK_FAILURE_ERROR;
 	}
 
 	/**

@@ -211,6 +211,16 @@ class LocalPostControllerTest extends RESTControllerUnitTest {
 		$this->assertSame( LocalPostController::CHECK_FAILURE_RECONNECT, $data['check_failure'] );
 	}
 
+	public function test_a_lost_jetpack_connection_is_a_plain_error() {
+		$this->given_a_stored_result();
+		$this->local_post_service->method( 'exists_on_google' )->willThrowException( AccountReconnect::jetpack_disconnected() );
+
+		$data = $this->check_post()->get_data();
+
+		$this->assertFalse( $data['checked'] );
+		$this->assertSame( LocalPostController::CHECK_FAILURE_ERROR, $data['check_failure'] );
+	}
+
 	public function test_returns_not_found_for_a_post_type_that_cannot_be_shared() {
 		$page = $this->factory()->post->create_and_get( [ 'post_type' => 'page' ] );
 
