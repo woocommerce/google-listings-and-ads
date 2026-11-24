@@ -355,6 +355,7 @@ class PostPublishTriggerTest extends UnitTest {
 			'content rejection'    => [ SyncOutcome::CONTENT_REJECTION ],
 			'account restriction'  => [ SyncOutcome::ACCOUNT_RESTRICTION ],
 			'account disconnected' => [ SyncOutcome::ACCOUNT_DISCONNECTED ],
+			'not found'            => [ SyncOutcome::NOT_FOUND ],
 		];
 	}
 
@@ -421,7 +422,6 @@ class PostPublishTriggerTest extends UnitTest {
 		return [
 			'success'                   => [ SyncOutcome::SUCCESS ],
 			'sent pending verification' => [ SyncOutcome::SENT_PENDING_VERIFICATION ],
-			'not found'                 => [ SyncOutcome::NOT_FOUND ],
 		];
 	}
 
@@ -523,13 +523,18 @@ class PostPublishTriggerTest extends UnitTest {
 		}
 	}
 
-	public function test_does_not_retry_a_failed_schedule_once_sharing_is_switched_off() {
+	/**
+	 * @dataProvider data_provider_failure_outcomes
+	 *
+	 * @param string $outcome
+	 */
+	public function test_does_not_retry_a_failed_schedule_once_sharing_is_switched_off( string $outcome ) {
 		// method()->willReturn() keeps whichever stub was configured first, so a disqualifying
 		// is_shareable() needs its own mock rather than re-stubbing setUp()'s shared one.
 		$this->local_post_service = $this->createMock( LocalPostService::class );
 		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
 			[
-				'outcome' => SyncOutcome::REQUEST_FAILURE,
+				'outcome' => $outcome,
 				'message' => '',
 			]
 		);

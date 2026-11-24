@@ -60,6 +60,7 @@ final class SyncOutcome {
 		self::CONTENT_REJECTION,
 		self::ACCOUNT_RESTRICTION,
 		self::ACCOUNT_DISCONNECTED,
+		self::NOT_FOUND,
 	];
 
 	/** @var string[] Outcomes of a removal that's pending or failed, which leave the post on Google. */

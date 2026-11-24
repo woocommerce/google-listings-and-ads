@@ -63,6 +63,14 @@ class SyncOutcomeTest extends UnitTest {
 	}
 
 	/**
+	 * A post deleted on Google has its link cleared and sharing turned off, so saving it with
+	 * sharing back on has to send it again rather than treat it as already shared.
+	 */
+	public function test_not_found_is_a_retryable_failure() {
+		$this->assertContains( SyncOutcome::NOT_FOUND, SyncOutcome::FAILURES );
+	}
+
+	/**
 	 * A queued post hasn't had an attempt yet, so retrying it would schedule a duplicate send
 	 * while the first one is still in flight.
 	 */
