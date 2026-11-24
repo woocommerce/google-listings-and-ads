@@ -166,13 +166,13 @@ const Banner = () => {
 					</AppButton>
 
 					<AppButton
-						isSecondary
 						href="https://woocommerce.com/my-account/contact-support/"
 						target="_blank"
 						onClick={ handleNeedHelpOnClick }
 						icon={ <Icon icon={ externalIcon } /> }
 						iconPosition="right"
 						iconSize={ 16 }
+						isSecondary
 					>
 						{ __( 'Need help', 'google-listings-and-ads' ) }
 					</AppButton>

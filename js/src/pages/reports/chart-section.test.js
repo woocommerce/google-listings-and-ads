@@ -61,11 +61,11 @@ describe( 'ChartSection', () => {
 			render(
 				<ChartSection
 					metrics={ metrics }
-					loaded
 					intervals={ [
 						{ interval: '2026-10-01', subtotals: { clicks: 3 } },
 						{ interval: '2026-10-03', subtotals: { clicks: 5 } },
 					] }
+					loaded
 				/>
 			);
 
@@ -97,10 +97,10 @@ describe( 'ChartSection', () => {
 			render(
 				<ChartSection
 					metrics={ ctrMetrics }
-					loaded
 					intervals={ [
 						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
 					] }
+					loaded
 				/>
 			);
 
@@ -117,10 +117,10 @@ describe( 'ChartSection', () => {
 			render(
 				<ChartSection
 					metrics={ metrics }
-					loaded
 					intervals={ [
 						{ interval: '2026-10-01', subtotals: { clicks: 30 } },
 					] }
+					loaded
 				/>
 			);
 
@@ -147,7 +147,6 @@ describe( 'ChartSection', () => {
 			render(
 				<ChartSection
 					metrics={ metrics }
-					loaded
 					intervals={ [
 						{ interval: '2026-10-01', subtotals: { clicks: 3 } },
 						{ interval: '2026-10-02', subtotals: { clicks: 5 } },
@@ -155,6 +154,7 @@ describe( 'ChartSection', () => {
 					comparison={ comparison }
 					intervalUnit="day"
 					allowedIntervals={ [ 'day', 'week' ] }
+					loaded
 				/>
 			);
 
@@ -201,7 +201,6 @@ describe( 'ChartSection', () => {
 			render(
 				<ChartSection
 					metrics={ metrics }
-					loaded
 					intervals={ [
 						{ interval: '2026-10-01', subtotals: { clicks: 3 } },
 						{ interval: '2026-10-03', subtotals: { clicks: 5 } },
@@ -217,6 +216,7 @@ describe( 'ChartSection', () => {
 					} }
 					intervalUnit="day"
 					allowedIntervals={ [ 'day', 'week' ] }
+					loaded
 				/>
 			);
 
@@ -236,7 +236,6 @@ describe( 'ChartSection', () => {
 			render(
 				<ChartSection
 					metrics={ ctrMetrics }
-					loaded
 					intervals={ [
 						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
 					] }
@@ -255,6 +254,7 @@ describe( 'ChartSection', () => {
 							secondary: 'Previous year',
 						},
 					} }
+					loaded
 				/>
 			);
 
@@ -287,7 +287,6 @@ describe( 'ChartSection', () => {
 			render(
 				<ChartSection
 					metrics={ ctrMetrics }
-					loaded
 					intervals={ [
 						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
 					] }
@@ -306,6 +305,7 @@ describe( 'ChartSection', () => {
 							secondary: 'Previous year',
 						},
 					} }
+					loaded
 				/>
 			);
 
@@ -319,7 +319,6 @@ describe( 'ChartSection', () => {
 			render(
 				<ChartSection
 					metrics={ ctrMetrics }
-					loaded
 					intervals={ [
 						{ interval: '2026-10-01', subtotals: { ctr: 0.05 } },
 					] }
@@ -338,6 +337,7 @@ describe( 'ChartSection', () => {
 							secondary: 'Previous year',
 						},
 					} }
+					loaded
 				/>
 			);
 

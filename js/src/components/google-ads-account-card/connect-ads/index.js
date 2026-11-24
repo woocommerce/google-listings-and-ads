@@ -136,9 +136,9 @@ const ConnectAds = ( props ) => {
 			</Section.Card.Body>
 			<Section.Card.Footer>
 				<AppButton
-					isTertiary
 					disabled={ isLoading }
 					onClick={ handleCreateNewClick }
+					isTertiary
 				>
 					{ __(
 						'Or, create a new Google Ads account',

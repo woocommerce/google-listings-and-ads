@@ -94,7 +94,7 @@ const BillingSetupCard = ( { billingUrl, onSetupComplete } ) => {
 						) }
 					</div>
 				</div>
-				<AppButton isSecondary onClick={ handleClick }>
+				<AppButton onClick={ handleClick } isSecondary>
 					{ __( 'Set up billing', 'google-listings-and-ads' ) }
 				</AppButton>
 			</Section.Card.Body>
