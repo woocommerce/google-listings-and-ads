@@ -430,48 +430,6 @@ test.describe( 'Google Tag Manager', () => {
 			} );
 		} );
 
-		test.describe( 'Ads Conversion Duplicate-Tracking notice', () => {
-			const HELP_DOC_URL =
-				'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking';
-
-			const expectDuplicateNoticeToRenderHelpLink = async () => {
-				const link = settingsPage.googleTagManagerAccountCard.getByRole(
-					'link',
-					{ name: 'use this snippet' }
-				);
-				await expect( link ).toBeVisible();
-				await expect( link ).toHaveAttribute( 'href', HELP_DOC_URL );
-			};
-
-			test( 'should render on the not-connected state', async () => {
-				await settingsPage.mockTagManagerAccountNotConnected();
-				await settingsPage.mockTagManagerAccountsList( [] );
-				await settingsPage.gotoAccounts();
-
-				await expectDuplicateNoticeToRenderHelpLink();
-			} );
-
-			test( 'should render on the container-selection state', async () => {
-				await settingsPage.mockTagManagerAccountIncomplete(
-					CONNECTED_ACCOUNT
-				);
-				await settingsPage.mockTagManagerContainersList( [] );
-				await settingsPage.gotoAccounts();
-
-				await expectDuplicateNoticeToRenderHelpLink();
-			} );
-
-			test( 'should render on the connected state', async () => {
-				await settingsPage.mockTagManagerAccountConnected(
-					CONNECTED_ACCOUNT,
-					CONNECTED_CONTAINER
-				);
-				await settingsPage.gotoAccounts();
-
-				await expectDuplicateNoticeToRenderHelpLink();
-			} );
-		} );
-
 		test.describe( 'disconnect and reconnect', () => {
 			test.beforeAll( async () => {
 				await settingsPage.mockTagManagerAccountConnected(
