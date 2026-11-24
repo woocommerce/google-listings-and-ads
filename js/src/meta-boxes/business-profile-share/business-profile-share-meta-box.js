@@ -1,13 +1,14 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
 import useBusinessProfileSyncStatus from '~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus';
+import useBusinessProfilePostCheck from '~/components/business-profile-share-control/hooks/useBusinessProfilePostCheck';
 import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from './constants';
 import getLiveClassicPostContent from './getLiveClassicPostContent';
 
@@ -29,6 +30,8 @@ import getLiveClassicPostContent from './getLiveClassicPostContent';
  * Renders the Classic Editor's controls for sharing a post to Google Business Profile, posting the
  * share choice and the text with the post's form through hidden fields. "Generate from post" reads
  * the editor's content right now, including unsaved edits -- see {@see getLiveClassicPostContent}.
+ * When the editor opens on a shared post, it first checks that the post still exists on Google,
+ * and takes the server's share state once Google answers.
  *
  * @param {Object} props Component props.
  * @param {{ title: string, address: string }} props.location The connected location.
@@ -45,11 +48,23 @@ export default function BusinessProfileShareMetaBox( {
 } ) {
 	const [ isShareEnabled, setShareEnabled ] = useState( post.isShareEnabled );
 	const [ summary, setSummary ] = useState( post.summary );
+	const { isChecking, checkedPost, checkFailure } =
+		useBusinessProfilePostCheck( {
+			postId: post.postId,
+			shareStatus: post.shareStatus,
+			syncOutcome: post.syncOutcome,
+		} );
 	const { syncOutcome, isShared, searchUrl } = useBusinessProfileSyncStatus( {
 		postId: post.postId,
-		syncOutcome: post.syncOutcome,
-		shareStatus: post.shareStatus,
+		syncOutcome: checkedPost ? checkedPost.sync_outcome : post.syncOutcome,
+		shareStatus: checkedPost ? checkedPost.share_status : post.shareStatus,
 	} );
+
+	useEffect( () => {
+		if ( checkedPost ) {
+			setShareEnabled( checkedPost.is_share_enabled );
+		}
+	}, [ checkedPost ] );
 
 	return (
 		<>
@@ -64,6 +79,8 @@ export default function BusinessProfileShareMetaBox( {
 				searchUrl={ searchUrl }
 				isShared={ isShared }
 				syncOutcome={ syncOutcome }
+				isChecking={ isChecking }
+				checkFailure={ checkFailure }
 			/>
 			<input
 				type="hidden"

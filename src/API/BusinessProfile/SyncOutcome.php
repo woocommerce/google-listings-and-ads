@@ -63,6 +63,7 @@ final class SyncOutcome {
 		self::CONTENT_REJECTION,
 		self::ACCOUNT_RESTRICTION,
 		self::ACCOUNT_DISCONNECTED,
+		self::NOT_FOUND,
 		self::EMPTY_SUMMARY,
 	];
 

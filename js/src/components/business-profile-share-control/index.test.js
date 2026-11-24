@@ -341,4 +341,45 @@ describe( 'BusinessProfileShareControl', () => {
 			{ context: 'business-profile-share-meta-box' }
 		);
 	} );
+
+	it( 'shows a loading state instead of the controls while checking the post on Google', () => {
+		renderControl( {
+			isShareEnabled: true,
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+			isChecking: true,
+		} );
+
+		expect(
+			screen.getByText( 'Checking Google Business Profile…' )
+		).toBeInTheDocument();
+		expect( screen.queryByRole( 'checkbox' ) ).not.toBeInTheDocument();
+		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'keeps the controls and warns when the post could not be checked on Google', () => {
+		renderControl( {
+			isShareEnabled: true,
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+			checkFailure: 'error',
+		} );
+
+		expect(
+			screen.getByText(
+				'We couldn’t check whether this post still exists on Google Business Profile.',
+				{ selector: '.components-notice__content' }
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).toBeChecked();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'View on Google Business Profile (opens in a new tab)',
+			} )
+		).toBeInTheDocument();
+	} );
 } );

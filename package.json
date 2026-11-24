@@ -180,11 +180,11 @@
 			},
 			{
 				"path": "./js/build/business-profile-share.js",
-				"maxSize": "20.5 kB"
+				"maxSize": "20.8 kB"
 			},
 			{
 				"path": "./js/build/business-profile-share-meta-box.js",
-				"maxSize": "20.2 kB"
+				"maxSize": "20.3 kB"
 			},
 			{
 				"path": "./js/build/notifications-system.js",

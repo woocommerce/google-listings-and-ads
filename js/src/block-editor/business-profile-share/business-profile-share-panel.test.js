@@ -16,6 +16,7 @@ import {
 import BusinessProfileSharePanel from './business-profile-share-panel';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
 import useBlockEditorSyncStatus from './hooks/useBlockEditorSyncStatus';
+import useBlockEditorPostCheck from './hooks/useBlockEditorPostCheck';
 import { glaBusinessProfileData } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 
@@ -42,6 +43,9 @@ jest.mock( './hooks/useBusinessProfileSharePost', () =>
 );
 jest.mock( './hooks/useBlockEditorSyncStatus', () =>
 	jest.fn().mockName( 'useBlockEditorSyncStatus' )
+);
+jest.mock( './hooks/useBlockEditorPostCheck', () =>
+	jest.fn().mockName( 'useBlockEditorPostCheck' )
 );
 
 /**
@@ -119,6 +123,10 @@ function renderPanel( { title = '', blocks = [] } = {} ) {
 describe( 'BusinessProfileSharePanel', () => {
 	beforeEach( () => {
 		mockSyncStatus();
+		useBlockEditorPostCheck.mockReturnValue( {
+			isChecking: false,
+			checkFailure: null,
+		} );
 	} );
 
 	afterEach( () => {
@@ -294,6 +302,48 @@ describe( 'BusinessProfileSharePanel', () => {
 			screen.getByRole( 'link', {
 				name: 'View on Google Business Profile (opens in a new tab)',
 			} )
+		).toBeInTheDocument();
+	} );
+
+	it( 'shows a loading state while checking the post on Google', () => {
+		glaBusinessProfileData.businessProfileLocation = {
+			title: 'Trailmark Athletics',
+			address: '',
+		};
+		mockPost( { isShareEnabled: true } );
+		mockSyncStatus( { isShared: true } );
+		useBlockEditorPostCheck.mockReturnValue( {
+			isChecking: true,
+			checkFailure: null,
+		} );
+
+		render( <BusinessProfileSharePanel /> );
+
+		expect(
+			screen.getByText( 'Checking Google Business Profile…' )
+		).toBeInTheDocument();
+		expect( screen.queryByRole( 'checkbox' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'warns when the post could not be checked on Google', () => {
+		glaBusinessProfileData.businessProfileLocation = {
+			title: 'Trailmark Athletics',
+			address: '',
+		};
+		mockPost( { isShareEnabled: true } );
+		mockSyncStatus( { isShared: true } );
+		useBlockEditorPostCheck.mockReturnValue( {
+			isChecking: false,
+			checkFailure: 'reconnect',
+		} );
+
+		render( <BusinessProfileSharePanel /> );
+
+		expect(
+			screen.getByText(
+				'We couldn’t check whether this post still exists on Google Business Profile. Reconnect your Google account to check it.',
+				{ selector: '.components-notice__content' }
+			)
 		).toBeInTheDocument();
 	} );
 } );

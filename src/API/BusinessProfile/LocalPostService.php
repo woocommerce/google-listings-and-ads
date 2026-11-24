@@ -22,8 +22,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class LocalPostService
  *
- * Builds and sends the `localPosts.create` and `localPosts.delete` requests for a WordPress
- * post, and stores or clears the result as post meta. The Summary text is read from post meta
+ * Builds and sends the `localPosts.create`, `localPosts.get` and `localPosts.delete` requests for
+ * a WordPress post, and stores or clears the result as post meta. The Summary text is read from post meta
  * and never written here; callers decide when to invoke {@see self::create()} or
  * {@see self::delete()}.
  *
@@ -552,9 +552,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 		try {
 			$this->client->delete( "accounts/{$account_id}/locations/{$location_id}/localPosts/{$google_post_id}" );
 		} catch ( BusinessProfileApiException $exception ) {
-			$google_status = $exception->get_response_body()['error']['status'] ?? '';
-
-			if ( 404 !== $exception->get_http_status() || 'NOT_FOUND' !== $google_status ) {
+			if ( ! self::is_not_found( $exception ) ) {
 				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 				throw $exception;
 			}
@@ -564,6 +562,76 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		delete_post_meta( $post_id, self::RESULT_META_KEY );
+	}
+
+	/**
+	 * Whether a post's local post still exists on Google, read with a `localPosts.get` request.
+	 * Google's own `NOT_FOUND` means someone deleted it there.
+	 *
+	 * @param array $result The stored account/location/post-ID triple, as returned by {@see self::get_stored_result()}.
+	 *
+	 * @return bool
+	 * @throws InvalidArgumentException When the result is missing one of the three IDs.
+	 * @throws BusinessProfileApiException On a non-2xx response other than Google's own NOT_FOUND, or a network failure.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
+	 */
+	public function exists_on_google( array $result ): bool {
+		if ( ! self::has_complete_result( $result ) ) {
+			throw new InvalidArgumentException( 'A Google Business Profile post can only be checked with its account, location and post IDs.' );
+		}
+
+		try {
+			$this->client->get( "accounts/{$result['account_id']}/locations/{$result['location_id']}/localPosts/{$result['google_post_id']}" );
+		} catch ( BusinessProfileApiException $exception ) {
+			if ( self::is_not_found( $exception ) ) {
+				return false;
+			}
+
+			throw $exception;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Unlink a post whose local post was deleted on Google: clear the stored result, turn sharing
+	 * off, and record the not-found outcome. The Summary text is kept.
+	 *
+	 * Does nothing when the stored post ID no longer matches the one checked, because a send
+	 * that finished in the meantime has stored a new, live post.
+	 *
+	 * @param int    $post_id
+	 * @param string $checked_google_post_id The Google post ID that was found missing.
+	 *
+	 * @return bool Whether the post was unlinked.
+	 */
+	public function unlink_deleted_post( int $post_id, string $checked_google_post_id ): bool {
+		$stored_google_post_id = (string) ( $this->get_stored_result( $post_id )['google_post_id'] ?? '' );
+
+		if ( '' === $checked_google_post_id || $checked_google_post_id !== $stored_google_post_id ) {
+			return false;
+		}
+
+		delete_post_meta( $post_id, self::RESULT_META_KEY );
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, false );
+		$this->set_sync_outcome( $post_id, SyncOutcome::NOT_FOUND );
+
+		return true;
+	}
+
+	/**
+	 * Whether a failed request means the local post doesn't exist on Google. A 404 alone isn't
+	 * enough: the Connect Server answers a 404 without Google's error envelope for a route it
+	 * doesn't serve.
+	 *
+	 * @param BusinessProfileApiException $exception
+	 *
+	 * @return bool
+	 */
+	private static function is_not_found( BusinessProfileApiException $exception ): bool {
+		$google_status = $exception->get_response_body()['error']['status'] ?? '';
+
+		return 404 === $exception->get_http_status() && 'NOT_FOUND' === $google_status;
 	}
 
 	/**

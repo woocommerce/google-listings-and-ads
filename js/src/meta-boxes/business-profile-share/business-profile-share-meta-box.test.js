@@ -11,11 +11,16 @@ import { doAction } from '@wordpress/hooks';
  */
 import BusinessProfileShareMetaBox from './business-profile-share-meta-box';
 import { FIRST_CHECK_DELAY } from '~/components/business-profile-share-control/hooks/useBusinessProfileSyncStatus';
+import useBusinessProfilePostCheck from '~/components/business-profile-share-control/hooks/useBusinessProfilePostCheck';
 import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
+jest.mock(
+	'~/components/business-profile-share-control/hooks/useBusinessProfilePostCheck',
+	() => jest.fn().mockName( 'useBusinessProfilePostCheck' )
+);
 
 const location = {
 	title: 'Trailmark Athletics',
@@ -120,6 +125,11 @@ function getSubmittedValue( form, name ) {
 describe( 'BusinessProfileShareMetaBox', () => {
 	beforeEach( () => {
 		recordGlaEvent.mockClear();
+		useBusinessProfilePostCheck.mockReturnValue( {
+			isChecking: false,
+			checkedPost: null,
+			checkFailure: null,
+		} );
 		window.wp = {
 			heartbeat: { connectNow: jest.fn().mockName( 'connectNow' ) },
 		};
@@ -362,6 +372,112 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		expect(
 			screen.getByText( 'This update was rejected by Google.', {
 				selector: '.components-notice__content',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	it( 'checks a shared post on Google, showing a loading state meanwhile', () => {
+		useBusinessProfilePostCheck.mockReturnValue( {
+			isChecking: true,
+			checkedPost: null,
+			checkFailure: null,
+		} );
+		const shareStatus = {
+			is_shared: true,
+			search_url: 'https://local.google.com/place?id=1&use=posts',
+		};
+
+		renderMetaBox( { isShareEnabled: true, shareStatus } );
+
+		expect( useBusinessProfilePostCheck ).toHaveBeenCalledWith( {
+			postId: 123,
+			shareStatus,
+			syncOutcome: null,
+		} );
+		expect(
+			screen.getByText( 'Checking Google Business Profile…' )
+		).toBeInTheDocument();
+		expect( screen.queryByRole( 'checkbox' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'shows a post deleted on Google as unlinked, with sharing off, and posts that with the form', () => {
+		useBusinessProfilePostCheck.mockReturnValue( {
+			isChecking: false,
+			checkedPost: {
+				checked: true,
+				check_failure: null,
+				is_share_enabled: false,
+				share_status: { is_shared: false, search_url: '' },
+				sync_outcome: {
+					outcome: 'not-found',
+					message: '',
+					image_omitted: false,
+					display_message:
+						'The post no longer exists on Google Business Profile.',
+					display_status: 'error',
+				},
+			},
+			checkFailure: null,
+		} );
+
+		const form = renderMetaBox( {
+			isShareEnabled: true,
+			summary: 'Autumn collection',
+			shareStatus: {
+				is_shared: true,
+				search_url: 'https://local.google.com/place?id=1&use=posts',
+			},
+		} );
+
+		expect(
+			screen.getByText(
+				'The post no longer exists on Google Business Profile.',
+				{ selector: '.components-notice__content' }
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).not.toBeChecked();
+		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
+		expect(
+			getSubmittedValue( form, 'gla_business_profile_share_share' )
+		).toBe( '' );
+		expect(
+			getSubmittedValue( form, 'gla_business_profile_share_summary' )
+		).toBe( 'Autumn collection' );
+	} );
+
+	it( 'keeps the saved state and warns when the post could not be checked', () => {
+		useBusinessProfilePostCheck.mockReturnValue( {
+			isChecking: false,
+			checkedPost: null,
+			checkFailure: 'error',
+		} );
+
+		renderMetaBox( {
+			isShareEnabled: true,
+			shareStatus: {
+				is_shared: true,
+				search_url: 'https://local.google.com/place?id=1&use=posts',
+			},
+		} );
+
+		expect(
+			screen.getByText(
+				'We couldn’t check whether this post still exists on Google Business Profile.',
+				{ selector: '.components-notice__content' }
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).toBeChecked();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'View on Google Business Profile (opens in a new tab)',
 			} )
 		).toBeInTheDocument();
 	} );

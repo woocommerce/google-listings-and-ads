@@ -1501,6 +1501,136 @@ class LocalPostServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_exists_on_google_reads_the_stored_account_location_post_id() {
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'accounts/111/locations/222/localPosts/333' )
+			->willReturn( [ 'state' => 'LIVE' ] );
+
+		$this->assertTrue( $this->service->exists_on_google( $this->get_stored_result_for( 1 ) ) );
+	}
+
+	public function test_exists_on_google_is_false_when_google_answers_not_found() {
+		$this->client->method( 'get' )->willThrowException( $this->google_not_found_exception() );
+
+		$this->assertFalse( $this->service->exists_on_google( $this->get_stored_result_for( 1 ) ) );
+	}
+
+	public function test_exists_on_google_rethrows_a_bare_404_without_googles_not_found_status() {
+		$this->client->method( 'get' )->willThrowException(
+			new BusinessProfileApiException( 404, [ 'message' => 'Unsupported path' ], __METHOD__ )
+		);
+
+		$this->expectException( BusinessProfileApiException::class );
+
+		$this->service->exists_on_google( $this->get_stored_result_for( 1 ) );
+	}
+
+	public function test_exists_on_google_rethrows_a_server_error() {
+		$this->client->method( 'get' )->willThrowException(
+			new BusinessProfileApiException( 503, [], __METHOD__ )
+		);
+
+		$this->expectException( BusinessProfileApiException::class );
+
+		$this->service->exists_on_google( $this->get_stored_result_for( 1 ) );
+	}
+
+	public function test_exists_on_google_rethrows_an_account_reconnect() {
+		$this->client->method( 'get' )->willThrowException( AccountReconnect::jetpack_disconnected() );
+
+		$this->expectException( AccountReconnect::class );
+
+		$this->service->exists_on_google( $this->get_stored_result_for( 1 ) );
+	}
+
+	public function test_exists_on_google_makes_no_call_for_a_result_missing_an_id() {
+		$result = $this->get_stored_result_for( 1 );
+		unset( $result['google_post_id'] );
+
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->expectException( InvalidArgumentException::class );
+
+		$this->service->exists_on_google( $result );
+	}
+
+	public function test_unlink_deleted_post_clears_the_link_turns_sharing_off_and_records_not_found() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $this->get_stored_result_for( $post->ID ) );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+		update_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, 'Autumn collection' );
+
+		$this->assertTrue( $this->service->unlink_deleted_post( $post->ID, '333' ) );
+
+		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+		$this->assertFalse( (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true ) );
+		$this->assertSame( SyncOutcome::NOT_FOUND, $this->service->get_sync_outcome( $post->ID )['outcome'] );
+		$this->assertSame( 'Autumn collection', get_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, true ) );
+		$this->assertSame(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			],
+			$this->service->get_share_status( $post->ID )
+		);
+	}
+
+	public function test_unlink_deleted_post_keeps_a_post_stored_after_the_check() {
+		$post         = $this->factory()->post->create_and_get();
+		$newer_result = array_merge( $this->get_stored_result_for( $post->ID ), [ 'google_post_id' => '444' ] );
+		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $newer_result );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+
+		$this->assertFalse( $this->service->unlink_deleted_post( $post->ID, '333' ) );
+
+		$this->assertSame( $newer_result, get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+		$this->assertTrue( (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true ) );
+		$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
+	}
+
+	public function test_unlink_deleted_post_does_nothing_when_no_result_is_stored() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->assertFalse( $this->service->unlink_deleted_post( $post->ID, '333' ) );
+		$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
+	}
+
+	/**
+	 * A stored result, shaped as `create()` stores it.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return array
+	 */
+	private function get_stored_result_for( int $post_id ): array {
+		return [
+			'account_id'     => '111',
+			'location_id'    => '222',
+			'google_post_id' => '333',
+			'search_url'     => 'https://g.page/r/abc',
+			'wp_post_id'     => $post_id,
+		];
+	}
+
+	/**
+	 * Google's answer for a local post that doesn't exist.
+	 *
+	 * @return BusinessProfileApiException
+	 */
+	private function google_not_found_exception(): BusinessProfileApiException {
+		return new BusinessProfileApiException(
+			404,
+			[
+				'error' => [
+					'code'    => 404,
+					'message' => 'Requested entity was not found.',
+					'status'  => 'NOT_FOUND',
+				],
+			],
+			__METHOD__
+		);
+	}
+
 	/**
 	 * Invoke the registered field's own get_callback the way WP core's REST controller does.
 	 *
