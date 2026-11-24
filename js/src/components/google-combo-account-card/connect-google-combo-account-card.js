@@ -112,7 +112,6 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 			alignIndicator="top"
 			indicator={
 				<AppButton
-					isSecondary
 					disabled={ disabled || ! termsAccepted }
 					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
@@ -122,6 +121,7 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 					} }
 					text={ __( 'Connect', 'google-listings-and-ads' ) }
 					onClick={ handleConnect }
+					isSecondary
 				/>
 			}
 		/>

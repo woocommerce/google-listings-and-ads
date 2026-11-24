@@ -47,7 +47,6 @@ const GetStartedCard = () => {
 					) }
 				</Text>
 				<AppButton
-					isPrimary
 					disabled={ disableNextStep }
 					href={ getOnboardingUrl() }
 					eventName="gla_setup_mc"
@@ -56,6 +55,7 @@ const GetStartedCard = () => {
 						action: 'go-to-onboarding',
 						context: 'get-started',
 					} }
+					isPrimary
 				>
 					{ __( 'Sell more on Google →', 'google-listings-and-ads' ) }
 				</AppButton>
