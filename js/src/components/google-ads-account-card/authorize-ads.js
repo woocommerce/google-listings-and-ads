@@ -47,7 +47,6 @@ const AuthorizeAds = ( { additionalScopeEmail } ) => {
 			alignIcon="top"
 			indicator={
 				<AppButton
-					isSecondary
 					loading={ loading || data }
 					onClick={ handleClick }
 					text={ __(
@@ -56,6 +55,7 @@ const AuthorizeAds = ( { additionalScopeEmail } ) => {
 					) }
 					eventName="gla_google_account_connect_button_click"
 					eventProps={ { context: 'setup-ads', action: 'scope' } }
+					isSecondary
 				/>
 			}
 		/>

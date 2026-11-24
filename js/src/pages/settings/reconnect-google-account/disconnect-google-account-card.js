@@ -73,10 +73,10 @@ export default function DisconnectGoogleAccountCard( { email } ) {
 					/>
 				) }
 				<AppButton
-					isSecondary
-					isDestructive
 					disabled={ isDisconnectingGoogle }
 					onClick={ () => setOpenedModal( ALL_ACCOUNTS ) }
+					isSecondary
+					isDestructive
 				>
 					{ __(
 						'Disconnect all accounts',
@@ -84,9 +84,9 @@ export default function DisconnectGoogleAccountCard( { email } ) {
 					) }
 				</AppButton>
 				<AppButton
-					isPrimary
 					loading={ isDisconnectingGoogle }
 					onClick={ handleDisconnectGoogleClick }
+					isPrimary
 				>
 					{ __(
 						'Try another Google account',

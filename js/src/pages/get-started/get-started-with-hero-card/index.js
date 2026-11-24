@@ -77,7 +77,6 @@ const GetStartedWithHeroCard = () => {
 				</Text>
 				<AppButton
 					className="gla-get-started-with-hero-card__button"
-					isPrimary
 					disabled={ disableNextStep }
 					href={ getOnboardingUrl() }
 					eventName="gla_setup_mc"
@@ -86,6 +85,7 @@ const GetStartedWithHeroCard = () => {
 						action: 'go-to-onboarding',
 						context: 'get-started-with-hero',
 					} }
+					isPrimary
 				>
 					{ __( 'Sell more on Google →', 'google-listings-and-ads' ) }
 				</AppButton>

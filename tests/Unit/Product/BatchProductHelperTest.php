@@ -644,6 +644,174 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( '92000000', $attributes['price']['amountMicros'] );
 	}
 
+	public function test_generate_mapi_update_entries_secondary_market_exchange_rate_passes_validation() {
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'price'         => 55.61,
+				'regular_price' => 55.61,
+			]
+		);
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( false );
+
+		// WPML cannot convert into CZK, so only the market's exchange rate can price the entry.
+		$this->wpml_converted_prices['CZK'] = null;
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'CZ' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'cz'      => [
+					'country'       => 'CZ',
+					'feed_label'    => 'CZ',
+					'language'      => [],
+					'currency'      => [ 'CZK' ],
+					'exchange_rate' => 5.6354,
+				],
+			]
+		);
+
+		// Fail validation exactly as the price NotNull constraint does when the adapter has no price.
+		$validated_cz = [];
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturnCallback(
+			function ( WCProductAdapter $adapter ) use ( &$validated_cz ) {
+				if ( 0 === strpos( (string) $adapter->getFeedLabel(), 'CZ' ) ) {
+					$validated_cz[] = $adapter->getPrice();
+				}
+
+				if ( null !== $adapter->getPrice() ) {
+					return new ConstraintViolationList();
+				}
+
+				return new ConstraintViolationList(
+					[ new ConstraintViolation( 'This value should not be null.', null, [], $adapter, 'price', null ) ]
+				);
+			}
+		);
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// The CZ entry was validated with the rate-converted price (55.61 x 5.6354) and was emitted.
+		$this->assertCount( 1, $validated_cz );
+		$this->assertSame( 'CZK', $validated_cz[0]->getCurrency() );
+		$this->assertEqualsWithDelta( 313.38, $validated_cz[0]->getValue(), 0.01 );
+
+		$secondary = array_values(
+			array_filter(
+				$results,
+				static function ( array $entry ): bool {
+					return 'CZ' === $entry['country'];
+				}
+			)
+		);
+		$this->assertCount( 1, $secondary );
+		$this->assertSame( 'CZK', $secondary[0]['input']->get_attributes()['price']['currencyCode'] );
+		$this->assertEmpty( $this->product_helper->get_validation_errors( $product ) );
+	}
+
+	public function test_generate_mapi_update_entries_secondary_market_exchange_rate_ignored_with_several_non_store_currencies() {
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'price'         => 55.61,
+				'regular_price' => 55.61,
+			]
+		);
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( false );
+
+		// WPML converts into neither currency, and the single rate cannot describe both.
+		$this->wpml_converted_prices['CZK'] = null;
+		$this->wpml_converted_prices['EUR'] = null;
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'CZ' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'cz'      => [
+					'country'       => 'CZ',
+					'feed_label'    => 'CZ',
+					'language'      => [],
+					'currency'      => [ 'CZK', 'EUR' ],
+					'exchange_rate' => 5.6354,
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// Neither currency gets an entry priced with a rate meant for only one of them.
+		$this->assertSame( [ 'US' ], array_values( array_unique( array_column( $results, 'country' ) ) ) );
+	}
+
+	public function test_generate_mapi_update_entries_several_non_store_currencies_keep_wpml_converted_entries() {
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'price'         => 55.61,
+				'regular_price' => 55.61,
+			]
+		);
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( false );
+
+		// WPML converts CZK but not EUR: ignoring the rate must only drop the EUR entry.
+		$this->wpml_converted_prices['CZK'] = 313.0;
+		$this->wpml_converted_prices['EUR'] = null;
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'CZ' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'cz'      => [
+					'country'       => 'CZ',
+					'feed_label'    => 'CZ',
+					'language'      => [],
+					'currency'      => [ 'CZK', 'EUR' ],
+					'exchange_rate' => 5.6354,
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		$secondary_currencies = array_map(
+			static function ( array $entry ): string {
+				return $entry['input']->get_attributes()['price']['currencyCode'];
+			},
+			array_values(
+				array_filter(
+					$results,
+					static function ( array $entry ): bool {
+						return 'CZ' === $entry['country'];
+					}
+				)
+			)
+		);
+
+		$this->assertSame( [ 'CZK' ], $secondary_currencies );
+	}
+
 	public function test_generate_mapi_update_entries_wpml_match_alternate_language_in_set() {
 		$product = WC_Helper_Product::create_simple_product();
 
@@ -1403,7 +1571,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$factory_mock = $this->createMock( ProductFactory::class );
 		$factory_mock->method( 'create' )
 			->willReturnCallback(
-				function ( WC_Product $p, string $country, array $rules, string $feed_label, string $language, ?string $currency_override = null ) use ( $primary_adapter, $real_factory, $product, &$captured_secondary_args ) {
+				function ( WC_Product $p, string $country, array $rules, string $feed_label, string $language, ?string $currency_override = null, float $exchange_rate = 0.0 ) use ( $primary_adapter, $real_factory, $product, &$captured_secondary_args ) {
 					if ( 'US' === $country ) {
 						return $primary_adapter;
 					}
@@ -1412,8 +1580,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 						'feed_label'        => $feed_label,
 						'language'          => $language,
 						'currency_override' => $currency_override,
+						'exchange_rate'     => $exchange_rate,
 					];
-					return $real_factory->create( $product, $country, $rules, $feed_label, $language, $currency_override );
+					return $real_factory->create( $product, $country, $rules, $feed_label, $language, $currency_override, $exchange_rate );
 				}
 			);
 
@@ -1438,10 +1607,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'language'   => 'en',
 				],
 				'de'      => [
-					'country'    => 'DE',
-					'feed_label' => 'DE',
-					'language'   => [ 'de' ],
-					'currency'   => [ 'EUR' ],
+					'country'       => 'DE',
+					'feed_label'    => 'DE',
+					'language'      => [ 'de' ],
+					'currency'      => [ 'EUR' ],
+					'exchange_rate' => 0.75,
 				],
 			]
 		);
@@ -1452,6 +1622,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$helper->generate_mapi_update_entries( [ $product ] );
 
 		$this->assertSame( 'EUR', $captured_secondary_args['currency_override'] );
+		// The market's exchange rate reaches validation, not just the sync step.
+		$this->assertSame( 0.75, $captured_secondary_args['exchange_rate'] );
 	}
 
 	public function test_secondary_market_empty_currency_array_passes_empty_string() {
@@ -2179,6 +2351,41 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		);
 		$entries2 = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
 		remove_all_filters( 'woocommerce_gla_sync_hash_freshness' );
+
+		$this->assertCount( 1, $entries2 );
+	}
+
+	public function test_resubmit_expiry_days_filter_also_shortens_the_skip_window() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product   = WC_Helper_Product::create_simple_product();
+		$entries   = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$entry_key = $entries[0]['input']->get_content_language() . '|' . $entries[0]['input']->get_feed_label();
+		$this->product_meta->update_sync_hash( $product, [ $entry_key => $entries[0]['hash'] ] );
+		// Synced 21 days ago: inside the default 25-day window, so the unchanged product is skipped.
+		$this->product_meta->update_synced_at( $product, time() - ( 21 * DAY_IN_SECONDS ) );
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+
+		// A 20-day resubmission window makes the product due. Skipping it would let
+		// ResubmitExpiringProducts pick it up and then send nothing.
+		$twenty_days = function () {
+			return 20;
+		};
+		add_filter( 'woocommerce_gla_resubmit_expiry_days', $twenty_days );
+		$entries2 = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		remove_filter( 'woocommerce_gla_resubmit_expiry_days', $twenty_days );
 
 		$this->assertCount( 1, $entries2 );
 	}

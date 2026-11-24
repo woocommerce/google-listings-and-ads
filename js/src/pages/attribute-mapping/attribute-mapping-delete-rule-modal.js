@@ -69,15 +69,14 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 				<AppButton
 					disabled={ deleting }
 					key="cancel"
-					isLink
 					onClick={ handleClose }
+					isLink
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					disabled={ deleting }
 					key="delete-rule"
-					isPrimary
 					text={
 						deleting
 							? __( 'Deleting…', 'google-listings-and-ads' )
@@ -91,6 +90,7 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 						context: 'attribute-mapping-delete-rule-modal',
 					} }
 					onClick={ onDelete }
+					isPrimary
 				/>,
 			] }
 		>
