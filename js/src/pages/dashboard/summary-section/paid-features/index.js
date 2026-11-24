@@ -100,12 +100,12 @@ const PaidFeatures = () => {
 				</FlexBlock>
 			</Flex>
 			<AddPaidCampaignButton
-				isPrimary
 				isSecondary={ false }
 				isSmall={ false }
 				eventProps={ {
 					context: 'add-paid-campaign-promotion',
 				} }
+				isPrimary
 			>
 				{ __( 'Create Campaign', 'google-listings-and-ads' ) }
 			</AddPaidCampaignButton>

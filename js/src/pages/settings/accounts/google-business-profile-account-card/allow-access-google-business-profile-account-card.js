@@ -31,41 +31,22 @@ import {
  */
 
 /**
- * Renders the card's notice: what "Connect" grants, or that access wasn't granted on a return
- * from Google.
+ * Renders the notice shown when the merchant came back from Google without granting access.
  *
- * @param {Object} props Component props.
- * @param {boolean} props.isAccessNotGranted Whether the merchant came back from Google without granting access.
  * @return {JSX.Element} The notice.
  */
-const AccessNoticeDetail = ( { isAccessNotGranted } ) => {
-	if ( isAccessNotGranted ) {
-		return (
-			<NoticeDetail
-				status="error"
-				title={ __(
-					"Google Business Profile access wasn't granted",
-					'google-listings-and-ads'
-				) }
-				body={
-					<p>
-						{ __(
-							'Click Connect to try again, and allow access when Google asks.',
-							'google-listings-and-ads'
-						) }
-					</p>
-				}
-			/>
-		);
-	}
-
+const AccessNotGrantedNoticeDetail = () => {
 	return (
 		<NoticeDetail
-			status="info"
+			status="error"
+			title={ __(
+				"Google Business Profile access wasn't granted",
+				'google-listings-and-ads'
+			) }
 			body={
 				<p>
 					{ __(
-						'By connecting you are granting Google Business Profile access.',
+						'Click Connect to try again, and allow access when Google asks.',
 						'google-listings-and-ads'
 					) }
 				</p>
@@ -153,7 +134,7 @@ const AllowAccessGoogleBusinessProfileAccountCard = () => {
 				</AppButton>
 			}
 			detail={
-				<AccessNoticeDetail isAccessNotGranted={ isAccessNotGranted } />
+				isAccessNotGranted ? <AccessNotGrantedNoticeDetail /> : null
 			}
 			expandedDetail
 		/>

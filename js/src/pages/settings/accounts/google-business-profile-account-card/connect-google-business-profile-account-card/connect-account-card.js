@@ -27,11 +27,11 @@ export default function ConnectAccountCard( {
 			description={ GOOGLE_BUSINESS_PROFILE_DESCRIPTION }
 			alignIcon="top"
 			alignIndicator="top"
-			expandedDetail
 			indicator={ indicator }
 			detail={ detail }
 			errorSlots={ errorSlots }
 			ErrorComponent={ ErrorComponent }
+			expandedDetail
 		/>
 	);
 }

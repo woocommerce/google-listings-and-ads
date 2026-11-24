@@ -226,21 +226,21 @@ export default function ConfirmModal( {
 			buttons={ [
 				<AppButton
 					key="1"
-					isSecondary
 					disabled={ isDisconnecting }
 					onClick={ handleRequestClose }
+					isSecondary
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="2"
-					isPrimary
-					isDestructive
 					loading={ isDisconnecting }
 					disabled={ ! isAgreed }
 					eventName={ eventName }
 					eventProps={ eventProps }
 					onClick={ handleConfirmClick }
+					isPrimary
+					isDestructive
 				>
 					{ confirmButton }
 				</AppButton>,

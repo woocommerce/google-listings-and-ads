@@ -68,13 +68,13 @@ const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 			indicator={
 				hasExistingGoogleMCAccounts ? (
 					<AppButton
-						isSecondary
 						disabled={ loading }
 						eventName="gla_mc_account_switch_account_button_click"
 						eventProps={ {
 							context: 'reclaim-url',
 						} }
 						onClick={ onSwitchAccount }
+						isSecondary
 					>
 						{ __( 'Switch account', 'google-listings-and-ads' ) }
 					</AppButton>
@@ -93,12 +93,12 @@ const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 					) }
 				</Subsection.Body>
 				<ContentButtonLayout>
-					<AppInputLinkControl disabled value={ homeUrl } />
+					<AppInputLinkControl value={ homeUrl } disabled />
 					<AppButton
-						isSecondary
 						loading={ loading }
 						eventName="gla_mc_account_reclaim_url_button_click"
 						onClick={ handleReclaimClick }
+						isSecondary
 					>
 						{ __( 'Reclaim my URL', 'google-listings-and-ads' ) }
 					</AppButton>
