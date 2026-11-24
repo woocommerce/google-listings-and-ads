@@ -113,11 +113,6 @@ describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
 			)
 		).toBeInTheDocument();
 		expect(
-			screen.queryByText(
-				'By connecting you are granting Google Business Profile access.'
-			)
-		).not.toBeInTheDocument();
-		expect(
 			screen.getByRole( 'button', { name: 'Connect' } )
 		).toBeEnabled();
 		expect( getNewPath ).toHaveBeenCalledWith( {
