@@ -97,13 +97,44 @@ import {
 		badge.style.display = newCount === 0 ? 'none' : '';
 	}
 
-	addAction( GLA_NOTIFICATION_DISMISSED, 'gla/notification-manager', () =>
-		updateCount( -1 )
-	);
+	/**
+	 * Whether the value is a valid notifications count.
+	 *
+	 * @param {*} value The value to check.
+	 * @return {boolean} True for a non-negative integer.
+	 */
+	function isValidCount( value ) {
+		return Number.isInteger( value ) && value >= 0;
+	}
+
+	const serverCount = window.glaNotificationManagerData?.notificationsCount;
+
+	// This plugin's share of the badge count, starting from the one the server rendered.
+	let ownCount = isValidCount( serverCount ) ? serverCount : 0;
+
+	/**
+	 * Updates the badge to reflect a new number of this plugin's notifications.
+	 *
+	 * @param {number} count The number of this plugin's notifications in the inbox.
+	 */
+	function handleCountChange( count ) {
+		// The hook is public, so ignore anything that isn't a count.
+		if ( ! isValidCount( count ) || count === ownCount ) {
+			return;
+		}
+
+		updateCount( count - ownCount );
+		ownCount = count;
+	}
+
+	addAction( GLA_NOTIFICATION_DISMISSED, 'gla/notification-manager', () => {
+		ownCount = Math.max( 0, ownCount - 1 );
+		updateCount( -1 );
+	} );
 
 	addAction(
 		GLA_NOTIFICATIONS_COUNT_CHANGED,
 		'gla/notification-manager',
-		updateCount
+		handleCountChange
 	);
 } )();

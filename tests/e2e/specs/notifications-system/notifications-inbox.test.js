@@ -7,7 +7,9 @@ import { test, expect } from '@playwright/test';
  * Internal dependencies
  */
 import { LOAD_STATE } from '../../utils/constants';
+import { getNotifications } from '../../utils/api';
 import MockRequests from '../../utils/mock-requests';
+import SettingsPage from '../../utils/pages/settings';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -20,6 +22,12 @@ const ENHANCED_CONVERSIONS_OFF = {
 
 const ENHANCED_CONVERSIONS_OFF_TITLE =
 	'Enable Enhanced Conversions for accurate reporting';
+
+/**
+ * The count the E2E test snippet always adds to the badge, on top of this plugin's
+ * notifications. See tests/e2e/test-snippets/test-snippets.php.
+ */
+const OTHER_NOTIFICATIONS_COUNT = 1;
 
 /**
  * @type {import('@playwright/test').Page} page
@@ -57,6 +65,50 @@ async function dispatchGlaAction( actionName ) {
 	await page.evaluate( async ( name ) => {
 		await window.wp.data.dispatch( 'wc/gla' )[ name ]();
 	}, actionName );
+}
+
+/**
+ * Mock the GLA notifications requests with `activeNotifications`. Dismissing a
+ * notification removes it from `activeNotifications`.
+ *
+ * @return {Promise<void>}
+ */
+async function mockNotificationsRequests() {
+	await page.route( /\/wc\/gla\/notifications\b/, ( route ) => {
+		const request = route.request();
+
+		if ( request.method() === 'DELETE' ) {
+			const [ , id ] = decodeURIComponent( request.url() ).match(
+				/\/notifications\/([^/?&]+)/
+			);
+
+			activeNotifications = activeNotifications.filter(
+				( notification ) => notification.id !== id
+			);
+
+			return route.fulfill( { json: { status: 'success' } } );
+		}
+
+		return route.fulfill( {
+			json: { notifications: activeNotifications },
+		} );
+	} );
+}
+
+/**
+ * Navigate to another wc-admin page without reloading, the same way the admin menu does.
+ *
+ * @param {string} path The wc-admin path, e.g. `/marketing`.
+ * @return {Promise<void>}
+ */
+async function navigateWithoutReload( path ) {
+	await page.evaluate( ( wcAdminPath ) => {
+		window.wc.navigation.navigateTo( {
+			url: `admin.php?page=wc-admin&path=${ encodeURIComponent(
+				wcAdminPath
+			) }`,
+		} );
+	}, path );
 }
 
 /**
@@ -115,25 +167,7 @@ test.describe( 'Notifications inbox', () => {
 		page = await browser.newPage();
 		mockRequests = new MockRequests( page );
 
-		await page.route( /\/wc\/gla\/notifications\b/, ( route ) => {
-			const request = route.request();
-
-			if ( request.method() === 'DELETE' ) {
-				const [ , id ] = decodeURIComponent( request.url() ).match(
-					/\/notifications\/([^/?&]+)/
-				);
-
-				activeNotifications = activeNotifications.filter(
-					( notification ) => notification.id !== id
-				);
-
-				return route.fulfill( { json: { status: 'success' } } );
-			}
-
-			return route.fulfill( {
-				json: { notifications: activeNotifications },
-			} );
-		} );
+		await mockNotificationsRequests();
 
 		await mockRequests.fulfillAdsConnection( {
 			id: 12345,
@@ -235,6 +269,68 @@ test.describe( 'Notifications inbox', () => {
 		);
 		expect( await getBadgeCount().textContent() ).toBe(
 			String( initialBadgeCount - 1 )
+		);
+	} );
+} );
+
+test.describe( 'Notifications inbox after a hard load of another page', () => {
+	/**
+	 * The number of this plugin's real notifications, counted in the badge the
+	 * server rendered on page load.
+	 *
+	 * @type {number}
+	 */
+	let serverNotificationsCount = 0;
+
+	test.beforeAll( async ( { browser } ) => {
+		page = await browser.newPage();
+
+		const settingsPage = new SettingsPage( page );
+		await settingsPage.mockRequests();
+		await mockNotificationsRequests();
+
+		activeNotifications = [ ENHANCED_CONVERSIONS_OFF ];
+		serverNotificationsCount = ( await getNotifications() ).length;
+
+		await settingsPage.goto();
+	} );
+
+	test.afterAll( async () => {
+		await page.close();
+	} );
+
+	test( 'Matches the badge to the inbox on the first visit to Marketing overview', async () => {
+		await expect( getBadgeCount() ).toHaveText(
+			String( OTHER_NOTIFICATIONS_COUNT + serverNotificationsCount )
+		);
+
+		activeNotifications = [];
+		await dispatchGlaAction( 'disconnectGoogleAdsAccount' );
+		await navigateWithoutReload( '/marketing' );
+
+		expect(
+			await getSyncedNotificationCount( ENHANCED_CONVERSIONS_OFF.id )
+		).toBe( 0 );
+		await expect( getBadgeCount() ).toHaveText(
+			String( OTHER_NOTIFICATIONS_COUNT )
+		);
+	} );
+
+	test( 'Keeps the badge in step after the Ads account is reconnected', async () => {
+		await navigateWithoutReload( '/google/settings' );
+
+		activeNotifications = [ ENHANCED_CONVERSIONS_OFF ];
+		await dispatchGlaAction( 'fetchGoogleAdsAccount' );
+		await navigateWithoutReload( '/marketing' );
+
+		expect(
+			await getSyncedNotificationCount( ENHANCED_CONVERSIONS_OFF.id )
+		).toBe( 1 );
+		await expect( getEnhancedConversionsOffNotifications() ).toHaveCount(
+			1
+		);
+		await expect( getBadgeCount() ).toHaveText(
+			String( OTHER_NOTIFICATIONS_COUNT + 1 )
 		);
 	} );
 } );

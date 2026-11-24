@@ -39,6 +39,13 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 	protected $notification_service;
 
 	/**
+	 * The number of this plugin's notifications included in the badge count.
+	 *
+	 * @var int
+	 */
+	protected $own_notifications_count = 0;
+
+	/**
 	 * NotificationManager constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
@@ -79,6 +86,15 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 			function () {
 				return PageController::is_admin_page();
 			}
+		);
+
+		// The badge script adjusts the badge by how much this plugin's own share changes,
+		// since the badge total can include notifications from other contributors.
+		$notification_manager->add_inline_script(
+			'glaNotificationManagerData',
+			[
+				'notificationsCount' => $this->own_notifications_count,
+			]
 		);
 
 		$this->assets_handler->register( $notification_manager );
@@ -210,6 +226,8 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 	 * @return int The updated notification count including the active notifications.
 	 */
 	public function notifications_count( int $count ): int {
-		return $count + count( $this->notification_service->get_notifications() );
+		$this->own_notifications_count = count( $this->notification_service->get_notifications() );
+
+		return $count + $this->own_notifications_count;
 	}
 }

@@ -86,8 +86,8 @@ let syncedNotifications = null;
  * the new ones are registered, since `registerNotificationsInMarketingSlot` appends to
  * the store with no id-based dedup.
  *
- * After the first sync, it also fires `GLA_NOTIFICATIONS_COUNT_CHANGED` with the
- * difference in the number of cards, so the admin menu badge stays in step with the inbox.
+ * After each sync, it fires `GLA_NOTIFICATIONS_COUNT_CHANGED` with the number of GLA
+ * cards in the inbox, so the admin menu badge stays in step with the inbox.
  */
 async function initNotifications() {
 	const glaNotifications =
@@ -101,26 +101,15 @@ async function initNotifications() {
 		( syncedNotifications ?? [] ).map( ( { id } ) => id )
 	);
 	const latestIds = new Set( glaNotifications.map( ( { id } ) => id ) );
-	const isFirstSync = syncedNotifications === null;
 	syncedNotifications = glaNotifications;
 
-	// Cards the merchant dismissed are already gone from the marketing notifications
-	// store and the badge, so only the ones still shown are removed and counted here.
-	const shownIds = new Set(
-		select( MARKETING_NOTIFICATIONS_STORE_KEY )
-			.getNotifications()
-			.map( ( { id } ) => id )
-	);
-	let removedCount = 0;
-
 	previousIds.forEach( ( id ) => {
-		if ( ! latestIds.has( id ) && shownIds.has( id ) ) {
+		if ( ! latestIds.has( id ) ) {
 			// Only removes the card from the marketing notifications store. Unlike a
 			// merchant's dismissal, it doesn't call the API or fire `GLA_NOTIFICATION_DISMISSED`.
 			dispatch( MARKETING_NOTIFICATIONS_STORE_KEY ).dismissNotification(
 				id
 			);
-			removedCount++;
 		}
 	} );
 
@@ -128,26 +117,26 @@ async function initNotifications() {
 		( { id } ) => ! previousIds.has( id )
 	);
 
-	// The server already counted the notifications of the first sync in the badge it rendered.
-	const countDelta = newNotifications.length - removedCount;
+	if ( newNotifications.length ) {
+		const notifications = newNotifications.map(
+			( { id, triggered_at } ) => {
+				return {
+					id,
+					triggered_at, // The triggered_at timestamp is used for sorting notifications in the marketing notifications store.
+					component: createNotificationComponent( id, triggered_at ),
+				};
+			}
+		);
 
-	if ( ! isFirstSync && countDelta !== 0 ) {
-		doAction( GLA_NOTIFICATIONS_COUNT_CHANGED, countDelta );
+		registerNotificationsInMarketingSlot( notifications );
 	}
 
-	if ( ! newNotifications.length ) {
-		return;
-	}
+	// Cards the merchant dismissed are already gone from the inbox, so they aren't counted.
+	const inboxCount = select( MARKETING_NOTIFICATIONS_STORE_KEY )
+		.getNotifications()
+		.filter( ( { id } ) => latestIds.has( id ) ).length;
 
-	const notifications = newNotifications.map( ( { id, triggered_at } ) => {
-		return {
-			id,
-			triggered_at, // The triggered_at timestamp is used for sorting notifications in the marketing notifications store.
-			component: createNotificationComponent( id, triggered_at ),
-		};
-	} );
-
-	registerNotificationsInMarketingSlot( notifications );
+	doAction( GLA_NOTIFICATIONS_COUNT_CHANGED, inboxCount );
 }
 
 /**
