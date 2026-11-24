@@ -11,13 +11,15 @@ import { useRegistry } from '@wordpress/data';
 import { glaBusinessProfileData } from '~/constants';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
 import useBlockEditorSyncStatus from './hooks/useBlockEditorSyncStatus';
+import useBlockEditorPostCheck from './hooks/useBlockEditorPostCheck';
 import getBodyTextFromBlocks from './utils/getBodyTextFromBlocks';
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
 import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from './constants';
 
 /**
  * Renders the "Google Business Profile" panel in the block editor's post settings, holding the
- * controls for sharing the post to the connected location. Nothing renders when no location is
+ * controls for sharing the post to the connected location. When the editor opens on a shared post,
+ * it first checks that the post still exists on Google. Nothing renders when no location is
  * connected.
  *
  * @return {JSX.Element|null} The panel, or `null` when no location is connected.
@@ -26,6 +28,7 @@ export default function BusinessProfileSharePanel() {
 	const { isShareEnabled, summary, setShareEnabled, setSummary } =
 		useBusinessProfileSharePost();
 	const { syncOutcome, isShared, searchUrl } = useBlockEditorSyncStatus();
+	const { isChecking, checkFailure } = useBlockEditorPostCheck();
 	const registry = useRegistry();
 
 	const location = glaBusinessProfileData?.businessProfileLocation;
@@ -62,6 +65,8 @@ export default function BusinessProfileSharePanel() {
 				searchUrl={ searchUrl }
 				isShared={ isShared }
 				syncOutcome={ syncOutcome }
+				isChecking={ isChecking }
+				checkFailure={ checkFailure }
 			/>
 		</PluginDocumentSettingPanel>
 	);
