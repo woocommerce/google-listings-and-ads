@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\FreshReadOptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -800,6 +801,106 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_var' );
 
 		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
+	}
+
+	public function test_setup_account_step_conversion_action_stored_while_waiting_for_lock() {
+		$options = $this->createMock( FreshReadOptionsInterface::class );
+		$this->account->set_options_object( $options );
+
+		$options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		// The cached read before the lock sees no action.
+		$options->method( 'get' )
+			->with( OptionsInterface::ADS_CONVERSION_ACTION )
+			->willReturn( null );
+
+		// The fresh read inside the lock sees the action another request stored.
+		$options->expects( $this->once() )
+			->method( 'get_fresh' )
+			->with( OptionsInterface::ADS_CONVERSION_ACTION )
+			->willReturn( self::TEST_CONVERSION_ACTION );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'conversion_action' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->wpdb->expects( $this->once() )
+			->method( 'get_var' )
+			->willReturn( '1' );
+
+		$this->conversion_action->expects( $this->never() )
+			->method( 'create_conversion_action' );
+
+		$options->expects( $this->never() )
+			->method( 'update' );
+
+		// The lock is released, and the step is done because an action is stored.
+		$this->wpdb->expects( $this->once() )
+			->method( 'query' );
+
+		$this->state->expects( $this->once() )
+			->method( 'update_steps' )
+			->with(
+				[
+					'conversion_action' => [
+						'status'  => AdsAccountState::STEP_DONE,
+						'message' => '',
+					],
+				]
+			);
+
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
+	}
+
+	public function test_setup_account_step_conversion_action_error_releases_lock() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'conversion_action' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->wpdb->expects( $this->once() )
+			->method( 'get_var' )
+			->willReturn( '1' );
+
+		$this->conversion_action->expects( $this->once() )
+			->method( 'create_conversion_action' )
+			->willThrowException( new Exception( 'error' ) );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		// The lock is released even though creating the action failed.
+		$this->wpdb->expects( $this->once() )
+			->method( 'query' );
+
+		$this->state->expects( $this->once() )
+			->method( 'update_steps' )
+			->with(
+				[
+					'conversion_action' => [
+						'status'  => AdsAccountState::STEP_ERROR,
+						'message' => 'error',
+					],
+				]
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'error' );
+
+		$this->account->setup_account();
 	}
 
 	public function test_setup_account_step_invalid() {

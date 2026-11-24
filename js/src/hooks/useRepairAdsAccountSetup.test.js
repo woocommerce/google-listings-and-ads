@@ -98,6 +98,19 @@ describe( 'useRepairAdsAccountSetup', () => {
 
 		expect( upsertAdsAccount ).toHaveBeenCalledTimes( 1 );
 
+		// A refetch changes the effect's dependencies, so the effect runs again.
+		useGoogleAdsAccountStatus.mockReturnValue( {
+			hasAccess: null,
+			step: null,
+			hasFinishedResolution: false,
+		} );
+		rerender();
+
+		useGoogleAdsAccountStatus.mockReturnValue( {
+			hasAccess: true,
+			step: 'set_id',
+			hasFinishedResolution: true,
+		} );
 		rerender();
 
 		expect( upsertAdsAccount ).toHaveBeenCalledTimes( 1 );
