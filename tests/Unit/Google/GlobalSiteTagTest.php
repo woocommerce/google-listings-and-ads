@@ -278,7 +278,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		if ( $override_display ) {
 			$this->tag = $this->getMockBuilder( GlobalSiteTag::class )
-				->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ] )
+				->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection ] )
 				->onlyMethods( [ 'display_global_site_tag' ] )
 				->getMock();
 			$this->tag->method( 'display_global_site_tag' )->willReturnCallback(
