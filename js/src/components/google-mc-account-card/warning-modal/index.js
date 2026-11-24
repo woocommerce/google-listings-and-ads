@@ -45,16 +45,16 @@ const WarningModal = ( {
 			buttons={ [
 				<AppButton
 					key="confirm"
-					isSecondary
 					eventName="gla_mc_account_warning_modal_confirm_button_click"
 					onClick={ handleCreateAccountClick }
+					isSecondary
 				>
 					{ __(
 						'Yes, I want a new account',
 						'google-listings-and-ads'
 					) }
 				</AppButton>,
-				<AppButton key="cancel" isPrimary onClick={ onRequestClose }>
+				<AppButton key="cancel" onClick={ onRequestClose } isPrimary>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
