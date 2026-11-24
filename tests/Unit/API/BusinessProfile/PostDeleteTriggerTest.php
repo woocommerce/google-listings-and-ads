@@ -343,6 +343,9 @@ class PostDeleteTriggerTest extends UnitTest {
 		// A post whose send failed: sharing on, a failed outcome, and no stored result.
 		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
 		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+		// has_empty_summary() isn't in the preceding onlyMethods() list, so it runs for real --
+		// give the post a Summary or that real check would skip the resend this test is about.
+		update_post_meta( $post_id, LocalPostService::SUMMARY_META_KEY, 'Our summer range is now in store.' );
 		wp_trash_post( $post_id );
 		wp_untrash_post( $post_id );
 

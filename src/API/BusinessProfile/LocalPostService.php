@@ -238,6 +238,18 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Whether a post's Business Profile text is empty once trimmed. Google rejects a post with no
+	 * text, so a Summary of only spaces counts as empty the same way a genuinely empty one does.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return bool
+	 */
+	public function has_empty_summary( int $post_id ): bool {
+		return '' === trim( (string) get_post_meta( $post_id, self::SUMMARY_META_KEY, true ) );
+	}
+
+	/**
 	 * Whether sharing was just switched off on a post that's still live on Google -- i.e. it
 	 * needs to be removed.
 	 *

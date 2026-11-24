@@ -45,6 +45,9 @@ final class SyncOutcome {
 	/** @var string The linked Google post no longer exists. */
 	public const NOT_FOUND = 'not-found';
 
+	/** @var string Sharing is on, but the post's Business Profile text is empty, so nothing was sent. */
+	public const EMPTY_SUMMARY = 'empty-summary';
+
 	/** @var string A removal from Google has been scheduled but hasn't run yet. */
 	public const UNSHARE_QUEUED = 'unshare-queued';
 
@@ -60,6 +63,7 @@ final class SyncOutcome {
 		self::CONTENT_REJECTION,
 		self::ACCOUNT_RESTRICTION,
 		self::ACCOUNT_DISCONNECTED,
+		self::EMPTY_SUMMARY,
 	];
 
 	/** @var string[] Outcomes of a removal that's pending or failed, which leave the post on Google. */
@@ -80,6 +84,7 @@ final class SyncOutcome {
 		self::ACCOUNT_RESTRICTION,
 		self::ACCOUNT_DISCONNECTED,
 		self::NOT_FOUND,
+		self::EMPTY_SUMMARY,
 		self::UNSHARE_QUEUED,
 		self::UNSHARE_FAILURE,
 		self::UNSHARE_ACCOUNT_DISCONNECTED,
