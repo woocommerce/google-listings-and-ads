@@ -130,10 +130,11 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	 * @param string $step Name of the completed step.
 	 */
 	public function complete_step( string $step ) {
-		// Skip the uncached read when the step is already done, since bypassing
-		// the caches forces the autoloaded options to be reloaded.
+		// Skip the uncached read when the step is already done, or when the stored
+		// state has no entry for it, as in states saved before the step was added.
+		// Bypassing the caches forces the autoloaded options to be reloaded.
 		$cached = $this->get( false );
-		if ( self::STEP_DONE === ( $cached[ $step ]['status'] ?? null ) ) {
+		if ( ! isset( $cached[ $step ] ) || self::STEP_DONE === $cached[ $step ]['status'] ) {
 			return;
 		}
 

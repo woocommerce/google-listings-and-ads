@@ -90,7 +90,33 @@ class AccountStateTest extends UnitTest {
 		$this->state->complete_step( 'account_access' );
 	}
 
-	public function test_complete_step_with_unknown_step_writes_nothing() {
+	public function test_complete_step_skips_the_fresh_read_when_step_is_missing_from_cached_state() {
+		// States saved before a step was added have no entry for it.
+		$this->options->method( 'get' )
+			->willReturn(
+				[
+					'set_id' => [ 'status' => AdsAccountState::STEP_DONE ],
+				]
+			);
+
+		$this->options->expects( $this->never() )
+			->method( 'get_fresh' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		$this->state->complete_step( 'account_access' );
+	}
+
+	public function test_complete_step_writes_nothing_when_step_is_missing_from_fresh_state() {
+		// The cached state still has the step, but the option was deleted meanwhile.
+		$this->options->method( 'get' )
+			->willReturn(
+				[
+					'set_id' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
 		$this->options->expects( $this->once() )
 			->method( 'get_fresh' )
 			->with( OptionsInterface::ADS_ACCOUNT_STATE, [] )
