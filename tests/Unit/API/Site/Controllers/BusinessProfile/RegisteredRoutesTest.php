@@ -31,6 +31,7 @@ class RegisteredRoutesTest extends UnitTest {
 	protected const CONNECT_SERVER_ROOT = 'https://wcs.example.com/';
 	protected const ROUTE_CONNECT       = '/wc/gla/business-profile/connect';
 	protected const ROUTE_CONNECTION    = '/wc/gla/business-profile/connection';
+	protected const ROUTE_POST_CHECK    = '/wc/gla/business-profile/posts/(?P<post_id>[\d]+)/check';
 
 	/** @var OptionsInterface */
 	protected $options;
@@ -98,6 +99,23 @@ class RegisteredRoutesTest extends UnitTest {
 		$this->assertArrayHasKey( self::ROUTE_CONNECTION, $routes );
 		$this->assertArrayHasKey( 'GET', $routes[ self::ROUTE_CONNECTION ][0]['methods'] );
 		$this->assertArrayHasKey( 'DELETE', $routes[ self::ROUTE_CONNECTION ][1]['methods'] );
+	}
+
+	public function test_plugin_registers_the_post_check_route() {
+		$routes = $this->server->get_routes();
+
+		$this->assertArrayHasKey( self::ROUTE_POST_CHECK, $routes );
+		$this->assertArrayHasKey( 'POST', $routes[ self::ROUTE_POST_CHECK ][0]['methods'] );
+	}
+
+	public function test_registered_post_check_route_skips_a_post_that_was_never_shared() {
+		$post_id = $this->factory()->post->create();
+
+		$response = $this->server->dispatch_request( new Request( 'POST', "/wc/gla/business-profile/posts/{$post_id}/check" ) );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertFalse( $response->get_data()['checked'] );
+		$this->assertSame( [], $this->history );
 	}
 
 	public function test_registered_status_route_reports_the_stored_location() {
