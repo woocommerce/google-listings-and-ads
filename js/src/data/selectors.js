@@ -130,7 +130,7 @@ export const getYouTubeAccount = ( state ) => {
 
 /**
  * @param {Object} state The root state.
- * @return {GoogleBusinessProfileConnection|null} The Google Business Profile connection state. Returns `null` before the data has been fetched.
+ * @return {GoogleBusinessProfileConnection|null} The Google Business Profile connection state. Returns `null` before the data has been fetched, or when the request failed.
  */
 export const getGoogleBusinessProfileAccount = ( state ) => {
 	return state.accounts.google_business_profile;

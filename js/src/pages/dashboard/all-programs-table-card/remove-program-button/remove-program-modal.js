@@ -47,18 +47,18 @@ const RemoveProgramModal = ( props ) => {
 			buttons={ [
 				<AppButton
 					key="keep"
-					isSecondary
 					disabled={ isDeleting }
 					onClick={ handleRequestClose }
+					isSecondary
 				>
 					{ __( 'Keep Campaign', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="remove"
-					isPrimary
-					isDestructive
 					loading={ isDeleting }
 					onClick={ handleRemoveCampaignClick }
+					isPrimary
+					isDestructive
 				>
 					{ __( 'Remove Campaign', 'google-listings-and-ads' ) }
 				</AppButton>,

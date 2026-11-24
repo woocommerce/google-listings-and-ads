@@ -54,8 +54,10 @@ describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
 		} );
 	} );
 
-	it( 'shows the card description, the access notice and a "Connect" button', () => {
-		render( <AllowAccessGoogleBusinessProfileAccountCard /> );
+	it( 'shows the card description and a "Connect" button, with no notice', () => {
+		const { container } = render(
+			<AllowAccessGoogleBusinessProfileAccountCard />
+		);
 
 		expect(
 			screen.getByText( 'Google Business Profile' )
@@ -66,11 +68,8 @@ describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
 			)
 		).toBeInTheDocument();
 		expect(
-			screen.getByText(
-				'By connecting you are granting Google Business Profile access.',
-				{ selector: 'p' }
-			)
-		).toBeInTheDocument();
+			container.querySelector( '.components-notice' )
+		).not.toBeInTheDocument();
 		expect(
 			screen.getByRole( 'button', { name: 'Connect' } )
 		).toBeEnabled();
@@ -89,14 +88,13 @@ describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
 	it( "ignores a return from another service's connect flow", () => {
 		getQuery.mockReturnValue( { 'google-service': 'search-console' } );
 
-		render( <AllowAccessGoogleBusinessProfileAccountCard /> );
+		const { container } = render(
+			<AllowAccessGoogleBusinessProfileAccountCard />
+		);
 
 		expect(
-			screen.getByText(
-				'By connecting you are granting Google Business Profile access.',
-				{ selector: 'p' }
-			)
-		).toBeInTheDocument();
+			container.querySelector( '.components-notice' )
+		).not.toBeInTheDocument();
 		expect( replace ).not.toHaveBeenCalled();
 	} );
 
@@ -114,11 +112,6 @@ describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
 				{ selector: 'p' }
 			)
 		).toBeInTheDocument();
-		expect(
-			screen.queryByText(
-				'By connecting you are granting Google Business Profile access.'
-			)
-		).not.toBeInTheDocument();
 		expect(
 			screen.getByRole( 'button', { name: 'Connect' } )
 		).toBeEnabled();

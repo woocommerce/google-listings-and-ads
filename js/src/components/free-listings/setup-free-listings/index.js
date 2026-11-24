@@ -378,9 +378,9 @@ const SetupFreeListings = ( {
 							<FormContent />
 							<Fill>
 								<AppButton
-									isPrimary
 									loading={ adapter.isSubmitting }
 									onClick={ handleSubmitClick }
+									isPrimary
 								>
 									{ submitLabel }
 								</AppButton>

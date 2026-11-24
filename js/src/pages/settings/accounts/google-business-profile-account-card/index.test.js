@@ -11,7 +11,12 @@ import userEvent from '@testing-library/user-event';
 import GoogleBusinessProfileAccountCard from './index';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
+import { useAppDispatch } from '~/data';
 
+jest.mock( '~/data', () => ( {
+	...jest.requireActual( '~/data' ),
+	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
+} ) );
 jest.mock( '~/hooks/useGoogleAccount' );
 jest.mock( '~/hooks/useGoogleBusinessProfileAccount' );
 jest.mock(
@@ -46,8 +51,13 @@ jest.mock(
 );
 
 describe( 'GoogleBusinessProfileAccountCard', () => {
+	let fetchGoogleBusinessProfileAccount;
+
 	beforeEach( () => {
 		jest.clearAllMocks();
+
+		fetchGoogleBusinessProfileAccount = jest.fn();
+		useAppDispatch.mockReturnValue( { fetchGoogleBusinessProfileAccount } );
 
 		useGoogleAccount.mockReturnValue( {
 			scope: { gbpRequired: true },
@@ -96,6 +106,40 @@ describe( 'GoogleBusinessProfileAccountCard', () => {
 		const { container } = render( <GoogleBusinessProfileAccountCard /> );
 
 		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	it( 'shows the status error card, not the connect card, when the connection could not be loaded', async () => {
+		const user = userEvent.setup();
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			account: null,
+			hasFinishedResolution: true,
+		} );
+
+		render( <GoogleBusinessProfileAccountCard /> );
+
+		expectCardToBeFocusable(
+			"We couldn't load your Google Business Profile connection status."
+		);
+		expect( screen.queryByText( 'Connect card' ) ).not.toBeInTheDocument();
+
+		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
+
+		expect( fetchGoogleBusinessProfileAccount ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'shows the allow-access card when the scope is missing, even if the connection could not be loaded', () => {
+		useGoogleAccount.mockReturnValue( {
+			scope: { gbpRequired: false },
+			hasFinishedResolution: true,
+		} );
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			account: null,
+			hasFinishedResolution: true,
+		} );
+
+		render( <GoogleBusinessProfileAccountCard /> );
+
+		expectCardToBeFocusable( 'Allow access card' );
 	} );
 
 	it( 'shows the connect card when no location is connected', () => {

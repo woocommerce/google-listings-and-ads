@@ -11,6 +11,7 @@ import FocusableAccountCard from '~/components/focusable-account-card';
 import AllowAccessGoogleBusinessProfileAccountCard from './allow-access-google-business-profile-account-card';
 import ConnectedGoogleBusinessProfileAccountCard from './connected-google-business-profile-account-card';
 import ConnectGoogleBusinessProfileAccountCard from './connect-google-business-profile-account-card';
+import StatusErrorCard from './status-error-card';
 
 const { CONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;
 
@@ -30,7 +31,12 @@ const CardContent = ( { scope, account, onDisconnect } ) => {
 		return <AllowAccessGoogleBusinessProfileAccountCard />;
 	}
 
-	if ( account?.status === CONNECTED ) {
+	// The connection has resolved but holds nothing, so loading its status failed.
+	if ( ! account ) {
+		return <StatusErrorCard />;
+	}
+
+	if ( account.status === CONNECTED ) {
 		return (
 			<ConnectedGoogleBusinessProfileAccountCard
 				onDisconnect={ onDisconnect }
@@ -46,7 +52,9 @@ const CardContent = ( { scope, account, onDisconnect } ) => {
  * are checked first, ahead of any location detection — a merchant who connected their Google
  * account before this feature shipped won't have the `business.manage` scope yet. Once that scope
  * is present, the card is driven by the backend-determined connection status: `connected`, or
- * anything else (not yet connected — covering zero, one, and multiple candidate locations).
+ * anything else (not yet connected — covering zero, one, and multiple candidate locations). When
+ * the status couldn't be loaded, a retry card shows instead, so a connected store never appears
+ * as not connected.
  *
  * The chosen card is wrapped once in `FocusableAccountCard`, so it stays mounted when the card
  * switches state.

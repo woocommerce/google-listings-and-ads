@@ -92,9 +92,9 @@ export default function EditVisibilityAction( {
 				text={ tipText }
 			>
 				<AppButton
-					isSecondary
 					disabled={ selectedVisible === null }
 					onClick={ handleClick }
+					isSecondary
 				>
 					{ sprintf(
 						// translators: %d: number of selected products to edit channel visibility, with minimum value of 1.

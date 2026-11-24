@@ -17,8 +17,8 @@ const selectorName = 'getGoogleBusinessProfileAccount';
 /**
  * A hook to load the connection data of the Google Business Profile account.
  *
- * `hasFinishedResolution` is `false` until the connection has actually loaded, and `true` from
- * then on — gate rendering on it directly.
+ * `hasFinishedResolution` is `false` until the request has finished, and `true` from then on —
+ * gate rendering on it directly. When the request failed, it is `true` and `account` is `null`.
  *
  * @return {{ account: GoogleBusinessProfileConnection|null, hasFinishedResolution: boolean }} The data and its resolution state.
  */
