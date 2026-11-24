@@ -102,14 +102,18 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 		$previous_batch = null;
 
 		do {
-			$product_ids = wc_get_products(
+			$products = wc_get_products(
 				[
 					'limit'  => self::BATCH_SIZE,
 					'offset' => $offset,
 					'status' => 'publish',
-					'return' => 'ids',
 				]
 			);
+
+			$product_ids = [];
+			foreach ( $products as $product ) {
+				$product_ids[] = $product->get_id();
+			}
 
 			if ( $product_ids === $previous_batch ) {
 				// The scan cannot complete, so do not conclude that the store is service-based.
@@ -118,16 +122,14 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 
 			$previous_batch = $product_ids;
 
-			foreach ( $product_ids as $product_id ) {
-				$product = wc_get_product( $product_id );
-
-				if ( $product && $product->needs_shipping() ) {
+			foreach ( $products as $product ) {
+				if ( $product->needs_shipping() ) {
 					return true;
 				}
 			}
 
 			$offset        += self::BATCH_SIZE;
-			$products_count = count( $product_ids );
+			$products_count = count( $products );
 		} while ( $products_count === self::BATCH_SIZE );
 
 		return false;

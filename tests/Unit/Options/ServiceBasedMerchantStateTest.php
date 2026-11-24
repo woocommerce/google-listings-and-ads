@@ -280,7 +280,7 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		}
 	}
 
-	public function test_has_physical_products_finds_the_physical_product_when_the_query_ignores_the_offset() {
+	public function test_has_physical_products_returns_true_when_the_scan_cannot_reach_the_physical_product() {
 		$products = [];
 
 		// The only physical product is the oldest one, so it is the last one a full scan would reach.
