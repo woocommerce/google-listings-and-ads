@@ -57,14 +57,14 @@ test.describe( 'Google Business Profile', () => {
 	} );
 
 	test.describe( 'when Google Business Profile access is not granted', () => {
-		test( 'should offer to connect, explaining that this grants access', async () => {
+		test( 'should offer to connect without a notice', async () => {
 			await settingsPage.gotoAccounts();
 
 			await expect(
-				settingsPage.googleBusinessProfileAccountCard.getByText(
-					'By connecting you are granting Google Business Profile access.'
+				settingsPage.googleBusinessProfileAccountCard.locator(
+					'.components-notice'
 				)
-			).toBeVisible();
+			).toHaveCount( 0 );
 			await expect(
 				settingsPage.getGoogleBusinessProfileConnectButton()
 			).toBeEnabled();
