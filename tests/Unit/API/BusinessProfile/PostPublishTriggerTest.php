@@ -47,6 +47,9 @@ class PostPublishTriggerTest extends UnitTest {
 	/** @var PostPublishTrigger $trigger */
 	protected $trigger;
 
+	/** @var bool Whether the stubbed has_empty_summary() reports an empty Summary. */
+	protected $summary_is_empty = false;
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -71,6 +74,11 @@ class PostPublishTriggerTest extends UnitTest {
 		);
 		// Nothing to unshare by default -- the dedicated tests below set this up explicitly.
 		$this->local_post_service->method( 'should_unshare' )->willReturn( false );
+		$this->local_post_service->method( 'has_empty_summary' )->willReturnCallback(
+			function () {
+				return $this->summary_is_empty;
+			}
+		);
 
 		// Still needed for register_share_meta()'s own PostShareControl, not for the trigger.
 		$this->location_service = $this->createMock( LocationService::class );
@@ -356,7 +364,24 @@ class PostPublishTriggerTest extends UnitTest {
 			'account restriction'  => [ SyncOutcome::ACCOUNT_RESTRICTION ],
 			'account disconnected' => [ SyncOutcome::ACCOUNT_DISCONNECTED ],
 			'not found'            => [ SyncOutcome::NOT_FOUND ],
+			'empty summary'        => [ SyncOutcome::EMPTY_SUMMARY ],
 		];
+	}
+
+	/**
+	 * Google rejects a post with no text, so sharing is skipped rather than attempted -- the post
+	 * still publishes, but nothing is sent or scheduled.
+	 */
+	public function test_does_not_schedule_and_stores_an_empty_summary_outcome_when_the_summary_is_empty() {
+		$this->summary_is_empty = true;
+
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->expects( $this->once() )->method( 'set_sync_outcome' )->with( $post->ID, SyncOutcome::EMPTY_SUMMARY );
+		$this->send_local_post_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}
 
 	/**

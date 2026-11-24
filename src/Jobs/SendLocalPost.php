@@ -95,6 +95,12 @@ class SendLocalPost extends AbstractActionSchedulerJob {
 				continue;
 			}
 
+			if ( $this->local_post_service->has_empty_summary( $post_id ) ) {
+				// The Summary may have been cleared after this send was scheduled.
+				$this->local_post_service->set_sync_outcome( $post_id, SyncOutcome::EMPTY_SUMMARY );
+				continue;
+			}
+
 			$this->send( $post );
 		}
 	}

@@ -162,6 +162,12 @@ class PostPublishTrigger implements Service, Registerable {
 		}
 		$this->handled_in_request[ $post->ID ] = true;
 
+		if ( $this->local_post_service->has_empty_summary( $post->ID ) ) {
+			// Google rejects a post with no text. Saving again retries it once text is added.
+			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::EMPTY_SUMMARY );
+			return;
+		}
+
 		$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::QUEUED );
 
 		try {

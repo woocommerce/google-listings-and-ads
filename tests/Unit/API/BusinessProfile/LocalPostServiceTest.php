@@ -251,6 +251,26 @@ class LocalPostServiceTest extends UnitTest {
 		$this->assertFalse( $this->service->should_unshare( $post ) );
 	}
 
+	public function test_has_empty_summary_is_false_when_the_summary_has_text() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, 'Our summer range is now in store.' );
+
+		$this->assertFalse( $this->service->has_empty_summary( $post->ID ) );
+	}
+
+	public function test_has_empty_summary_is_true_when_no_summary_was_ever_saved() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->assertTrue( $this->service->has_empty_summary( $post->ID ) );
+	}
+
+	public function test_has_empty_summary_is_true_for_a_summary_of_only_spaces() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, '   ' );
+
+		$this->assertTrue( $this->service->has_empty_summary( $post->ID ) );
+	}
+
 	public function test_should_remove_from_business_profile_is_true_for_a_trashed_post() {
 		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'trash' ] );
 

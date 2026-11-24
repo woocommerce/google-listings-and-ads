@@ -105,6 +105,15 @@ class SyncOutcomeTest extends UnitTest {
 		$this->assertContains( SyncOutcome::UNSHARE_ACCOUNT_DISCONNECTED, SyncOutcome::ALL );
 	}
 
+	/**
+	 * An empty Summary never reached Google at all, so once the merchant adds text, saving again
+	 * must retry it the same way a genuine send failure does.
+	 */
+	public function test_empty_summary_is_a_publish_retryable_failure() {
+		$this->assertContains( SyncOutcome::EMPTY_SUMMARY, SyncOutcome::FAILURES );
+		$this->assertContains( SyncOutcome::EMPTY_SUMMARY, SyncOutcome::ALL );
+	}
+
 	public function test_a_restricted_state_is_a_success_when_has_voice_of_merchant_is_not_explicitly_false() {
 		$state = [
 			'hasVoiceOfMerchant'     => true,
