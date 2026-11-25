@@ -140,6 +140,27 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
 	public function get_reconnect_status(): array {
+		$status = $this->get_access_status();
+
+		foreach ( [ 'merchant_access', 'ads_access' ] as $key ) {
+			if ( array_key_exists( $key, $status ) ) {
+				$status[ $key ] = true === $status[ $key ] ? 'yes' : 'no';
+			}
+		}
+
+		return $status;
+	}
+
+	/**
+	 * Get the connection status with an access check for each connected MC and Ads account.
+	 *
+	 * Each access value is true with access, false without it, or null when the check
+	 * failed for a reason other than a missing permission.
+	 *
+	 * @return array
+	 * @throws Exception When a ClientException is caught or the response contains an error.
+	 */
+	public function get_access_status(): array {
 		$status = $this->get_status();
 		$email  = $status['email'] ?? '';
 
@@ -153,7 +174,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$merchant = $this->container->get( Merchant::class );
 
 			$status['merchant_account'] = $merchant_id;
-			$status['merchant_access']  = $merchant->has_access( $email ) ? 'yes' : 'no';
+			$status['merchant_access']  = $merchant->check_access( $email );
+
+			// Confirmed access ends a sync pause started by an earlier rejection.
+			if ( true === $status['merchant_access'] ) {
+				$this->container->get( MerchantAccessCircuitBreaker::class )->reset();
+			}
 		}
 
 		$ads_id = $this->options->get_ads_id();
@@ -162,7 +188,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$ads = $this->container->get( Ads::class );
 
 			$status['ads_account'] = $ads_id;
-			$status['ads_access']  = $ads->has_access( $email ) ? 'yes' : 'no';
+			$status['ads_access']  = $ads->check_access( $email );
 		}
 
 		return $status;

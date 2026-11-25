@@ -12,6 +12,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsN
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CyoSurveyNoSpendEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CyoSurveySpendEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\GoogleAccountDisconnectedEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\GoogleAccountNoAccessEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PausedCampaignEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductIssuesEvaluator;
@@ -54,6 +56,8 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 		CyoSurveyNoSpendEvaluator::class,
 		CyoSurveySpendEvaluator::class,
 		EnhancedConversionsOffEvaluator::class,
+		GoogleAccountDisconnectedEvaluator::class,
+		GoogleAccountNoAccessEvaluator::class,
 		NotOnboardedEvaluator::class,
 		PausedCampaignEvaluator::class,
 		ProductIssuesEvaluator::class,

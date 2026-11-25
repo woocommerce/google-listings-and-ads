@@ -67,4 +67,33 @@ class MerchantApiException extends Exception implements GoogleListingsAndAdsExce
 	public function get_errors(): array {
 		return $this->errors;
 	}
+
+	/**
+	 * Whether a decoded Merchant API error response says the caller has no access to the account.
+	 *
+	 * Google answers a request for an account the caller can't access with a 401 UNAUTHENTICATED
+	 * status, the same status as an expired sign-in. Only this error detail tells the two apart.
+	 *
+	 * @param array $response_body Decoded response body.
+	 *
+	 * @return bool
+	 */
+	public static function response_denies_account_access( array $response_body ): bool {
+		$details = $response_body['error']['details'] ?? [];
+		if ( ! is_array( $details ) ) {
+			return false;
+		}
+
+		foreach ( $details as $detail ) {
+			if (
+				is_array( $detail ) &&
+				'merchantapi.googleapis.com' === ( $detail['domain'] ?? '' ) &&
+				'PERMISSION_DENIED_ACCOUNTS' === ( $detail['metadata']['REASON'] ?? '' )
+			) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
