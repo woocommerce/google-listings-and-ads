@@ -82,3 +82,42 @@ add_filter(
 	},
 	PHP_INT_MAX
 );
+
+/**
+ * Point the Connect Server at an address nothing listens on while the `gla_e2e_block_connect_server`
+ * option is set, so a test that exercises a flow ending in a call to Google can never reach it.
+ * The plugin sends through its own HTTP client, not the WordPress HTTP API, so the URL is the one
+ * place to cut it off. The option is set and cleared through the GLA Test Data plugin.
+ *
+ * @param string $url
+ * @return string
+ */
+add_filter(
+	'woocommerce_gla_wcs_url',
+	function ( $url ) {
+		if ( 'yes' === get_option( 'gla_e2e_block_connect_server' ) ) {
+			return 'http://127.0.0.1:9';
+		}
+
+		return $url;
+	}
+);
+
+/**
+ * Open posts in the Classic Editor for a browser that sends the `gla_e2e_classic_editor` cookie,
+ * so a test can use either editor without installing another plugin. The block editor stays the
+ * default for everything else.
+ *
+ * @param bool $use_block_editor
+ * @return bool
+ */
+add_filter(
+	'use_block_editor_for_post',
+	function ( $use_block_editor ) {
+		if ( isset( $_COOKIE['gla_e2e_classic_editor'] ) ) {
+			return false;
+		}
+
+		return $use_block_editor;
+	}
+);
