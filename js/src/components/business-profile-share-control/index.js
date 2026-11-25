@@ -1,0 +1,216 @@
+/**
+ * External dependencies
+ */
+import { __, sprintf } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
+import {
+	ExternalLink,
+	Flex,
+	Spinner,
+	ToggleControl,
+} from '@wordpress/components';
+
+/**
+ * Internal dependencies
+ */
+import { recordGlaEvent } from '~/utils/tracks';
+import { buildSummary } from './utils/summaryText';
+import SummaryField from './summary-field';
+import GenerateFromPostButton from './generate-from-post-button';
+import SyncStatus from './sync-status';
+import CheckFailureNotice from './check-failure-notice';
+import ConfirmUnshareModal from './confirm-unshare-modal';
+import './index.scss';
+
+/**
+ * @typedef {import('./types').SyncOutcome} SyncOutcome
+ */
+
+/**
+ * Turning the "Share on my Business Profile" toggle on or off.
+ *
+ * @event gla_google_business_profile_share_toggle_click
+ * @property {string} context Indicates which editor the toggle was clicked in. Possible values: 'business-profile-share-panel' (block editor), 'business-profile-share-meta-box' (Classic Editor).
+ * @property {string} status Whether sharing was turned on or off. Possible values: 'on', 'off'.
+ * @property {boolean} is_shared Whether the post has already been shared to Google Business Profile.
+ */
+
+/**
+ * Clicking the "View on Google Business Profile" link to a post shared to Google Business Profile.
+ *
+ * @event gla_google_business_profile_post_link_click
+ * @property {string} context Indicates which editor the link was clicked in. Possible values: 'business-profile-share-panel' (block editor), 'business-profile-share-meta-box' (Classic Editor).
+ */
+
+/**
+ * Renders the controls for sharing a post to Google Business Profile, independent of the editor
+ * hosting them: the "Share on my Business Profile" toggle, the status of the post's last send to
+ * Google, a link to the post on Google once it has one, and — while sharing is on, before the
+ * first share — the field holding the text sent to Google with its "Generate from post" action.
+ * While the editor checks that the shared post still exists on Google, a loading state shows
+ * instead of the controls.
+ *
+ * @param {Object} props Component props.
+ * @param {string} props.context The editor hosting the controls, sent with tracking events. Possible values: 'business-profile-share-panel', 'business-profile-share-meta-box'.
+ * @param {string} props.locationName The connected location's name, shown in the toggle's help text.
+ * @param {boolean} props.isShareEnabled Whether sharing is turned on.
+ * @param {( isShareEnabled: boolean ) => void} props.onShareEnabledChange Called when the toggle changes.
+ * @param {string} props.summary The text sent to Google.
+ * @param {( summary: string ) => void} props.onSummaryChange Called with the new text.
+ * @param {() => {title: string, body: string}} props.getLivePostContent Returns the post's title and body right now, including unsaved edits, as plain text.
+ * @param {string} [props.searchUrl] The post's link on Google, once Google provides one.
+ * @param {boolean} [props.isShared] Whether the post has already been shared to Google.
+ * @param {SyncOutcome|null} [props.syncOutcome] The post's latest sync outcome.
+ * @param {boolean} [props.isChecking] Whether the editor is checking that the shared post still exists on Google.
+ * @param {'reconnect'|'error'|null} [props.checkFailure] Why that check failed, or `null` when it didn't.
+ * @return {JSX.Element} The controls.
+ *
+ * @fires gla_google_business_profile_share_toggle_click with `{ context, status, is_shared }`.
+ * @fires gla_google_business_profile_post_link_click with `{ context }`.
+ */
+export default function BusinessProfileShareControl( {
+	context,
+	locationName,
+	isShareEnabled,
+	onShareEnabledChange,
+	summary,
+	onSummaryChange,
+	getLivePostContent,
+	searchUrl,
+	isShared = false,
+	syncOutcome = null,
+	isChecking = false,
+	checkFailure = null,
+} ) {
+	const [ showUnshareConfirm, setShowUnshareConfirm ] = useState( false );
+
+	const changeShareEnabled = ( nextIsShareEnabled ) => {
+		recordGlaEvent( 'gla_google_business_profile_share_toggle_click', {
+			context,
+			status: nextIsShareEnabled ? 'on' : 'off',
+			is_shared: isShared,
+		} );
+		onShareEnabledChange( nextIsShareEnabled );
+	};
+
+	const handleShareEnabledChange = ( nextIsShareEnabled ) => {
+		// Turning off sharing on a post that's never been shared removes nothing from Google, so
+		// it needs no confirmation.
+		if ( ! nextIsShareEnabled && isShared ) {
+			setShowUnshareConfirm( true );
+			return;
+		}
+
+		changeShareEnabled( nextIsShareEnabled );
+	};
+
+	const handleConfirmUnshare = () => {
+		setShowUnshareConfirm( false );
+		changeShareEnabled( false );
+	};
+
+	const handleCancelUnshare = () => {
+		setShowUnshareConfirm( false );
+	};
+
+	const handleGenerate = () => {
+		const { title, body } = getLivePostContent();
+		const generatedSummary = buildSummary( title, body );
+		onSummaryChange( generatedSummary );
+	};
+
+	const handleViewOnGoogleClick = () => {
+		recordGlaEvent( 'gla_google_business_profile_post_link_click', {
+			context,
+		} );
+	};
+
+	const help = isShared
+		? sprintf(
+				/* translators: %s: the connected Google Business Profile location's name. */
+				__(
+					'Shared to %s. To change the post, edit it in your Business Profile.',
+					'google-listings-and-ads'
+				),
+				locationName
+			)
+		: sprintf(
+				/* translators: %s: the connected Google Business Profile location's name. */
+				__(
+					'Share to %s as an update when you publish.',
+					'google-listings-and-ads'
+				),
+				locationName
+			);
+
+	if ( isChecking ) {
+		return (
+			<Flex justify="flex-start" gap={ 2 }>
+				<Spinner />
+				<span>
+					{ __(
+						'Checking Google Business Profile…',
+						'google-listings-and-ads'
+					) }
+				</span>
+			</Flex>
+		);
+	}
+
+	return (
+		<>
+			<Flex
+				className="gla-business-profile-share-control"
+				direction="column"
+				gap={ 4 }
+			>
+				<ToggleControl
+					label={ __(
+						'Share on my Business Profile',
+						'google-listings-and-ads'
+					) }
+					help={ help }
+					checked={ isShareEnabled }
+					onChange={ handleShareEnabledChange }
+					__nextHasNoMarginBottom
+				/>
+				<CheckFailureNotice checkFailure={ checkFailure } />
+				<SyncStatus syncOutcome={ syncOutcome } />
+				{ searchUrl && (
+					<ExternalLink
+						href={ searchUrl }
+						onClick={ handleViewOnGoogleClick }
+					>
+						{ __(
+							'View on Google Business Profile',
+							'google-listings-and-ads'
+						) }
+					</ExternalLink>
+				) }
+				{ isShareEnabled && ! isShared && (
+					<Flex
+						className="gla-business-profile-share-control__summary"
+						direction="column"
+						align="flex-start"
+						gap={ 4 }
+					>
+						<SummaryField
+							value={ summary }
+							onChange={ onSummaryChange }
+						/>
+						<GenerateFromPostButton
+							summary={ summary }
+							onGenerate={ handleGenerate }
+						/>
+					</Flex>
+				) }
+			</Flex>
+			{ showUnshareConfirm && (
+				<ConfirmUnshareModal
+					onConfirm={ handleConfirmUnshare }
+					onRequestClose={ handleCancelUnshare }
+				/>
+			) }
+		</>
+	);
+}

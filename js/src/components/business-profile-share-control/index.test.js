@@ -1,0 +1,449 @@
+/**
+ * External dependencies
+ */
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+/**
+ * Internal dependencies
+ */
+import BusinessProfileShareControl from '.';
+import { recordGlaEvent } from '~/utils/tracks';
+
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
+
+const SHARED_NOTICE =
+	'Shared to Trailmark Athletics. To change the post, edit it in your Business Profile.';
+
+/**
+ * Renders the control with sensible defaults, overridden by the given props.
+ *
+ * @param {Object} props Props to override.
+ * @return {Object} The callbacks passed in.
+ */
+function renderControl( props = {} ) {
+	const callbacks = {
+		onShareEnabledChange: jest.fn().mockName( 'onShareEnabledChange' ),
+		onSummaryChange: jest.fn().mockName( 'onSummaryChange' ),
+		getLivePostContent: jest
+			.fn()
+			.mockName( 'getLivePostContent' )
+			.mockReturnValue( { title: '', body: 'Generated text' } ),
+	};
+
+	render(
+		<BusinessProfileShareControl
+			context="business-profile-share-panel"
+			locationName="Trailmark Athletics"
+			isShareEnabled={ false }
+			summary=""
+			{ ...callbacks }
+			{ ...props }
+		/>
+	);
+
+	return callbacks;
+}
+
+describe( 'BusinessProfileShareControl', () => {
+	beforeEach( () => {
+		recordGlaEvent.mockClear();
+	} );
+
+	it( 'shows the toggle off, naming the connected location, with no field', () => {
+		renderControl();
+
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).not.toBeChecked();
+		expect(
+			screen.getByText(
+				'Share to Trailmark Athletics as an update when you publish.'
+			)
+		).toBeInTheDocument();
+		expect( screen.queryByRole( 'textbox' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Generate from post' } )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'reports the toggle being turned on', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl();
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+
+		expect( onShareEnabledChange ).toHaveBeenCalledWith( true );
+	} );
+
+	it( 'records turning sharing on before reporting it', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl();
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_share_toggle_click',
+			{
+				context: 'business-profile-share-panel',
+				status: 'on',
+				is_shared: false,
+			}
+		);
+		expect( recordGlaEvent.mock.invocationCallOrder[ 0 ] ).toBeLessThan(
+			onShareEnabledChange.mock.invocationCallOrder[ 0 ]
+		);
+	} );
+
+	it( 'reports turning the toggle off straight away on a post that was never shared', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl( {
+			isShareEnabled: true,
+			isShared: false,
+		} );
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_share_toggle_click',
+			{
+				context: 'business-profile-share-panel',
+				status: 'off',
+				is_shared: false,
+			}
+		);
+		expect( onShareEnabledChange ).toHaveBeenCalledWith( false );
+		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'asks to confirm before turning sharing off on a post already shared', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl( {
+			context: 'business-profile-share-meta-box',
+			isShareEnabled: true,
+			isShared: true,
+		} );
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+
+		expect(
+			screen.getByRole( 'dialog', { name: 'Turn off sharing?' } )
+		).toBeInTheDocument();
+		expect( recordGlaEvent ).not.toHaveBeenCalled();
+		expect( onShareEnabledChange ).not.toHaveBeenCalled();
+	} );
+
+	it( 'records and reports turning sharing off once the merchant confirms', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl( {
+			context: 'business-profile-share-meta-box',
+			isShareEnabled: true,
+			isShared: true,
+		} );
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'button', { name: 'Turn off sharing' } )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_share_toggle_click',
+			{
+				context: 'business-profile-share-meta-box',
+				status: 'off',
+				is_shared: true,
+			}
+		);
+		expect( onShareEnabledChange ).toHaveBeenCalledWith( false );
+		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'leaves sharing on when the merchant cancels', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl( {
+			isShareEnabled: true,
+			isShared: true,
+		} );
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+		expect( recordGlaEvent ).not.toHaveBeenCalled();
+		expect( onShareEnabledChange ).not.toHaveBeenCalled();
+		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).toBeChecked();
+	} );
+
+	it( 'shows the field and "Generate from post" while sharing is on', () => {
+		renderControl( { isShareEnabled: true, summary: 'My text' } );
+
+		expect(
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
+		).toHaveValue( 'My text' );
+		expect(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'hides the field and "Generate from post" on a shared post, keeping the toggle, message and link', () => {
+		renderControl( {
+			isShareEnabled: true,
+			isShared: true,
+			summary: 'My text',
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+		} );
+
+		expect(
+			screen.queryByRole( 'textbox', { name: /^Summary/ } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Generate from post' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).toBeChecked();
+		expect( screen.getByText( SHARED_NOTICE ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'View on Google Business Profile (opens in a new tab)',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	it( 'shows the field while the first share is waiting to run', () => {
+		renderControl( {
+			isShareEnabled: true,
+			isShared: false,
+			summary: 'My text',
+			syncOutcome: { outcome: 'queued' },
+		} );
+
+		expect(
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
+		).toHaveValue( 'My text' );
+		expect(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'shows the field with the saved text for a post deleted on Google', () => {
+		renderControl( {
+			isShareEnabled: true,
+			isShared: false,
+			summary: 'Autumn collection',
+			syncOutcome: {
+				outcome: 'not-found',
+				display_message:
+					'The post no longer exists on Google Business Profile.',
+				display_status: 'error',
+			},
+		} );
+
+		expect(
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
+		).toHaveValue( 'Autumn collection' );
+		expect(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'fills the field from the live post content with "Generate from post"', async () => {
+		const user = userEvent.setup();
+		const { onSummaryChange } = renderControl( { isShareEnabled: true } );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		);
+
+		expect( onSummaryChange ).toHaveBeenCalledWith( 'Generated text' );
+	} );
+
+	it( 'joins the live title and body with a blank line', async () => {
+		const user = userEvent.setup();
+		const { onSummaryChange } = renderControl( {
+			isShareEnabled: true,
+			getLivePostContent: jest.fn().mockReturnValue( {
+				title: 'New summer collection just landed',
+				body: 'Our summer range is now in store.',
+			} ),
+		} );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		);
+
+		expect( onSummaryChange ).toHaveBeenCalledWith(
+			'New summer collection just landed\n\nOur summer range is now in store.'
+		);
+	} );
+
+	it( 'points to Business Profile to change the post once it has been shared', () => {
+		renderControl( { isShared: true } );
+
+		expect( screen.getByText( SHARED_NOTICE ) ).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.'
+			)
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				'Share to Trailmark Athletics as an update when you publish.'
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'links to the post on Google once Google provides a link', () => {
+		renderControl( {
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+		} );
+
+		expect(
+			screen.getByRole( 'link', {
+				name: 'View on Google Business Profile (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://local.google.com/place?id=1&use=posts'
+		);
+	} );
+
+	it( 'shows the send status above the link', () => {
+		renderControl( {
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+			syncOutcome: {
+				outcome: 'sent-pending-verification',
+				display_message: 'Your profile is unverified.',
+				display_status: 'warning',
+			},
+		} );
+
+		const message = screen.getByText( 'Your profile is unverified.', {
+			selector: '.components-notice__content',
+		} );
+		const link = screen.getByRole( 'link' );
+
+		const elements = Array.from( document.querySelectorAll( '*' ) );
+
+		expect( elements.indexOf( message ) ).toBeLessThan(
+			elements.indexOf( link )
+		);
+	} );
+
+	it( 'says a queued post is on its way', () => {
+		renderControl( {
+			isShareEnabled: true,
+			syncOutcome: { outcome: 'queued' },
+		} );
+
+		expect(
+			screen.getByText( 'Sending to Google Business Profile…' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'shows no link until Google provides one', () => {
+		renderControl( { isShared: true, searchUrl: '' } );
+
+		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'records clicking the link to the post on Google', async () => {
+		const user = userEvent.setup();
+		renderControl( {
+			context: 'business-profile-share-meta-box',
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+		} );
+
+		await user.click(
+			screen.getByRole( 'link', {
+				name: 'View on Google Business Profile (opens in a new tab)',
+			} )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_post_link_click',
+			{ context: 'business-profile-share-meta-box' }
+		);
+	} );
+
+	it( 'shows a loading state instead of the controls while checking the post on Google', () => {
+		renderControl( {
+			isShareEnabled: true,
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+			isChecking: true,
+		} );
+
+		expect(
+			screen.getByText( 'Checking Google Business Profile…' )
+		).toBeInTheDocument();
+		expect( screen.queryByRole( 'checkbox' ) ).not.toBeInTheDocument();
+		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'keeps the controls and warns when the post could not be checked on Google', () => {
+		renderControl( {
+			isShareEnabled: true,
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+			checkFailure: 'error',
+		} );
+
+		expect(
+			screen.getByText(
+				'We couldn’t check whether this post still exists on Google Business Profile.',
+				{ selector: '.components-notice__content' }
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).toBeChecked();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'View on Google Business Profile (opens in a new tab)',
+			} )
+		).toBeInTheDocument();
+	} );
+} );

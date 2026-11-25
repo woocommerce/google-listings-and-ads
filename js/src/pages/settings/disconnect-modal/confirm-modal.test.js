@@ -9,7 +9,11 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import ConfirmModal from './confirm-modal';
-import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from './constants';
+import {
+	ALL_ACCOUNTS,
+	YOUTUBE_ACCOUNT,
+	GOOGLE_BUSINESS_PROFILE_ACCOUNT,
+} from './constants';
 import { useAppDispatch } from '~/data';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import { recordGlaEvent } from '~/utils/tracks';
@@ -28,6 +32,7 @@ jest.mock( '~/utils/tracks', () => ( {
 describe( 'ConfirmModal', () => {
 	let disconnectAllAccounts;
 	let disconnectYouTubeAccount;
+	let disconnectGoogleBusinessProfileAccount;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -41,9 +46,15 @@ describe( 'ConfirmModal', () => {
 			.mockName( 'disconnectYouTubeAccount' )
 			.mockResolvedValue();
 
+		disconnectGoogleBusinessProfileAccount = jest
+			.fn()
+			.mockName( 'disconnectGoogleBusinessProfileAccount' )
+			.mockResolvedValue();
+
 		useAppDispatch.mockReturnValue( {
 			disconnectAllAccounts,
 			disconnectYouTubeAccount,
+			disconnectGoogleBusinessProfileAccount,
 		} );
 		useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: true } );
 	} );
@@ -108,5 +119,63 @@ describe( 'ConfirmModal', () => {
 
 		expect( recordGlaEvent ).not.toHaveBeenCalled();
 		expect( disconnectAllAccounts ).toHaveBeenCalledTimes( 1 );
+	} );
+	describe( 'Google Business Profile', () => {
+		it( 'shows the Google Business Profile copy', () => {
+			renderModal( GOOGLE_BUSINESS_PROFILE_ACCOUNT );
+
+			expect(
+				screen.getByText( 'Disconnect Google Business Profile?' )
+			).toBeInTheDocument();
+			expect(
+				screen.getByText(
+					'Posts you already shared stay on Google. Your other Google accounts stay connected.'
+				)
+			).toBeInTheDocument();
+		} );
+
+		it( 'disconnects Google Business Profile and tracks it only once confirmed', async () => {
+			const user = userEvent.setup();
+
+			renderModal( GOOGLE_BUSINESS_PROFILE_ACCOUNT );
+
+			expect(
+				screen.getByRole( 'button', { name: 'Disconnect' } )
+			).toBeDisabled();
+
+			await user.click(
+				screen.getByRole( 'checkbox', {
+					name: 'Yes, I want to disconnect my Google Business Profile.',
+				} )
+			);
+			await user.click(
+				screen.getByRole( 'button', { name: 'Disconnect' } )
+			);
+
+			expect(
+				disconnectGoogleBusinessProfileAccount
+			).toHaveBeenCalledTimes( 1 );
+			expect( disconnectAllAccounts ).not.toHaveBeenCalled();
+			expect( disconnectYouTubeAccount ).not.toHaveBeenCalled();
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_google_business_profile_account_disconnect_button_click',
+				{ context: 'settings-business-profile' }
+			);
+		} );
+
+		it( 'does not disconnect when the modal is cancelled', async () => {
+			const user = userEvent.setup();
+
+			renderModal( GOOGLE_BUSINESS_PROFILE_ACCOUNT );
+
+			await user.click(
+				screen.getByRole( 'button', { name: 'Cancel' } )
+			);
+
+			expect(
+				disconnectGoogleBusinessProfileAccount
+			).not.toHaveBeenCalled();
+			expect( recordGlaEvent ).not.toHaveBeenCalled();
+		} );
 	} );
 } );

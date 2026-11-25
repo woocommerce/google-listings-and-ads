@@ -67,6 +67,7 @@ class DisconnectController extends BaseController {
 				'google/connect',
 				'jetpack/connect',
 				'youtube/connection',
+				'business-profile/connection',
 				'google/onboarding/complete',
 			];
 

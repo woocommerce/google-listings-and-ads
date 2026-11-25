@@ -1,8 +1,14 @@
 /**
  * Internal dependencies
  */
-import { createMarket } from './actions';
+import {
+	createMarket,
+	fetchGoogleBusinessProfileAccount,
+	fetchGoogleBusinessProfileLocations,
+} from './actions';
+import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
+import { handleApiError } from '~/utils/handleError';
 
 jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
@@ -69,6 +75,93 @@ describe( 'createMarket', () => {
 
 		expect( () => generator.throw( new Error( 'boom' ) ) ).toThrow(
 			'boom'
+		);
+	} );
+} );
+
+describe( 'fetchGoogleBusinessProfileAccount', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+	} );
+
+	it( 'requests the connection endpoint and receives the response', () => {
+		const generator = fetchGoogleBusinessProfileAccount();
+		const request = generator.next().value;
+		const account = {
+			status: 'connected',
+			id: '1111',
+			accountId: '106234255840114990952',
+			title: "Jane's Bakery",
+			address: '2423 1st Ave, Seattle, WA, 98121',
+			placeId: 'place-1111',
+			mapsUri: 'https://maps.google.com/?cid=1111',
+		};
+
+		expect( request.request ).toEqual(
+			expect.objectContaining( {
+				path: `${ API_NAMESPACE }/business-profile/connection`,
+			} )
+		);
+		expect( generator.next( account ).value ).toEqual( {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE,
+			account,
+		} );
+	} );
+
+	it( 'reports the error when the request fails', () => {
+		const generator = fetchGoogleBusinessProfileAccount();
+		const error = new Error( 'Request failed' );
+
+		generator.next();
+		generator.throw( error );
+
+		expect( handleApiError ).toHaveBeenCalledWith(
+			error,
+			'There was an error loading Google Business Profile account info.'
+		);
+	} );
+} );
+
+describe( 'fetchGoogleBusinessProfileLocations', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+	} );
+
+	it( 'requests the locations endpoint and receives the response', () => {
+		const generator = fetchGoogleBusinessProfileLocations();
+		const request = generator.next().value;
+		const locations = [
+			{
+				id: '1111',
+				accountId: '106234255840114990952',
+				title: "Jane's Bakery",
+				address: '2423 1st Ave, Seattle, WA, 98121',
+				placeId: 'place-1111',
+				mapsUri: 'https://maps.google.com/?cid=1111',
+			},
+		];
+
+		expect( request.request ).toEqual(
+			expect.objectContaining( {
+				path: `${ API_NAMESPACE }/business-profile/locations`,
+			} )
+		);
+		expect( generator.next( locations ).value ).toEqual( {
+			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
+			locations,
+		} );
+	} );
+
+	it( 'reports the error when the request fails', () => {
+		const generator = fetchGoogleBusinessProfileLocations();
+		const error = new Error( 'Request failed' );
+
+		generator.next();
+		generator.throw( error );
+
+		expect( handleApiError ).toHaveBeenCalledWith(
+			error,
+			'There was an error getting your Google Business Profile locations.'
 		);
 	} );
 } );

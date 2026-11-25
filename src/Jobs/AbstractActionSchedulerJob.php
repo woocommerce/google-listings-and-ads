@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Exception;
+use Throwable;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -140,4 +141,14 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
 	 */
 	abstract protected function process_items( array $items );
+
+	/**
+	 * Report a hook callback that threw, so it can't break the job it was dispatched from.
+	 *
+	 * @param string    $hook  The hook whose callback threw.
+	 * @param Throwable $error
+	 */
+	protected function report_listener_error( string $hook, Throwable $error ): void {
+		do_action( 'woocommerce_gla_error', sprintf( 'A %s callback threw: %s', $hook, $error->getMessage() ), __METHOD__ );
+	}
 }

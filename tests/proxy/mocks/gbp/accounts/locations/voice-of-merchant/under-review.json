@@ -1,0 +1,5 @@
+{
+	"hasVoiceOfMerchant": false,
+	"hasBusinessAuthority": true,
+	"waitForVoiceOfMerchant": {}
+}

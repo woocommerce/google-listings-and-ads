@@ -1,0 +1,73 @@
+/**
+ * External dependencies
+ */
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+
+/**
+ * Internal dependencies
+ */
+import SyncStatus from './sync-status';
+
+const SENDING_TEXT = 'Sending to Google Business Profile…';
+
+describe( 'SyncStatus', () => {
+	it( 'says the post is on its way, with a spinner, while the send is queued', () => {
+		const { container } = render(
+			<SyncStatus syncOutcome={ { outcome: 'queued' } } />
+		);
+
+		expect( screen.getByText( SENDING_TEXT ) ).toBeInTheDocument();
+		expect(
+			container.querySelector( '.components-spinner' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'says the post is being removed, with a spinner, while the removal is queued', () => {
+		const { container } = render(
+			<SyncStatus syncOutcome={ { outcome: 'unshare-queued' } } />
+		);
+
+		expect(
+			screen.getByText( 'Removing from Google Business Profile…' )
+		).toBeInTheDocument();
+		expect(
+			container.querySelector( '.components-spinner' )
+		).toBeInTheDocument();
+	} );
+
+	it.each( [ 'error', 'warning' ] )(
+		'shows the message for an outcome needing attention as a %s notice',
+		( status ) => {
+			const { container } = render(
+				<SyncStatus
+					syncOutcome={ {
+						outcome: 'sent-pending-verification',
+						display_message: 'Your profile is unverified.',
+						display_status: status,
+					} }
+				/>
+			);
+
+			expect(
+				screen.getByText( 'Your profile is unverified.', {
+					selector: '.components-notice__content',
+				} )
+			).toBeInTheDocument();
+			expect(
+				container.querySelector( `.components-notice.is-${ status }` )
+			).toBeInTheDocument();
+		}
+	);
+
+	it.each( [
+		[ 'never sent', null ],
+		[ 'shared with nothing to report', { outcome: 'success' } ],
+	] )( 'renders nothing for a post %s', ( label, syncOutcome ) => {
+		const { container } = render(
+			<SyncStatus syncOutcome={ syncOutcome } />
+		);
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+} );
