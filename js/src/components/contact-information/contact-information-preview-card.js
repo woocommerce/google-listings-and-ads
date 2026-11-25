@@ -36,11 +36,11 @@ export default function ContactInformationPreviewCard( {
 	const { subpath } = getQuery();
 	const editButton = (
 		<AppButton
-			isSecondary
 			href={ editHref }
 			text={ __( 'Edit', 'google-listings-and-ads' ) }
 			eventName={ editEventName }
 			eventProps={ { path: getPath(), subpath } }
+			isSecondary
 		/>
 	);
 	let description;

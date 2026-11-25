@@ -50,21 +50,38 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 	}
 
 	/**
-	 * Resolve the maximum transit days for an order's destination country, from whichever
-	 * source the merchant's declared `shipping_time` setting makes authoritative. Returns null
-	 * (never a fabricated value) when that source has no entry for the country, when a
-	 * `manual` merchant isn't connected to Merchant Center, or when the Merchant-API read fails.
+	 * Resolve the delivery time for an order's destination country, from whichever source the
+	 * merchant's declared `shipping_time` setting makes authoritative. Returns null (never a
+	 * fabricated value) when that source has no entry for the country, when a `manual` merchant
+	 * isn't connected to Merchant Center, or when the Merchant-API read fails.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $country Destination country code.
+	 *
+	 * @return EstimatedDeliveryTime|null
+	 */
+	public function get_delivery_time_for_country( string $country ): ?EstimatedDeliveryTime {
+		if ( self::SHIPPING_TIME_MANUAL === $this->get_shipping_time_mode() ) {
+			return $this->get_delivery_time_from_merchant_center( $country );
+		}
+
+		return $this->get_delivery_time_from_local_table( $country );
+	}
+
+	/**
+	 * Resolve the maximum transit days for an order's destination country.
+	 *
+	 * @see get_delivery_time_for_country() for the full delivery time, including handling time and business days.
 	 *
 	 * @param string $country Destination country code.
 	 *
 	 * @return int|null
 	 */
 	public function get_max_transit_days_for_country( string $country ): ?int {
-		if ( self::SHIPPING_TIME_MANUAL === $this->get_shipping_time_mode() ) {
-			return $this->get_max_transit_days_from_merchant_center( $country );
-		}
+		$delivery_time = $this->get_delivery_time_for_country( $country );
 
-		return $this->get_max_transit_days_from_local_table( $country );
+		return $delivery_time ? $delivery_time->get_max_transit_days() : null;
 	}
 
 	/**
@@ -82,8 +99,10 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 	}
 
 	/**
-	 * Resolve maximum transit days from this plugin's own local shipping-time table,
+	 * Resolve the delivery time from this plugin's own local shipping-time table,
 	 * single-country-scoped, mirroring ShippingTimeController::get_shipping_time_for_country().
+	 * The table holds transit days only. Handling time and business days use the Merchant Center
+	 * defaults, matching how this plugin syncs these times to Merchant Center. No cutoff applies.
 	 *
 	 * A fresh ShippingTimeQuery is fetched from the container on every call rather than
 	 * constructor-injected, since Query::where()/get_results() accumulate and memoize state on
@@ -92,9 +111,9 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 	 *
 	 * @param string $country
 	 *
-	 * @return int|null
+	 * @return EstimatedDeliveryTime|null
 	 */
-	private function get_max_transit_days_from_local_table( string $country ): ?int {
+	private function get_delivery_time_from_local_table( string $country ): ?EstimatedDeliveryTime {
 		$rows = $this->container->get( ShippingTimeQuery::class )->where( 'country', $country )->get_results();
 		if ( empty( $rows ) ) {
 			return null;
@@ -102,19 +121,19 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 
 		// `??` (key existence), not `?:` (truthiness) — a legitimately-configured 0-day
 		// max_time must not be discarded in favour of the time fallback.
-		return (int) ( $rows[0]['max_time'] ?? $rows[0]['time'] );
+		return new EstimatedDeliveryTime( 0, (int) ( $rows[0]['max_time'] ?? $rows[0]['time'] ) );
 	}
 
 	/**
-	 * Resolve maximum transit days from the connected account's Merchant-Center-sourced shipping
+	 * Resolve the delivery time from the connected account's Merchant-Center-sourced shipping
 	 * settings. Not connected, an empty account (no shipping policy configured), no matching
 	 * country entry, or a failed read all resolve to null.
 	 *
 	 * @param string $country
 	 *
-	 * @return int|null
+	 * @return EstimatedDeliveryTime|null
 	 */
-	private function get_max_transit_days_from_merchant_center( string $country ): ?int {
+	private function get_delivery_time_from_merchant_center( string $country ): ?EstimatedDeliveryTime {
 		if ( ! $this->options->get_merchant_id() ) {
 			return null;
 		}
@@ -128,13 +147,18 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 		// per service or overlapping services (unlike this plugin's own one-service-per-country
 		// write path) — first matching service with a usable deliveryTime wins.
 		foreach ( $shipping_settings['services'] ?? [] as $service ) {
-			if ( ! in_array( $country, $service['deliveryCountries'] ?? [], true ) ) {
+			$delivery_countries = $service['deliveryCountries'] ?? [];
+			if ( ! is_array( $delivery_countries ) || ! in_array( $country, $delivery_countries, true ) ) {
 				continue;
 			}
 
-			$max_transit_days = $service['deliveryTime']['maxTransitDays'] ?? null;
-			if ( null !== $max_transit_days ) {
-				return (int) $max_transit_days;
+			if ( ! is_array( $service['deliveryTime'] ?? null ) ) {
+				continue;
+			}
+
+			$delivery_time = EstimatedDeliveryTime::from_merchant_center( $service['deliveryTime'] );
+			if ( $delivery_time ) {
+				return $delivery_time;
 			}
 		}
 

@@ -93,6 +93,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	private $use_wcga_handle = null;
 
 	/**
+	 * Whether this request printed GLA's own consent default or gtag.js snippet.
+	 * Set in activate_consent_defaults() and where display_global_site_tag() is called,
+	 * so an override that skips the parent keeps the consent bridge.
+	 *
+	 * @var bool
+	 */
+	private $printed_global_site_tag = false;
+
+	/**
 	 * Global Site Tag constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
@@ -175,6 +184,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			function () use ( $ads_conversion_id ) {
 				if ( $this->defer_events && $this->pending_events ) {
 					// A custom template may omit wp_head, including Woo Analytics' framework output.
+					$this->printed_global_site_tag = true;
 					$this->display_global_site_tag( $ads_conversion_id );
 					$this->use_wcga_handle = false;
 					$this->flush_pending_events();
@@ -338,7 +348,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$this->register_js_for_fast_refresh_dev();
 				$this->assets_handler->enqueue( $gtag_events );
 
-				if ( ! class_exists( '\WC_Google_Gtag_JS' ) && function_exists( 'wp_has_consent' ) ) {
+				// Woo Analytics may be active without printing its tag, so follow GLA's own output:
+				// this bridge is the only GLA script that lifts the consent default it prints,
+				// with or without GLA's own Google Ads tag.
+				if ( $this->printed_global_site_tag && function_exists( 'wp_has_consent' ) ) {
 					$this->assets_handler->enqueue( $wp_consent_api );
 				}
 			}
@@ -386,6 +399,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		}
 
+		$this->printed_global_site_tag = true;
 		$this->display_global_site_tag( $ads_conversion_id );
 	}
 
@@ -396,9 +410,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * having already run.
 	 */
 	protected function activate_consent_defaults(): void {
-		if ( $this->gtag_js->is_adding_framework() ) {
+		if ( $this->is_google_analytics_printing_google_tag() ) {
 			return;
 		}
+
+		// The WP Consent API bridge lifts this default, so it must follow it.
+		$this->printed_global_site_tag = true;
 
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
@@ -414,6 +431,22 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		<?php
 		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+	}
+
+	/**
+	 * Whether Google Analytics for WooCommerce prints the Google tag and shim itself, and
+	 * `activate_global_site_tag()` hands the Ads config over to it. That's the case for
+	 * version 2.0 and later with its script enqueued, and for any version before 2.0.
+	 * When its script isn't on the page, this plugin prints the shim and consent default.
+	 *
+	 * @return bool
+	 */
+	private function is_google_analytics_printing_google_tag(): bool {
+		if ( ! $this->gtag_js->is_adding_framework() ) {
+			return false;
+		}
+
+		return ! $this->gtag_js->ga4w_v2 || $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'enqueued' );
 	}
 
 	/**
