@@ -219,6 +219,70 @@ describe( 'BusinessProfileShareControl', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'hides the field and "Generate from post" on a shared post, keeping the toggle, message and link', () => {
+		renderControl( {
+			isShareEnabled: true,
+			isShared: true,
+			summary: 'My text',
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+		} );
+
+		expect(
+			screen.queryByRole( 'textbox', { name: /^Summary/ } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Generate from post' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).toBeChecked();
+		expect( screen.getByText( SHARED_NOTICE ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'View on Google Business Profile (opens in a new tab)',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	it( 'shows the field while the first share is waiting to run', () => {
+		renderControl( {
+			isShareEnabled: true,
+			isShared: false,
+			summary: 'My text',
+			syncOutcome: { outcome: 'queued' },
+		} );
+
+		expect(
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
+		).toHaveValue( 'My text' );
+		expect(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'shows the field again with the saved text once the post is no longer shared', () => {
+		renderControl( {
+			isShareEnabled: true,
+			isShared: false,
+			summary: 'Autumn collection',
+			syncOutcome: {
+				outcome: 'not-found',
+				display_message:
+					'The post no longer exists on Google Business Profile.',
+				display_status: 'error',
+			},
+		} );
+
+		expect(
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
+		).toHaveValue( 'Autumn collection' );
+		expect(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		).toBeInTheDocument();
+	} );
+
 	it( 'fills the field from the live post content with "Generate from post"', async () => {
 		const user = userEvent.setup();
 		const { onSummaryChange } = renderControl( { isShareEnabled: true } );

@@ -280,7 +280,9 @@ describe( 'BusinessProfileShareMetaBox', () => {
 	} );
 
 	it( 'points to Business Profile to change the post and links to it on a shared post', () => {
-		renderMetaBox( {
+		const form = renderMetaBox( {
+			isShareEnabled: true,
+			summary: 'Autumn collection',
 			shareStatus: {
 				is_shared: true,
 				search_url: 'https://local.google.com/place?id=1&use=posts',
@@ -300,6 +302,44 @@ describe( 'BusinessProfileShareMetaBox', () => {
 			'href',
 			'https://local.google.com/place?id=1&use=posts'
 		);
+		expect(
+			screen.queryByRole( 'textbox', { name: /^Summary/ } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Generate from post' } )
+		).not.toBeInTheDocument();
+		expect(
+			getSubmittedValue( form, 'gla_business_profile_share_summary' )
+		).toBe( 'Autumn collection' );
+	} );
+
+	it( 'shows the field again with the saved text once Heartbeat reports the post removed', async () => {
+		const user = userEvent.setup();
+		renderMetaBox( {
+			isShareEnabled: false,
+			summary: 'Autumn collection',
+			shareStatus: {
+				is_shared: true,
+				search_url: 'https://local.google.com/place?id=1&use=posts',
+			},
+			syncOutcome: { outcome: 'unshare-queued' },
+		} );
+
+		beat( {
+			gla_gbp_sync_status: {
+				syncOutcome: null,
+				shareStatus: { is_shared: false, search_url: '' },
+			},
+		} );
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+
+		expect(
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
+		).toHaveValue( 'Autumn collection' );
 	} );
 
 	it( "falls back to the location's address when it has no name", () => {
@@ -400,7 +440,8 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		expect( screen.queryByRole( 'checkbox' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'shows a post deleted on Google as unlinked, with sharing off, and posts that with the form', () => {
+	it( 'shows a post deleted on Google as unlinked, with sharing off, and posts that with the form', async () => {
+		const user = userEvent.setup();
 		useBusinessProfilePostCheck.mockReturnValue( {
 			isChecking: false,
 			checkedPost: {
@@ -447,6 +488,16 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		expect(
 			getSubmittedValue( form, 'gla_business_profile_share_summary' )
 		).toBe( 'Autumn collection' );
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+
+		expect(
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
+		).toHaveValue( 'Autumn collection' );
 	} );
 
 	it( 'keeps the saved state and warns when the post could not be checked', () => {
