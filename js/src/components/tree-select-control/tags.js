@@ -77,11 +77,11 @@ const Tags = ( {
 
 			{ maxTags > 0 && tags.length > maxTags && (
 				<AppButton
-					isTertiary
 					className="woocommerce-tree-select-control__show-more"
 					onClick={ () => {
 						setShowAll( ! showAll );
 					} }
+					isTertiary
 				>
 					{ showAll
 						? __( 'Show less', 'google-listings-and-ads' )

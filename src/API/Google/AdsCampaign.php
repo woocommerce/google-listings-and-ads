@@ -345,7 +345,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				);
 
 				if ( ! empty( $brand_assets ) ) {
-					$brand_operations = $this->create_brand_asset_operations( $brand_assets );
+					// Brand assets go out in the same mutate as the asset group, so they share its image budget.
+					$brand_operations = $this->create_brand_asset_operations(
+						$brand_assets,
+						AdsAsset::MAX_PAYLOAD_BYTES - AdsAsset::get_image_bytes( $asset_group_operations )
+					);
 				}
 			} else {
 				// Create "empty" asset group operations.
@@ -717,11 +721,12 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Build Asset create operations and matching CampaignAsset link operations for brand assets.
 	 *
 	 * @param array $brand_assets
+	 * @param int   $max_size     The image byte limit for the brand assets.
 	 *
 	 * @return MutateOperation[]
 	 */
-	protected function create_brand_asset_operations( array $brand_assets ): array {
-		$asset_ops = $this->container->get( AdsAsset::class )->create_operations( $brand_assets );
+	protected function create_brand_asset_operations( array $brand_assets, int $max_size = AdsAsset::MAX_PAYLOAD_BYTES ): array {
+		$asset_ops = $this->container->get( AdsAsset::class )->create_operations( $brand_assets, $max_size );
 
 		$business_name_resources = [];
 		$logo_resources          = [];
@@ -973,6 +978,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$has_logo                        = false;
 			$existing_business_name_resource = null;
 			$existing_logo_resource          = null;
+			$existing_business_name_asset_id = null;
+			$existing_logo_asset_ids         = [];
 
 			foreach ( $campaign_assets->iterateAllElements() as $row ) {
 				$campaign_asset = $row->getCampaignAsset();
@@ -985,11 +992,13 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				if ( AssetFieldType::BUSINESS_NAME === $field_type ) {
 					$has_business_name               = true;
 					$existing_business_name_resource = $campaign_asset->getResourceName();
+					$existing_business_name_asset_id = $this->parse_asset_id_from_resource_name( $campaign_asset->getAsset() );
 				}
 
 				if ( AssetFieldType::LOGO === $field_type ) {
-					$has_logo               = true;
-					$existing_logo_resource = $campaign_asset->getResourceName();
+					$has_logo                  = true;
+					$existing_logo_resource    = $campaign_asset->getResourceName();
+					$existing_logo_asset_ids[] = $this->parse_asset_id_from_resource_name( $campaign_asset->getAsset() );
 				}
 			}
 
@@ -1032,16 +1041,31 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 			// When brand asset IDs were derived from the edit payload: replace existing links so changes persist.
 			if ( ! empty( $business_name_ids ) || ! empty( $logo_ids ) ) {
-				$operations = [];
-				if ( ! empty( $business_name_ids ) && $existing_business_name_resource !== null ) {
-					$operations[] = $this->campaign_asset->create_remove_operation( $existing_business_name_resource );
-				}
-				if ( ! empty( $logo_ids ) && $existing_logo_resource !== null ) {
-					$operations[] = $this->campaign_asset->create_remove_operation( $existing_logo_resource );
-				}
 				$ids_to_link_business = ! empty( $business_name_ids ) ? [ $business_name_ids[0] ] : [];
 				$ids_to_link_logo     = ! empty( $logo_ids ) ? [ $logo_ids[0] ] : [];
-				$link_ops             = $this->campaign_asset->create_link_operations( $campaign_id, $ids_to_link_business, $ids_to_link_logo );
+
+				// Google deduplicates assets, so re-uploading the current logo or business name returns the
+				// asset that is already linked. Removing and re-creating that same CampaignAsset in one request
+				// fails with ID_EXISTS_IN_MULTIPLE_MUTATES, so leave the existing link in place.
+				if ( ! empty( $ids_to_link_business ) && $ids_to_link_business[0] === $existing_business_name_asset_id ) {
+					$ids_to_link_business = [];
+				}
+				if ( ! empty( $ids_to_link_logo ) && in_array( $ids_to_link_logo[0], $existing_logo_asset_ids, true ) ) {
+					$ids_to_link_logo = [];
+				}
+
+				if ( empty( $ids_to_link_business ) && empty( $ids_to_link_logo ) ) {
+					return [];
+				}
+
+				$operations = [];
+				if ( ! empty( $ids_to_link_business ) && $existing_business_name_resource !== null ) {
+					$operations[] = $this->campaign_asset->create_remove_operation( $existing_business_name_resource );
+				}
+				if ( ! empty( $ids_to_link_logo ) && $existing_logo_resource !== null ) {
+					$operations[] = $this->campaign_asset->create_remove_operation( $existing_logo_resource );
+				}
+				$link_ops = $this->campaign_asset->create_link_operations( $campaign_id, $ids_to_link_business, $ids_to_link_logo );
 				return array_merge( $operations, $link_ops );
 			}
 

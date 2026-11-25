@@ -8,7 +8,7 @@ import { getSetting } from '@woocommerce/settings';
 /**
  * Gets the store's country.
  *
- * @return {Object} `{ code: CountryCode, name: string }`. Returns `{ code: null, name: null }` if the data are not yet resolved.
+ * @return {Object} `{ code: CountryCode, name: string }`. Returns `{ code: null, name: null }` if the data are not yet resolved or could not be loaded.
  */
 export default function useStoreCountry() {
 	return useSelect( ( select ) => {
@@ -21,7 +21,9 @@ export default function useStoreCountry() {
 		let code = null;
 		let name = null;
 
-		if ( loaded ) {
+		// A failed `wc-admin/options` request also finishes the resolution,
+		// but leaves the option value undefined.
+		if ( loaded && typeof defaultCountry === 'string' ) {
 			const countryNames = getSetting( 'countries' );
 			[ code ] = defaultCountry.split( ':' );
 			name = countryNames[ code ];

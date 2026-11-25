@@ -198,9 +198,9 @@ const AssetGroupTextSection = ( {
 					numOfIssues={ getNumOfIssues(
 						ASSET_FORM_KEY.DISPLAY_URL_PATH
 					) }
-					markOptional
 					disabled={ ! isSelectedFinalUrl }
 					initialExpanded={ isSelectedFinalUrl }
+					markOptional
 				>
 					{ ASSET_DISPLAY_URL_PATH_SPECS.map( ( spec, index ) => {
 						const paths = values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ];

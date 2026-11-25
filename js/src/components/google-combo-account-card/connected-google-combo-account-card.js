@@ -132,11 +132,11 @@ const ConnectedGoogleComboAccountCard = () => {
 
 	const switchAccountButton = (
 		<SwitchAccountButton
-			isTertiary
 			text={ __(
 				'Or, connect to a different Google account',
 				'google-listings-and-ads'
 			) }
+			isTertiary
 		/>
 	);
 
@@ -145,7 +145,7 @@ const ConnectedGoogleComboAccountCard = () => {
 			return (
 				<div className="gla-google-combo-account-card__description-actions">
 					{ switchAccountButton }
-					<AppButton isTertiary onClick={ handleCancelClick }>
+					<AppButton onClick={ handleCancelClick } isTertiary>
 						{ __( 'Cancel', 'google-listings-and-ads' ) }
 					</AppButton>
 				</div>
@@ -161,9 +161,9 @@ const ConnectedGoogleComboAccountCard = () => {
 					switchAccountButton
 				) : (
 					<AppButton
-						isTertiary
 						text={ __( 'Edit', 'google-listings-and-ads' ) }
 						onClick={ handleEditClick }
+						isTertiary
 					/>
 				) }
 			</div>
@@ -208,8 +208,8 @@ const ConnectedGoogleComboAccountCard = () => {
 						claimGoogleAdsAccount={ shouldClaimGoogleAdsAccount }
 					/>
 				}
-				expandedDetail
 				errorSlots={ errorSlots }
+				expandedDetail
 			/>
 
 			{ showConnectAds && (
