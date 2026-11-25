@@ -174,11 +174,11 @@ export default function SetupPaidAds() {
 
 		return (
 			<AppButton
-				isPrimary
 				disabled={ disabled }
 				onClick={ handleClick }
 				loading={ completing === ACTION_COMPLETE }
 				text={ __( 'Complete setup', 'google-listings-and-ads' ) }
+				isPrimary
 			/>
 		);
 	};

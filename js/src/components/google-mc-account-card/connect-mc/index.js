@@ -129,10 +129,10 @@ const ConnectMC = ( { createAccount, resultCreateAccount, className } ) => {
 
 		return (
 			<AppButton
-				isSecondary
 				eventName="gla_mc_account_connect_button_click"
 				eventProps={ { id: Number( value ) } }
 				onClick={ handleConnectMC }
+				isSecondary
 			>
 				{ __( 'Connect', 'google-listings-and-ads' ) }
 			</AppButton>

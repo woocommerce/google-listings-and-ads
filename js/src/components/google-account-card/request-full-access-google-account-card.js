@@ -58,8 +58,6 @@ const RequestFullAccessGoogleAccountCard = ( { additionalScopeEmail } ) => {
 			alignIndicator="top"
 			indicator={
 				<AppButton
-					isSecondary
-					isDestructive
 					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
 					eventProps={ {
@@ -71,6 +69,8 @@ const RequestFullAccessGoogleAccountCard = ( { additionalScopeEmail } ) => {
 						'google-listings-and-ads'
 					) }
 					onClick={ handleConnect }
+					isSecondary
+					isDestructive
 				/>
 			}
 		/>

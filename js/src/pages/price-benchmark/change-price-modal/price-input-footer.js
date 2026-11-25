@@ -194,10 +194,10 @@ const PriceInputFooter = ( {
 			/>
 
 			<AppButton
-				isPrimary
 				onClick={ handleOnPriceChange }
 				disabled={ hasError !== null }
 				loading={ loading }
+				isPrimary
 			>
 				{ __( 'Change Price', 'google-listings-and-ads' ) }
 			</AppButton>
