@@ -279,7 +279,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		).toBeEnabled();
 	} );
 
-	it( "explains that changes aren't sent to Google and links to the post on a shared post", () => {
+	it( 'points to Business Profile to change the post and links to it on a shared post', () => {
 		renderMetaBox( {
 			shareStatus: {
 				is_shared: true,
@@ -289,7 +289,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 
 		expect(
 			screen.getByText(
-				'Shared to Trailmark Athletics. Changes made here aren’t sent to Google. To change the post on Google, edit it in your Business Profile.'
+				'Shared to Trailmark Athletics. To change the post, edit it in your Business Profile.'
 			)
 		).toBeInTheDocument();
 		expect(

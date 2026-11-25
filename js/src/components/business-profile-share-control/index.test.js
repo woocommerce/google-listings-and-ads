@@ -16,7 +16,7 @@ jest.mock( '~/utils/tracks', () => ( {
 } ) );
 
 const SHARED_NOTICE =
-	'Shared to Trailmark Athletics. Changes made here aren’t sent to Google. To change the post on Google, edit it in your Business Profile.';
+	'Shared to Trailmark Athletics. To change the post, edit it in your Business Profile.';
 
 /**
  * Renders the control with sensible defaults, overridden by the given props.
@@ -249,7 +249,7 @@ describe( 'BusinessProfileShareControl', () => {
 		);
 	} );
 
-	it( "explains that changes aren't sent to Google once the post has been shared", () => {
+	it( 'points to Business Profile to change the post once it has been shared', () => {
 		renderControl( { isShared: true } );
 
 		expect( screen.getByText( SHARED_NOTICE ) ).toBeInTheDocument();
