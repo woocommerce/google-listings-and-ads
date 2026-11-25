@@ -351,6 +351,96 @@ class GlobalSiteTagTest extends UnitTest {
 		];
 	}
 
+	/**
+	 * Without GLA's own Ads tag, a connected Tag Manager container still gets the consent default,
+	 * so the WP Consent API bridge must be enqueued to lift it once the shopper chooses.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_wp_consent_api_bridge_is_enqueued_for_a_tag_manager_only_connection() {
+		require_once dirname( __DIR__, 2 ) . '/data/wp-consent-api-functions.php';
+
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( false );
+		$this->options->method( 'get' )->willReturn( false );
+
+		[ $output, $enqueued ] = $this->render_registered_page();
+
+		$this->assertStringContainsString( 'function gtag() { dataLayer.push(arguments); }', $output );
+		$this->assertStringContainsString( "gtag( 'consent', 'default'", $output );
+		$this->assertStringNotContainsString( 'Global site tag (gtag.js)', $output );
+		$this->assertContains( 'gla-wp-consent-api', $enqueued );
+	}
+
+	/**
+	 * Woo Analytics 2.0+ is set up, but its script isn't on the page, so GLA prints the shim and
+	 * consent default itself, ahead of its Ads tag, and enqueues the WP Consent API bridge.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_shim_and_consent_default_print_before_the_ads_tag_when_woo_analytics_script_is_missing() {
+		require_once dirname( __DIR__, 2 ) . '/data/wp-consent-api-functions.php';
+		class_alias( self::class, 'WC_Google_Gtag_JS' );
+
+		$this->gtag_js->ga4w_v2 = true;
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( true );
+		$this->wp->method( 'wp_script_is' )->willReturn( false );
+		$this->options->method( 'get' )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+
+		[ $output, $enqueued ] = $this->render_registered_page();
+
+		$shim_position       = strpos( $output, 'function gtag() { dataLayer.push(arguments); }' );
+		$consent_position    = strpos( $output, "gtag( 'consent', 'default'" );
+		$ads_config_position = strpos( $output, 'gtag("config", "' . self::TEST_CONVERSION_ID . '"' );
+		$this->assertNotFalse( $shim_position );
+		$this->assertNotFalse( $consent_position );
+		$this->assertNotFalse( $ads_config_position );
+		$this->assertLessThan( $ads_config_position, $shim_position );
+		$this->assertLessThan( $ads_config_position, $consent_position );
+		$this->assertStringContainsString( 'Global site tag (gtag.js)', $output );
+		$this->assertContains( 'gla-wp-consent-api', $enqueued );
+	}
+
+	/**
+	 * Woo Analytics 2.0+ prints the Google tag, so GLA prints no shim or consent default of its
+	 * own and doesn't enqueue the WP Consent API bridge.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_no_shim_consent_default_or_bridge_when_woo_analytics_prints_the_google_tag() {
+		require_once dirname( __DIR__, 2 ) . '/data/wp-consent-api-functions.php';
+		class_alias( self::class, 'WC_Google_Gtag_JS' );
+
+		$this->gtag_js->ga4w_v2 = true;
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( true );
+		$this->wp->method( 'wp_script_is' )->willReturnMap(
+			[
+				[ 'woocommerce-google-analytics-integration', 'enqueued', true ],
+				[ 'woocommerce-google-analytics-integration', 'done', false ],
+			]
+		);
+		$this->wp->method( 'wp_add_inline_script' )->willReturn( true );
+		$this->options->method( 'get' )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+
+		[ $output, $enqueued ] = $this->render_registered_page();
+
+		$this->assertStringNotContainsString( 'function gtag() { dataLayer.push(arguments); }', $output );
+		$this->assertStringNotContainsString( "gtag( 'consent', 'default'", $output );
+		$this->assertNotContains( 'gla-wp-consent-api', $enqueued );
+	}
+
 	public function test_purchase_event_not_order_received_page() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_false' );
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
@@ -1638,6 +1728,40 @@ class GlobalSiteTagTest extends UnitTest {
 		);
 
 		$this->tag->register();
+	}
+
+	/**
+	 * Register the service, then run the head and footer actions.
+	 *
+	 * @return array{0: string, 1: string[]} The printed output and the handles of the enqueued assets.
+	 */
+	protected function render_registered_page(): array {
+		$enqueued = [];
+		$this->assets_handler->method( 'enqueue' )->willReturnCallback(
+			function ( $asset ) use ( &$enqueued ) {
+				$enqueued[] = $asset->get_handle();
+			}
+		);
+
+		// Keep only this service's head and footer callbacks.
+		remove_all_actions( 'wp_head' );
+		remove_all_actions( 'wp_footer' );
+
+		// Asset registration requires the built scripts, which PHP-only CI does not build.
+		$stubbed_scripts = $this->stub_missing_build_scripts( [ 'gtag-events', 'wp-consent-api' ] );
+		try {
+			$this->tag->register();
+			$this->tag->add_inline_event_script( 'gtag("event", "page_view");' );
+
+			ob_start();
+			do_action( 'wp_head' );
+			do_action( 'wp_footer' );
+			$output = ob_get_clean();
+		} finally {
+			array_map( 'unlink', $stubbed_scripts );
+		}
+
+		return [ $output, $enqueued ];
 	}
 
 	/**
