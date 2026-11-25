@@ -217,4 +217,110 @@ test.describe( 'Google Business Profile publish toggle in the block editor', () 
 		expect( saved.isShareEnabled ).toBe( false );
 		expect( saved.syncOutcome ).toBeNull();
 	} );
+
+	test( 'should show the fixed tip next to the Summary label', async () => {
+		await gotoNewPost();
+
+		await getShareToggle().check();
+
+		await expect(
+			getPanel().getByRole( 'img', {
+				name: 'Place critical promotional copy within the first 80–100 characters.',
+			} )
+		).toBeVisible();
+	} );
+
+	test( 'should fill the Summary from the title and body, and ask before replacing existing text', async () => {
+		await gotoNewPost();
+		await fillTitle( 'Sourdough Saturdays' );
+		await getShareToggle().check();
+		await editor.insertBlock( {
+			name: 'core/paragraph',
+			attributes: { content: 'Fresh loaves every Saturday morning.' },
+		} );
+		// Inserting a block selects it, which switches the sidebar to its Block tab.
+		await page
+			.getByRole( 'region', { name: 'Editor settings' } )
+			.getByRole( 'tab', { name: 'Post' } )
+			.click();
+
+		const generateButton = getPanel().getByRole( 'button', {
+			name: 'Generate from post',
+		} );
+
+		await generateButton.click();
+
+		await expect( getSummary() ).toHaveValue(
+			'Sourdough Saturdays\n\nFresh loaves every Saturday morning.'
+		);
+
+		await getSummary().fill( 'My own words' );
+		await generateButton.click();
+
+		const dialog = page.getByRole( 'dialog', {
+			name: 'Replace your text?',
+		} );
+
+		await expect( dialog ).toBeVisible();
+
+		await dialog.getByRole( 'button', { name: 'Cancel' } ).click();
+
+		await expect( getSummary() ).toHaveValue( 'My own words' );
+
+		await generateButton.click();
+		await dialog.getByRole( 'button', { name: 'Replace' } ).click();
+
+		await expect( getSummary() ).toHaveValue(
+			'Sourdough Saturdays\n\nFresh loaves every Saturday morning.'
+		);
+	} );
+
+	test( 'should keep the choice and the text after publishing and reopening the post', async () => {
+		await gotoNewPost();
+		await fillTitle();
+		await getShareToggle().check();
+		await getSummary().fill( SUMMARY );
+
+		await publishAndGetSaveRequest();
+		await page.reload();
+		await editor.openDocumentSettingsSidebar();
+
+		await expect( getShareToggle() ).toBeChecked();
+		await expect( getSummary() ).toHaveValue( SUMMARY );
+	} );
+
+	test( 'should keep the choice but not schedule a send when saving a draft with the toggle on', async () => {
+		await gotoNewPost();
+		await fillTitle();
+		await getShareToggle().check();
+		await getSummary().fill( SUMMARY );
+
+		await editor.saveDraft();
+
+		const postId = Number(
+			new URL( page.url() ).searchParams.get( 'post' )
+		);
+		const saved = await getBusinessProfileShareState( postId );
+
+		expect( saved.isShareEnabled ).toBe( true );
+		expect( saved.summary ).toBe( SUMMARY );
+		expect( saved.syncOutcome ).toBeNull();
+	} );
+
+	test( 'should not show the panel when no location is connected', async () => {
+		await clearBusinessProfileLocation();
+
+		try {
+			await page.goto( '/wp-admin/post-new.php' );
+			await editor.openDocumentSettingsSidebar();
+
+			await expect(
+				page
+					.getByRole( 'region', { name: 'Editor settings' } )
+					.getByRole( 'button', { name: 'Google Business Profile' } )
+			).toHaveCount( 0 );
+		} finally {
+			await setBusinessProfileLocation();
+		}
+	} );
 } );

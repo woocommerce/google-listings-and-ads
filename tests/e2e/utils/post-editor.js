@@ -42,6 +42,18 @@ export function getClassicPostEditorUtils( page ) {
 			);
 		},
 
+		getBusinessProfileSummaryTip() {
+			return this.getBusinessProfileMetaBox().getByRole( 'img', {
+				name: 'Place critical promotional copy within the first 80–100 characters.',
+			} );
+		},
+
+		getGenerateFromPostButton() {
+			return this.getBusinessProfileMetaBox().getByRole( 'button', {
+				name: 'Generate from post',
+			} );
+		},
+
 		getTitleInput() {
 			return page.getByRole( 'textbox', { name: 'Add title' } );
 		},
@@ -95,6 +107,21 @@ export function getClassicPostEditorUtils( page ) {
 				.click();
 
 			return requestPromise;
+		},
+
+		/**
+		 * Types the post's body into the Code tab of the editor.
+		 *
+		 * @param {string} body The post's body text.
+		 */
+		async fillBody( body ) {
+			await page.locator( '#content-html' ).click();
+			await page.locator( '#content' ).fill( body );
+		},
+
+		async saveDraft() {
+			await page.getByRole( 'button', { name: 'Save Draft' } ).click();
+			await expect( page ).toHaveURL( /post\.php\?post=\d+&action=edit/ );
 		},
 
 		waitForInteractionReady() {

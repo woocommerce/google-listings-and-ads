@@ -163,4 +163,80 @@ test.describe( 'Google Business Profile publish toggle in the Classic Editor', (
 		expect( saved.isShareEnabled ).toBe( false );
 		expect( saved.syncOutcome ).toBeNull();
 	} );
+
+	test( 'should show the fixed tip next to the Summary label', async () => {
+		await editorUtils.gotoAddPostPage();
+
+		await editorUtils.getBusinessProfileShareToggle().check();
+
+		await expect(
+			editorUtils.getBusinessProfileSummaryTip()
+		).toBeVisible();
+	} );
+
+	test( 'should fill the Summary from the title and body, and ask before replacing existing text', async () => {
+		await editorUtils.gotoAddPostPage();
+		await editorUtils.fillTitle( 'Sourdough Saturdays' );
+		await editorUtils.fillBody( 'Fresh loaves every Saturday morning.' );
+		await editorUtils.getBusinessProfileShareToggle().check();
+
+		await editorUtils.getGenerateFromPostButton().click();
+
+		await expect( editorUtils.getBusinessProfileSummary() ).toHaveValue(
+			'Sourdough Saturdays\n\nFresh loaves every Saturday morning.'
+		);
+
+		await editorUtils.getBusinessProfileSummary().fill( 'My own words' );
+		await editorUtils.getGenerateFromPostButton().click();
+
+		const dialog = page.getByRole( 'dialog', {
+			name: 'Replace your text?',
+		} );
+
+		await expect( dialog ).toBeVisible();
+
+		await dialog.getByRole( 'button', { name: 'Cancel' } ).click();
+
+		await expect( editorUtils.getBusinessProfileSummary() ).toHaveValue(
+			'My own words'
+		);
+
+		await editorUtils.getGenerateFromPostButton().click();
+		await dialog.getByRole( 'button', { name: 'Replace' } ).click();
+
+		await expect( editorUtils.getBusinessProfileSummary() ).toHaveValue(
+			'Sourdough Saturdays\n\nFresh loaves every Saturday morning.'
+		);
+	} );
+
+	test( 'should keep the choice but not schedule a send when saving a draft with the toggle on', async () => {
+		await editorUtils.gotoAddPostPage();
+		await editorUtils.fillTitle();
+		await editorUtils.getBusinessProfileShareToggle().check();
+		await editorUtils.getBusinessProfileSummary().fill( SUMMARY );
+
+		await editorUtils.saveDraft();
+
+		const saved = await getBusinessProfileShareState(
+			editorUtils.getPostID()
+		);
+
+		expect( saved.isShareEnabled ).toBe( true );
+		expect( saved.summary ).toBe( SUMMARY );
+		expect( saved.syncOutcome ).toBeNull();
+	} );
+
+	test( 'should not show the meta box when no location is connected', async () => {
+		await clearBusinessProfileLocation();
+
+		try {
+			await editorUtils.gotoAddPostPage();
+
+			await expect( editorUtils.getBusinessProfileMetaBox() ).toHaveCount(
+				0
+			);
+		} finally {
+			await setBusinessProfileLocation();
+		}
+	} );
 } );
