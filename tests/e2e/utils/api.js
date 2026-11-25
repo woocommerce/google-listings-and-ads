@@ -209,6 +209,21 @@ export async function clearMerchantId() {
 }
 
 /**
+ * Connect a fake Google Business Profile location, and block the site from reaching the Connect
+ * Server, so nothing shared from the editors can be sent to Google.
+ */
+export async function setBusinessProfileLocation() {
+	await api().post( 'gla-test/business-profile-location' );
+}
+
+/**
+ * Disconnect the fake Google Business Profile location and let the site reach the Connect Server again.
+ */
+export async function clearBusinessProfileLocation() {
+	await api().delete( 'gla-test/business-profile-location' );
+}
+
+/**
  * Save Merchant Center settings, including the Google Customer Reviews fields
  * (`gcr_collect_reviews_after_purchase`, `gcr_badge_widget_enabled`,
  * `gcr_badge_widget_position`), via the real settings REST route.

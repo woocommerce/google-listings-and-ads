@@ -156,6 +156,23 @@ function register_routes() {
 			],
 		],
 	);
+
+	register_rest_route(
+		'wc/v3',
+		'gla-test/business-profile-location',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_business_profile_location',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_business_profile_location',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
 }
 
 /**
@@ -307,6 +324,38 @@ function clear_conversion_id() {
 	/** @var OptionsInterface $options */
 	$options = woogle_get_container()->get( OptionsInterface::class );
 	$options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
+}
+
+/**
+ * Connect a fake Google Business Profile location, so the editors show their sharing controls.
+ * Also point the Connect Server URL at an address nothing listens on, using the GLA Test Snippets
+ * plugin, so no post shared from the editors can reach Google while the location is set.
+ */
+function set_business_profile_location() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update(
+		OptionsInterface::BUSINESS_PROFILE,
+		[
+			'account_id'       => '9000001',
+			'location_id'      => '1111',
+			'location_title'   => "Jane's Bakery",
+			'location_address' => '1 Main Street, Springfield',
+			'place_id'         => 'place-1111',
+			'maps_uri'         => 'https://maps.google.com/?cid=1111',
+		]
+	);
+	update_option( 'gla_e2e_block_connect_server', 'yes' );
+}
+
+/**
+ * Disconnect the fake Google Business Profile location and restore the Connect Server URL.
+ */
+function clear_business_profile_location() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::BUSINESS_PROFILE );
+	delete_option( 'gla_e2e_block_connect_server' );
 }
 
 /**
