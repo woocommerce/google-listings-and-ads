@@ -1186,6 +1186,53 @@ class MerchantStatusesTest extends UnitTest {
 		$this->assertSame( [ $simple->get_id() => true ], $tracking['product_ids'] );
 	}
 
+	public function test_process_mapi_products_tracks_approval_from_shopping_ads_and_free_listings_only() {
+		$shopping_disapproved = WC_Helper_Product::create_simple_product();
+		$display_only         = WC_Helper_Product::create_simple_product();
+		$stored               = $this->use_product_status_fakes( [ $shopping_disapproved, $display_only ] );
+
+		$offer = function ( int $product_id, array $destination_statuses ): Product {
+			return Product::from_array(
+				[
+					'name'          => 'accounts/123/products/en~US~gla_' . $product_id,
+					'productStatus' => [ 'destinationStatuses' => $destination_statuses ],
+				]
+			);
+		};
+
+		$this->merchant_statuses->process_mapi_products(
+			[
+				$offer(
+					$shopping_disapproved->get_id(),
+					[
+						[
+							'reportingContext'     => 'SHOPPING_ADS',
+							'disapprovedCountries' => [ 'US' ],
+						],
+						[
+							'reportingContext'  => 'DISPLAY_ADS',
+							'approvedCountries' => [ 'US' ],
+						],
+					]
+				),
+				$offer(
+					$display_only->get_id(),
+					[
+						[
+							'reportingContext'  => 'DISPLAY_ADS',
+							'approvedCountries' => [ 'US' ],
+						],
+					]
+				),
+			]
+		);
+		$this->merchant_statuses->record_feed_issue_page( null, null );
+
+		$tracking = $stored( OptionsInterface::FEED_ISSUE_TRACKING );
+		$this->assertSame( [ $shopping_disapproved->get_id() => true ], $tracking['product_ids'] );
+		$this->assertSame( [], $tracking['approved_product_ids'] );
+	}
+
 	public function test_process_mapi_products_records_only_blocking_shopping_ads_and_free_listings_issue_codes() {
 		$simple    = WC_Helper_Product::create_simple_product();
 		$variable  = WC_Helper_Product::create_variation_product();

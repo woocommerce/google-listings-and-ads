@@ -123,9 +123,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	];
 
 	/**
-	 * Reporting contexts (programs) whose issues the feed issue summary counts. The Merchant API
-	 * also returns issues for programs such as Display ads and YouTube, which would inflate it.
-	 * An issue that names no reporting context is counted, since it can't be ruled out.
+	 * Reporting contexts (programs) whose issues and statuses the feed issue summary counts. The
+	 * Merchant API also returns them for programs such as Display ads and YouTube, which would skew it.
+	 * An issue or status that names no reporting context is counted, since it can't be ruled out.
 	 *
 	 * @since x.x.x
 	 */
@@ -1091,10 +1091,16 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 
 			$status = MCStatus::from_aggregated_reporting_context_status( $aggregated );
+
+			// The feed issue summary counts Shopping ads and free listings statuses only; the
+			// product's stored status above still covers every program.
 			// Each market's offer is a separate entry, and the status below keeps only the last one.
-			if ( MCStatus::DISAPPROVED === $status ) {
+			$feed_status = MCStatus::from_aggregated_reporting_context_status(
+				$product_status->get_aggregated_status_for_reporting_contexts( self::FEED_ISSUE_REPORTING_CONTEXTS )
+			);
+			if ( MCStatus::DISAPPROVED === $feed_status ) {
 				$disapproved_ids[ $wc_product_id ] = true;
-			} elseif ( in_array( $status, [ MCStatus::APPROVED, MCStatus::PARTIALLY_APPROVED ], true ) ) {
+			} elseif ( in_array( $feed_status, [ MCStatus::APPROVED, MCStatus::PARTIALLY_APPROVED ], true ) ) {
 				$approved_ids[ $wc_product_id ] = true;
 			}
 
