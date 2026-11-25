@@ -123,6 +123,8 @@ class PluginUpdateTest extends UnitTest {
 	 * The cleanup ships in 3.11.0, so stores on any 3.10.x release must run it when they update.
 	 *
 	 * @dataProvider provide_versions_before_cleanup_release
+	 *
+	 * @param string $old_version Version the store updates from.
 	 */
 	public function test_upgrading_to_cleanup_release_schedules_conversion_report_cleanup( string $old_version ) {
 		$cleanup = $this->create_job( DeleteYouTubeConversionReports::class, [ true ] );
