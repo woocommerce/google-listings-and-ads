@@ -125,9 +125,9 @@ const pages = [
 		),
 		action: glaData.adsSetupComplete ? (
 			<AppButton
-				isPrimary
 				data-action="view-product-feed"
 				onClick={ handleGuideFinish }
+				isPrimary
 			>
 				{ __( 'View product feed', 'google-listings-and-ads' ) }
 			</AppButton>
@@ -168,7 +168,6 @@ const pages = [
 		),
 		actions: (
 			<AppButton
-				isPrimary
 				data-action="view-enhanced-conversions-settings"
 				eventName={ EVENT_NAME }
 				eventProps={ {
@@ -176,6 +175,7 @@ const pages = [
 					action: 'view-enhanced-conversions-settings',
 				} }
 				onClick={ handleSetupEnhancedConversionsOnClick }
+				isPrimary
 			>
 				{ __(
 					'Set up Enhanced Conversions',
@@ -220,14 +220,13 @@ const pages = [
 		actions: (
 			<>
 				<AppButton
-					isSecondary
 					data-action="maybe-later"
 					onClick={ handleGuideFinish }
+					isSecondary
 				>
 					{ __( 'Maybe later', 'google-listings-and-ads' ) }
 				</AppButton>
 				<AddPaidCampaignButton
-					isPrimary
 					isSecondary={ false }
 					isSmall={ false }
 					eventName={ EVENT_NAME }
@@ -235,6 +234,7 @@ const pages = [
 						context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 						action: 'create-paid-campaign',
 					} }
+					isPrimary
 				>
 					{ __( 'Create campaign', 'google-listings-and-ads' ) }
 				</AddPaidCampaignButton>

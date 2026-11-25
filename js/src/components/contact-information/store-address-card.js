@@ -76,13 +76,13 @@ const StoreAddressCard = () => {
 
 	const refreshButton = (
 		<AppButton
-			isSecondary
 			icon={ updateIcon }
 			iconSize={ 20 }
 			iconPosition="right"
 			text={ __( 'Update store address', 'google-listings-and-ads' ) }
 			onClick={ handleRefreshClick }
 			disabled={ ! loaded }
+			isSecondary
 		/>
 	);
 

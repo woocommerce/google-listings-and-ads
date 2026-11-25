@@ -103,14 +103,14 @@ const GtinMigrationBanner = () => {
 						'google-listings-and-ads'
 					) }
 					buttons={ [
-						<AppButton key="1" isSecondary onClick={ closeModal }>
+						<AppButton key="1" onClick={ closeModal } isSecondary>
 							{ __( 'Never mind', 'google-listings-and-ads' ) }
 						</AppButton>,
 						<AppButton
 							key="2"
 							disabled={ loading }
-							isPrimary
 							onClick={ handleStartMigrationClick }
+							isPrimary
 						>
 							{ __(
 								'Start migration',
