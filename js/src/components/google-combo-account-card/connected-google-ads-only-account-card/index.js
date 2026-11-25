@@ -87,11 +87,11 @@ const ConnectedGoogleAdsOnlyAccountCard = () => {
 
 	const switchAccountButton = (
 		<SwitchAccountButton
-			isTertiary
 			text={ __(
 				'Or, connect to a different Google account',
 				'google-listings-and-ads'
 			) }
+			isTertiary
 		/>
 	);
 
@@ -100,7 +100,7 @@ const ConnectedGoogleAdsOnlyAccountCard = () => {
 			return (
 				<div className="gla-connected-google-ads-only-account-card__description-actions">
 					{ switchAccountButton }
-					<AppButton isTertiary onClick={ handleCancelClick }>
+					<AppButton onClick={ handleCancelClick } isTertiary>
 						{ __( 'Cancel', 'google-listings-and-ads' ) }
 					</AppButton>
 				</div>
@@ -115,9 +115,9 @@ const ConnectedGoogleAdsOnlyAccountCard = () => {
 					switchAccountButton
 				) : (
 					<AppButton
-						isTertiary
 						text={ __( 'Edit', 'google-listings-and-ads' ) }
 						onClick={ handleEditClick }
+						isTertiary
 					/>
 				) }
 			</div>

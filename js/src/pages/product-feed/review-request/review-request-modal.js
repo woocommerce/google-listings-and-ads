@@ -116,19 +116,19 @@ const ReviewRequestModal = ( {
 			buttons={ [
 				<AppButton
 					key="secondary"
-					isSecondary
 					onClick={ () => {
 						handleOnClose( 'maybe-later' );
 					} }
+					isSecondary
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					loading={ isRequestingReview }
 					key="primary"
-					isPrimary
 					disabled={ ! checkBoxChecked && issues.length }
 					onClick={ handleReviewRequest }
+					isPrimary
 				>
 					{ __(
 						'Request account review',

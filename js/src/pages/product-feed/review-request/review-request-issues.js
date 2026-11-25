@@ -44,7 +44,7 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 				) ) }
 			</ul>
 			{ issues.length > COLLAPSED_ISSUES_SIZE && (
-				<AppButton isTertiary onClick={ toggleExpanded }>
+				<AppButton onClick={ toggleExpanded } isTertiary>
 					{ expanded
 						? __( 'Show less', 'google-listings-and-ads' )
 						: sprintf(

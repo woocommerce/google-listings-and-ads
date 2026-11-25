@@ -55,7 +55,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
-		$this->assertTrue( $evaluator->should_show() );
+		$this->assertTrue( $evaluator->refresh() );
 	}
 
 	public function test_should_show_when_only_default_zone_has_shipping_methods() {
@@ -70,7 +70,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 
 		$evaluator = $this->create_evaluator_with_revenue_orders( false, null );
 
-		$this->assertTrue( $evaluator->should_show() );
+		$this->assertTrue( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_payment_gateways_are_missing() {
@@ -79,7 +79,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( false );
 		$evaluator->expects( $this->never() )->method( 'store_has_any_enabled_shipping_method' );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_shipping_methods_are_missing() {
@@ -87,7 +87,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_revenue_orders_exist() {
@@ -95,7 +95,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_cache_hit_skips_query() {
