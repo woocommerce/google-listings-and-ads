@@ -119,7 +119,12 @@ class PluginUpdateTest extends UnitTest {
 		$this->plugin_update->install( '3.10.1', '3.11.0' );
 	}
 
-	public function test_upgrading_from_earlier_version_schedules_conversion_report_cleanup() {
+	/**
+	 * The cleanup ships in 3.11.0, so stores on any 3.10.x release must run it when they update.
+	 *
+	 * @dataProvider provide_versions_before_cleanup_release
+	 */
+	public function test_upgrading_to_cleanup_release_schedules_conversion_report_cleanup( string $old_version ) {
 		$cleanup = $this->create_job( DeleteYouTubeConversionReports::class, [ true ] );
 		$cleanup->expects( $this->once() )->method( 'schedule' );
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ true ] );
@@ -130,17 +135,25 @@ class PluginUpdateTest extends UnitTest {
 			]
 		);
 
-		$this->plugin_update->install( '3.9.7', '3.10.0' );
+		$this->plugin_update->install( $old_version, '3.11.0' );
 
-		// 3.9.7 is also below the 3.11.0 re-sync entry, so that job is scheduled too.
+		// Both jobs come from the 3.11.0 entry.
 		$this->assertSame( [ DeleteYouTubeConversionReports::class, UpdateAllProducts::class ], $this->fetched );
 		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+	}
+
+	public function provide_versions_before_cleanup_release(): array {
+		return [
+			'3.9.7'  => [ '3.9.7' ],
+			'3.10.0' => [ '3.10.0' ],
+			'3.10.1' => [ '3.10.1' ],
+		];
 	}
 
 	public function test_upgrading_from_cleanup_release_does_not_reschedule_conversion_report_cleanup() {
 		$this->stub_jobs( [] );
 
-		// Past every entry (3.10.0 cleanup, 3.11.0 re-sync), so nothing is scheduled.
+		// Past every entry (3.11.0 cleanup and re-sync), so nothing is scheduled.
 		$this->plugin_update->install( '3.11.0', '3.11.1' );
 
 		$this->assertSame( [], $this->fetched );
