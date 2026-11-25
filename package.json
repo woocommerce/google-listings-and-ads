@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "3.10.1",
+	"version": "3.11.0",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -236,7 +236,7 @@
 			},
 			{
 				"path": "./js/build/*.css",
-				"maxSize": "8.26 kB"
+				"maxSize": "8.31 kB"
 			},
 			{
 				"path": "./google-listings-and-ads.zip",

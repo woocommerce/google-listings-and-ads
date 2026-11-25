@@ -105,6 +105,22 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 	}
 
 	/**
+	 * Get the date of the report being built, if the job has a batch pending or running.
+	 *
+	 * Passing null args matches the job's actions whatever their arguments.
+	 *
+	 * @since 3.11.0
+	 *
+	 * @return string|null Date formatted YYYY-MM-DD, or null when the job is idle.
+	 */
+	public function get_in_progress_date(): ?string {
+		$in_progress = $this->action_scheduler->has_scheduled_action( $this->get_create_batch_hook(), null )
+			|| $this->action_scheduler->has_scheduled_action( $this->get_process_item_hook(), null );
+
+		return $in_progress ? $this->get_date() : null;
+	}
+
+	/**
 	 * Get a single batch of items.
 	 *
 	 * If no items are returned the job will stop.
@@ -151,10 +167,43 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 				];
 			}
 
+			// Store every file for this date in the same unguessable subfolder.
+			// Saved before any file is moved, so a retry after a failed move reuses it.
+			if ( empty( $export_state[ $date ]['subfolder'] ) ) {
+				$export_state[ $date ]['subfolder'] = bin2hex( random_bytes( 16 ) );
+
+				$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
+			}
+
+			$subfolder = $export_state[ $date ]['subfolder'];
+
+			// Move files of a report started before subfolders were used.
+			$moved_files = [];
+			foreach ( $export_state[ $date ]['files'] as $file_path ) {
+				if ( basename( dirname( $file_path ) ) !== $subfolder ) {
+					$moved_files[ $file_path ] = $this->writer->move_file( $file_path, $subfolder );
+				}
+			}
+
+			if ( ! empty( $moved_files ) ) {
+				$current_file = $export_state[ $date ]['current_file'];
+
+				$export_state[ $date ]['files'] = array_map(
+					function ( $file_path ) use ( $moved_files ) {
+						return $moved_files[ $file_path ] ?? $file_path;
+					},
+					$export_state[ $date ]['files']
+				);
+
+				$export_state[ $date ]['current_file'] = $moved_files[ $current_file ] ?? $current_file;
+
+				$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
+			}
+
 			// Create first file if needed.
 			if ( empty( $export_state[ $date ]['current_file'] ) ) {
 				$filename  = 'youtube-merchant-conversion-report-' . $date;
-				$file_path = $this->writer->create_file( $filename );
+				$file_path = $this->writer->create_file( $filename, $subfolder );
 
 				$export_state[ $date ]['current_file'] = $file_path;
 				$export_state[ $date ]['files'][]      = $file_path;
@@ -179,7 +228,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 					$part     = $export_state[ $date ]['current_part'];
 					$filename = 'youtube-merchant-conversion-report-' . $date . '-' . $part;
 
-					$file_path = $this->writer->create_file( $filename );
+					$file_path = $this->writer->create_file( $filename, $subfolder );
 
 					$export_state[ $date ]['current_file'] = $file_path;
 					$export_state[ $date ]['files'][]      = $file_path;
@@ -241,6 +290,10 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 				if ( apply_filters( 'woocommerce_gla_youtube_orders_csv_delete_on_complete', true ) ) {
 					foreach ( $file_paths as $file_path ) {
 						$this->writer->delete_file( $file_path );
+					}
+
+					if ( ! empty( $export_state[ $date ]['subfolder'] ) ) {
+						$this->writer->delete_directory( $export_state[ $date ]['subfolder'] );
 					}
 				}
 

@@ -137,11 +137,11 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 		return (
 			<AppButton
-				isPrimary
 				disabled={ disabled }
 				onClick={ handleClick }
 				loading={ completing === ACTION_CONTINUE }
 				text={ __( 'Continue', 'google-listings-and-ads' ) }
+				isPrimary
 			/>
 		);
 	};

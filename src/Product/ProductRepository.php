@@ -26,6 +26,8 @@ class ProductRepository implements Service {
 	 * Products whose synced_at is older than this many days are treated as nearly expired
 	 * and re-submitted (see find_expiring_product_ids). The delta-sync freshness window is
 	 * clamped to this so an unchanged product can never be skipped past its resubmission point.
+	 * Read the window through get_resubmit_expiry_days(), which applies the
+	 * woocommerce_gla_resubmit_expiry_days filter.
 	 */
 	public const RESUBMIT_EXPIRY_DAYS = 25;
 
@@ -252,6 +254,8 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * The SQL in find_expiring_product_ids() mirrors these visibility rules. Keep the two in step.
+	 *
 	 * @return array
 	 */
 	public function get_sync_ready_products_meta_query(): array {
@@ -289,6 +293,11 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * The SQL in find_expiring_product_ids() mirrors these errors rules. Keep the two in step.
+	 *
+	 * @deprecated 3.11.0 No longer called: find_expiring_product_ids(), its only caller, now checks
+	 *             the errors meta in SQL. Kept for subclasses that call or override it.
+	 *
 	 * @return array
 	 */
 	protected function get_valid_products_meta_query(): array {
@@ -313,6 +322,16 @@ class ProductRepository implements Service {
 	 * uses "WHERE ID > $last_id ORDER BY ID ASC" so each batch starts exactly where the previous one
 	 * left off at O(log n) cost regardless of how deep into the result set we are.
 	 *
+	 * Only the synced_at condition goes through meta_query, which turns it into a single postmeta
+	 * join that matches one row per product. The visibility and errors conditions are added to the
+	 * WHERE clause as NOT EXISTS lookups by meta key. As meta_query clauses they need NOT EXISTS
+	 * and OR, which makes WP_Meta_Query LEFT JOIN postmeta on post ID alone: every meta row of a
+	 * product then multiplies the rows the database reads, and large stores stalled for hours.
+	 *
+	 * Variations skip the publish status check because ProductHelper::is_sync_ready() judges a
+	 * variation by its parent's status. The query can therefore return disabled variations, which
+	 * is_sync_ready() still rejects by default (is_visible() and woocommerce_hide_invisible_variations).
+	 *
 	 * @param int $last_id The last product ID processed in the previous batch (0 to start from the beginning).
 	 * @param int $limit   Maximum number of results to retrieve or -1 for unlimited.
 	 *
@@ -325,31 +344,103 @@ class ProductRepository implements Service {
 			'orderby'    => 'ID',
 			'order'      => 'ASC',
 			'meta_query' => [
-				'relation' => 'AND',
-				$this->get_sync_ready_products_meta_query(),
-				$this->get_valid_products_meta_query(),
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
 					'compare' => '<',
-					'value'   => strtotime( '-' . self::RESUBMIT_EXPIRY_DAYS . ' days' ),
+					'value'   => strtotime( '-' . self::get_resubmit_expiry_days() . ' days' ),
 				],
 			],
 		];
 
-		// Add a temporary WHERE clause to implement keyset pagination (ID > $last_id).
-		$cursor_filter = function ( string $where ) use ( $wpdb, $last_id ): string {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			return $where . $wpdb->prepare( " AND {$wpdb->posts}.ID > %d", $last_id );
+		$visibility_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
+		$errors_key     = $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS );
+
+		// The NOT EXISTS lookups mirror get_sync_ready_products_meta_query() (visibility) and
+		// get_valid_products_meta_query() (errors). Keep the rules in step when changing either.
+		$where_filter = function ( string $where ) use ( $wpdb, $last_id, $visibility_key, $errors_key ): string {
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			return $where . $wpdb->prepare(
+				" AND {$wpdb->posts}.ID > %d
+				AND ( {$wpdb->posts}.post_status = 'publish' OR {$wpdb->posts}.post_type = 'product_variation' )
+				AND NOT EXISTS (
+					SELECT 1 FROM {$wpdb->postmeta} AS gla_visibility
+					WHERE gla_visibility.post_id = {$wpdb->posts}.ID AND gla_visibility.meta_key = %s AND gla_visibility.meta_value = %s
+				)
+				AND NOT EXISTS (
+					SELECT 1 FROM {$wpdb->postmeta} AS gla_errors
+					WHERE gla_errors.post_id = {$wpdb->posts}.ID AND gla_errors.meta_key = %s AND gla_errors.meta_value <> ''
+				)",
+				$last_id,
+				$visibility_key,
+				ChannelVisibility::DONT_SYNC_AND_SHOW,
+				$errors_key
+			);
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		};
 
-		add_filter( 'posts_where', $cursor_filter );
+		add_filter( 'posts_where', $where_filter );
 		try {
 			$results = $this->find_ids( $args, $limit );
 		} finally {
-			remove_filter( 'posts_where', $cursor_filter );
+			remove_filter( 'posts_where', $where_filter );
 		}
 
 		return $results;
+	}
+
+	/**
+	 * Get the number of days after its last sync that a product is resubmitted to Merchant Center.
+	 *
+	 * Google expires a product 30 days after its last update, so the filtered value can shorten
+	 * the window but not lengthen it past RESUBMIT_EXPIRY_DAYS.
+	 *
+	 * @since 3.11.0
+	 *
+	 * @return int Days, from 1 to RESUBMIT_EXPIRY_DAYS.
+	 */
+	public static function get_resubmit_expiry_days(): int {
+		/**
+		 * Filters the number of days after its last sync that a product is resubmitted to Merchant Center.
+		 *
+		 * The daily resubmission job picks up products last synced longer ago than this. The value
+		 * is clamped to between 1 and 25, so products are always resubmitted before Google expires
+		 * them 30 days after their last update. A non-numeric value falls back to the default.
+		 *
+		 * @since 3.11.0
+		 *
+		 * @param int $days Days after the last sync. Default 25.
+		 */
+		$days = apply_filters( 'woocommerce_gla_resubmit_expiry_days', self::RESUBMIT_EXPIRY_DAYS );
+
+		if ( ! is_numeric( $days ) ) {
+			return self::RESUBMIT_EXPIRY_DAYS;
+		}
+
+		return max( 1, min( (int) $days, self::RESUBMIT_EXPIRY_DAYS ) );
+	}
+
+	/**
+	 * Find the IDs of products queued for a delayed update job, ordered by ID ascending.
+	 *
+	 * Note: Includes product variations.
+	 *
+	 * @param int $limit Maximum number of results to retrieve or -1 for unlimited.
+	 *
+	 * @return int[] Array of WooCommerce product IDs ordered by ID ASC.
+	 */
+	public function find_queued_update_ids( int $limit = -1 ): array {
+		$args = [
+			'orderby'    => 'ID',
+			'order'      => 'ASC',
+			'meta_query' => [
+				[
+					'key'     => ProductMetaHandler::KEY_SYNC_QUEUED_AT,
+					'compare' => 'EXISTS',
+				],
+			],
+		];
+
+		return $this->find_ids( $args, $limit );
 	}
 
 	/**
@@ -461,6 +552,15 @@ class ProductRepository implements Service {
 			$args['orderby'] = 'none';
 		}
 
+		/**
+		 * Filters the product query args before they are passed to wc_get_products().
+		 *
+		 * For the expiring products lookup (find_expiring_product_ids()), `meta_query` holds only
+		 * the synced_at clause. Its visibility, errors and publish status conditions are applied in
+		 * SQL outside these args and cannot be changed through this filter.
+		 *
+		 * @param array $args Product query args.
+		 */
 		$args = apply_filters( 'woocommerce_gla_product_query_args', $args );
 
 		return $args;

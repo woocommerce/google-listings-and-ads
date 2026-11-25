@@ -55,11 +55,11 @@ const TermsModal = ( {
 			buttons={ [
 				<AppButton
 					key="1"
-					isPrimary
 					disabled={ ! agree }
 					eventName="gla_ads_account_create_button_click"
 					eventProps={ getEventProps() }
 					onClick={ handleCreateAccountClick }
+					isPrimary
 				>
 					{ __( 'Create account', 'google-listings-and-ads' ) }
 				</AppButton>,

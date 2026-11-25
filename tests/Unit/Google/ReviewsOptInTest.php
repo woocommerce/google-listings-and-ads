@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\EstimatedDeliveryTime;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\EstimatedDeliveryTimeResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\ReviewsOptIn;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -70,6 +71,8 @@ class ReviewsOptInTest extends UnitTest {
 		$order = WC_Helper_Order::create_order();
 		$order->set_shipping_country( 'US' );
 		$order->set_billing_email( 'shopper@example.com' );
+		// Friday, 2026-10-23.
+		$order->set_date_created( '2026-10-23T14:00:00+00:00' );
 		$order->save();
 
 		$_GET['key'] = $order->get_order_key();
@@ -83,9 +86,9 @@ class ReviewsOptInTest extends UnitTest {
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
 		$this->wp->method( 'has_consent' )->willReturn( true );
 
-		$this->delivery_time_resolver->method( 'get_max_transit_days_for_country' )
+		$this->delivery_time_resolver->method( 'get_delivery_time_for_country' )
 			->with( 'US' )
-			->willReturn( 5 );
+			->willReturn( new EstimatedDeliveryTime( 0, 2 ) );
 
 		return $order;
 	}
@@ -216,7 +219,7 @@ class ReviewsOptInTest extends UnitTest {
 		$this->delivery_time_resolver = $this->createMock( EstimatedDeliveryTimeResolver::class );
 		$this->opt_in                 = new ReviewsOptIn( $this->delivery_time_resolver, $this->wp );
 		$this->opt_in->set_options_object( $this->options );
-		$this->delivery_time_resolver->method( 'get_max_transit_days_for_country' )->willReturn( null );
+		$this->delivery_time_resolver->method( 'get_delivery_time_for_country' )->willReturn( null );
 
 		$this->expectOutputString( '' );
 
@@ -292,5 +295,75 @@ class ReviewsOptInTest extends UnitTest {
 		$this->expectOutputString( '' );
 
 		$this->opt_in->maybe_display_opt_in_snippet();
+	}
+
+	public function test_estimated_delivery_date_counts_business_days() {
+		$this->create_eligible_order();
+
+		ob_start();
+		$this->opt_in->maybe_display_opt_in_snippet();
+		$output = ob_get_clean();
+
+		// Friday plus 2 transit business days is Tuesday, not Sunday.
+		$this->assertStringContainsString( '"estimated_delivery_date":"2026-10-27"', $output );
+	}
+
+	public function test_estimated_delivery_date_can_be_filtered() {
+		$order = $this->create_eligible_order();
+
+		add_filter(
+			'woocommerce_gla_reviews_opt_in_estimated_delivery_date',
+			function ( $date, $filtered_order, $country ) use ( $order ) {
+				$this->assertSame( '2026-10-27', $date );
+				$this->assertSame( $order->get_id(), $filtered_order->get_id() );
+				$this->assertSame( 'US', $country );
+
+				return '2026-11-05';
+			},
+			10,
+			3
+		);
+
+		ob_start();
+		$this->opt_in->maybe_display_opt_in_snippet();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( '"estimated_delivery_date":"2026-11-05"', $output );
+	}
+
+	/**
+	 * @dataProvider invalid_filtered_dates
+	 *
+	 * @param mixed $filtered_date
+	 */
+	public function test_invalid_filtered_estimated_delivery_date_falls_back_to_calculated_date( $filtered_date ) {
+		$this->create_eligible_order();
+
+		add_filter(
+			'woocommerce_gla_reviews_opt_in_estimated_delivery_date',
+			function () use ( $filtered_date ) {
+				return $filtered_date;
+			}
+		);
+
+		ob_start();
+		$this->opt_in->maybe_display_opt_in_snippet();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( '"estimated_delivery_date":"2026-10-27"', $output );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function invalid_filtered_dates(): array {
+		return [
+			'impossible date' => [ '2026-02-30' ],
+			'wrong format'    => [ '27/10/2026' ],
+			'date with time'  => [ '2026-10-27 10:00' ],
+			'empty string'    => [ '' ],
+			'not a string'    => [ 20261027 ],
+			'null'            => [ null ],
+		];
 	}
 }

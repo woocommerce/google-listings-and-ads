@@ -101,13 +101,13 @@ export default function FinalUrlCard( {
 			<Section.Card.Footer align="end" gap={ 4 } hidden={ hideFooter }>
 				{ finalUrl ? (
 					<AppButton
-						isTertiary
 						text={ __(
 							'Or, select a different Final URL',
 							'google-listings-and-ads'
 						) }
 						eventName="gla_reselect_another_final_url_button_click"
 						onClick={ handleReselectClick }
+						isTertiary
 					/>
 				) : (
 					<AssetsLoader onSelectFinalUrl={ handleSelectFinalUrl } />
