@@ -262,7 +262,7 @@ describe( 'BusinessProfileShareControl', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'shows the field again with the saved text once the post is no longer shared', () => {
+	it( 'shows the field with the saved text for a post deleted on Google', () => {
 		renderControl( {
 			isShareEnabled: true,
 			isShared: false,
