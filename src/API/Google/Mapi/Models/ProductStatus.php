@@ -86,11 +86,45 @@ class ProductStatus {
 	 * @return string Aggregated status enum value, or '' when no destination statuses exist.
 	 */
 	public function get_aggregated_reporting_context_status(): string {
+		return self::aggregate_destination_statuses( $this->destination_statuses );
+	}
+
+	/**
+	 * Derive the aggregated status from the destination statuses of the given reporting contexts only,
+	 * with the same semantics as get_aggregated_reporting_context_status(). A destination status that
+	 * names no reporting context is included.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string[] $reporting_contexts Reporting contexts to include, e.g. SHOPPING_ADS.
+	 *
+	 * @return string Aggregated status enum value, or '' when none of those contexts has a status.
+	 */
+	public function get_aggregated_status_for_reporting_contexts( array $reporting_contexts ): string {
+		return self::aggregate_destination_statuses(
+			array_filter(
+				$this->destination_statuses,
+				function ( $destination_status ) use ( $reporting_contexts ) {
+					$context = $destination_status['reportingContext'] ?? null;
+					return null === $context || in_array( $context, $reporting_contexts, true );
+				}
+			)
+		);
+	}
+
+	/**
+	 * Aggregate destination statuses into one reporting context status.
+	 *
+	 * @param array $destination_statuses
+	 *
+	 * @return string Aggregated status enum value, or '' when no destination statuses exist.
+	 */
+	private static function aggregate_destination_statuses( array $destination_statuses ): string {
 		$has_approved    = false;
 		$has_pending     = false;
 		$has_disapproved = false;
 
-		foreach ( $this->destination_statuses as $destination_status ) {
+		foreach ( $destination_statuses as $destination_status ) {
 			$has_approved    = $has_approved || ! empty( $destination_status['approvedCountries'] );
 			$has_pending     = $has_pending || ! empty( $destination_status['pendingCountries'] );
 			$has_disapproved = $has_disapproved || ! empty( $destination_status['disapprovedCountries'] );

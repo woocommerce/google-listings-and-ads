@@ -33,6 +33,9 @@ class ItemLevelIssue {
 	/** @var string[] */
 	protected $applicable_countries = [];
 
+	/** @var string|null */
+	protected $reporting_context;
+
 	/**
 	 * Hydrate from a MAPI response array.
 	 *
@@ -49,6 +52,7 @@ class ItemLevelIssue {
 		$instance->resolution           = $data['resolution'] ?? null;
 		$instance->severity             = $data['severity'] ?? null;
 		$instance->applicable_countries = $data['applicableCountries'] ?? [];
+		$instance->reporting_context    = $data['reportingContext'] ?? null;
 
 		return $instance;
 	}
@@ -100,5 +104,16 @@ class ItemLevelIssue {
 	 */
 	public function get_applicable_countries(): array {
 		return $this->applicable_countries;
+	}
+
+	/**
+	 * Get the reporting context (program) the issue applies to, e.g. SHOPPING_ADS or DISPLAY_ADS.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return string|null
+	 */
+	public function get_reporting_context(): ?string {
+		return $this->reporting_context;
 	}
 }

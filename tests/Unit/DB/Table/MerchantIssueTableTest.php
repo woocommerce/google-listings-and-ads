@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\DB\Table;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -33,7 +34,7 @@ class MerchantIssueTableTest extends UnitTest {
 
 		$this->wp   = $this->createMock( WP::class );
 		$this->wpdb = $this->getMockBuilder( wpdb::class )
-			->onlyMethods( [ 'query', 'prepare', 'get_var' ] )
+			->onlyMethods( [ 'query', 'prepare', 'get_var', 'get_results', 'get_col' ] )
 			->disableOriginalConstructor()
 			->disableOriginalClone()
 			->disableArgumentCloning()
@@ -226,6 +227,159 @@ class MerchantIssueTableTest extends UnitTest {
 		];
 	}
 
+	public function test_get_account_issue_codes_returns_the_account_issue_codes_of_the_given_source() {
+		$table = $this->get_installed_table();
+
+		$this->insert_issue( $table, 0, 'critical', 'mc', 'account', 'account_suspended', '["US","GB"]' );
+		$this->insert_issue( $table, 0, 'error', 'filter', 'account', 'gla_country_mismatch', '["all"]' );
+		$this->insert_issue( $table, 0, 'error', 'filter', 'account', 'missing_contact_information' );
+		$this->insert_issue( $table, 10, 'error', 'filter', 'product', 'filter_product' );
+
+		$codes = $table->get_account_issue_codes( 'filter' );
+		sort( $codes );
+
+		$this->assertSame( [ 'gla_country_mismatch', 'missing_contact_information' ], $codes );
+	}
+
+	public function test_get_top_issue_codes_excludes_given_severities_and_orders_by_count_then_code() {
+		$table = $this->get_installed_table();
+		$p1    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$p2    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$p3    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$p4    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+
+		// Tied codes are inserted in reverse alphabetical order.
+		$this->insert_issue( $table, $p1, 'error', 'mc', 'product', 'landing_page_error' );
+		$this->insert_issue( $table, $p2, 'error', 'mc', 'product', 'landing_page_error' );
+		$this->insert_issue( $table, $p3, 'error', 'mc', 'product', 'image_link_broken' );
+		$this->insert_issue( $table, $p4, 'DISAPPROVED', 'mc', 'product', 'image_link_broken' );
+		$this->insert_issue( $table, $p1, 'error', 'mc', 'product', 'missing_gtin' );
+		$this->insert_issue( $table, $p2, 'error', 'mc', 'product', 'missing_gtin' );
+		$this->insert_issue( $table, $p3, 'critical', 'mc', 'product', 'missing_gtin' );
+		$this->insert_issue( $table, $p4, 'warning', 'mc', 'product', 'missing_gtin' );
+
+		foreach ( [ $p1, $p2, $p3, $p4 ] as $product_id ) {
+			$this->insert_issue( $table, $product_id, 'warning', 'mc', 'product', 'warning_only' );
+			$this->insert_issue( $table, $product_id, 'suggestion', 'mc', 'product', 'suggestion_only' );
+			$this->insert_issue( $table, $product_id, 'DEMOTED', 'mc', 'product', 'demoted_only' );
+			$this->insert_issue( $table, $product_id, 'NOT_IMPACTED', 'mc', 'product', 'not_impacted_only' );
+			$this->insert_issue( $table, $product_id, 'error', 'pre-sync', 'product', 'presync_error_price' );
+		}
+		$this->insert_issue( $table, 0, 'error', 'mc', 'account', 'account_suspended' );
+
+		$this->assertSame(
+			[
+				'missing_gtin'       => 3,
+				'image_link_broken'  => 2,
+				'landing_page_error' => 2,
+			],
+			$table->get_top_issue_codes( 'mc', MerchantStatuses::WARNING_SEVERITIES )
+		);
+	}
+
+	public function test_get_top_issue_codes_counts_a_variable_product_once() {
+		$table       = $this->get_installed_table();
+		$parent      = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$variation_a = $this->factory()->post->create(
+			[
+				'post_type'   => 'product_variation',
+				'post_parent' => $parent,
+			]
+		);
+		$variation_b = $this->factory()->post->create(
+			[
+				'post_type'   => 'product_variation',
+				'post_parent' => $parent,
+			]
+		);
+		$simple      = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+
+		$this->insert_issue( $table, $variation_a, 'error', 'mc', 'product', 'missing_gtin' );
+		$this->insert_issue( $table, $variation_b, 'error', 'mc', 'product', 'missing_gtin' );
+		$this->insert_issue( $table, $simple, 'error', 'mc', 'product', 'missing_gtin' );
+
+		$this->assertSame( [ 'missing_gtin' => 2 ], $table->get_top_issue_codes( 'mc' ) );
+	}
+
+	public function test_get_top_issue_codes_keeps_only_the_limit() {
+		$table = $this->get_installed_table();
+		$p1    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$p2    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$p3    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+
+		$this->insert_issue( $table, $p1, 'error', 'mc', 'product', 'least_common' );
+		$this->insert_issue( $table, $p1, 'error', 'mc', 'product', 'second_most_common' );
+		$this->insert_issue( $table, $p2, 'error', 'mc', 'product', 'second_most_common' );
+		$this->insert_issue( $table, $p1, 'error', 'mc', 'product', 'most_common' );
+		$this->insert_issue( $table, $p2, 'error', 'mc', 'product', 'most_common' );
+		$this->insert_issue( $table, $p3, 'error', 'mc', 'product', 'most_common' );
+
+		$this->assertSame(
+			[
+				'most_common'        => 3,
+				'second_most_common' => 2,
+			],
+			$table->get_top_issue_codes( 'mc', [], 2 )
+		);
+	}
+
+	public function test_get_top_issue_codes_collapses_md5_fallback_codes_into_one_bucket() {
+		$table = $this->get_installed_table();
+		$p1    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$p2    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+
+		$this->insert_issue( $table, $p1, 'error', 'pre-sync', 'product', 'presync_error_attrib_' . md5( 'First unparsed error' ) );
+		$this->insert_issue( $table, $p1, 'error', 'pre-sync', 'product', 'presync_error_attrib_' . md5( 'Second unparsed error' ) );
+		$this->insert_issue( $table, $p2, 'error', 'pre-sync', 'product', 'presync_error_attrib_' . md5( 'Third unparsed error' ) );
+
+		$this->assertSame( [ 'presync_error_other' => 2 ], $table->get_top_issue_codes( 'pre-sync' ) );
+	}
+
+	public function test_get_top_issue_codes_strips_the_index_suffix() {
+		$table = $this->get_installed_table();
+		$p1    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$p2    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+
+		$this->insert_issue( $table, $p1, 'error', 'pre-sync', 'product', 'presync_error_shipping[0]' );
+		$this->insert_issue( $table, $p2, 'error', 'pre-sync', 'product', 'presync_error_shipping[1]' );
+
+		$this->assertSame( [ 'presync_error_shipping' => 2 ], $table->get_top_issue_codes( 'pre-sync' ) );
+	}
+
+	public function test_get_top_issue_codes_keeps_codes_that_only_resemble_the_md5_fallback() {
+		$table = $this->get_installed_table();
+		$p1    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$p2    = $this->factory()->post->create( [ 'post_type' => 'product' ] );
+		$short = 'presync_error_attrib_' . str_repeat( 'a', 31 );
+		$long  = 'presync_error_attrib_' . str_repeat( 'b', 33 );
+
+		$this->insert_issue( $table, $p1, 'error', 'pre-sync', 'product', $short );
+		$this->insert_issue( $table, $p2, 'error', 'pre-sync', 'product', $long );
+
+		$this->assertSame(
+			[
+				$short => 1,
+				$long  => 1,
+			],
+			$table->get_top_issue_codes( 'pre-sync' )
+		);
+	}
+
+	public function test_get_top_issue_codes_returns_empty_array_without_issues() {
+		$table = $this->get_installed_table();
+
+		$this->assertSame( [], $table->get_top_issue_codes( 'mc' ) );
+	}
+
+	public function test_rows_return_null_when_the_query_fails() {
+		$this->wpdb->method( 'get_results' )->willReturn( [] );
+		$this->wpdb->method( 'get_col' )->willReturn( [] );
+		$this->wpdb->last_error = 'Table does not exist';
+
+		$this->assertNull( $this->mock_merchant_issue->get_account_issue_codes( 'filter' ) );
+		$this->assertNull( $this->mock_merchant_issue->get_top_issue_codes( 'mc' ) );
+	}
+
 	/**
 	 * Install the real table and start each test from an empty one.
 	 *
@@ -249,8 +403,10 @@ class MerchantIssueTableTest extends UnitTest {
 	 * @param string             $severity
 	 * @param string             $source
 	 * @param string             $type
+	 * @param string             $code
+	 * @param string             $countries
 	 */
-	protected function insert_issue( MerchantIssueTable $table, int $product_id, string $severity, string $source, string $type = 'product' ): void {
+	protected function insert_issue( MerchantIssueTable $table, int $product_id, string $severity, string $source, string $type = 'product', string $code = 'code', string $countries = '[]' ): void {
 		global $wpdb;
 
 		$wpdb->insert(
@@ -258,12 +414,12 @@ class MerchantIssueTableTest extends UnitTest {
 			[
 				'product_id'           => $product_id,
 				'issue'                => 'Issue ' . wp_generate_password( 8, false ),
-				'code'                 => 'code',
+				'code'                 => $code,
 				'severity'             => $severity,
 				'product'              => 'Product',
 				'action'               => '',
 				'action_url'           => '',
-				'applicable_countries' => '[]',
+				'applicable_countries' => $countries,
 				'source'               => $source,
 				'type'                 => $type,
 				'created_at'           => '2026-10-27 00:00:00',

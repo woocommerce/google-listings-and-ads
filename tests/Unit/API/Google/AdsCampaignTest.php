@@ -574,10 +574,11 @@ class AdsCampaignTest extends UnitTest {
 			'eu_political_advertising_confirmation' => false,
 		] + $campaign_data;
 
-		$this->transients->expects( $this->exactly( 2 ) )
+		$this->transients->expects( $this->exactly( 3 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
+				[ TransientsInterface::ADS_SERVING_CAMPAIGN_COUNT ],
 				[ TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN ]
 			);
 
@@ -737,10 +738,11 @@ class AdsCampaignTest extends UnitTest {
 	public function test_delete_campaign() {
 		$this->generate_campaign_mutate_mock( 'remove', self::TEST_CAMPAIGN_ID );
 
-		$this->transients->expects( $this->exactly( 2 ) )
+		$this->transients->expects( $this->exactly( 3 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
+				[ TransientsInterface::ADS_SERVING_CAMPAIGN_COUNT ],
 				[ TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN ]
 			);
 
@@ -945,10 +947,11 @@ class AdsCampaignTest extends UnitTest {
 			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
-		$this->transients->expects( $this->exactly( 2 ) )
+		$this->transients->expects( $this->exactly( 3 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
+				[ TransientsInterface::ADS_SERVING_CAMPAIGN_COUNT ],
 				[ TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN ]
 			);
 		$this->campaign_label->expects( $this->once() )

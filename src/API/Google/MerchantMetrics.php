@@ -55,6 +55,17 @@ class MerchantMetrics implements OptionsAwareInterface {
 	protected const MAX_QUERY_START_DATE = '2020-01-01';
 
 	/**
+	 * Google Ads CampaignServingStatus value for a campaign that is serving.
+	 *
+	 * Kept as a local value because the build prunes Google Ads enum classes that src/ does not
+	 * import (bin/GoogleAdsCleanupServices.php), so the CampaignServingStatus enum is not vendored.
+	 * https://developers.google.com/google-ads/api/reference/rpc/v23/CampaignServingStatusEnum.CampaignServingStatus
+	 *
+	 * @since x.x.x
+	 */
+	private const CAMPAIGN_SERVING_STATUS_SERVING = 2;
+
+	/**
 	 * MerchantMetrics constructor.
 	 *
 	 * The $mapi_client type hint is intentionally left off. During a plugin
@@ -206,28 +217,87 @@ class MerchantMetrics implements OptionsAwareInterface {
 			return 0;
 		}
 
-		$campaign_count = 0;
-		$cached_count   = $this->transients->get( TransientsInterface::ADS_CAMPAIGN_COUNT );
+		$cached_count = $this->transients->get( TransientsInterface::ADS_CAMPAIGN_COUNT );
 		if ( null !== $cached_count ) {
 			return (int) $cached_count;
 		}
 
 		try {
-			$query = ( new AdsCampaignQuery() )->set_client( $this->ads_client, $this->options->get_ads_id() );
-			$query->where( 'campaign.status', 'REMOVED', '!=' );
-
-			$campaign_results = $query->get_results();
-
-			// Iterate through all paged results (total results count is not set).
-			foreach ( $campaign_results->iterateAllElements() as $row ) {
-				++$campaign_count;
-			}
+			return $this->query_campaign_counts()['total'];
 		} catch ( Exception $e ) {
-			$campaign_count = 0;
+			$this->transients->set( TransientsInterface::ADS_CAMPAIGN_COUNT, 0, HOUR_IN_SECONDS * 12 );
+			return 0;
+		}
+	}
+
+	/**
+	 * Return the number of campaigns in the connected Ads account that are currently serving.
+	 *
+	 * A campaign is serving when it is enabled and Google reports its serving status as SERVING,
+	 * so paused, ended, pending, and suspended campaigns are not counted.
+	 * Cached for 12 hours, together with the campaign count from the same query.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return int|null Number of serving campaigns, 0 if no Ads account is connected, or null if the query failed.
+	 */
+	public function get_serving_campaign_count(): ?int {
+		if ( ! $this->options->get_ads_id() ) {
+			return 0;
 		}
 
-		$this->transients->set( TransientsInterface::ADS_CAMPAIGN_COUNT, $campaign_count, HOUR_IN_SECONDS * 12 );
-		return $campaign_count;
+		$cached_count = $this->transients->get( TransientsInterface::ADS_SERVING_CAMPAIGN_COUNT );
+		if ( null !== $cached_count ) {
+			return (int) $cached_count;
+		}
+
+		try {
+			return $this->query_campaign_counts()['serving'];
+		} catch ( Exception $e ) {
+			return null;
+		}
+	}
+
+	/**
+	 * Query the non-removed campaigns of the connected Ads account and cache their counts for 12 hours.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return array {
+	 *     @type int $total   Number of campaigns that are not removed.
+	 *     @type int $serving Number of enabled campaigns whose serving status is SERVING.
+	 * }
+	 *
+	 * @throws Exception When the campaign query fails. Nothing is cached in that case.
+	 */
+	private function query_campaign_counts(): array {
+		$query = ( new AdsCampaignQuery() )->set_client( $this->ads_client, $this->options->get_ads_id() );
+		$query->add_columns( [ 'campaign.serving_status' ] );
+		$query->where( 'campaign.status', 'REMOVED', '!=' );
+
+		$total   = 0;
+		$serving = 0;
+
+		// Iterate through all paged results (total results count is not set).
+		foreach ( $query->get_results()->iterateAllElements() as $row ) {
+			++$total;
+
+			$campaign = $row->getCampaign();
+			if (
+				CampaignStatus::ENABLED === CampaignStatus::label( $campaign->getStatus() ) &&
+				self::CAMPAIGN_SERVING_STATUS_SERVING === $campaign->getServingStatus()
+			) {
+				++$serving;
+			}
+		}
+
+		$this->transients->set( TransientsInterface::ADS_CAMPAIGN_COUNT, $total, HOUR_IN_SECONDS * 12 );
+		$this->transients->set( TransientsInterface::ADS_SERVING_CAMPAIGN_COUNT, $serving, HOUR_IN_SECONDS * 12 );
+
+		return [
+			'total'   => $total,
+			'serving' => $serving,
+		];
 	}
 
 	/**

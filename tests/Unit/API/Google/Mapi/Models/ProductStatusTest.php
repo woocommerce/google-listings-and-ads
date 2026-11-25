@@ -72,6 +72,62 @@ class ProductStatusTest extends UnitTest {
 	}
 
 	/**
+	 * @dataProvider status_for_reporting_contexts_provider
+	 *
+	 * @param array  $destination_statuses
+	 * @param string $expected
+	 */
+	public function test_get_aggregated_status_for_reporting_contexts( array $destination_statuses, string $expected ) {
+		$status = ProductStatus::from_array( [ 'destinationStatuses' => $destination_statuses ] );
+
+		$this->assertSame( $expected, $status->get_aggregated_status_for_reporting_contexts( [ 'SHOPPING_ADS', 'FREE_LISTINGS' ] ) );
+	}
+
+	public function status_for_reporting_contexts_provider(): array {
+		return [
+			'other programs are left out'           => [
+				[
+					[
+						'reportingContext'     => 'SHOPPING_ADS',
+						'disapprovedCountries' => [ 'US' ],
+					],
+					[
+						'reportingContext'  => 'DISPLAY_ADS',
+						'approvedCountries' => [ 'US' ],
+					],
+				],
+				'NOT_ELIGIBLE_OR_DISAPPROVED',
+			],
+			'included programs aggregate together'  => [
+				[
+					[
+						'reportingContext'  => 'SHOPPING_ADS',
+						'approvedCountries' => [ 'US' ],
+					],
+					[
+						'reportingContext'     => 'FREE_LISTINGS',
+						'disapprovedCountries' => [ 'US' ],
+					],
+				],
+				'ELIGIBLE_LIMITED',
+			],
+			'a status without a context is counted' => [
+				[ [ 'pendingCountries' => [ 'US' ] ] ],
+				'PENDING',
+			],
+			'only other programs'                   => [
+				[
+					[
+						'reportingContext'  => 'YOUTUBE_SHOPPING',
+						'approvedCountries' => [ 'US' ],
+					],
+				],
+				'',
+			],
+		];
+	}
+
+	/**
 	 * Matrix following the official enum semantics.
 	 *
 	 * @return array

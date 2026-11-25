@@ -157,6 +157,78 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	}
 
 	/**
+	 * Get the codes of the stored account issues from the given source.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $source Issue source, e.g. 'filter'.
+	 *
+	 * @return string[]|null The codes, or null when the query fails.
+	 */
+	public function get_account_issue_codes( string $source ): ?array {
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$codes = $this->wpdb->get_col(
+			$this->wpdb->prepare(
+				"SELECT `code` FROM %i WHERE `type` = 'account' AND `source` = %s",
+				$this->get_sql_safe_name(),
+				$source
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+
+		// get_col() returns an empty array when the query fails.
+		return $this->wpdb->last_error || ! is_array( $codes ) ? null : array_map( 'strval', $codes );
+	}
+
+	/**
+	 * Get the most common product issue codes from the given source, with the number of products having each.
+	 *
+	 * A variation is counted as its parent product. Codes are normalized before grouping: an
+	 * `[n]` index suffix is dropped, and md5 fallback pre-sync codes share one
+	 * `presync_error_other` bucket.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string   $source              Issue source, e.g. 'mc' or 'pre-sync'.
+	 * @param string[] $excluded_severities Severities to leave out.
+	 * @param int      $limit               Maximum number of codes to return.
+	 *
+	 * @return int[]|null Product counts keyed by code, most common first (ties by code), or null when the query fails.
+	 */
+	public function get_top_issue_codes( string $source, array $excluded_severities = [], int $limit = 5 ): ?array {
+		// MerchantStatuses::parse_presync_issue_text() emits 'presync_error_attrib_' . md5( $text ) for unparsed text.
+		// INSTR/SUBSTR rather than SUBSTRING_INDEX, which the SQLite integration (Studio, Playground) lacks.
+		$query  = "SELECT CASE WHEN i.`code` REGEXP %s THEN 'presync_error_other' WHEN INSTR( i.`code`, '[' ) > 0 THEN SUBSTR( i.`code`, 1, INSTR( i.`code`, '[' ) - 1 ) ELSE i.`code` END AS issue_code,
+				COUNT( DISTINCT IF( p.`post_type` = 'product_variation' AND p.`post_parent` > 0, p.`post_parent`, i.`product_id` ) ) AS product_count
+			FROM %i i LEFT JOIN %i p ON p.`ID` = i.`product_id`
+			WHERE i.`type` = 'product' AND i.`source` = %s";
+		$values = [ '^presync_error_attrib_[0-9a-f]{32}$', $this->get_sql_safe_name(), $this->wpdb->posts, $source ];
+
+		if ( ! empty( $excluded_severities ) ) {
+			$query .= ' AND i.`severity` NOT IN (' . implode( ',', array_fill( 0, count( $excluded_severities ), '%s' ) ) . ')';
+			$values = [ ...$values, ...$excluded_severities ];
+		}
+
+		$query   .= ' GROUP BY issue_code ORDER BY product_count DESC, issue_code ASC LIMIT %d';
+		$values[] = $limit;
+
+		// The NOT IN-list placeholders are generated locally from the severity count.
+		$rows = $this->wpdb->get_results( $this->wpdb->prepare( $query, $values ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+		// get_results() returns an empty array when the query fails.
+		if ( $this->wpdb->last_error || ! is_array( $rows ) ) {
+			return null;
+		}
+
+		$codes = [];
+		foreach ( $rows as $row ) {
+			$codes[ $row['issue_code'] ] = (int) $row['product_count'];
+		}
+
+		return $codes;
+	}
+
+	/**
 	 * Convert a COUNT query result to an int, or null when the query failed (COUNT always returns a row).
 	 *
 	 * @param mixed $result The get_var() result.

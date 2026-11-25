@@ -25,6 +25,7 @@ class ItemLevelIssueTest extends UnitTest {
 				'resolution'          => 'merchant_action',
 				'severity'            => 'DISAPPROVED',
 				'applicableCountries' => [ 'US', 'CA' ],
+				'reportingContext'    => 'SHOPPING_ADS',
 			]
 		);
 
@@ -35,6 +36,7 @@ class ItemLevelIssueTest extends UnitTest {
 		$this->assertSame( 'merchant_action', $issue->get_resolution() );
 		$this->assertSame( 'DISAPPROVED', $issue->get_severity() );
 		$this->assertSame( [ 'US', 'CA' ], $issue->get_applicable_countries() );
+		$this->assertSame( 'SHOPPING_ADS', $issue->get_reporting_context() );
 	}
 
 	public function test_from_array_with_missing_fields_defaults_to_null() {
@@ -47,5 +49,6 @@ class ItemLevelIssueTest extends UnitTest {
 		$this->assertNull( $issue->get_resolution() );
 		$this->assertNull( $issue->get_severity() );
 		$this->assertSame( [], $issue->get_applicable_countries() );
+		$this->assertNull( $issue->get_reporting_context() );
 	}
 }
