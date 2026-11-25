@@ -34,7 +34,7 @@ class MerchantIssueTableTest extends UnitTest {
 
 		$this->wp   = $this->createMock( WP::class );
 		$this->wpdb = $this->getMockBuilder( wpdb::class )
-			->onlyMethods( [ 'query', 'prepare', 'get_var', 'get_results' ] )
+			->onlyMethods( [ 'query', 'prepare', 'get_var', 'get_results', 'get_col' ] )
 			->disableOriginalConstructor()
 			->disableOriginalClone()
 			->disableArgumentCloning()
@@ -227,40 +227,18 @@ class MerchantIssueTableTest extends UnitTest {
 		];
 	}
 
-	public function test_get_account_issue_rows_returns_merchant_center_and_filter_account_issues() {
+	public function test_get_account_issue_codes_returns_the_account_issue_codes_of_the_given_source() {
 		$table = $this->get_installed_table();
 
 		$this->insert_issue( $table, 0, 'critical', 'mc', 'account', 'account_suspended', '["US","GB"]' );
 		$this->insert_issue( $table, 0, 'error', 'filter', 'account', 'gla_country_mismatch', '["all"]' );
-		$this->insert_issue( $table, 0, 'error', 'pre-sync', 'account', 'presync_account' );
-		$this->insert_issue( $table, 0, 'error', 'custom', 'account', 'custom_account' );
-		$this->insert_issue( $table, 10, 'error', 'mc', 'product', 'missing_gtin' );
+		$this->insert_issue( $table, 0, 'error', 'filter', 'account', 'missing_contact_information' );
+		$this->insert_issue( $table, 10, 'error', 'filter', 'product', 'filter_product' );
 
-		$rows = $table->get_account_issue_rows();
-		usort(
-			$rows,
-			function ( array $a, array $b ) {
-				return strcmp( $a['code'], $b['code'] );
-			}
-		);
+		$codes = $table->get_account_issue_codes( 'filter' );
+		sort( $codes );
 
-		$this->assertSame(
-			[
-				[
-					'code'                 => 'account_suspended',
-					'severity'             => 'critical',
-					'applicable_countries' => '["US","GB"]',
-					'source'               => 'mc',
-				],
-				[
-					'code'                 => 'gla_country_mismatch',
-					'severity'             => 'error',
-					'applicable_countries' => '["all"]',
-					'source'               => 'filter',
-				],
-			],
-			$rows
-		);
+		$this->assertSame( [ 'gla_country_mismatch', 'missing_contact_information' ], $codes );
 	}
 
 	public function test_get_top_issue_codes_excludes_given_severities_and_orders_by_count_then_code() {
@@ -395,9 +373,10 @@ class MerchantIssueTableTest extends UnitTest {
 
 	public function test_rows_return_null_when_the_query_fails() {
 		$this->wpdb->method( 'get_results' )->willReturn( [] );
+		$this->wpdb->method( 'get_col' )->willReturn( [] );
 		$this->wpdb->last_error = 'Table does not exist';
 
-		$this->assertNull( $this->mock_merchant_issue->get_account_issue_rows() );
+		$this->assertNull( $this->mock_merchant_issue->get_account_issue_codes( 'filter' ) );
 		$this->assertNull( $this->mock_merchant_issue->get_top_issue_codes( 'mc' ) );
 	}
 

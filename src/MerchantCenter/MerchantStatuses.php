@@ -5,6 +5,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ItemLevelIssue;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductMetaQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
@@ -122,6 +123,26 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	];
 
 	/**
+	 * Reporting contexts (programs) whose issues the feed issue summary counts. The Merchant API
+	 * also returns issues for programs such as Display ads and YouTube, which would inflate it.
+	 * An issue that names no reporting context is counted, since it can't be ruled out.
+	 *
+	 * @since x.x.x
+	 */
+	private const FEED_ISSUE_REPORTING_CONTEXTS = [ 'SHOPPING_ADS', 'FREE_LISTINGS' ];
+
+	/**
+	 * Account issue severities from lowest to highest, for picking the highest one.
+	 *
+	 * @since x.x.x
+	 */
+	private const ACCOUNT_ISSUE_SEVERITY_RANK = [
+		'suggestion'         => 1,
+		self::SEVERITY_ERROR => 2,
+		'critical'           => 3,
+	];
+
+	/**
 	 * @var DateTime $cache_created_time For cache age operations.
 	 */
 	protected $cache_created_time;
@@ -171,6 +192,23 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @var int[] WooCommerce IDs of the products on the current page with a disapproved offer.
 	 */
 	protected $page_disapproved_product_ids = [];
+
+	/**
+	 * @var int[] WooCommerce IDs of the products on the current page with an approved or partially approved offer.
+	 */
+	protected $page_approved_product_ids = [];
+
+	/**
+	 * @var array[] Codes of the current page's blocking Shopping ads and free listings issues, as
+	 *              `[ top-level product ID => [ code => true ] ]`.
+	 */
+	protected $page_issue_codes = [];
+
+	/**
+	 * @var array[]|null Merchant Center account issues for Shopping ads and free listings from the
+	 *                   last account issue refresh in this request, or null when none ran.
+	 */
+	protected $feed_account_issues = null;
 
 	/**
 	 * MerchantStatuses constructor.
@@ -506,6 +544,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 			$wc_product_id = $google_id_to_wc_id[ $google_id ];
 			$wc_product    = $this->product_data_lookup[ $wc_product_id ];
+			$top_level_id  = $wc_product->get_parent_id() ?: $wc_product_id;
 
 			$product_issue_template = [
 				'product'              => html_entity_decode( $wc_product->get_name(), ENT_QUOTES ),
@@ -518,6 +557,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				if ( 'merchant_action' !== $item_level_issue->get_resolution() ) {
 					continue;
 				}
+
+				if ( $this->is_feed_product_issue( $item_level_issue ) ) {
+					$this->page_issue_codes[ $top_level_id ][ $this->get_feed_issue_base_code( (string) $item_level_issue->get_code() ) ] = true;
+				}
+
 				$hash_key = $wc_product_id . '__' . md5( $item_level_issue->get_description() );
 
 				$this->product_issue_countries[ $hash_key ] = array_merge(
@@ -536,6 +580,37 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		}
 
 		return $product_issues;
+	}
+
+	/**
+	 * Whether a product issue blocks Shopping ads or free listings, so the feed issue summary counts it.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param ItemLevelIssue $issue
+	 *
+	 * @return bool
+	 */
+	protected function is_feed_product_issue( ItemLevelIssue $issue ): bool {
+		$context = $issue->get_reporting_context();
+
+		return ! in_array( $issue->get_severity(), self::WARNING_SEVERITIES, true )
+			&& ( null === $context || in_array( $context, self::FEED_ISSUE_REPORTING_CONTEXTS, true ) );
+	}
+
+	/**
+	 * Drop an `[n]` index suffix from an issue code, as MerchantIssueTable::get_top_issue_codes() does.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $code
+	 *
+	 * @return string
+	 */
+	protected function get_feed_issue_base_code( string $code ): string {
+		$index = strpos( $code, '[' );
+
+		return false === $index ? $code : substr( $code, 0, $index );
 	}
 
 	/**
@@ -562,8 +637,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	protected function refresh_account_issues(): void {
-		$account_issues = [];
-		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
+		$this->feed_account_issues = null;
+
+		$account_issues      = [];
+		$feed_account_issues = [];
+		$created_at          = $this->cache_created_time->format( 'Y-m-d H:i:s' );
 
 		/** @var MapiAccountIssuesService $account_issues_service */
 		$account_issues_service = $this->container->get( MapiAccountIssuesService::class );
@@ -571,6 +649,16 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$title        = $issue['title'] ?? '';
 			$key          = md5( $title );
 			$region_codes = $this->account_issue_region_codes( $issue );
+
+			$feed_impact = $this->get_feed_account_issue_impact( $issue );
+			if ( null !== $feed_impact ) {
+				$feed_account_issues[ $key ] = [
+					'code'                 => $this->account_issue_code( $issue['name'] ?? '' ),
+					'issue'                => $title,
+					'severity'             => $this->get_higher_account_issue_severity( $feed_account_issues[ $key ]['severity'] ?? '', $feed_impact['severity'] ),
+					'applicable_countries' => array_merge( $feed_account_issues[ $key ]['applicable_countries'] ?? [], $feed_impact['applicable_countries'] ),
+				];
+			}
 
 			if ( isset( $account_issues[ $key ] ) ) {
 				$account_issues[ $key ]['applicable_countries'] = array_merge(
@@ -613,6 +701,106 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 		$issue_query->update_or_insert( $account_issues );
+
+		$this->feed_account_issues = array_values(
+			array_map(
+				function ( array $issue ): array {
+					return $this->finalize_feed_account_issue( $issue );
+				},
+				$feed_account_issues
+			)
+		);
+	}
+
+	/**
+	 * Get the severity and countries an account issue has for Shopping ads and free listings.
+	 *
+	 * Only the impacted destinations in FEED_ISSUE_REPORTING_CONTEXTS count. An issue that lists no
+	 * destinations keeps its overall severity and applies to every country.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array $issue AccountIssue resource, decoded as an array.
+	 *
+	 * @return array|null `severity` and `applicable_countries`, or null when the issue impacts only other programs.
+	 */
+	protected function get_feed_account_issue_impact( array $issue ): ?array {
+		$destinations = $issue['impactedDestinations'] ?? [];
+		if ( ! is_array( $destinations ) || empty( $destinations ) ) {
+			return [
+				'severity'             => $this->account_issue_severity( (string) ( $issue['severity'] ?? '' ) ),
+				'applicable_countries' => [],
+			];
+		}
+
+		$is_feed_issue = false;
+		$severity      = '';
+		$countries     = [];
+		foreach ( $destinations as $destination ) {
+			$context = $destination['reportingContext'] ?? null;
+			if ( null !== $context && ! in_array( $context, self::FEED_ISSUE_REPORTING_CONTEXTS, true ) ) {
+				continue;
+			}
+
+			$is_feed_issue = true;
+			foreach ( $destination['impacts'] ?? [] as $impact ) {
+				if ( ! empty( $impact['severity'] ) ) {
+					$severity = $this->get_higher_account_issue_severity( $severity, $this->account_issue_severity( (string) $impact['severity'] ) );
+				}
+				if ( ! empty( $impact['regionCode'] ) ) {
+					$countries[] = $impact['regionCode'];
+				}
+			}
+		}
+
+		if ( ! $is_feed_issue ) {
+			return null;
+		}
+
+		return [
+			'severity'             => '' !== $severity ? $severity : $this->account_issue_severity( (string) ( $issue['severity'] ?? '' ) ),
+			'applicable_countries' => $countries,
+		];
+	}
+
+	/**
+	 * Get the higher of two account issue severities.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $a Severity, or '' for none.
+	 * @param string $b Severity, or '' for none.
+	 *
+	 * @return string
+	 */
+	protected function get_higher_account_issue_severity( string $a, string $b ): string {
+		return ( self::ACCOUNT_ISSUE_SEVERITY_RANK[ $b ] ?? 0 ) > ( self::ACCOUNT_ISSUE_SEVERITY_RANK[ $a ] ?? 0 ) ? $b : $a;
+	}
+
+	/**
+	 * Apply the issue overrides to a Shopping ads and free listings account issue and keep only what the feed issue summary reads.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array $issue `code`, `issue`, `severity` and `applicable_countries`.
+	 *
+	 * @return array `code`, `severity` and the sorted, unique `applicable_countries`.
+	 */
+	protected function finalize_feed_account_issue( array $issue ): array {
+		$overridden = $this->maybe_override_issue_values(
+			$issue + [
+				'action'     => '',
+				'action_url' => '',
+			]
+		);
+		$countries  = array_values( array_unique( $issue['applicable_countries'] ) );
+		sort( $countries );
+
+		return [
+			'code'                 => $issue['code'],
+			'severity'             => $overridden['severity'],
+			'applicable_countries' => $countries,
+		];
 	}
 
 	/**
@@ -868,10 +1056,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 */
 	public function process_mapi_products( array $products ): void {
 		$this->page_disapproved_product_ids = [];
+		$this->page_approved_product_ids    = [];
+		$this->page_issue_codes             = [];
 		$product_helper                     = $this->container->get( ProductHelper::class );
 		$statuses                           = [];
 		$products_by_google_id              = [];
 		$disapproved_ids                    = [];
+		$approved_ids                       = [];
 
 		foreach ( $products as $product ) {
 			$product_status = $product->get_product_status();
@@ -900,9 +1091,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 
 			$status = MCStatus::from_aggregated_reporting_context_status( $aggregated );
+			// Each market's offer is a separate entry, and the status below keeps only the last one.
 			if ( MCStatus::DISAPPROVED === $status ) {
-				// Each market's offer is a separate entry, and the status below keeps only the last one.
 				$disapproved_ids[ $wc_product_id ] = true;
+			} elseif ( in_array( $status, [ MCStatus::APPROVED, MCStatus::PARTIALLY_APPROVED ], true ) ) {
+				$approved_ids[ $wc_product_id ] = true;
 			}
 
 			$statuses[ $wc_product_id ] = [
@@ -917,6 +1110,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		$this->process_product_statuses( $statuses, $products_by_google_id );
 		$this->page_disapproved_product_ids = array_keys( $disapproved_ids );
+		$this->page_approved_product_ids    = array_keys( $approved_ids );
 	}
 
 	/**
@@ -1091,10 +1285,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
-	 * Record disapproved products only after a page has been processed successfully.
+	 * Record the page's feed issue tracking only after it has been processed successfully.
 	 *
 	 * Keep this state separate from the statistics consumed by older plugin versions.
-	 * The token chain ensures a check started before an upgrade cannot publish partial counts.
+	 * The token chain, and the keys a check started by an older version lacks, ensure such
+	 * a check cannot publish partial counts.
 	 *
 	 * @since x.x.x
 	 *
@@ -1105,17 +1300,25 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		try {
 			$tracking = null === $page_token
 				? [
-					'next_page_token' => null,
-					'product_ids'     => [],
+					'next_page_token'      => null,
+					'product_ids'          => [],
+					'approved_product_ids' => [],
+					'issue_codes'          => [],
+					'account_issues'       => $this->feed_account_issues,
 				]
 				: $this->options->get( OptionsInterface::FEED_ISSUE_TRACKING );
 
-			if ( ! is_array( $tracking ) || ! array_key_exists( 'next_page_token', $tracking ) || $page_token !== $tracking['next_page_token'] ) {
+			if ( ! $this->is_feed_issue_tracking( $tracking ) || $page_token !== $tracking['next_page_token'] ) {
 				$this->options->delete( OptionsInterface::FEED_ISSUE_TRACKING );
 				return;
 			}
 
-			$tracking['product_ids']    += array_fill_keys( $this->get_page_disapproved_top_level_product_ids(), true );
+			// Old versions read product_ids, the products with an offer disapproved in any market.
+			$tracking['product_ids']          += array_fill_keys( $this->get_page_top_level_product_ids( $this->page_disapproved_product_ids ), true );
+			$tracking['approved_product_ids'] += array_fill_keys( $this->get_page_top_level_product_ids( $this->page_approved_product_ids ), true );
+			foreach ( $this->page_issue_codes as $product_id => $codes ) {
+				$tracking['issue_codes'][ $product_id ] = ( $tracking['issue_codes'][ $product_id ] ?? [] ) + $codes;
+			}
 			$tracking['next_page_token'] = $next_page_token;
 			$this->options->update( OptionsInterface::FEED_ISSUE_TRACKING, $tracking );
 		} catch ( Throwable $e ) {
@@ -1124,15 +1327,37 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
-	 * Get the top-level product IDs of the current page's disapproved offers, counting a variation as its parent.
+	 * Whether a value is feed issue tracking with every key this version records.
+	 *
+	 * Tracking started by an older version lacks some keys, so its check is not summarized.
 	 *
 	 * @since x.x.x
 	 *
+	 * @param mixed $tracking
+	 *
+	 * @return bool
+	 */
+	private function is_feed_issue_tracking( $tracking ): bool {
+		return is_array( $tracking )
+			&& array_key_exists( 'next_page_token', $tracking )
+			&& is_array( $tracking['product_ids'] ?? null )
+			&& is_array( $tracking['approved_product_ids'] ?? null )
+			&& is_array( $tracking['issue_codes'] ?? null )
+			&& array_key_exists( 'account_issues', $tracking );
+	}
+
+	/**
+	 * Get the top-level product IDs of the given products on the current page, counting a variation as its parent.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int[] $product_ids WooCommerce product IDs.
+	 *
 	 * @return int[]
 	 */
-	protected function get_page_disapproved_top_level_product_ids(): array {
+	protected function get_page_top_level_product_ids( array $product_ids ): array {
 		$ids = [];
-		foreach ( $this->page_disapproved_product_ids as $product_id ) {
+		foreach ( $product_ids as $product_id ) {
 			$product = $this->product_data_lookup[ $product_id ] ?? null;
 			if ( ! $product ) {
 				continue;
@@ -1227,8 +1452,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		try {
 			$tracking = $this->options->get( OptionsInterface::FEED_ISSUE_TRACKING );
 			$this->options->delete( OptionsInterface::FEED_ISSUE_TRACKING );
-			if ( is_array( $tracking ) && array_key_exists( 'next_page_token', $tracking ) && null === $tracking['next_page_token'] ) {
-				$this->save_feed_issue_summary( count( $tracking['product_ids'] ) );
+			if ( $this->is_feed_issue_tracking( $tracking ) && null === $tracking['next_page_token'] ) {
+				$this->save_feed_issue_summary( $tracking );
 			}
 		} catch ( Throwable $e ) {
 			do_action( 'woocommerce_gla_debug_message', 'Unable to save feed issue summary: ' . $e->getMessage(), __METHOD__ );
@@ -1240,22 +1465,33 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Save the feed-blocking issue counts of the completed status check, for the WC Tracker snapshot.
 	 *
+	 * Merchant Center issue counts and codes cover Shopping ads and free listings only
+	 * (FEED_ISSUE_REPORTING_CONTEXTS). Product counts count a variable product once.
+	 *
 	 * @since x.x.x
 	 *
-	 * @param int $disapproved_product_count Products with an offer disapproved in any market during this check.
+	 * @param array $tracking Feed issue tracking of the completed check, from record_feed_issue_page().
 	 */
-	protected function save_feed_issue_summary( int $disapproved_product_count ): void {
+	protected function save_feed_issue_summary( array $tracking ): void {
 		/** @var ProductMetaQueryHelper $product_meta_query_helper */
 		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
 		/** @var MerchantIssueTable $issue_table */
 		$issue_table = $this->container->get( MerchantIssueTable::class );
 
 		$synced_statuses = array_values( array_diff( MCStatus::ALLOWED_VALUES, [ MCStatus::NOT_SYNCED ] ) );
+		$account_issues  = is_array( $tracking['account_issues'] ) ? $tracking['account_issues'] : null;
 
 		$summary = [
-			'blocking_account_issue_count' => $issue_table->count_account_issues( self::BLOCKING_SEVERITIES ),
-			'disapproved_product_count'    => $disapproved_product_count,
-			'error_issue_product_count'    => $issue_table->count_products_with_issues( 'mc', self::WARNING_SEVERITIES ),
+			'blocking_account_issue_count' => null === $account_issues ? null : count(
+				array_filter(
+					$account_issues,
+					function ( array $issue ): bool {
+						return in_array( $issue['severity'], self::BLOCKING_SEVERITIES, true );
+					}
+				)
+			),
+			'disapproved_product_count'    => count( $tracking['product_ids'] ),
+			'error_issue_product_count'    => count( $tracking['issue_codes'] ),
 			'presync_error_product_count'  => $issue_table->count_products_with_issues( 'pre-sync' ),
 			'synced_product_count'         => $product_meta_query_helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, $synced_statuses ),
 		];
@@ -1267,7 +1503,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			return;
 		}
 
-		$summary += $this->get_feed_issue_details( $issue_table, $product_meta_query_helper );
+		$summary += $this->get_feed_issue_details( $tracking, $account_issues, $issue_table );
 
 		$this->options->update( OptionsInterface::FEED_ISSUE_SUMMARY, $summary );
 	}
@@ -1280,12 +1516,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 *
 	 * @since x.x.x
 	 *
-	 * @param MerchantIssueTable     $issue_table
-	 * @param ProductMetaQueryHelper $product_meta_query_helper
+	 * @param array              $tracking       Feed issue tracking of the completed check.
+	 * @param array[]            $account_issues Shopping ads and free listings account issues of the check.
+	 * @param MerchantIssueTable $issue_table
 	 *
 	 * @return array
 	 */
-	private function get_feed_issue_details( MerchantIssueTable $issue_table, ProductMetaQueryHelper $product_meta_query_helper ): array {
+	private function get_feed_issue_details( array $tracking, array $account_issues, MerchantIssueTable $issue_table ): array {
 		$details = array_fill_keys(
 			[
 				'feed_issue_summary_checked_at',
@@ -1302,18 +1539,22 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		try {
 			$details['feed_issue_summary_checked_at'] = time();
-			$details['approved_product_count']        = $product_meta_query_helper->count_products_by_value(
-				ProductMetaHandler::KEY_MC_STATUS,
-				[ MCStatus::APPROVED, MCStatus::PARTIALLY_APPROVED ]
-			);
 
-			$account_rows = $issue_table->get_account_issue_rows();
-			if ( null !== $account_rows ) {
-				$details = array_merge( $details, $this->summarize_account_issues( $account_rows ) );
+			// A product with an offer disapproved in any market counts only as disapproved, so
+			// approved_product_count + disapproved_product_count never exceeds synced_product_count.
+			$details['approved_product_count'] = count( array_diff_key( $tracking['approved_product_ids'], $tracking['product_ids'] ) );
+
+			$details = array_merge( $details, $this->summarize_account_issues( $account_issues ) );
+
+			$filter_codes = $issue_table->get_account_issue_codes( 'filter' );
+			if ( null !== $filter_codes ) {
+				$plugin_codes = array_values( array_unique( array_intersect( $filter_codes, self::PLUGIN_ACCOUNT_ISSUE_CODES ) ) );
+				sort( $plugin_codes );
+				$details['plugin_issue_codes'] = $plugin_codes;
 			}
 
 			$top_codes = [
-				'top_product_issue_codes' => $issue_table->get_top_issue_codes( 'mc', self::WARNING_SEVERITIES, 5 ),
+				'top_product_issue_codes' => $this->get_top_feed_product_issue_codes( $tracking['issue_codes'], 5 ),
 				'top_presync_issue_codes' => $issue_table->get_top_issue_codes( 'pre-sync', [], 5 ),
 			];
 			foreach ( $top_codes as $key => $codes ) {
@@ -1341,40 +1582,66 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
-	 * Summarize the stored account issues for the feed issue summary.
-	 *
-	 * Merchant Center rows give the critical count, the blocking codes and the critical coverage of
-	 * the target countries; filter rows give which of GLA's own account issue codes are present.
+	 * Get the most common product issue codes, with the number of products having each.
 	 *
 	 * @since x.x.x
 	 *
-	 * @param array[] $rows Rows from MerchantIssueTable::get_account_issue_rows().
+	 * @param array[] $issue_codes Issue codes keyed by top-level product ID, as `[ product ID => [ code => true ] ]`.
+	 * @param int     $limit       Maximum number of codes to return.
+	 *
+	 * @return int[] Product counts keyed by code, most common first (ties by code).
+	 */
+	private function get_top_feed_product_issue_codes( array $issue_codes, int $limit ): array {
+		$counts = [];
+		foreach ( $issue_codes as $codes ) {
+			foreach ( array_keys( $codes ) as $code ) {
+				$code = (string) $code;
+				if ( '' !== $code ) {
+					$counts[ $code ] = ( $counts[ $code ] ?? 0 ) + 1;
+				}
+			}
+		}
+
+		$codes = array_map( 'strval', array_keys( $counts ) );
+		usort(
+			$codes,
+			function ( string $a, string $b ) use ( $counts ): int {
+				return $counts[ $b ] <=> $counts[ $a ] ?: strcmp( $a, $b );
+			}
+		);
+
+		$top = [];
+		foreach ( array_slice( $codes, 0, $limit ) as $code ) {
+			$top[ $code ] = $counts[ $code ];
+		}
+
+		return $top;
+	}
+
+	/**
+	 * Summarize the Shopping ads and free listings account issues for the feed issue summary.
+	 *
+	 * Gives the critical count, the blocking codes and the critical coverage of the target countries.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array[] $issues Issues with `code`, `severity` and `applicable_countries`, from get_feed_account_issue_impact().
 	 *
 	 * @return array
 	 */
-	private function summarize_account_issues( array $rows ): array {
+	private function summarize_account_issues( array $issues ): array {
 		$critical_count    = 0;
 		$codes             = [];
 		$covered_countries = [];
 		$covers_all        = false;
-		$plugin_codes      = [];
 
-		foreach ( $rows as $row ) {
-			$code     = (string) $row['code'];
-			$severity = $row['severity'];
-
-			if ( 'filter' === $row['source'] ) {
-				if ( in_array( $code, self::PLUGIN_ACCOUNT_ISSUE_CODES, true ) ) {
-					$plugin_codes[ $code ] = $code;
-				}
+		foreach ( $issues as $issue ) {
+			$severity = $issue['severity'];
+			if ( ! in_array( $severity, self::BLOCKING_SEVERITIES, true ) ) {
 				continue;
 			}
 
-			if ( 'mc' !== $row['source'] || ! in_array( $severity, self::BLOCKING_SEVERITIES, true ) ) {
-				continue;
-			}
-
-			$code = $this->sanitize_feed_issue_code( $code );
+			$code = $this->sanitize_feed_issue_code( (string) $issue['code'] );
 			if ( 'critical' !== ( $codes[ $code ] ?? '' ) ) {
 				$codes[ $code ] = $severity;
 			}
@@ -1385,14 +1652,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 			++$critical_count;
 
-			// Some rows are stored as JSON objects; an empty string or invalid JSON holds no country data.
-			$countries = json_decode( (string) $row['applicable_countries'], true );
-			if ( ! is_array( $countries ) ) {
-				continue;
-			}
-
 			// An issue that lists no countries, or the CLDR "001" (World) region the Merchant API
 			// uses for account-wide issues, applies to every country.
+			$countries  = (array) $issue['applicable_countries'];
 			$covers_all = $covers_all || empty( $countries ) || in_array( '001', $countries, true );
 			foreach ( $countries as $country ) {
 				if ( is_string( $country ) ) {
@@ -1405,13 +1667,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		ksort( $codes, SORT_STRING );
 		$codes = array_slice( array_intersect( $codes, [ 'critical' ] ) + $codes, 0, 10, true );
 
-		sort( $plugin_codes );
-
 		return [
 			'critical_account_issue_count' => $critical_count,
 			'account_issue_codes'          => $codes,
 			'critical_covers_all_targets'  => $this->get_critical_target_coverage( $covers_all, array_keys( $covered_countries ) ),
-			'plugin_issue_codes'           => $plugin_codes,
 		];
 	}
 

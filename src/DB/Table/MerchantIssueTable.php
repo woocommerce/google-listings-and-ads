@@ -157,25 +157,27 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	}
 
 	/**
-	 * Get the Merchant Center and filter-added account issue rows.
+	 * Get the codes of the stored account issues from the given source.
 	 *
 	 * @since x.x.x
 	 *
-	 * @return array[]|null Rows with `code`, `severity`, `applicable_countries` (stored JSON) and `source`, or null when the query fails.
+	 * @param string $source Issue source, e.g. 'filter'.
+	 *
+	 * @return string[]|null The codes, or null when the query fails.
 	 */
-	public function get_account_issue_rows(): ?array {
+	public function get_account_issue_codes( string $source ): ?array {
 		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
-		$rows = $this->wpdb->get_results(
+		$codes = $this->wpdb->get_col(
 			$this->wpdb->prepare(
-				"SELECT `code`, `severity`, `applicable_countries`, `source` FROM %i WHERE `type` = 'account' AND `source` IN ('mc', 'filter')",
-				$this->get_sql_safe_name()
-			),
-			ARRAY_A
+				"SELECT `code` FROM %i WHERE `type` = 'account' AND `source` = %s",
+				$this->get_sql_safe_name(),
+				$source
+			)
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 
-		// get_results() returns an empty array when the query fails.
-		return $this->wpdb->last_error ? null : $rows;
+		// get_col() returns an empty array when the query fails.
+		return $this->wpdb->last_error || ! is_array( $codes ) ? null : array_map( 'strval', $codes );
 	}
 
 	/**

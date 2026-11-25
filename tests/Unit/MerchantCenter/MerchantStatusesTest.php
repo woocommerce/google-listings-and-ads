@@ -1158,10 +1158,232 @@ class MerchantStatusesTest extends UnitTest {
 		$this->assertSame( array_keys( MerchantStatuses::DEFAULT_PRODUCT_STATS ), array_keys( $stored() ) );
 	}
 
+	public function test_process_mapi_products_records_a_product_approved_in_any_market_as_its_top_level_product() {
+		$simple    = WC_Helper_Product::create_simple_product();
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $variable->get_children()[0] );
+		$pending   = WC_Helper_Product::create_simple_product();
+		$stored    = $this->use_product_status_fakes( [ $simple, $variable, $variation, $pending ] );
+
+		$this->merchant_statuses->process_mapi_products(
+			[
+				$this->get_mapi_offer( $simple->get_id(), 'US', 'disapprovedCountries' ),
+				$this->get_mapi_offer( $simple->get_id(), 'GB', 'approvedCountries' ),
+				$this->get_mapi_offer( $variation->get_id(), 'US', 'approvedCountries' ),
+				$this->get_mapi_offer( $pending->get_id(), 'US', 'pendingCountries' ),
+			]
+		);
+		$this->merchant_statuses->record_feed_issue_page( null, null );
+
+		$tracking = $stored( OptionsInterface::FEED_ISSUE_TRACKING );
+		$this->assertSame(
+			[
+				$simple->get_id()   => true,
+				$variable->get_id() => true,
+			],
+			$tracking['approved_product_ids']
+		);
+		$this->assertSame( [ $simple->get_id() => true ], $tracking['product_ids'] );
+	}
+
+	public function test_process_mapi_products_records_only_blocking_shopping_ads_and_free_listings_issue_codes() {
+		$simple    = WC_Helper_Product::create_simple_product();
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $variable->get_children()[0] );
+		$stored    = $this->use_product_status_fakes( [ $simple, $variable, $variation ] );
+		$this->product_helper->method( 'get_synced_google_product_ids' )->willReturnCallback(
+			function ( $product ) {
+				return [ 'ES' => $this->get_mapi_id( $product->get_id() ) ];
+			}
+		);
+		$this->merchant_issue_query->method( 'get_results' )->willReturn( [] );
+
+		$this->merchant_statuses->process_mapi_products(
+			[
+				$this->get_mapi_offer_with_issues(
+					$simple->get_id(),
+					[
+						$this->item_level_issue( 'missing_gtin', 'SHOPPING_ADS' ),
+						$this->item_level_issue( 'image_link_broken[0]', 'FREE_LISTINGS' ),
+						$this->item_level_issue( 'no_reporting_context', null ),
+						$this->item_level_issue( 'display_ads_only', 'DISPLAY_ADS' ),
+						$this->item_level_issue( 'youtube_only', 'YOUTUBE_SHOPPING' ),
+						$this->item_level_issue( 'demoted', 'SHOPPING_ADS', 'DEMOTED' ),
+						$this->item_level_issue( 'not_impacted', 'SHOPPING_ADS', 'NOT_IMPACTED' ),
+						$this->item_level_issue( 'pending', 'SHOPPING_ADS', 'DISAPPROVED', 'pending_processing' ),
+					]
+				),
+				$this->get_mapi_offer_with_issues( $variation->get_id(), [ $this->item_level_issue( 'missing_brand', 'SHOPPING_ADS' ) ] ),
+			]
+		);
+		$this->merchant_statuses->record_feed_issue_page( null, null );
+
+		$this->assertSame(
+			[
+				$simple->get_id()   => [
+					'missing_gtin'         => true,
+					'image_link_broken'    => true,
+					'no_reporting_context' => true,
+				],
+				$variable->get_id() => [ 'missing_brand' => true ],
+			],
+			$stored( OptionsInterface::FEED_ISSUE_TRACKING )['issue_codes']
+		);
+	}
+
+	public function test_record_feed_issue_page_merges_issue_codes_across_pages() {
+		$product = WC_Helper_Product::create_simple_product();
+		$stored  = $this->use_product_status_fakes( [ $product ] );
+		$this->product_helper->method( 'get_synced_google_product_ids' )->willReturnCallback(
+			function ( $wc_product ) {
+				return [ 'ES' => $this->get_mapi_id( $wc_product->get_id() ) ];
+			}
+		);
+		$this->merchant_issue_query->method( 'get_results' )->willReturn( [] );
+
+		$this->merchant_statuses->process_mapi_products( [ $this->get_mapi_offer_with_issues( $product->get_id(), [ $this->item_level_issue( 'missing_gtin', 'SHOPPING_ADS' ) ] ) ] );
+		$this->merchant_statuses->record_feed_issue_page( null, 'page-2' );
+		$this->merchant_statuses->process_mapi_products( [ $this->get_mapi_offer_with_issues( $product->get_id(), [ $this->item_level_issue( 'missing_brand', 'FREE_LISTINGS' ) ] ) ] );
+		$this->merchant_statuses->record_feed_issue_page( 'page-2', null );
+
+		$this->assertSame(
+			[
+				$product->get_id() => [
+					'missing_gtin'  => true,
+					'missing_brand' => true,
+				],
+			],
+			$stored( OptionsInterface::FEED_ISSUE_TRACKING )['issue_codes']
+		);
+	}
+
+	public function test_record_feed_issue_page_drops_tracking_an_older_version_started() {
+		$stored = $this->use_product_status_fakes( [] );
+		$this->options->update(
+			OptionsInterface::FEED_ISSUE_TRACKING,
+			[
+				'next_page_token' => 'page-2',
+				'product_ids'     => [ 5 => true ],
+			]
+		);
+
+		$this->merchant_statuses->record_feed_issue_page( 'page-2', null );
+
+		$this->assertNull( $stored( OptionsInterface::FEED_ISSUE_TRACKING ) );
+	}
+
+	public function test_refresh_account_issues_tracks_only_shopping_ads_and_free_listings_impacts() {
+		$stored = $this->use_product_status_fakes( [] );
+		$this->product_meta_query_helper->method( 'get_all_values' )->willReturn( [] );
+		$this->mapi_account_issues_service->method( 'get_account_issues' )->willReturn(
+			[
+				[
+					'name'                 => 'accounts/1/issues/mixed-programs',
+					'title'                => 'Mixed programs',
+					'severity'             => 'CRITICAL',
+					'impactedDestinations' => [
+						[
+							'reportingContext' => 'SHOPPING_ADS',
+							'impacts'          => [
+								[
+									'regionCode' => 'US',
+									'severity'   => 'ERROR',
+								],
+							],
+						],
+						[
+							'reportingContext' => 'FREE_LISTINGS',
+							'impacts'          => [
+								[
+									'regionCode' => 'CA',
+									'severity'   => 'ERROR',
+								],
+							],
+						],
+						[
+							'reportingContext' => 'DISPLAY_ADS',
+							'impacts'          => [
+								[
+									'regionCode' => 'GB',
+									'severity'   => 'CRITICAL',
+								],
+							],
+						],
+					],
+				],
+				[
+					'name'                 => 'accounts/1/issues/display-only',
+					'title'                => 'Display only',
+					'severity'             => 'CRITICAL',
+					'impactedDestinations' => [
+						[
+							'reportingContext' => 'DISPLAY_ADS',
+							'impacts'          => [
+								[
+									'regionCode' => 'US',
+									'severity'   => 'CRITICAL',
+								],
+							],
+						],
+					],
+				],
+				[
+					'name'     => 'accounts/1/issues/no-destinations',
+					'title'    => 'No destinations',
+					'severity' => 'ERROR',
+				],
+				[
+					'name'                 => 'accounts/1/issues/no-impact-severity',
+					'title'                => 'No impact severity',
+					'severity'             => 'CRITICAL',
+					'impactedDestinations' => [
+						[ 'impacts' => [ [ 'regionCode' => 'FR' ] ] ],
+					],
+				],
+				[
+					'name'                 => 'accounts/1/issues/merchant-quality-low',
+					'title'                => 'Merchant quality low',
+					'severity'             => 'CRITICAL',
+					'impactedDestinations' => [
+						[
+							'reportingContext' => 'FREE_LISTINGS',
+							'impacts'          => [
+								[
+									'regionCode' => 'US',
+									'severity'   => 'CRITICAL',
+								],
+							],
+						],
+					],
+				],
+			]
+		);
+
+		$this->merchant_statuses->refresh_account_and_presync_issues();
+		$this->merchant_statuses->record_feed_issue_page( null, null );
+
+		$this->assertSame(
+			[
+				$this->feed_account_issue( 'mixed_programs', 'error', [ 'CA', 'US' ] ),
+				$this->feed_account_issue( 'no_destinations', 'error', [] ),
+				$this->feed_account_issue( 'no_impact_severity', 'critical', [ 'FR' ] ),
+				$this->feed_account_issue( 'merchant_quality_low', 'warning', [ 'US' ] ),
+			],
+			$stored( OptionsInterface::FEED_ISSUE_TRACKING )['account_issues']
+		);
+	}
+
+	public function test_record_feed_issue_page_leaves_account_issues_unknown_without_a_refresh() {
+		$stored = $this->use_product_status_fakes( [] );
+
+		$this->merchant_statuses->record_feed_issue_page( null, null );
+
+		$this->assertNull( $stored( OptionsInterface::FEED_ISSUE_TRACKING )['account_issues'] );
+	}
+
 	public function test_feed_summary_preserves_earlier_pages_after_a_failed_fetch_and_retry() {
 		$product = WC_Helper_Product::create_simple_product();
 		$stored  = $this->use_product_status_fakes( [ $product ] );
-		$this->merchant_issue_table->method( 'count_account_issues' )->willReturn( 0 );
 		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturn( 0 );
 		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturn( 1 );
 		$this->options->update( OptionsInterface::FEED_ISSUE_SUMMARY, [ 'previous' => true ] );
@@ -1247,7 +1469,7 @@ class MerchantStatusesTest extends UnitTest {
 		$stored = $this->use_product_status_fakes( [] );
 		$this->options->update( OptionsInterface::FEED_ISSUE_SUMMARY, [ 'previous' => true ] );
 		$this->merchant_statuses->record_feed_issue_page( null, null );
-		$this->merchant_issue_table->method( 'count_account_issues' )->willThrowException( new \Error( 'Count failed' ) );
+		$this->merchant_issue_table->method( 'count_products_with_issues' )->willThrowException( new \Error( 'Count failed' ) );
 		$this->transients->expects( $this->once() )->method( 'set' )->with(
 			Transients::MC_STATUSES,
 			$this->callback(
@@ -1727,13 +1949,32 @@ class MerchantStatusesTest extends UnitTest {
 				[
 					OptionsInterface::FEED_ISSUE_TRACKING,
 					null,
-					[
-						'next_page_token' => null,
-						'product_ids'     => [
-							5 => true,
-							9 => true,
-						],
-					],
+					$this->feed_issue_tracking(
+						[
+							'product_ids'          => [
+								5 => true,
+								9 => true,
+							],
+							'approved_product_ids' => [
+								5 => true,
+								6 => true,
+								7 => true,
+							],
+							'issue_codes'          => [
+								5 => [
+									'image_link_broken' => true,
+									'missing_gtin'      => true,
+								],
+								6 => [ 'image_link_broken' => true ],
+								9 => [ 'image_link_broken' => true ],
+							],
+							'account_issues'       => [
+								$this->feed_account_issue( 'home_page_issue', 'critical', [ 'US' ] ),
+								$this->feed_account_issue( 'policy_enforcement', 'error', [ 'CA' ] ),
+								$this->feed_account_issue( 'merchant_quality_low', 'warning', [ 'US' ] ),
+							],
+						]
+					),
 				],
 			]
 		);
@@ -1751,63 +1992,42 @@ class MerchantStatusesTest extends UnitTest {
 		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturnCallback(
 			function ( $meta_key, $values ) {
 				$this->assertSame( ProductMetaHandler::KEY_MC_STATUS, $meta_key );
-				if ( [ 'approved', 'partially_approved' ] === $values ) {
-					return 6;
-				}
-
 				$this->assertEqualsCanonicalizing( [ 'approved', 'partially_approved', 'pending', 'expiring', 'disapproved' ], $values );
 				return 7;
 			}
 		);
-		$this->merchant_issue_table->method( 'count_account_issues' )->willReturnCallback(
-			function ( $severities ) {
-				return [ 'error', 'critical' ] === $severities ? 3 : -1;
-			}
-		);
+		$this->merchant_issue_table->expects( $this->never() )->method( 'count_account_issues' );
 		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturnCallback(
 			function ( $source, $excluded = [] ) {
-				if ( 'mc' === $source ) {
-					$this->assertEqualsCanonicalizing( [ 'warning', 'suggestion', 'DEMOTED', 'NOT_IMPACTED' ], $excluded );
-					return 4;
-				}
-
-				return 'pre-sync' === $source && [] === $excluded ? 5 : -1;
+				$this->assertSame( [ 'pre-sync', [] ], [ $source, $excluded ] );
+				return 5;
 			}
 		);
-		$this->merchant_issue_table->method( 'get_account_issue_rows' )->willReturn(
-			[
-				$this->account_issue_row( 'home_page_issue', 'critical', '["US"]' ),
-				$this->account_issue_row( 'policy_enforcement', 'error', '["CA"]' ),
-				$this->account_issue_row( 'missing_contact_information', 'error', '', 'filter' ),
-			]
+		$this->merchant_issue_table->method( 'get_account_issue_codes' )->willReturnCallback(
+			function ( $source ) {
+				$this->assertSame( 'filter', $source );
+				return [ 'missing_contact_information', 'third_party_code' ];
+			}
 		);
 		$this->merchant_issue_table->method( 'get_top_issue_codes' )->willReturnCallback(
 			function ( $source, $excluded = [], $limit = 5 ) {
-				$this->assertSame( 5, $limit );
-				if ( 'mc' === $source ) {
-					$this->assertEqualsCanonicalizing( [ 'warning', 'suggestion', 'DEMOTED', 'NOT_IMPACTED' ], $excluded );
-					return [
-						'image_link_broken' => 4,
-						'missing_gtin'      => 2,
-					];
-				}
-
-				$this->assertSame( [ 'pre-sync', [] ], [ $source, $excluded ] );
+				$this->assertSame( [ 'pre-sync', [], 5 ], [ $source, $excluded, $limit ] );
 				return [ 'presync_error_price' => 3 ];
 			}
 		);
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA' ] );
 
 		$expected_summary = [
-			'blocking_account_issue_count' => 3,
+			'blocking_account_issue_count' => 2,
 			'disapproved_product_count'    => 2,
-			'error_issue_product_count'    => 4,
+			'error_issue_product_count'    => 3,
 			'presync_error_product_count'  => 5,
 			'synced_product_count'         => 7,
 		];
 		$this->assertSame( MerchantStatuses::FEED_ISSUE_SUMMARY_FIELDS, array_keys( $expected_summary ) );
 		$expected_summary += [
-			'approved_product_count'       => 6,
+			// Product 5 is also disapproved, so it counts only as disapproved.
+			'approved_product_count'       => 2,
 			'critical_account_issue_count' => 1,
 			'account_issue_codes'          => [
 				'home_page_issue'    => 'critical',
@@ -1816,8 +2036,8 @@ class MerchantStatusesTest extends UnitTest {
 			'critical_covers_all_targets'  => 'partial',
 			'plugin_issue_codes'           => [ 'missing_contact_information' ],
 			'top_product_issue_codes'      => [
-				'image_link_broken' => 4,
-				'missing_gtin'      => 2,
+				'image_link_broken' => 3,
+				'missing_gtin'      => 1,
 			],
 			'top_presync_issue_codes'      => [ 'presync_error_price' => 3 ],
 		];
@@ -1847,21 +2067,13 @@ class MerchantStatusesTest extends UnitTest {
 		$this->options->method( 'get' )->willReturnMap(
 			[
 				[ OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, MerchantStatuses::DEFAULT_PRODUCT_STATS, MerchantStatuses::DEFAULT_PRODUCT_STATS ],
-				[
-					OptionsInterface::FEED_ISSUE_TRACKING,
-					null,
-					[
-						'next_page_token' => null,
-						'product_ids'     => [],
-					],
-				],
+				[ OptionsInterface::FEED_ISSUE_TRACKING, null, $this->feed_issue_tracking() ],
 			]
 		);
 		$this->product_repository->method( 'find_all_product_ids' )->willReturn( [] );
 		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturn( 0 );
-		$this->merchant_issue_table->method( 'count_account_issues' )->willReturn( 0 );
 		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturn( 0 );
-		$this->merchant_issue_table->method( 'get_account_issue_rows' )->willReturn( [] );
+		$this->merchant_issue_table->method( 'get_account_issue_codes' )->willReturn( [] );
 		$this->merchant_issue_table->method( 'get_top_issue_codes' )->willReturn( [] );
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
 
@@ -1913,22 +2125,14 @@ class MerchantStatusesTest extends UnitTest {
 				[
 					OptionsInterface::FEED_ISSUE_TRACKING,
 					null,
-					[
-						'next_page_token' => null,
-						'product_ids'     => [],
-					],
+					// Account issues are unknown when the refresh that reads them didn't run in the request that started the check.
+					$this->feed_issue_tracking( [ 'account_issues' => 'blocking_account_issue_count' === $failed_count ? null : [] ] ),
 				],
 			]
 		);
 		$this->product_repository->method( 'find_all_product_ids' )->willReturn( [] );
 		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturn( 'synced_product_count' === $failed_count ? null : 0 );
-		$this->merchant_issue_table->method( 'count_account_issues' )->willReturn( 'blocking_account_issue_count' === $failed_count ? null : 0 );
-		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturnCallback(
-			function ( $source ) use ( $failed_count ) {
-				$field = 'mc' === $source ? 'error_issue_product_count' : 'presync_error_product_count';
-				return $field === $failed_count ? null : 0;
-			}
-		);
+		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturn( 'presync_error_product_count' === $failed_count ? null : 0 );
 		$messages = [];
 		add_action(
 			'woocommerce_gla_debug_message',
@@ -1945,25 +2149,23 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function failed_feed_count_provider(): array {
 		return [
-			'account'        => [ 'blocking_account_issue_count' ],
-			'product issues' => [ 'error_issue_product_count' ],
-			'pre-sync'       => [ 'presync_error_product_count' ],
-			'synced'         => [ 'synced_product_count' ],
+			'account'  => [ 'blocking_account_issue_count' ],
+			'pre-sync' => [ 'presync_error_product_count' ],
+			'synced'   => [ 'synced_product_count' ],
 		];
 	}
 
 	public function test_feed_summary_maps_mc_account_codes_to_their_highest_blocking_severity() {
 		$summary = $this->complete_status_check_with_issue_details(
 			[
-				'account_rows' => [
-					$this->account_issue_row( 'raised_code', 'error' ),
-					$this->account_issue_row( 'raised_code', 'critical' ),
-					$this->account_issue_row( 'kept_code', 'critical' ),
-					$this->account_issue_row( 'kept_code', 'error' ),
-					$this->account_issue_row( 'error_code', 'error' ),
-					$this->account_issue_row( 'warning_code', 'warning' ),
-					$this->account_issue_row( 'suggestion_code', 'suggestion' ),
-					$this->account_issue_row( 'third_party_code', 'critical', '', 'filter' ),
+				'account_issues' => [
+					$this->feed_account_issue( 'raised_code', 'error' ),
+					$this->feed_account_issue( 'raised_code', 'critical' ),
+					$this->feed_account_issue( 'kept_code', 'critical' ),
+					$this->feed_account_issue( 'kept_code', 'error' ),
+					$this->feed_account_issue( 'error_code', 'error' ),
+					$this->feed_account_issue( 'warning_code', 'warning' ),
+					$this->feed_account_issue( 'suggestion_code', 'suggestion' ),
 				],
 			]
 		);
@@ -1977,15 +2179,16 @@ class MerchantStatusesTest extends UnitTest {
 			$summary['account_issue_codes']
 		);
 		$this->assertSame( 2, $summary['critical_account_issue_count'] );
+		$this->assertSame( 5, $summary['blocking_account_issue_count'] );
 	}
 
 	public function test_feed_summary_keeps_ten_account_codes_critical_first() {
-		$rows = [];
+		$issues = [];
 		foreach ( range( 12, 1 ) as $n ) {
-			$rows[] = $this->account_issue_row( sprintf( 'code_%02d', $n ), $n > 9 ? 'critical' : 'error' );
+			$issues[] = $this->feed_account_issue( sprintf( 'code_%02d', $n ), $n > 9 ? 'critical' : 'error' );
 		}
 
-		$summary = $this->complete_status_check_with_issue_details( [ 'account_rows' => $rows ] );
+		$summary = $this->complete_status_check_with_issue_details( [ 'account_issues' => $issues ] );
 
 		$this->assertSame(
 			[
@@ -2007,12 +2210,12 @@ class MerchantStatusesTest extends UnitTest {
 	public function test_feed_summary_sanitizes_issue_codes() {
 		$summary = $this->complete_status_check_with_issue_details(
 			[
-				'account_rows'  => [
-					$this->account_issue_row( 'policy-violation/v2.1', 'error' ),
-					$this->account_issue_row( str_repeat( 'a', 70 ), 'error' ),
+				'account_issues' => [
+					$this->feed_account_issue( 'policy-violation/v2.1', 'error' ),
+					$this->feed_account_issue( str_repeat( 'a', 70 ), 'error' ),
 				],
-				'mc_codes'      => [ 'image link!' => 4 ],
-				'presync_codes' => [ 'presync_error_price.amount' => 3 ],
+				'issue_codes'    => [ 1 => [ 'image link!' => true ] ],
+				'presync_codes'  => [ 'presync_error_price.amount' => 3 ],
 			]
 		);
 
@@ -2023,20 +2226,77 @@ class MerchantStatusesTest extends UnitTest {
 			],
 			$summary['account_issue_codes']
 		);
-		$this->assertSame( [ 'image_link_' => 4 ], $summary['top_product_issue_codes'] );
+		$this->assertSame( [ 'image_link_' => 1 ], $summary['top_product_issue_codes'] );
 		$this->assertSame( [ 'presync_error_price_amount' => 3 ], $summary['top_presync_issue_codes'] );
+	}
+
+	public function test_feed_summary_counts_products_per_issue_code_and_keeps_the_top_five() {
+		$summary = $this->complete_status_check_with_issue_details(
+			[
+				'issue_codes' => [
+					1 => [
+						'code_a' => true,
+						'code_b' => true,
+						'code_c' => true,
+					],
+					2 => [
+						'code_b' => true,
+						'code_d' => true,
+						'code_e' => true,
+						'code_f' => true,
+					],
+					3 => [
+						'code_b' => true,
+						'code_c' => true,
+						''       => true,
+					],
+					4 => [ '123' => true ],
+				],
+			]
+		);
+
+		$this->assertSame( 4, $summary['error_issue_product_count'] );
+		$this->assertSame(
+			[
+				'code_b' => 3,
+				'code_c' => 2,
+				'123'    => 1,
+				'code_a' => 1,
+				'code_d' => 1,
+			],
+			$summary['top_product_issue_codes']
+		);
+	}
+
+	public function test_feed_summary_counts_a_product_disapproved_in_any_market_only_as_disapproved() {
+		$summary = $this->complete_status_check_with_issue_details(
+			[
+				'product_ids'          => [
+					1 => true,
+					2 => true,
+				],
+				'approved_product_ids' => [
+					2 => true,
+					3 => true,
+					4 => true,
+				],
+			]
+		);
+
+		$this->assertSame( 2, $summary['disapproved_product_count'] );
+		$this->assertSame( 2, $summary['approved_product_count'] );
 	}
 
 	/**
 	 * @dataProvider critical_coverage_provider
-	 * @param array  $rows                    Account issue rows.
+	 * @param array  $issues                  Account issues.
 	 * @param string $expected_coverage       Expected critical_covers_all_targets.
 	 * @param int    $expected_critical_count Expected critical_account_issue_count.
 	 */
-	public function test_feed_summary_reports_critical_issue_coverage_of_target_countries( array $rows, string $expected_coverage, int $expected_critical_count ) {
+	public function test_feed_summary_reports_critical_issue_coverage_of_target_countries( array $issues, string $expected_coverage, int $expected_critical_count ) {
 		$summary = $this->complete_status_check_with_issue_details(
 			[
-				'account_rows'     => $rows,
+				'account_issues'   => $issues,
 				'target_countries' => [ 'US', 'CA' ],
 			]
 		);
@@ -2055,54 +2315,45 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function critical_coverage_provider(): array {
 		return [
-			'covers one of two targets'            => [ [ $this->account_issue_row( 'a', 'critical', '["US"]' ) ], 'partial', 1 ],
-			'an empty country list covers all'     => [
+			'covers one of two targets'          => [ [ $this->feed_account_issue( 'a', 'critical', [ 'US' ] ) ], 'partial', 1 ],
+			'an empty country list covers all'   => [
 				[
-					$this->account_issue_row( 'a', 'critical', '["US"]' ),
-					$this->account_issue_row( 'b', 'critical', '[]' ),
+					$this->feed_account_issue( 'a', 'critical', [ 'US' ] ),
+					$this->feed_account_issue( 'b', 'critical', [] ),
 				],
 				'yes',
 				2,
 			],
-			'the World region covers all'          => [ [ $this->account_issue_row( 'a', 'critical', '["001"]' ) ], 'yes', 1 ],
-			'the World region on an error issue'   => [ [ $this->account_issue_row( 'a', 'error', '["001"]' ) ], 'no', 0 ],
-			'issues together cover every target'   => [
+			'the World region covers all'        => [ [ $this->feed_account_issue( 'a', 'critical', [ '001' ] ) ], 'yes', 1 ],
+			'the World region on an error issue' => [ [ $this->feed_account_issue( 'a', 'error', [ '001' ] ) ], 'no', 0 ],
+			'issues together cover every target' => [
 				[
-					$this->account_issue_row( 'a', 'critical', '["US"]' ),
-					$this->account_issue_row( 'b', 'critical', '["CA","GB"]' ),
+					$this->feed_account_issue( 'a', 'critical', [ 'US' ] ),
+					$this->feed_account_issue( 'b', 'critical', [ 'CA', 'GB' ] ),
 				],
 				'yes',
 				2,
 			],
-			'covers only other countries'          => [ [ $this->account_issue_row( 'a', 'critical', '["GB"]' ) ], 'no', 1 ],
-			'no critical issues'                   => [ [ $this->account_issue_row( 'a', 'error', '[]' ) ], 'no', 0 ],
-			'critical issues without country data' => [
-				[
-					$this->account_issue_row( 'a', 'critical', '' ),
-					$this->account_issue_row( 'b', 'critical', 'not json' ),
-				],
-				'no',
-				2,
-			],
-			'countries stored as a JSON object'    => [ [ $this->account_issue_row( 'a', 'critical', '{"0":"CA","2":"US"}' ) ], 'yes', 1 ],
-			'critical filter rows are ignored'     => [ [ $this->account_issue_row( 'a', 'critical', '[]', 'filter' ) ], 'no', 0 ],
+			'covers only other countries'        => [ [ $this->feed_account_issue( 'a', 'critical', [ 'GB' ] ) ], 'no', 1 ],
+			'no critical issues'                 => [ [ $this->feed_account_issue( 'a', 'error', [] ) ], 'no', 0 ],
 		];
 	}
 
 	public function test_feed_summary_lists_present_plugin_issue_codes() {
 		$summary = $this->complete_status_check_with_issue_details(
 			[
-				'account_rows' => [
-					$this->account_issue_row( 'shipping_settings_sync_failed', 'error', '', 'filter' ),
-					$this->account_issue_row( 'third_party_code', 'error', '', 'filter' ),
-					$this->account_issue_row( 'missing_contact_information', 'error', '', 'filter' ),
-					$this->account_issue_row( 'shipping_settings_sync_failed', 'error', '', 'filter' ),
-					$this->account_issue_row( 'incompatible_google_product_feed', 'error', '["US"]', 'mc' ),
+				'filter_codes'   => [
+					'shipping_settings_sync_failed',
+					'third_party_code',
+					'missing_contact_information',
+					'shipping_settings_sync_failed',
 				],
+				'account_issues' => [ $this->feed_account_issue( 'incompatible_google_product_feed', 'critical' ) ],
 			]
 		);
 
 		$this->assertSame( [ 'missing_contact_information', 'shipping_settings_sync_failed' ], $summary['plugin_issue_codes'] );
+		$this->assertSame( 1, $summary['critical_account_issue_count'] );
 	}
 
 	/**
@@ -2143,13 +2394,8 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function failed_issue_detail_read_provider(): array {
 		return [
-			'account issues'       => [
-				[ 'account_rows' => null ],
-				[ 'critical_account_issue_count', 'account_issue_codes', 'critical_covers_all_targets', 'plugin_issue_codes' ],
-			],
-			'product issue codes'  => [ [ 'mc_codes' => null ], [ 'top_product_issue_codes' ] ],
+			'plugin issue codes'   => [ [ 'filter_codes' => null ], [ 'plugin_issue_codes' ] ],
 			'pre-sync issue codes' => [ [ 'presync_codes' => null ], [ 'top_presync_issue_codes' ] ],
-			'approved products'    => [ [ 'approved_count' => null ], [ 'approved_product_count' ] ],
 		];
 	}
 
@@ -2164,14 +2410,14 @@ class MerchantStatusesTest extends UnitTest {
 
 		$summary = $this->complete_status_check_with_issue_details(
 			[
-				'account_rows'     => [ $this->account_issue_row( 'a', 'critical', '["US"]' ) ],
+				'account_issues'   => [ $this->feed_account_issue( 'a', 'critical', [ 'US' ] ) ],
 				'target_countries' => new Exception( 'Target audience failed' ),
 			]
 		);
 
 		$this->assertSame(
 			[
-				'blocking_account_issue_count'  => 0,
+				'blocking_account_issue_count'  => 1,
 				'disapproved_product_count'     => 0,
 				'error_issue_product_count'     => 0,
 				'presync_error_product_count'   => 0,
@@ -2527,6 +2773,57 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	/**
+	 * A Merchant API offer approved in ES with the given item-level issues.
+	 *
+	 * @param int     $wc_product_id
+	 * @param array[] $issues
+	 *
+	 * @return Product
+	 */
+	protected function get_mapi_offer_with_issues( int $wc_product_id, array $issues ): Product {
+		return Product::from_array(
+			[
+				'name'          => 'accounts/123/products/' . $this->get_mapi_id( $wc_product_id ),
+				'productStatus' => [
+					'destinationStatuses' => [
+						[
+							'reportingContext'  => 'SHOPPING_ADS',
+							'approvedCountries' => [ 'ES' ],
+						],
+					],
+					'itemLevelIssues'     => $issues,
+				],
+			]
+		);
+	}
+
+	/**
+	 * An item-level issue as the Merchant API returns it.
+	 *
+	 * @param string      $code
+	 * @param string|null $reporting_context Omitted when null.
+	 * @param string      $severity
+	 * @param string      $resolution
+	 *
+	 * @return array
+	 */
+	protected function item_level_issue( string $code, ?string $reporting_context, string $severity = 'DISAPPROVED', string $resolution = 'merchant_action' ): array {
+		return array_filter(
+			[
+				'code'                => $code,
+				'description'         => 'Description of ' . $code,
+				'resolution'          => $resolution,
+				'severity'            => $severity,
+				'applicableCountries' => [ 'ES' ],
+				'reportingContext'    => $reporting_context,
+			],
+			function ( $value ) {
+				return null !== $value;
+			}
+		);
+	}
+
+	/**
 	 * Wire the product lookups and a fake intermediate-data option for process_mapi_products().
 	 *
 	 * @param WC_Product[] $products
@@ -2575,38 +2872,30 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	/**
-	 * Complete a status check whose five feed issue counts are zero and return the saved feed issue summary.
+	 * Complete a status check whose tracking holds the given values, and return the saved summary.
 	 *
-	 * @param array $reads Overrides for the issue detail reads: account_rows, target_countries (a Throwable is thrown),
-	 *                     mc_codes, presync_codes and approved_count.
+	 * @param array $reads Overrides for the tracking (product_ids, approved_product_ids, issue_codes, account_issues)
+	 *                     and the reads at completion: filter_codes, presync_codes and target_countries (a Throwable is thrown).
 	 *
 	 * @return array|null
 	 */
 	protected function complete_status_check_with_issue_details( array $reads = [] ): ?array {
 		$reads += [
-			'account_rows'     => [],
-			'target_countries' => [ 'US' ],
-			'mc_codes'         => [],
+			'filter_codes'     => [],
 			'presync_codes'    => [],
-			'approved_count'   => 0,
+			'target_countries' => [ 'US' ],
 		];
 
 		$stored = $this->use_product_status_fakes( [] );
-		$this->merchant_statuses->record_feed_issue_page( null, null );
+		$this->options->update(
+			OptionsInterface::FEED_ISSUE_TRACKING,
+			$this->feed_issue_tracking( array_intersect_key( $reads, array_flip( [ 'product_ids', 'approved_product_ids', 'issue_codes', 'account_issues' ] ) ) )
+		);
 
-		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturnCallback(
-			function ( $meta_key, $values ) use ( $reads ) {
-				return [ MCStatus::APPROVED, MCStatus::PARTIALLY_APPROVED ] === $values ? $reads['approved_count'] : 0;
-			}
-		);
-		$this->merchant_issue_table->method( 'count_account_issues' )->willReturn( 0 );
+		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturn( 0 );
 		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturn( 0 );
-		$this->merchant_issue_table->method( 'get_account_issue_rows' )->willReturn( $reads['account_rows'] );
-		$this->merchant_issue_table->method( 'get_top_issue_codes' )->willReturnCallback(
-			function ( $source ) use ( $reads ) {
-				return 'mc' === $source ? $reads['mc_codes'] : $reads['presync_codes'];
-			}
-		);
+		$this->merchant_issue_table->method( 'get_account_issue_codes' )->willReturn( $reads['filter_codes'] );
+		$this->merchant_issue_table->method( 'get_top_issue_codes' )->willReturn( $reads['presync_codes'] );
 		if ( $reads['target_countries'] instanceof Throwable ) {
 			$this->target_audience->method( 'get_target_countries' )->willThrowException( $reads['target_countries'] );
 		} else {
@@ -2619,21 +2908,39 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	/**
-	 * Build an account issue row as MerchantIssueTable::get_account_issue_rows() returns it.
+	 * Build the feed issue tracking of a completed check.
 	 *
-	 * @param string $code
-	 * @param string $severity
-	 * @param string $applicable_countries Stored JSON country list.
-	 * @param string $source
+	 * @param array $overrides
 	 *
 	 * @return array
 	 */
-	protected function account_issue_row( string $code, string $severity, string $applicable_countries = '["US"]', string $source = 'mc' ): array {
+	protected function feed_issue_tracking( array $overrides = [] ): array {
+		return array_merge(
+			[
+				'next_page_token'      => null,
+				'product_ids'          => [],
+				'approved_product_ids' => [],
+				'issue_codes'          => [],
+				'account_issues'       => [],
+			],
+			$overrides
+		);
+	}
+
+	/**
+	 * Build a Shopping ads and free listings account issue as the feed issue tracking stores it.
+	 *
+	 * @param string   $code
+	 * @param string   $severity
+	 * @param string[] $applicable_countries
+	 *
+	 * @return array
+	 */
+	protected function feed_account_issue( string $code, string $severity, array $applicable_countries = [ 'US' ] ): array {
 		return [
 			'code'                 => $code,
 			'severity'             => $severity,
 			'applicable_countries' => $applicable_countries,
-			'source'               => $source,
 		];
 	}
 
