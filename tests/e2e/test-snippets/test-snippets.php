@@ -102,3 +102,22 @@ add_filter(
 		return $url;
 	}
 );
+
+/**
+ * Open posts in the Classic Editor for a browser that sends the `gla_e2e_classic_editor` cookie,
+ * so a test can use either editor without installing another plugin. The block editor stays the
+ * default for everything else.
+ *
+ * @param bool $use_block_editor
+ * @return bool
+ */
+add_filter(
+	'use_block_editor_for_post',
+	function ( $use_block_editor ) {
+		if ( isset( $_COOKIE['gla_e2e_classic_editor'] ) ) {
+			return false;
+		}
+
+		return $use_block_editor;
+	}
+);
