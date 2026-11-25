@@ -224,6 +224,24 @@ export async function clearBusinessProfileLocation() {
 }
 
 /**
+ * Reads a post's saved Business Profile share choice, saved text and last sync outcome.
+ *
+ * @param {number|string} postId The post ID.
+ * @return {Promise<{isShareEnabled: boolean, summary: string, syncOutcome: string|null}>} The saved state.
+ */
+export async function getBusinessProfileShareState( postId ) {
+	const { data } = await apiWP().get( `posts/${ postId }`, {
+		params: { context: 'edit' },
+	} );
+
+	return {
+		isShareEnabled: data.meta._wc_gla_gbp_share,
+		summary: data.meta._wc_gla_gbp_summary,
+		syncOutcome: data.gla_gbp_sync_outcome?.outcome ?? null,
+	};
+}
+
+/**
  * Save Merchant Center settings, including the Google Customer Reviews fields
  * (`gcr_collect_reviews_after_purchase`, `gcr_badge_widget_enabled`,
  * `gcr_badge_widget_position`), via the real settings REST route.
