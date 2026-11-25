@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -24,6 +25,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductI
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyButNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\RecommendationsAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNotGrowingEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SearchConsoleNotConnectedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignCreationEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SmallProductImagesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PaidOrdersEvaluator;
@@ -54,28 +56,29 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Service::class                           => true,
-		NotificationEvaluatorInterface::class    => true,
-		NotificationService::class               => true,
-		NotificationCacheInvalidator::class      => true,
-		AbandonedOnboardingEvaluator::class      => true,
-		BadgeWidgetEvaluator::class              => true,
-		CampaignNoSalesEvaluator::class          => true,
-		CollectReviewsEvaluator::class           => true,
-		CouponsNotSyncedEvaluator::class         => true,
-		CyoSurveyNoSpendEvaluator::class         => true,
-		CyoSurveySpendEvaluator::class           => true,
-		EnhancedConversionsOffEvaluator::class   => true,
-		NotOnboardedEvaluator::class             => true,
-		PausedCampaignEvaluator::class           => true,
-		ProductIssuesEvaluator::class            => true,
-		ReadyButNoSalesEvaluator::class          => true,
-		RecommendationsAvailableEvaluator::class => true,
-		SalesNotGrowingEvaluator::class          => true,
-		SkippedCampaignCreationEvaluator::class  => true,
-		SmallProductImagesEvaluator::class       => true,
-		PaidOrdersEvaluator::class               => true,
-		TrackingOffEvaluator::class              => true,
+		Service::class                            => true,
+		NotificationEvaluatorInterface::class     => true,
+		NotificationService::class                => true,
+		NotificationCacheInvalidator::class       => true,
+		AbandonedOnboardingEvaluator::class       => true,
+		BadgeWidgetEvaluator::class               => true,
+		CampaignNoSalesEvaluator::class           => true,
+		CollectReviewsEvaluator::class            => true,
+		CouponsNotSyncedEvaluator::class          => true,
+		CyoSurveyNoSpendEvaluator::class          => true,
+		CyoSurveySpendEvaluator::class            => true,
+		EnhancedConversionsOffEvaluator::class    => true,
+		NotOnboardedEvaluator::class              => true,
+		PausedCampaignEvaluator::class            => true,
+		ProductIssuesEvaluator::class             => true,
+		ReadyButNoSalesEvaluator::class           => true,
+		RecommendationsAvailableEvaluator::class  => true,
+		SalesNotGrowingEvaluator::class           => true,
+		SearchConsoleNotConnectedEvaluator::class => true,
+		SkippedCampaignCreationEvaluator::class   => true,
+		SmallProductImagesEvaluator::class        => true,
+		PaidOrdersEvaluator::class                => true,
+		TrackingOffEvaluator::class               => true,
 	];
 
 	/**
@@ -100,6 +103,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PausedCampaignEvaluator::class, AdsCampaign::class );
 		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class, AdsRecommendationsService::class );
 		$this->share_with_tags( RecommendationsAvailableEvaluator::class, AdsRecommendationsService::class, AdsCampaign::class );
+		$this->share_with_tags( SearchConsoleNotConnectedEvaluator::class, SearchConsoleConnection::class, OnboardingCompleted::class );
 		$this->share_with_tags( CyoSurveySpendEvaluator::class, OnboardingCompleted::class, AdsReport::class );
 		$this->share_with_tags( CyoSurveyNoSpendEvaluator::class, OnboardingCompleted::class, AdsReport::class );
 	}

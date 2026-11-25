@@ -21,8 +21,8 @@ const noValidData = {
  * Triggered when a chart tab is clicked
  *
  * @event gla_chart_tab_click
- * @property {string} report Name of the report (e.g. `"reports-programs" | "reports-products"`)
- * @property {string} context Metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend"`).
+ * @property {string} report Name of the report (e.g. `"reports-programs" | "reports-products" | "reports-search-console"`)
+ * @property {string} context Metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend" | "ctr" | "position"`).
  */
 
 /**
@@ -61,7 +61,7 @@ const SummarySection = ( {
 		<SummaryList>
 			{ () =>
 				metrics.map( ( metric ) => {
-					const { key } = metric;
+					const { key, reverseTrend, labelTooltipText } = metric;
 					const selected = selectedMetric === key;
 					const href = getNewPath( { selectedMetric: key } );
 					return (
@@ -71,6 +71,8 @@ const SummarySection = ( {
 							href={ href }
 							selected={ selected }
 							data={ totals[ key ] || noValidData }
+							reverseTrend={ reverseTrend }
+							labelTooltipText={ labelTooltipText }
 							onLinkClickCallback={ () => trackClickEvent( key ) }
 						/>
 					);

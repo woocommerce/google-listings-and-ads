@@ -22,22 +22,34 @@ const tabs = [
 		title: __( 'Products', 'google-listings-and-ads' ),
 		href: getNewPath( { reportKey: 'products' }, '/google/reports', {} ),
 	},
+	{
+		key: 'search-console',
+		title: __( 'Organic search', 'google-listings-and-ads' ),
+		href: getNewPath(
+			{ reportKey: 'search-console' },
+			'/google/reports',
+			{}
+		),
+	},
 ];
 
 const ReportsNavigation = () => {
 	const { hasMC } = useReportsAvailability();
+	const reportKey = getSelectedReportKey();
 
 	// The Products report needs a product feed, which comes from Merchant Center.
 	if ( ! hasMC ) {
 		return (
 			<AppSubNav
 				tabs={ tabs.filter( ( { key } ) => key !== 'products' ) }
-				selectedKey="programs"
+				selectedKey={
+					reportKey === 'products' ? 'programs' : reportKey
+				}
 			/>
 		);
 	}
 
-	return <AppSubNav tabs={ tabs } selectedKey={ getSelectedReportKey() } />;
+	return <AppSubNav tabs={ tabs } selectedKey={ reportKey } />;
 };
 
 export default ReportsNavigation;

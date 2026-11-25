@@ -26,10 +26,13 @@ const init = async () => {
 					return response;
 				}
 
+				// Forward the path and query exactly as received.
+				// `request.params.path` is decoded and `request.url` is
+				// normalized, so an encoded segment such as
+				// `sites/https%3A%2F%2Fexample.com%2F` would not reach the
+				// Connect Server intact.
 				const proxy = {
-					uri: `${ config.connectServer }/${ request.params.path }${
-						request.url.search || ''
-					}`,
+					uri: `${ config.connectServer }${ request.raw.req.url }`,
 					passThrough: true,
 				};
 
