@@ -21,6 +21,13 @@ describe( 'reducer', () => {
 				mcId: null,
 				adsId: null,
 			},
+			accounts: {
+				google_tag_manager: null,
+				existing_google_tag_manager: null,
+			},
+			google_tag_manager: {
+				containers: null,
+			},
 			mc: {
 				target_audience: null,
 				countries: null,
@@ -455,6 +462,74 @@ describe( 'reducer', () => {
 			const state = reducer( originalState, action );
 
 			expect( state ).toHaveProperty( path, get( defaultState, path ) );
+		} );
+	} );
+
+	describe( 'Google Tag Manager account connection', () => {
+		const connectionPath = 'accounts.google_tag_manager';
+		const accountsPath = 'accounts.existing_google_tag_manager';
+		const containersPath = 'google_tag_manager.containers';
+
+		it( 'should return with received Google Tag Manager connection', () => {
+			const action = {
+				type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER,
+				account: { id: '111', status: 'connected', containerId: 'c1' },
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( connectionPath, action.account );
+		} );
+
+		it( 'should return with received existing Google Tag Manager accounts', () => {
+			const action = {
+				type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER_EXISTING,
+				accounts: [ { id: '111', name: 'Acme Store' } ],
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( accountsPath, action.accounts );
+		} );
+
+		it( 'should return with received Google Tag Manager containers', () => {
+			const action = {
+				type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_CONTAINERS,
+				containers: [ { id: 'c1', publicId: 'GTM-ABC123' } ],
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( containersPath, action.containers );
+		} );
+
+		it( 'should clear the connection, accounts, and containers state on disconnect', () => {
+			const originalState = prepareState( connectionPath, {
+				id: '111',
+				status: 'connected',
+				containerId: 'c1',
+			} );
+			const stateWithLists = reducer( originalState, {
+				type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER_EXISTING,
+				accounts: [ { id: '111', name: 'Acme Store' } ],
+			} );
+			const stateWithContainers = reducer( stateWithLists, {
+				type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_CONTAINERS,
+				containers: [ { id: 'c1', publicId: 'GTM-ABC123' } ],
+			} );
+
+			const state = reducer( stateWithContainers, {
+				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
+			} );
+
+			expect( state ).toHaveProperty( connectionPath, {
+				status: 'disconnected',
+			} );
+			expect( state ).toHaveProperty(
+				accountsPath,
+				get( defaultState, accountsPath )
+			);
+			expect( state ).toHaveProperty(
+				containersPath,
+				get( defaultState, containersPath )
+			);
 		} );
 	} );
 

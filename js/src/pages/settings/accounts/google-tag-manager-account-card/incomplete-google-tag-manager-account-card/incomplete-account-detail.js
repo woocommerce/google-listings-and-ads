@@ -1,0 +1,43 @@
+/**
+ * External dependencies
+ */
+import { Flex, FlexItem } from '@wordpress/components';
+
+/**
+ * Internal dependencies
+ */
+import AccountCardTextDetail from '../../account-card-text-detail';
+import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import AccountNameWithLink from '../components/account-name-with-link';
+import ConnectContainer from './connect-container';
+import PendingContainerNotice from './pending-container-notice';
+
+/**
+ * Renders the detail of the account card in the incomplete state: the already-connected account,
+ * then either the notice for a container that was created but couldn't be connected, or the way to
+ * connect one.
+ *
+ * @return {JSX.Element} The detail.
+ */
+export default function IncompleteAccountDetail() {
+	const { account } = useGoogleTagManagerAccount();
+
+	return (
+		<Flex direction="column" gap={ 4 }>
+			<FlexItem>
+				<AccountCardTextDetail>
+					<AccountNameWithLink account={ account } />
+				</AccountCardTextDetail>
+			</FlexItem>
+			<FlexItem>
+				{ account.pendingContainerId ? (
+					<PendingContainerNotice
+						containerId={ account.pendingContainerId }
+					/>
+				) : (
+					<ConnectContainer />
+				) }
+			</FlexItem>
+		</Flex>
+	);
+}

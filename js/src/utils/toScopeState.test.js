@@ -15,6 +15,11 @@ const genScopes = ( ...names ) => {
 			'site_verification_verify_only',
 			'https://www.googleapis.com/auth/siteverification.verify_only',
 		],
+		// Read Google Tag Manager accounts and containers
+		[
+			'tag_manager_readonly',
+			'https://www.googleapis.com/auth/tagmanager.readonly',
+		],
 	] );
 
 	return names.reduce( ( acc, name ) => {
@@ -31,6 +36,7 @@ describe( 'toScopeState', () => {
 	let gmcScopes;
 	let adsScopes;
 	let contentAndAdsdScopes;
+	let gtmScopes;
 	let allScopes;
 
 	beforeEach( () => {
@@ -39,6 +45,7 @@ describe( 'toScopeState', () => {
 		gmcScopes = genScopes( 'content', 'site_verification_verify_only' );
 		adsScopes = genScopes( 'ad_words' );
 		contentAndAdsdScopes = genScopes( 'content', 'ad_words' );
+		gtmScopes = genScopes( 'tag_manager_readonly' );
 		allScopes = genScopes(
 			'content',
 			'site_verification_verify_only',
@@ -46,11 +53,12 @@ describe( 'toScopeState', () => {
 		);
 	} );
 
-	it( 'should return an object structure containing three properties', () => {
+	it( 'should return an object structure containing four properties', () => {
 		const scopeState = toScopeState( false, [] );
 
 		expect( scopeState ).toHaveProperty( 'gmcRequired' );
 		expect( scopeState ).toHaveProperty( 'adsRequired' );
+		expect( scopeState ).toHaveProperty( 'gtmRequired' );
 		expect( scopeState ).toHaveProperty( 'onboardingRequired' );
 		expect( scopeState ).toHaveProperty( 'reconnectionRequired' );
 	} );
@@ -59,12 +67,14 @@ describe( 'toScopeState', () => {
 		expect( toScopeState( false ) ).toMatchObject( {
 			gmcRequired: false,
 			adsRequired: false,
+			gtmRequired: false,
 			onboardingRequired: false,
 			reconnectionRequired: false,
 		} );
 		expect( toScopeState( true ) ).toMatchObject( {
 			gmcRequired: false,
 			adsRequired: false,
+			gtmRequired: false,
 			onboardingRequired: false,
 			reconnectionRequired: false,
 		} );
@@ -120,6 +130,47 @@ describe( 'toScopeState', () => {
 				expect(
 					toScopeState( adsSetupComplete, gmcScopes ).adsRequired
 				).toBe( false );
+			} );
+		}
+	);
+
+	describe.each( [ [ false ], [ true ] ] )(
+		'For `gtmRequired`, if the parameter `adsSetupComplete` = %p',
+		( adsSetupComplete ) => {
+			it( 'and the `scopes` contains the Google Tag Manager required scope, should be `true`', () => {
+				expect(
+					toScopeState( adsSetupComplete, gtmScopes ).gtmRequired
+				).toBe( true );
+			} );
+
+			it( "and the `scopes` doesn't contain the Google Tag Manager required scope, should be `false`", () => {
+				expect( toScopeState( adsSetupComplete, [] ).gtmRequired ).toBe(
+					false
+				);
+				expect(
+					toScopeState( adsSetupComplete, gmcScopes ).gtmRequired
+				).toBe( false );
+				expect(
+					toScopeState( adsSetupComplete, adsScopes ).gtmRequired
+				).toBe( false );
+			} );
+
+			it( 'should not factor into `onboardingRequired` or `reconnectionRequired`', () => {
+				const scopes = [ ...allScopes, ...gtmScopes ];
+
+				expect(
+					toScopeState( adsSetupComplete, allScopes )
+						.onboardingRequired
+				).toBe(
+					toScopeState( adsSetupComplete, scopes ).onboardingRequired
+				);
+				expect(
+					toScopeState( adsSetupComplete, allScopes )
+						.reconnectionRequired
+				).toBe(
+					toScopeState( adsSetupComplete, scopes )
+						.reconnectionRequired
+				);
 			} );
 		}
 	);

@@ -132,7 +132,7 @@ class CyoSurveyEvaluatorTest extends UnitTest {
 	}
 
 	public function test_get_priority() {
-		$this->assertSame( 160, NotificationPriorities::CYO_SURVEY );
+		$this->assertSame( 170, NotificationPriorities::CYO_SURVEY );
 		$this->assertSame( NotificationPriorities::CYO_SURVEY, $this->spend_evaluator( 0 )->get_priority() );
 		$this->assertSame( NotificationPriorities::CYO_SURVEY, $this->no_spend_evaluator( 0 )->get_priority() );
 	}
