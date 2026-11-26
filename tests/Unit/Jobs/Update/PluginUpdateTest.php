@@ -87,7 +87,7 @@ class PluginUpdateTest extends UnitTest {
 		$update_all_products->expects( $this->once() )->method( 'schedule' );
 
 		// 3.7.3 is above the older 1.x entries, so the 3.8.0 re-sync and later entries fire. The 3.8.0
-		// and 3.10.2 entries both ask for a full re-sync, which is scheduled once: a store upgrading
+		// and 3.11.0 entries both ask for a full re-sync, which is scheduled once: a store upgrading
 		// from the Content API era must re-sync every product to pick up Merchant API ids.
 		$this->stub_jobs( [ UpdateAllProducts::class => $update_all_products ] );
 
@@ -100,10 +100,10 @@ class PluginUpdateTest extends UnitTest {
 	public function test_upgrading_within_mapi_versions_does_not_reschedule_resync() {
 		// No-refire boundary guard, not fix verification: the fires-on-upgrade case is covered by
 		// test_upgrading_to_mapi_release_schedules_full_product_resync. This pins the gate at `<` so
-		// a store already past the latest re-sync entry (>= 3.10.2) never re-runs the re-sync.
+		// a store already past the latest re-sync entry (>= 3.11.0) never re-runs the re-sync.
 		$this->stub_jobs( [] );
 
-		$this->plugin_update->install( '3.10.2', '3.10.3' );
+		$this->plugin_update->install( '3.11.0', '3.11.1' );
 
 		$this->assertNotContains( UpdateAllProducts::class, $this->fetched );
 	}
@@ -116,10 +116,17 @@ class PluginUpdateTest extends UnitTest {
 		// expiring-products resync, so the fix release re-syncs every product once.
 		$this->stub_jobs( [ UpdateAllProducts::class => $update_all_products ] );
 
-		$this->plugin_update->install( '3.10.1', '3.10.2' );
+		$this->plugin_update->install( '3.10.1', '3.11.0' );
 	}
 
-	public function test_upgrading_from_earlier_version_schedules_conversion_report_cleanup() {
+	/**
+	 * The cleanup ships in 3.11.0, so stores on any 3.10.x release must run it when they update.
+	 *
+	 * @dataProvider provide_versions_before_cleanup_release
+	 *
+	 * @param string $old_version Version the store updates from.
+	 */
+	public function test_upgrading_to_cleanup_release_schedules_conversion_report_cleanup( string $old_version ) {
 		$cleanup = $this->create_job( DeleteYouTubeConversionReports::class, [ true ] );
 		$cleanup->expects( $this->once() )->method( 'schedule' );
 		$update_all_products = $this->create_job( UpdateAllProducts::class, [ true ] );
@@ -130,18 +137,26 @@ class PluginUpdateTest extends UnitTest {
 			]
 		);
 
-		$this->plugin_update->install( '3.9.7', '3.10.0' );
+		$this->plugin_update->install( $old_version, '3.11.0' );
 
-		// 3.9.7 is also below the 3.10.2 re-sync entry, so that job is scheduled too.
+		// Both jobs come from the 3.11.0 entry.
 		$this->assertSame( [ DeleteYouTubeConversionReports::class, UpdateAllProducts::class ], $this->fetched );
 		$this->assertSame( [], $this->stored_options[ self::PENDING ] );
+	}
+
+	public function provide_versions_before_cleanup_release(): array {
+		return [
+			'3.9.7'  => [ '3.9.7' ],
+			'3.10.0' => [ '3.10.0' ],
+			'3.10.1' => [ '3.10.1' ],
+		];
 	}
 
 	public function test_upgrading_from_cleanup_release_does_not_reschedule_conversion_report_cleanup() {
 		$this->stub_jobs( [] );
 
-		// Past every entry (3.10.0 cleanup, 3.10.2 re-sync), so nothing is scheduled.
-		$this->plugin_update->install( '3.10.2', '3.10.3' );
+		// Past every entry (3.11.0 cleanup and re-sync), so nothing is scheduled.
+		$this->plugin_update->install( '3.11.0', '3.11.1' );
 
 		$this->assertSame( [], $this->fetched );
 	}

@@ -77,7 +77,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Stored issue severities that are reported as warnings; any other severity is an error.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 */
 	public const WARNING_SEVERITIES = [
 		'warning',
@@ -91,14 +91,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * Product issues use the complement of WARNING_SEVERITIES instead, which also includes
 	 * raw Merchant API values such as DISAPPROVED.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 */
 	public const BLOCKING_SEVERITIES = [ self::SEVERITY_ERROR, 'critical' ];
 
 	/**
 	 * Keys of the feed issue summary saved when a status check completes.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 */
 	public const FEED_ISSUE_SUMMARY_FIELDS = [
 		'blocking_account_issue_count',
@@ -1083,7 +1083,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * Keep this state separate from the statistics consumed by older plugin versions.
 	 * The token chain ensures a check started before an upgrade cannot publish partial counts.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param string|null $page_token      Token of the processed page; null for the first page.
 	 * @param string|null $next_page_token Token of the next page; null for the last page.
@@ -1113,7 +1113,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Get the top-level product IDs of the current page's disapproved offers, counting a variation as its parent.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @return int[]
 	 */
@@ -1227,7 +1227,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Save the feed-blocking issue counts of the completed status check, for the WC Tracker snapshot.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param int $disapproved_product_count Products with an offer disapproved in any market during this check.
 	 */

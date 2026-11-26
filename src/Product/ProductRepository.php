@@ -295,7 +295,7 @@ class ProductRepository implements Service {
 	/**
 	 * The SQL in find_expiring_product_ids() mirrors these errors rules. Keep the two in step.
 	 *
-	 * @deprecated x.x.x No longer called: find_expiring_product_ids(), its only caller, now checks
+	 * @deprecated 3.11.0 No longer called: find_expiring_product_ids(), its only caller, now checks
 	 *             the errors meta in SQL. Kept for subclasses that call or override it.
 	 *
 	 * @return array
@@ -394,7 +394,7 @@ class ProductRepository implements Service {
 	 * Google expires a product 30 days after its last update, so the filtered value can shorten
 	 * the window but not lengthen it past RESUBMIT_EXPIRY_DAYS.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @return int Days, from 1 to RESUBMIT_EXPIRY_DAYS.
 	 */
@@ -406,7 +406,7 @@ class ProductRepository implements Service {
 		 * is clamped to between 1 and 25, so products are always resubmitted before Google expires
 		 * them 30 days after their last update. A non-numeric value falls back to the default.
 		 *
-		 * @since x.x.x
+		 * @since 3.11.0
 		 *
 		 * @param int $days Days after the last sync. Default 25.
 		 */

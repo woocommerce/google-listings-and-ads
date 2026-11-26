@@ -55,7 +55,7 @@ class Dashboard implements Service, Registerable {
 				$this->register_classic_submenu_page(
 					[
 						'id'     => 'google-listings-and-ads',
-						'title'  => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
+						'title'  => __( 'Google', 'google-listings-and-ads' ),
 						'parent' => self::MARKETING_MENU_SLUG,
 						'path'   => self::PATH,
 					]

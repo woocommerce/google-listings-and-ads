@@ -8,7 +8,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [BulkEditInitializer.php#L36](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/BulkEdit/BulkEditInitializer.php#L36)
+- [BulkEditInitializer.php#L36](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/BulkEdit/BulkEditInitializer.php#L36)
 
 ## google_for_woocommerce_admin_menu_notification_count
 
@@ -16,7 +16,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [NotificationManager.php#L166](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Menu/NotificationManager.php#L166)
+- [NotificationManager.php#L166](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Menu/NotificationManager.php#L166)
 
 ## wcml_raw_price_amount
 
@@ -24,9 +24,9 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WPML.php#L233](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WPML.php#L233)
-- [WPML.php#L277](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WPML.php#L277)
-- [WPML.php#L333](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WPML.php#L333)
+- [WPML.php#L233](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WPML.php#L233)
+- [WPML.php#L277](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WPML.php#L277)
+- [WPML.php#L333](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WPML.php#L333)
 
 ## woocommerce_adjust_non_base_location_prices
 
@@ -34,7 +34,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductInputAdapter.php#L651](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L651)
+- [WCProductInputAdapter.php#L651](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L651)
 
 ## woocommerce_admin_disabled
 
@@ -42,7 +42,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCAdminValidator.php#L38](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Internal/Requirements/WCAdminValidator.php#L38)
+- [WCAdminValidator.php#L38](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Internal/Requirements/WCAdminValidator.php#L38)
 
 ## woocommerce_gla_ads_billing_setup_status
 
@@ -50,8 +50,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [Ads.php#L114](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Ads.php#L114)
-- [Ads.php#L123](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Ads.php#L123)
+- [Ads.php#L114](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Ads.php#L114)
+- [Ads.php#L123](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Ads.php#L123)
 
 ## woocommerce_gla_ads_client_exception
 
@@ -59,37 +59,37 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AdsCampaign.php#L183](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsCampaign.php#L183)
-- [AdsCampaign.php#L240](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsCampaign.php#L240)
-- [AdsCampaign.php#L286](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsCampaign.php#L286)
-- [AdsCampaign.php#L391](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsCampaign.php#L391)
-- [AdsCampaign.php#L454](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsCampaign.php#L454)
-- [AdsCampaign.php#L498](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsCampaign.php#L498)
-- [AdsCampaign.php#L561](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsCampaign.php#L561)
-- [AdsCampaign.php#L1104](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsCampaign.php#L1104)
-- [AdsCampaign.php#L1153](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsCampaign.php#L1153)
-- [AdsIncentives.php#L113](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsIncentives.php#L113)
-- [AdsIncentives.php#L200](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsIncentives.php#L200)
-- [AdsIncentives.php#L293](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsIncentives.php#L293)
-- [AdsReport.php#L171](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsReport.php#L171)
-- [LocationIDTrait.php#L54](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/LocationIDTrait.php#L54)
-- [AdsAssetGroupAsset.php#L137](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsAssetGroupAsset.php#L137)
-- [AdsAssetGroupAsset.php#L209](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsAssetGroupAsset.php#L209)
-- [BudgetRecommendations.php#L125](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/BudgetRecommendations.php#L125)
-- [Ads.php#L75](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Ads.php#L75)
-- [Ads.php#L119](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Ads.php#L119)
-- [Ads.php#L164](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Ads.php#L164)
-- [Ads.php#L206](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Ads.php#L206)
-- [Ads.php#L316](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Ads.php#L316)
-- [AdsConversionAction.php#L101](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsConversionAction.php#L101)
-- [AdsConversionAction.php#L147](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsConversionAction.php#L147)
-- [BudgetMetrics.php#L137](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/BudgetMetrics.php#L137)
-- [AdsAssetGroup.php#L123](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsAssetGroup.php#L123)
-- [AdsAssetGroup.php#L330](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsAssetGroup.php#L330)
-- [AdsAssetGroup.php#L403](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsAssetGroup.php#L403)
-- [AdsAssetGroup.php#L459](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsAssetGroup.php#L459)
-- [AdsAssetGenerationService.php#L152](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Ads/AdsAssetGenerationService.php#L152)
-- [AdsAssetGenerationService.php#L221](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Ads/AdsAssetGenerationService.php#L221)
+- [AdsConversionAction.php#L101](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsConversionAction.php#L101)
+- [AdsConversionAction.php#L147](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsConversionAction.php#L147)
+- [BudgetMetrics.php#L137](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/BudgetMetrics.php#L137)
+- [BudgetRecommendations.php#L125](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/BudgetRecommendations.php#L125)
+- [AdsAssetGroupAsset.php#L137](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsAssetGroupAsset.php#L137)
+- [AdsAssetGroupAsset.php#L209](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsAssetGroupAsset.php#L209)
+- [AdsIncentives.php#L113](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsIncentives.php#L113)
+- [AdsIncentives.php#L200](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsIncentives.php#L200)
+- [AdsIncentives.php#L293](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsIncentives.php#L293)
+- [AdsCampaign.php#L183](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsCampaign.php#L183)
+- [AdsCampaign.php#L240](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsCampaign.php#L240)
+- [AdsCampaign.php#L286](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsCampaign.php#L286)
+- [AdsCampaign.php#L395](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsCampaign.php#L395)
+- [AdsCampaign.php#L458](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsCampaign.php#L458)
+- [AdsCampaign.php#L502](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsCampaign.php#L502)
+- [AdsCampaign.php#L565](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsCampaign.php#L565)
+- [AdsCampaign.php#L1128](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsCampaign.php#L1128)
+- [AdsCampaign.php#L1177](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsCampaign.php#L1177)
+- [Ads.php#L75](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Ads.php#L75)
+- [Ads.php#L119](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Ads.php#L119)
+- [Ads.php#L164](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Ads.php#L164)
+- [Ads.php#L206](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Ads.php#L206)
+- [Ads.php#L316](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Ads.php#L316)
+- [AdsAssetGroup.php#L123](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsAssetGroup.php#L123)
+- [AdsAssetGroup.php#L330](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsAssetGroup.php#L330)
+- [AdsAssetGroup.php#L403](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsAssetGroup.php#L403)
+- [AdsAssetGroup.php#L459](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsAssetGroup.php#L459)
+- [AdsReport.php#L171](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsReport.php#L171)
+- [LocationIDTrait.php#L54](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/LocationIDTrait.php#L54)
+- [AdsAssetGenerationService.php#L166](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Ads/AdsAssetGenerationService.php#L166)
+- [AdsAssetGenerationService.php#L233](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Ads/AdsAssetGenerationService.php#L233)
 
 ## woocommerce_gla_ads_id
 
@@ -97,7 +97,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [Options.php#L120](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Options/Options.php#L120)
+- [Options.php#L120](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Options/Options.php#L120)
 
 ## woocommerce_gla_ads_setup_completed
 
@@ -105,7 +105,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [SetupCompleteController.php#L66](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Ads/SetupCompleteController.php#L66)
+- [SetupCompleteController.php#L66](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Ads/SetupCompleteController.php#L66)
 
 ## woocommerce_gla_attribute_applicable_product_types_
 
@@ -113,8 +113,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AttributeManager.php#L296](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/Attributes/AttributeManager.php#L296)
-- [AttributesForm.php#L99](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/Product/Attributes/AttributesForm.php#L99)
+- [AttributeManager.php#L296](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/Attributes/AttributeManager.php#L296)
+- [AttributesForm.php#L99](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/Product/Attributes/AttributesForm.php#L99)
 
 ## woocommerce_gla_attribute_hidden_product_types_
 
@@ -122,7 +122,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AttributesForm.php#L104](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/Product/Attributes/AttributesForm.php#L104)
+- [AttributesForm.php#L104](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/Product/Attributes/AttributesForm.php#L104)
 
 ## woocommerce_gla_attribute_mapping_sources
 
@@ -130,7 +130,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [IsFieldTrait.php#L31](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L31)
+- [IsFieldTrait.php#L31](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L31)
 
 ## woocommerce_gla_attribute_mapping_sources_custom_attributes
 
@@ -138,7 +138,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [IsFieldTrait.php#L125](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L125)
+- [IsFieldTrait.php#L125](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L125)
 
 ## woocommerce_gla_attribute_mapping_sources_global_attributes
 
@@ -146,7 +146,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [IsFieldTrait.php#L64](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L64)
+- [IsFieldTrait.php#L64](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L64)
 
 ## woocommerce_gla_attribute_mapping_sources_product_fields
 
@@ -154,7 +154,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [IsFieldTrait.php#L115](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L115)
+- [IsFieldTrait.php#L115](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L115)
 
 ## woocommerce_gla_attribute_mapping_sources_taxonomies
 
@@ -162,7 +162,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [IsFieldTrait.php#L65](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L65)
+- [IsFieldTrait.php#L65](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L65)
 
 ## woocommerce_gla_attributes_tab_applicable_product_types
 
@@ -170,7 +170,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AttributesTrait.php#L18](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/Product/Attributes/AttributesTrait.php#L18)
+- [AttributesTrait.php#L18](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/Product/Attributes/AttributesTrait.php#L18)
 
 ## woocommerce_gla_batch_deleted_products
 
@@ -178,8 +178,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductSyncer.php#L402](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L402)
-- [ProductSyncer.php#L463](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L463)
+- [ProductSyncer.php#L402](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L402)
+- [ProductSyncer.php#L463](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L463)
 
 ## woocommerce_gla_batch_retry_delete_products
 
@@ -187,7 +187,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductSyncer.php#L582](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L582)
+- [ProductSyncer.php#L582](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L582)
 
 ## woocommerce_gla_batch_retry_update_products
 
@@ -195,7 +195,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductSyncer.php#L526](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L526)
+- [ProductSyncer.php#L526](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L526)
 
 ## woocommerce_gla_batch_updated_products
 
@@ -203,7 +203,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductSyncer.php#L180](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L180)
+- [ProductSyncer.php#L180](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L180)
 
 ## woocommerce_gla_batched_cli_size
 
@@ -211,7 +211,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WPCLIMigrationGTIN.php#L151](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Utility/WPCLIMigrationGTIN.php#L151)
+- [WPCLIMigrationGTIN.php#L151](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Utility/WPCLIMigrationGTIN.php#L151)
 
 ## woocommerce_gla_batched_job_size
 
@@ -219,11 +219,12 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AbstractBatchedActionSchedulerJob.php#L104](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/AbstractBatchedActionSchedulerJob.php#L104)
-- [UpdateEuPoliticalCampaigns.php#L89](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/UpdateEuPoliticalCampaigns.php#L89)
-- [UpdateSyncableProductsCount.php#L74](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/UpdateSyncableProductsCount.php#L74)
-- [CreateMerchantReportedConversionReport.php#L90](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/CreateMerchantReportedConversionReport.php#L90)
-- [CreateYouTubeOrderIdsCache.php#L71](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/CreateYouTubeOrderIdsCache.php#L71)
+- [UpdateProducts.php#L85](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/UpdateProducts.php#L85)
+- [UpdateEuPoliticalCampaigns.php#L89](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/UpdateEuPoliticalCampaigns.php#L89)
+- [CreateYouTubeOrderIdsCache.php#L71](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/CreateYouTubeOrderIdsCache.php#L71)
+- [CreateMerchantReportedConversionReport.php#L90](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/CreateMerchantReportedConversionReport.php#L90)
+- [AbstractBatchedActionSchedulerJob.php#L104](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/AbstractBatchedActionSchedulerJob.php#L104)
+- [UpdateSyncableProductsCount.php#L74](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/UpdateSyncableProductsCount.php#L74)
 
 ## woocommerce_gla_bulk_update_coupon
 
@@ -231,7 +232,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CouponBulkEdit.php#L133](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/BulkEdit/CouponBulkEdit.php#L133)
+- [CouponBulkEdit.php#L133](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/BulkEdit/CouponBulkEdit.php#L133)
 
 ## woocommerce_gla_conversion_action_name
 
@@ -239,7 +240,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AdsConversionAction.php#L68](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsConversionAction.php#L68)
+- [AdsConversionAction.php#L68](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsConversionAction.php#L68)
 
 ## woocommerce_gla_coupon_destinations
 
@@ -247,7 +248,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCCouponAdapter.php#L440](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/WCCouponAdapter.php#L440)
+- [WCCouponAdapter.php#L440](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/WCCouponAdapter.php#L440)
 
 ## woocommerce_gla_coupons_delete_retry_on_failure
 
@@ -255,7 +256,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CouponSyncer.php#L451](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L451)
+- [CouponSyncer.php#L451](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L451)
 
 ## woocommerce_gla_coupons_update_retry_on_failure
 
@@ -263,7 +264,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CouponSyncer.php#L413](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L413)
+- [CouponSyncer.php#L413](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L413)
 
 ## woocommerce_gla_custom_merchant_issues
 
@@ -271,7 +272,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [MerchantStatuses.php#L670](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantStatuses.php#L670)
+- [MerchantStatuses.php#L670](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantStatuses.php#L670)
 
 ## woocommerce_gla_debug_message
 
@@ -279,47 +280,52 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductHelper.php#L577](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductHelper.php#L577)
-- [ProductHelper.php#L610](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductHelper.php#L610)
-- [WCProductAdapter.php#L223](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L223)
-- [SyncerHooks.php#L221](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/SyncerHooks.php#L221)
-- [ProductRepository.php#L394](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductRepository.php#L394)
-- [WCProductInputAdapter.php#L1237](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L1237)
-- [BatchProductHelper.php#L160](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/BatchProductHelper.php#L160)
-- [BatchProductHelper.php#L349](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/BatchProductHelper.php#L349)
-- [BatchProductHelper.php#L380](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/BatchProductHelper.php#L380)
-- [BatchProductHelper.php#L399](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/BatchProductHelper.php#L399)
-- [BatchProductHelper.php#L499](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/BatchProductHelper.php#L499)
-- [BatchProductHelper.php#L512](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/BatchProductHelper.php#L512)
-- [BatchProductHelper.php#L535](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/BatchProductHelper.php#L535)
-- [MigrateGTIN.php#L169](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/MigrateGTIN.php#L169)
-- [CleanupSyncedProducts.php#L74](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/CleanupSyncedProducts.php#L74)
-- [ActionSchedulerJobMonitor.php#L118](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/ActionSchedulerJobMonitor.php#L118)
-- [ActionSchedulerJobMonitor.php#L127](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/ActionSchedulerJobMonitor.php#L127)
-- [IncentivesController.php#L126](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Ads/IncentivesController.php#L126)
-- [IssuesController.php#L95](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/IssuesController.php#L95)
-- [MapiProductInputsService.php#L481](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Mapi/Services/MapiProductInputsService.php#L481)
-- [AdsRecommendationsService.php#L91](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Ads/AdsRecommendationsService.php#L91)
-- [CouponHelper.php#L248](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponHelper.php#L248)
-- [CouponHelper.php#L285](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponHelper.php#L285)
-- [SyncerHooks.php#L208](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/SyncerHooks.php#L208)
-- [CouponSyncer.php#L115](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L115)
-- [CouponSyncer.php#L128](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L128)
-- [CouponSyncer.php#L153](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L153)
-- [CouponSyncer.php#L169](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L169)
-- [CouponSyncer.php#L186](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L186)
-- [CouponSyncer.php#L209](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L209)
-- [CouponSyncer.php#L274](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L274)
-- [CouponSyncer.php#L322](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L322)
-- [CouponSyncer.php#L341](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L341)
-- [MerchantStatuses.php#L453](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantStatuses.php#L453)
-- [MerchantStatuses.php#L945](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantStatuses.php#L945)
-- [MerchantStatuses.php#L1109](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantStatuses.php#L1109)
-- [MerchantStatuses.php#L1221](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantStatuses.php#L1221)
-- [MerchantStatuses.php#L1253](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantStatuses.php#L1253)
-- [MerchantStatuses.php#L1291](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantStatuses.php#L1291)
-- [PriceBenchmarks.php#L193](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/PriceBenchmarks.php#L193)
-- [MerchantCenterService.php#L353](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantCenterService.php#L353)
+- [MapiProductInputsService.php#L481](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Mapi/Services/MapiProductInputsService.php#L481)
+- [IncentivesController.php#L126](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Ads/IncentivesController.php#L126)
+- [IssuesController.php#L95](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/IssuesController.php#L95)
+- [SyncerHooks.php#L208](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/SyncerHooks.php#L208)
+- [CouponSyncer.php#L115](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L115)
+- [CouponSyncer.php#L128](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L128)
+- [CouponSyncer.php#L153](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L153)
+- [CouponSyncer.php#L169](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L169)
+- [CouponSyncer.php#L186](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L186)
+- [CouponSyncer.php#L209](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L209)
+- [CouponSyncer.php#L274](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L274)
+- [CouponSyncer.php#L322](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L322)
+- [CouponSyncer.php#L341](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L341)
+- [CouponHelper.php#L248](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponHelper.php#L248)
+- [CouponHelper.php#L285](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponHelper.php#L285)
+- [AdsRecommendationsService.php#L91](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Ads/AdsRecommendationsService.php#L91)
+- [PriceBenchmarks.php#L193](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/PriceBenchmarks.php#L193)
+- [MerchantStatuses.php#L453](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantStatuses.php#L453)
+- [MerchantStatuses.php#L945](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantStatuses.php#L945)
+- [MerchantStatuses.php#L1109](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantStatuses.php#L1109)
+- [MerchantStatuses.php#L1221](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantStatuses.php#L1221)
+- [MerchantStatuses.php#L1253](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantStatuses.php#L1253)
+- [MerchantStatuses.php#L1291](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantStatuses.php#L1291)
+- [MerchantCenterService.php#L400](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantCenterService.php#L400)
+- [BatchProductHelper.php#L160](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L160)
+- [BatchProductHelper.php#L349](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L349)
+- [BatchProductHelper.php#L380](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L380)
+- [BatchProductHelper.php#L399](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L399)
+- [BatchProductHelper.php#L499](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L499)
+- [BatchProductHelper.php#L512](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L512)
+- [BatchProductHelper.php#L523](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L523)
+- [BatchProductHelper.php#L546](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L546)
+- [SyncerHooks.php#L238](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/SyncerHooks.php#L238)
+- [WCProductAdapter.php#L235](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L235)
+- [ProductHelper.php#L577](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductHelper.php#L577)
+- [ProductHelper.php#L610](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductHelper.php#L610)
+- [ProductRepository.php#L485](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductRepository.php#L485)
+- [WCProductInputAdapter.php#L1237](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L1237)
+- [CleanupSyncedProducts.php#L74](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/CleanupSyncedProducts.php#L74)
+- [PluginUpdate.php#L402](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/Update/PluginUpdate.php#L402)
+- [DeleteYouTubeConversionReports.php#L122](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/Update/DeleteYouTubeConversionReports.php#L122)
+- [DeleteYouTubeConversionReports.php#L137](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/Update/DeleteYouTubeConversionReports.php#L137)
+- [DeleteYouTubeConversionReports.php#L218](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/Update/DeleteYouTubeConversionReports.php#L218)
+- [MigrateGTIN.php#L169](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/MigrateGTIN.php#L169)
+- [ActionSchedulerJobMonitor.php#L118](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/ActionSchedulerJobMonitor.php#L118)
+- [ActionSchedulerJobMonitor.php#L127](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/ActionSchedulerJobMonitor.php#L127)
 
 ## woocommerce_gla_deleted_promotions
 
@@ -327,7 +333,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CouponSyncer.php#L335](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L335)
+- [CouponSyncer.php#L335](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L335)
 
 ## woocommerce_gla_dimension_unit
 
@@ -335,8 +341,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L449](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L449)
-- [WCProductInputAdapter.php#L905](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L905)
+- [WCProductAdapter.php#L461](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L461)
+- [WCProductInputAdapter.php#L905](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L905)
 
 ## woocommerce_gla_disable_gtag_tracking
 
@@ -344,7 +350,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [GlobalSiteTag.php#L613](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Google/GlobalSiteTag.php#L613)
+- [GlobalSiteTag.php#L625](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Google/GlobalSiteTag.php#L625)
 
 ## woocommerce_gla_enable_connection_test
 
@@ -352,7 +358,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ConnectionTest.php#L91](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/ConnectionTest.php#L91)
+- [ConnectionTest.php#L91](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/ConnectionTest.php#L91)
 
 ## woocommerce_gla_enable_debug_logging
 
@@ -360,7 +366,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [DebugLogger.php#L33](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Logging/DebugLogger.php#L33)
+- [DebugLogger.php#L33](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Logging/DebugLogger.php#L33)
 
 ## woocommerce_gla_enable_mcm
 
@@ -368,7 +374,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [GLAChannel.php#L86](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MultichannelMarketing/GLAChannel.php#L86)
+- [GLAChannel.php#L86](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MultichannelMarketing/GLAChannel.php#L86)
 
 ## woocommerce_gla_enable_reports
 
@@ -376,7 +382,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [Admin.php#L420](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/Admin.php#L420)
+- [Admin.php#L420](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/Admin.php#L420)
 
 ## woocommerce_gla_error
 
@@ -384,38 +390,41 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductHelper.php#L469](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductHelper.php#L469)
-- [ProductHelper.php#L686](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductHelper.php#L686)
-- [ProductSyncer.php#L529](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L529)
-- [ProductSyncer.php#L552](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L552)
-- [ProductSyncer.php#L585](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L585)
-- [ProductSyncer.php#L600](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L600)
-- [ProductSyncer.php#L607](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L607)
-- [AttributeManager.php#L270](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/Attributes/AttributeManager.php#L270)
-- [ProductMetaHandler.php#L184](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductMetaHandler.php#L184)
-- [BatchProductHelper.php#L463](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/BatchProductHelper.php#L463)
-- [CreateMerchantReportedConversionReport.php#L204](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/CreateMerchantReportedConversionReport.php#L204)
-- [CreateMerchantReportedConversionReport.php#L260](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/CreateMerchantReportedConversionReport.php#L260)
-- [CreateYouTubeOrderIdsCache.php#L128](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/CreateYouTubeOrderIdsCache.php#L128)
-- [RESTControllers.php#L59](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/RESTControllers.php#L59)
-- [RESTControllers.php#L67](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/RESTControllers.php#L67)
-- [AdsIncentives.php#L122](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsIncentives.php#L122)
-- [MerchantApiClient.php#L241](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Mapi/MerchantApiClient.php#L241)
-- [MapiDataSourcesService.php#L220](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Mapi/Services/MapiDataSourcesService.php#L220)
-- [MapiDataSourcesService.php#L616](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Mapi/Services/MapiDataSourcesService.php#L616)
-- [MapiDataSourcesService.php#L683](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Mapi/Services/MapiDataSourcesService.php#L683)
-- [MapiDataSourcesService.php#L711](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Mapi/Services/MapiDataSourcesService.php#L711)
-- [AbstractShippingSettingsAdapter.php#L170](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Shipping/GoogleAdapter/AbstractShippingSettingsAdapter.php#L170)
-- [AbstractShippingSettingsAdapter.php#L202](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Shipping/GoogleAdapter/AbstractShippingSettingsAdapter.php#L202)
-- [PHPView.php#L137](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/View/PHPView.php#L137)
-- [PHPView.php#L165](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/View/PHPView.php#L165)
-- [PHPView.php#L209](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/View/PHPView.php#L209)
-- [ProductMetaQueryHelper.php#L141](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/DB/ProductMetaQueryHelper.php#L141)
-- [CouponMetaHandler.php#L221](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponMetaHandler.php#L221)
-- [CouponSyncer.php#L423](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L423)
-- [CouponSyncer.php#L461](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L461)
-- [CouponSyncer.php#L517](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L517)
-- [CouponSyncer.php#L532](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L532)
+- [PHPView.php#L137](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/View/PHPView.php#L137)
+- [PHPView.php#L165](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/View/PHPView.php#L165)
+- [PHPView.php#L209](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/View/PHPView.php#L209)
+- [MapiDataSourcesService.php#L233](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Mapi/Services/MapiDataSourcesService.php#L233)
+- [MapiDataSourcesService.php#L721](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Mapi/Services/MapiDataSourcesService.php#L721)
+- [MapiDataSourcesService.php#L788](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Mapi/Services/MapiDataSourcesService.php#L788)
+- [MapiDataSourcesService.php#L816](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Mapi/Services/MapiDataSourcesService.php#L816)
+- [MerchantApiClient.php#L241](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Mapi/MerchantApiClient.php#L241)
+- [AdsIncentives.php#L122](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsIncentives.php#L122)
+- [RESTControllers.php#L59](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/RESTControllers.php#L59)
+- [RESTControllers.php#L67](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/RESTControllers.php#L67)
+- [CouponMetaHandler.php#L221](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponMetaHandler.php#L221)
+- [CouponSyncer.php#L423](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L423)
+- [CouponSyncer.php#L461](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L461)
+- [CouponSyncer.php#L517](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L517)
+- [CouponSyncer.php#L532](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L532)
+- [MerchantCenterService.php#L149](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantCenterService.php#L149)
+- [AbstractShippingSettingsAdapter.php#L170](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Shipping/GoogleAdapter/AbstractShippingSettingsAdapter.php#L170)
+- [AbstractShippingSettingsAdapter.php#L202](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Shipping/GoogleAdapter/AbstractShippingSettingsAdapter.php#L202)
+- [BatchProductHelper.php#L463](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L463)
+- [AttributeManager.php#L270](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/Attributes/AttributeManager.php#L270)
+- [ProductMetaHandler.php#L189](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductMetaHandler.php#L189)
+- [ProductSyncer.php#L529](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L529)
+- [ProductSyncer.php#L552](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L552)
+- [ProductSyncer.php#L585](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L585)
+- [ProductSyncer.php#L600](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L600)
+- [ProductSyncer.php#L607](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L607)
+- [ProductHelper.php#L469](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductHelper.php#L469)
+- [ProductHelper.php#L686](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductHelper.php#L686)
+- [CsvExportWriter.php#L348](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/Exports/Writer/CsvExportWriter.php#L348)
+- [ProductMetaQueryHelper.php#L141](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/DB/ProductMetaQueryHelper.php#L141)
+- [DeleteYouTubeConversionReports.php#L149](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/Update/DeleteYouTubeConversionReports.php#L149)
+- [CreateYouTubeOrderIdsCache.php#L128](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/CreateYouTubeOrderIdsCache.php#L128)
+- [CreateMerchantReportedConversionReport.php#L253](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/CreateMerchantReportedConversionReport.php#L253)
+- [CreateMerchantReportedConversionReport.php#L313](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/CreateMerchantReportedConversionReport.php#L313)
 
 ## woocommerce_gla_exception
 
@@ -423,44 +432,49 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductHelper.php#L348](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductHelper.php#L348)
-- [ProductSyncer.php#L145](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L145)
-- [ProductSyncer.php#L372](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L372)
-- [ProductSyncer.php#L440](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L440)
-- [PluginUpdate.php#L80](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/Update/PluginUpdate.php#L80)
-- [ClearProductStatsCache.php#L61](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Event/ClearProductStatsCache.php#L61)
-- [IncentivesController.php#L151](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Ads/IncentivesController.php#L151)
-- [RequestReviewController.php#L341](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/RequestReviewController.php#L341)
-- [ProductVisibilityController.php#L193](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/ProductVisibilityController.php#L193)
-- [SettingsSyncController.php#L94](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/SettingsSyncController.php#L94)
-- [ContactInformationController.php#L242](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/ContactInformationController.php#L242)
-- [AccountController.php#L180](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/YouTube/AccountController.php#L180)
-- [AdsIncentives.php#L117](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsIncentives.php#L117)
-- [Settings.php#L104](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Settings.php#L104)
-- [Middleware.php#L497](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L497)
-- [Connection.php#L96](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Connection.php#L96)
-- [MapiProductsService.php#L83](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Mapi/Services/MapiProductsService.php#L83)
-- [Connection.php#L87](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L87)
-- [Connection.php#L330](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L330)
-- [PHPView.php#L88](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/View/PHPView.php#L88)
-- [Migration20260813T1653383133.php#L184](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/DB/Migration/Migration20260813T1653383133.php#L184)
-- [NoteInitializer.php#L74](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Notes/NoteInitializer.php#L74)
-- [NoteInitializer.php#L116](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Notes/NoteInitializer.php#L116)
-- [ReconnectWordPress.php#L124](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Notes/ReconnectWordPress.php#L124)
-- [NotificationService.php#L111](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Notification/NotificationService.php#L111)
-- [ChannelVisibilityMetaBox.php#L201](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/MetaBox/ChannelVisibilityMetaBox.php#L201)
-- [CouponChannelVisibilityMetaBox.php#L205](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/MetaBox/CouponChannelVisibilityMetaBox.php#L205)
-- [DateTime.php#L44](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/Input/DateTime.php#L44)
-- [DateTime.php#L80](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/Input/DateTime.php#L80)
-- [CouponSyncer.php#L217](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L217)
-- [CouponSyncer.php#L306](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L306)
-- [BaseAsset.php#L219](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Assets/BaseAsset.php#L219)
-- [ScriptWithBuiltDependenciesAsset.php#L66](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Assets/ScriptWithBuiltDependenciesAsset.php#L66)
-- [GoogleServiceProvider.php#L430](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Internal/DependencyManagement/GoogleServiceProvider.php#L430)
-- [GoogleServiceProvider.php#L441](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Internal/DependencyManagement/GoogleServiceProvider.php#L441)
-- [WooCommercePreOrders.php#L111](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WooCommercePreOrders.php#L111)
-- [WooCommercePreOrders.php#L131](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WooCommercePreOrders.php#L131)
-- [EstimatedDeliveryTimeResolver.php#L165](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Google/EstimatedDeliveryTimeResolver.php#L165)
+- [PHPView.php#L88](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/View/PHPView.php#L88)
+- [Connection.php#L87](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L87)
+- [Connection.php#L330](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L330)
+- [MapiProductsService.php#L83](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Mapi/Services/MapiProductsService.php#L83)
+- [AdsIncentives.php#L117](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsIncentives.php#L117)
+- [Connection.php#L96](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Connection.php#L96)
+- [Middleware.php#L497](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L497)
+- [Settings.php#L104](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Settings.php#L104)
+- [AccountController.php#L180](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/YouTube/AccountController.php#L180)
+- [IncentivesController.php#L151](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Ads/IncentivesController.php#L151)
+- [SettingsSyncController.php#L94](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/SettingsSyncController.php#L94)
+- [ProductVisibilityController.php#L193](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/ProductVisibilityController.php#L193)
+- [RequestReviewController.php#L341](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/RequestReviewController.php#L341)
+- [ContactInformationController.php#L242](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/ContactInformationController.php#L242)
+- [NoteInitializer.php#L74](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Notes/NoteInitializer.php#L74)
+- [NoteInitializer.php#L116](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Notes/NoteInitializer.php#L116)
+- [ReconnectWordPress.php#L124](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Notes/ReconnectWordPress.php#L124)
+- [ClearProductStatsCache.php#L61](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Event/ClearProductStatsCache.php#L61)
+- [CouponSyncer.php#L217](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L217)
+- [CouponSyncer.php#L306](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L306)
+- [EstimatedDeliveryTimeResolver.php#L189](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Google/EstimatedDeliveryTimeResolver.php#L189)
+- [GoogleServiceProvider.php#L430](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Internal/DependencyManagement/GoogleServiceProvider.php#L430)
+- [GoogleServiceProvider.php#L441](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Internal/DependencyManagement/GoogleServiceProvider.php#L441)
+- [SyncerHooks.php#L323](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/SyncerHooks.php#L323)
+- [ProductSyncer.php#L145](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L145)
+- [ProductSyncer.php#L372](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L372)
+- [ProductSyncer.php#L440](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L440)
+- [ProductHelper.php#L348](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductHelper.php#L348)
+- [AbstractCyoSurveyEvaluator.php#L222](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Notification/Evaluators/AbstractCyoSurveyEvaluator.php#L222)
+- [NotificationService.php#L128](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Notification/NotificationService.php#L128)
+- [NotificationService.php#L190](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Notification/NotificationService.php#L190)
+- [DateTime.php#L44](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/Input/DateTime.php#L44)
+- [DateTime.php#L80](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/Input/DateTime.php#L80)
+- [ChannelVisibilityMetaBox.php#L201](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/MetaBox/ChannelVisibilityMetaBox.php#L201)
+- [CouponChannelVisibilityMetaBox.php#L205](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/MetaBox/CouponChannelVisibilityMetaBox.php#L205)
+- [Migration20260813T1653383133.php#L184](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/DB/Migration/Migration20260813T1653383133.php#L184)
+- [BaseAsset.php#L219](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Assets/BaseAsset.php#L219)
+- [ScriptWithBuiltDependenciesAsset.php#L66](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Assets/ScriptWithBuiltDependenciesAsset.php#L66)
+- [WooCommercePreOrders.php#L111](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WooCommercePreOrders.php#L111)
+- [WooCommercePreOrders.php#L131](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WooCommercePreOrders.php#L131)
+- [PluginUpdate.php#L195](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/Update/PluginUpdate.php#L195)
+- [DeleteYouTubeConversionReports.php#L103](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/Update/DeleteYouTubeConversionReports.php#L103)
+- [DeleteYouTubeConversionReports.php#L235](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/Update/DeleteYouTubeConversionReports.php#L235)
 
 ## woocommerce_gla_force_product_resync
 
@@ -468,7 +482,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [BatchProductHelper.php#L725](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/BatchProductHelper.php#L725)
+- [BatchProductHelper.php#L757](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L757)
 
 ## woocommerce_gla_force_run_install
 
@@ -476,7 +490,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [Installer.php#L67](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Installer.php#L67)
+- [Installer.php#L67](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Installer.php#L67)
 
 ## woocommerce_gla_get_google_product_offer_id
 
@@ -484,8 +498,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L302](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L302)
-- [WCProductInputAdapter.php#L434](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L434)
+- [WCProductAdapter.php#L314](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L314)
+- [WCProductInputAdapter.php#L434](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L434)
 
 ## woocommerce_gla_get_sync_ready_products_filter
 
@@ -493,7 +507,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductFilter.php#L61](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductFilter.php#L61)
+- [ProductFilter.php#L61](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductFilter.php#L61)
 
 ## woocommerce_gla_get_sync_ready_products_pre_filter
 
@@ -501,7 +515,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductFilter.php#L47](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductFilter.php#L47)
+- [ProductFilter.php#L47](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductFilter.php#L47)
 
 ## woocommerce_gla_get_wc_product_id
 
@@ -509,7 +523,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductHelper.php#L396](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductHelper.php#L396)
+- [ProductHelper.php#L396](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductHelper.php#L396)
 
 ## woocommerce_gla_google_connect_return_url
 
@@ -517,7 +531,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AccountController.php#L112](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Google/AccountController.php#L112)
+- [AccountController.php#L112](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Google/AccountController.php#L112)
 
 ## woocommerce_gla_gtag_consent
 
@@ -525,7 +539,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [GlobalSiteTag.php#L364](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Google/GlobalSiteTag.php#L364)
+- [GlobalSiteTag.php#L376](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Google/GlobalSiteTag.php#L376)
 
 ## woocommerce_gla_gtin_migration_value
 
@@ -533,7 +547,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [GTINMigrationUtilities.php#L167](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/HelperTraits/GTINMigrationUtilities.php#L167)
+- [GTINMigrationUtilities.php#L167](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/HelperTraits/GTINMigrationUtilities.php#L167)
 
 ## woocommerce_gla_guzzle_client_exception
 
@@ -541,28 +555,28 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AccountController.php#L221](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/YouTube/AccountController.php#L221)
-- [AdsCampaign.php#L195](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/AdsCampaign.php#L195)
-- [Middleware.php#L74](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L74)
-- [Middleware.php#L189](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L189)
-- [Middleware.php#L240](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L240)
-- [Middleware.php#L283](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L283)
-- [Middleware.php#L372](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L372)
-- [Middleware.php#L422](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L422)
-- [Middleware.php#L460](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L460)
-- [Middleware.php#L494](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L494)
-- [Middleware.php#L673](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L673)
-- [Middleware.php#L721](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L721)
-- [Connection.php#L71](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Connection.php#L71)
-- [Connection.php#L92](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Connection.php#L92)
-- [Connection.php#L127](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Connection.php#L127)
-- [Connection.php#L64](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L64)
-- [Connection.php#L83](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L83)
-- [Connection.php#L115](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L115)
-- [Connection.php#L143](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L143)
-- [Connection.php#L195](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L195)
-- [Connection.php#L320](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L320)
-- [GoogleServiceProvider.php#L457](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Internal/DependencyManagement/GoogleServiceProvider.php#L457)
+- [Connection.php#L64](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L64)
+- [Connection.php#L83](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L83)
+- [Connection.php#L115](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L115)
+- [Connection.php#L143](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L143)
+- [Connection.php#L195](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L195)
+- [Connection.php#L320](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L320)
+- [AdsCampaign.php#L195](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/AdsCampaign.php#L195)
+- [Connection.php#L71](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Connection.php#L71)
+- [Connection.php#L92](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Connection.php#L92)
+- [Connection.php#L127](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Connection.php#L127)
+- [Middleware.php#L74](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L74)
+- [Middleware.php#L189](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L189)
+- [Middleware.php#L240](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L240)
+- [Middleware.php#L283](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L283)
+- [Middleware.php#L372](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L372)
+- [Middleware.php#L422](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L422)
+- [Middleware.php#L460](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L460)
+- [Middleware.php#L494](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L494)
+- [Middleware.php#L673](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L673)
+- [Middleware.php#L721](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L721)
+- [AccountController.php#L221](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/YouTube/AccountController.php#L221)
+- [GoogleServiceProvider.php#L457](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Internal/DependencyManagement/GoogleServiceProvider.php#L457)
 
 ## woocommerce_gla_guzzle_invalid_response
 
@@ -570,19 +584,19 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AccountController.php#L217](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/YouTube/AccountController.php#L217)
-- [Middleware.php#L162](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L162)
-- [Middleware.php#L235](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L235)
-- [Middleware.php#L277](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L277)
-- [Middleware.php#L367](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L367)
-- [Middleware.php#L417](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L417)
-- [Middleware.php#L634](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L634)
-- [Connection.php#L67](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Connection.php#L67)
-- [Connection.php#L122](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Connection.php#L122)
-- [Connection.php#L60](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L60)
-- [Connection.php#L110](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L110)
-- [Connection.php#L138](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L138)
-- [Connection.php#L190](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/YouTube/Connection.php#L190)
+- [Connection.php#L60](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L60)
+- [Connection.php#L110](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L110)
+- [Connection.php#L138](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L138)
+- [Connection.php#L190](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/YouTube/Connection.php#L190)
+- [Connection.php#L67](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Connection.php#L67)
+- [Connection.php#L122](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Connection.php#L122)
+- [Middleware.php#L162](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L162)
+- [Middleware.php#L235](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L235)
+- [Middleware.php#L277](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L277)
+- [Middleware.php#L367](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L367)
+- [Middleware.php#L417](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L417)
+- [Middleware.php#L634](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L634)
+- [AccountController.php#L217](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/YouTube/AccountController.php#L217)
 
 ## woocommerce_gla_handle_shipping_method_to_rates
 
@@ -590,7 +604,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ZoneMethodsParser.php#L109](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Shipping/ZoneMethodsParser.php#L109)
+- [ZoneMethodsParser.php#L109](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Shipping/ZoneMethodsParser.php#L109)
 
 ## woocommerce_gla_hidden_coupon_types
 
@@ -598,7 +612,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CouponSyncer.php#L392](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L392)
+- [CouponSyncer.php#L392](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L392)
 
 ## woocommerce_gla_jetpack_connect_return_url
 
@@ -606,7 +620,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AccountController.php#L134](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Jetpack/AccountController.php#L134)
+- [AccountController.php#L134](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Jetpack/AccountController.php#L134)
 
 ## woocommerce_gla_job_failure_rate_threshold
 
@@ -614,7 +628,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ActionSchedulerJobMonitor.php#L187](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/ActionSchedulerJobMonitor.php#L187)
+- [ActionSchedulerJobMonitor.php#L187](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/ActionSchedulerJobMonitor.php#L187)
 
 ## woocommerce_gla_job_failure_timeframe
 
@@ -622,7 +636,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ActionSchedulerJobMonitor.php#L196](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/ActionSchedulerJobMonitor.php#L196)
+- [ActionSchedulerJobMonitor.php#L196](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/ActionSchedulerJobMonitor.php#L196)
 
 ## woocommerce_gla_language_currencies
 
@@ -630,7 +644,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WPML.php#L198](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WPML.php#L198)
+- [WPML.php#L198](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WPML.php#L198)
 
 ## woocommerce_gla_mapi_batch_size
 
@@ -638,7 +652,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [MapiProductInputsService.php#L491](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Mapi/Services/MapiProductInputsService.php#L491)
+- [MapiProductInputsService.php#L491](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Mapi/Services/MapiProductInputsService.php#L491)
 
 ## woocommerce_gla_mapi_product_concurrency
 
@@ -646,7 +660,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductSyncer.php#L270](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L270)
+- [ProductSyncer.php#L270](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L270)
 
 ## woocommerce_gla_mapi_report_query_response
 
@@ -654,7 +668,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [MapiReportQuery.php#L91](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Query/MapiReportQuery.php#L91)
+- [MapiReportQuery.php#L91](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Query/MapiReportQuery.php#L91)
 
 ## woocommerce_gla_mapi_retry_limit
 
@@ -662,7 +676,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [GoogleServiceProvider.php#L240](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Internal/DependencyManagement/GoogleServiceProvider.php#L240)
+- [GoogleServiceProvider.php#L240](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Internal/DependencyManagement/GoogleServiceProvider.php#L240)
 
 ## woocommerce_gla_mapping_rules_change
 
@@ -670,9 +684,9 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AttributeMappingRulesController.php#L143](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/AttributeMapping/AttributeMappingRulesController.php#L143)
-- [AttributeMappingRulesController.php#L166](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/AttributeMapping/AttributeMappingRulesController.php#L166)
-- [AttributeMappingRulesController.php#L188](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/AttributeMapping/AttributeMappingRulesController.php#L188)
+- [AttributeMappingRulesController.php#L143](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/AttributeMapping/AttributeMappingRulesController.php#L143)
+- [AttributeMappingRulesController.php#L166](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/AttributeMapping/AttributeMappingRulesController.php#L166)
+- [AttributeMappingRulesController.php#L188](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/AttributeMapping/AttributeMappingRulesController.php#L188)
 
 ## woocommerce_gla_market_added
 
@@ -680,7 +694,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [MarketService.php#L690](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MarketService.php#L690)
+- [MarketService.php#L690](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MarketService.php#L690)
 
 ## woocommerce_gla_market_deleted
 
@@ -688,7 +702,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [MarketService.php#L1344](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MarketService.php#L1344)
+- [MarketService.php#L1344](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MarketService.php#L1344)
 
 ## woocommerce_gla_market_updated
 
@@ -696,7 +710,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [MarketService.php#L1271](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MarketService.php#L1271)
+- [MarketService.php#L1271](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MarketService.php#L1271)
 
 ## woocommerce_gla_mc_account_review_lifetime
 
@@ -704,7 +718,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [RequestReviewStatuses.php#L182](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Google/RequestReviewStatuses.php#L182)
+- [RequestReviewStatuses.php#L182](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Google/RequestReviewStatuses.php#L182)
 
 ## woocommerce_gla_mc_client_exception
 
@@ -712,7 +726,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [MerchantApiException.php#L47](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Mapi/MerchantApiException.php#L47)
+- [MerchantApiException.php#L47](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Mapi/MerchantApiException.php#L47)
 
 ## woocommerce_gla_mc_settings_sync
 
@@ -720,7 +734,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [SettingsSyncController.php#L68](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/SettingsSyncController.php#L68)
+- [SettingsSyncController.php#L68](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/SettingsSyncController.php#L68)
 
 ## woocommerce_gla_mc_status_lifetime
 
@@ -728,7 +742,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [MerchantStatuses.php#L1310](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantStatuses.php#L1310)
+- [MerchantStatuses.php#L1310](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantStatuses.php#L1310)
 
 ## woocommerce_gla_mc_under_review_lifetime
 
@@ -736,7 +750,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [RequestReviewStatuses.php#L191](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Google/RequestReviewStatuses.php#L191)
+- [RequestReviewStatuses.php#L191](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Google/RequestReviewStatuses.php#L191)
 
 ## woocommerce_gla_merchant_id
 
@@ -744,7 +758,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [Options.php#L130](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Options/Options.php#L130)
+- [Options.php#L130](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Options/Options.php#L130)
 
 ## woocommerce_gla_merchant_issue_override
 
@@ -752,7 +766,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [IssuesController.php#L85](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/IssuesController.php#L85)
+- [IssuesController.php#L85](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/IssuesController.php#L85)
 
 ## woocommerce_gla_merchant_status_presync_issues_chunk
 
@@ -760,7 +774,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [MerchantStatuses.php#L794](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantStatuses.php#L794)
+- [MerchantStatuses.php#L794](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantStatuses.php#L794)
 
 ## woocommerce_gla_onboarding_completed
 
@@ -768,7 +782,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [OnboardingController.php#L50](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/OnboardingController.php#L50)
+- [OnboardingController.php#L50](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/OnboardingController.php#L50)
 
 ## woocommerce_gla_options_deleted_
 
@@ -776,7 +790,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [Options.php#L108](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Options/Options.php#L108)
+- [Options.php#L108](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Options/Options.php#L108)
 
 ## woocommerce_gla_options_updated_
 
@@ -784,8 +798,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [Options.php#L70](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Options/Options.php#L70)
-- [Options.php#L90](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Options/Options.php#L90)
+- [Options.php#L70](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Options/Options.php#L70)
+- [Options.php#L90](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Options/Options.php#L90)
 
 ## woocommerce_gla_prepared_response_->GET_ROUTE_NAME
 
@@ -793,7 +807,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [BaseController.php#L160](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/BaseController.php#L160)
+- [BaseController.php#L160](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/BaseController.php#L160)
 
 ## woocommerce_gla_product_attribute_types
 
@@ -801,7 +815,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AttributeManager.php#L244](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/Attributes/AttributeManager.php#L244)
+- [AttributeManager.php#L244](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/Attributes/AttributeManager.php#L244)
 
 ## woocommerce_gla_product_attribute_value_
 
@@ -809,10 +823,10 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L999](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L999)
-- [WCProductAdapter.php#L1102](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L1102)
-- [WCProductInputAdapter.php#L981](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L981)
-- [WCProductInputAdapter.php#L1008](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L1008)
+- [WCProductAdapter.php#L1098](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L1098)
+- [WCProductAdapter.php#L1201](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L1201)
+- [WCProductInputAdapter.php#L981](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L981)
+- [WCProductInputAdapter.php#L1008](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L1008)
 
 ## woocommerce_gla_product_attribute_value_description
 
@@ -820,8 +834,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L370](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L370)
-- [WCProductInputAdapter.php#L480](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L480)
+- [WCProductAdapter.php#L382](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L382)
+- [WCProductInputAdapter.php#L480](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L480)
 
 ## woocommerce_gla_product_attribute_value_options_::get_id
 
@@ -829,7 +843,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AttributesForm.php#L128](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Admin/Product/Attributes/AttributesForm.php#L128)
+- [AttributesForm.php#L128](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Admin/Product/Attributes/AttributesForm.php#L128)
 
 ## woocommerce_gla_product_attribute_value_price
 
@@ -837,10 +851,10 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L658](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L658)
-- [WCProductAdapter.php#L687](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L687)
-- [WCProductInputAdapter.php#L594](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L594)
-- [WCProductInputAdapter.php#L606](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L606)
+- [WCProductAdapter.php#L670](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L670)
+- [WCProductAdapter.php#L699](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L699)
+- [WCProductInputAdapter.php#L594](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L594)
+- [WCProductInputAdapter.php#L606](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L606)
 
 ## woocommerce_gla_product_attribute_value_sale_price
 
@@ -848,9 +862,9 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L727](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L727)
-- [WCProductAdapter.php#L775](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L775)
-- [WCProductInputAdapter.php#L733](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L733)
+- [WCProductAdapter.php#L824](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L824)
+- [WCProductAdapter.php#L874](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L874)
+- [WCProductInputAdapter.php#L733](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L733)
 
 ## woocommerce_gla_product_attribute_values
 
@@ -858,8 +872,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L184](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L184)
-- [WCProductInputAdapter.php#L1199](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L1199)
+- [WCProductAdapter.php#L196](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L196)
+- [WCProductInputAdapter.php#L1199](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L1199)
 
 ## woocommerce_gla_product_description_apply_shortcodes
 
@@ -867,8 +881,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L339](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L339)
-- [WCProductInputAdapter.php#L470](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L470)
+- [WCProductAdapter.php#L351](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L351)
+- [WCProductInputAdapter.php#L470](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L470)
 
 ## woocommerce_gla_product_input_attribute_keys
 
@@ -876,7 +890,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductInputAdapter.php#L1258](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L1258)
+- [WCProductInputAdapter.php#L1258](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L1258)
 
 ## woocommerce_gla_product_property_value_is_virtual
 
@@ -884,8 +898,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L865](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L865)
-- [WCProductInputAdapter.php#L966](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L966)
+- [WCProductAdapter.php#L964](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L964)
+- [WCProductInputAdapter.php#L966](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L966)
 
 ## woocommerce_gla_product_query_args
 
@@ -893,7 +907,15 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductRepository.php#L464](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductRepository.php#L464)
+- [ProductRepository.php#L564](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductRepository.php#L564)
+
+## woocommerce_gla_product_update_batch_window
+
+**Type**: filter
+
+**Used in**:
+
+- [ProcessQueuedProductUpdates.php#L103](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/ProcessQueuedProductUpdates.php#L103)
 
 ## woocommerce_gla_product_view_report_page_size
 
@@ -901,8 +923,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [UpdateMerchantProductStatuses.php#L115](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/UpdateMerchantProductStatuses.php#L115)
-- [MerchantReport.php#L69](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/MerchantReport.php#L69)
+- [MerchantReport.php#L69](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/MerchantReport.php#L69)
+- [UpdateMerchantProductStatuses.php#L115](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/UpdateMerchantProductStatuses.php#L115)
 
 ## woocommerce_gla_products_delete_retry_on_failure
 
@@ -910,7 +932,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductSyncer.php#L581](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L581)
+- [ProductSyncer.php#L581](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L581)
 
 ## woocommerce_gla_products_update_retry_on_failure
 
@@ -918,7 +940,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductSyncer.php#L525](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L525)
+- [ProductSyncer.php#L525](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L525)
 
 ## woocommerce_gla_ready_for_syncing
 
@@ -926,7 +948,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [MerchantCenterService.php#L135](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/MerchantCenterService.php#L135)
+- [MerchantCenterService.php#L137](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantCenterService.php#L137)
 
 ## woocommerce_gla_request_review_failure
 
@@ -934,8 +956,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [RequestReviewController.php#L120](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/RequestReviewController.php#L120)
-- [RequestReviewController.php#L132](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/RequestReviewController.php#L132)
+- [RequestReviewController.php#L120](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/RequestReviewController.php#L120)
+- [RequestReviewController.php#L132](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/RequestReviewController.php#L132)
 
 ## woocommerce_gla_request_review_response
 
@@ -943,7 +965,15 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [RequestReviewController.php#L338](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/RequestReviewController.php#L338)
+- [RequestReviewController.php#L338](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/RequestReviewController.php#L338)
+
+## woocommerce_gla_resubmit_expiry_days
+
+**Type**: filter
+
+**Used in**:
+
+- [ProductRepository.php#L413](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductRepository.php#L413)
 
 ## woocommerce_gla_retry_delete_coupons
 
@@ -951,7 +981,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CouponSyncer.php#L456](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L456)
+- [CouponSyncer.php#L456](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L456)
 
 ## woocommerce_gla_retry_update_coupons
 
@@ -959,7 +989,15 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CouponSyncer.php#L418](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L418)
+- [CouponSyncer.php#L418](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L418)
+
+## woocommerce_gla_reviews_opt_in_estimated_delivery_date
+
+**Type**: filter
+
+**Used in**:
+
+- [ReviewsOptIn.php#L237](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Google/ReviewsOptIn.php#L237)
 
 ## woocommerce_gla_reviews_opt_in_excluded_order_statuses
 
@@ -967,7 +1005,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ReviewsOptIn.php#L166](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Google/ReviewsOptIn.php#L166)
+- [ReviewsOptIn.php#L167](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Google/ReviewsOptIn.php#L167)
 
 ## woocommerce_gla_site_claim_failure
 
@@ -975,10 +1013,10 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [Middleware.php#L278](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L278)
-- [Middleware.php#L284](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L284)
-- [Merchant.php#L98](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Merchant.php#L98)
-- [AccountService.php#L394](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/AccountService.php#L394)
+- [Merchant.php#L98](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Merchant.php#L98)
+- [Middleware.php#L278](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L278)
+- [Middleware.php#L284](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L284)
+- [AccountService.php#L396](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/AccountService.php#L396)
 
 ## woocommerce_gla_site_claim_overwrite_required
 
@@ -986,7 +1024,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AccountService.php#L389](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/AccountService.php#L389)
+- [AccountService.php#L391](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/AccountService.php#L391)
 
 ## woocommerce_gla_site_claim_success
 
@@ -994,8 +1032,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [Middleware.php#L273](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Middleware.php#L273)
-- [Merchant.php#L95](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/Merchant.php#L95)
+- [Merchant.php#L95](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Merchant.php#L95)
+- [Middleware.php#L273](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/Middleware.php#L273)
 
 ## woocommerce_gla_site_url
 
@@ -1003,7 +1041,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [PluginHelper.php#L188](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/PluginHelper.php#L188)
+- [PluginHelper.php#L205](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/PluginHelper.php#L205)
 
 ## woocommerce_gla_site_verify_failure
 
@@ -1011,9 +1049,9 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [SiteVerification.php#L59](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/SiteVerification.php#L59)
-- [SiteVerification.php#L67](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/SiteVerification.php#L67)
-- [SiteVerification.php#L88](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/SiteVerification.php#L88)
+- [SiteVerification.php#L59](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/SiteVerification.php#L59)
+- [SiteVerification.php#L67](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/SiteVerification.php#L67)
+- [SiteVerification.php#L88](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/SiteVerification.php#L88)
 
 ## woocommerce_gla_site_verify_success
 
@@ -1021,7 +1059,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [SiteVerification.php#L86](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/SiteVerification.php#L86)
+- [SiteVerification.php#L86](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/SiteVerification.php#L86)
 
 ## woocommerce_gla_supported_coupon_types
 
@@ -1029,7 +1067,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CouponSyncer.php#L379](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L379)
+- [CouponSyncer.php#L379](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L379)
 
 ## woocommerce_gla_supported_product_types
 
@@ -1037,7 +1075,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductSyncer.php#L503](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductSyncer.php#L503)
+- [ProductSyncer.php#L503](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductSyncer.php#L503)
 
 ## woocommerce_gla_sv_client_exception
 
@@ -1045,8 +1083,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [SiteVerification.php#L121](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/SiteVerification.php#L121)
-- [SiteVerification.php#L163](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Google/SiteVerification.php#L163)
+- [SiteVerification.php#L121](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/SiteVerification.php#L121)
+- [SiteVerification.php#L163](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Google/SiteVerification.php#L163)
 
 ## woocommerce_gla_sync_hash_freshness
 
@@ -1054,7 +1092,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [BatchProductHelper.php#L744](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/BatchProductHelper.php#L744)
+- [BatchProductHelper.php#L776](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/BatchProductHelper.php#L776)
 
 ## woocommerce_gla_tax_excluded
 
@@ -1062,8 +1100,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L619](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L619)
-- [WCProductInputAdapter.php#L1358](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L1358)
+- [WCProductAdapter.php#L631](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L631)
+- [WCProductInputAdapter.php#L1358](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L1358)
 
 ## woocommerce_gla_track_event
 
@@ -1071,11 +1109,11 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [SetupCompleteController.php#L75](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Ads/SetupCompleteController.php#L75)
-- [CampaignController.php#L184](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Ads/CampaignController.php#L184)
-- [CampaignController.php#L272](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Ads/CampaignController.php#L272)
-- [CampaignController.php#L313](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Ads/CampaignController.php#L313)
-- [SettingsSyncController.php#L81](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/MerchantCenter/SettingsSyncController.php#L81)
+- [CampaignController.php#L185](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Ads/CampaignController.php#L185)
+- [CampaignController.php#L273](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Ads/CampaignController.php#L273)
+- [CampaignController.php#L314](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Ads/CampaignController.php#L314)
+- [SetupCompleteController.php#L75](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Ads/SetupCompleteController.php#L75)
+- [SettingsSyncController.php#L81](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/MerchantCenter/SettingsSyncController.php#L81)
 
 ## woocommerce_gla_updated_campaign
 
@@ -1083,9 +1121,9 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CampaignController.php#L204](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Ads/CampaignController.php#L204)
-- [CampaignController.php#L283](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Ads/CampaignController.php#L283)
-- [CampaignController.php#L321](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/API/Site/Controllers/Ads/CampaignController.php#L321)
+- [CampaignController.php#L205](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Ads/CampaignController.php#L205)
+- [CampaignController.php#L284](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Ads/CampaignController.php#L284)
+- [CampaignController.php#L322](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/API/Site/Controllers/Ads/CampaignController.php#L322)
 
 ## woocommerce_gla_updated_coupon
 
@@ -1093,7 +1131,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CouponSyncer.php#L183](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Coupon/CouponSyncer.php#L183)
+- [CouponSyncer.php#L183](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Coupon/CouponSyncer.php#L183)
 
 ## woocommerce_gla_url_switch_required
 
@@ -1101,7 +1139,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AccountService.php#L474](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/AccountService.php#L474)
+- [AccountService.php#L476](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/AccountService.php#L476)
 
 ## woocommerce_gla_url_switch_success
 
@@ -1109,7 +1147,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [AccountService.php#L496](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/MerchantCenter/AccountService.php#L496)
+- [AccountService.php#L498](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/AccountService.php#L498)
 
 ## woocommerce_gla_use_short_description
 
@@ -1117,8 +1155,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L316](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L316)
-- [WCProductInputAdapter.php#L456](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L456)
+- [WCProductAdapter.php#L328](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L328)
+- [WCProductInputAdapter.php#L456](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L456)
 
 ## woocommerce_gla_wcs_url
 
@@ -1126,8 +1164,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [PluginHelper.php#L174](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/PluginHelper.php#L174)
-- [PluginHelper.php#L177](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/PluginHelper.php#L177)
+- [PluginHelper.php#L174](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/PluginHelper.php#L174)
+- [PluginHelper.php#L177](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/PluginHelper.php#L177)
 
 ## woocommerce_gla_weight_unit
 
@@ -1135,8 +1173,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WCProductAdapter.php#L450](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductAdapter.php#L450)
-- [WCProductInputAdapter.php#L939](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/WCProductInputAdapter.php#L939)
+- [WCProductAdapter.php#L462](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductAdapter.php#L462)
+- [WCProductInputAdapter.php#L939](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/WCProductInputAdapter.php#L939)
 
 ## woocommerce_gla_youtube_order_ids_job_date
 
@@ -1144,8 +1182,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CreateMerchantReportedConversionReport.php#L104](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/CreateMerchantReportedConversionReport.php#L104)
-- [CreateYouTubeOrderIdsCache.php#L85](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/CreateYouTubeOrderIdsCache.php#L85)
+- [CreateYouTubeOrderIdsCache.php#L85](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/CreateYouTubeOrderIdsCache.php#L85)
+- [CreateMerchantReportedConversionReport.php#L104](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/CreateMerchantReportedConversionReport.php#L104)
 
 ## woocommerce_gla_youtube_orders_csv_delete_on_complete
 
@@ -1153,7 +1191,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [CreateMerchantReportedConversionReport.php#L241](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Jobs/CreateMerchantReportedConversionReport.php#L241)
+- [CreateMerchantReportedConversionReport.php#L290](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Jobs/CreateMerchantReportedConversionReport.php#L290)
 
 ## woocommerce_hide_invisible_variations
 
@@ -1161,7 +1199,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [ProductHelper.php#L484](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Product/ProductHelper.php#L484)
+- [ProductHelper.php#L484](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Product/ProductHelper.php#L484)
 
 ## wpml_active_languages
 
@@ -1169,7 +1207,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WPML.php#L131](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WPML.php#L131)
+- [MerchantCenterService.php#L174](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantCenterService.php#L174)
+- [WPML.php#L131](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WPML.php#L131)
 
 ## wpml_current_language
 
@@ -1177,7 +1216,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WPML.php#L71](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WPML.php#L71)
+- [WPML.php#L71](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WPML.php#L71)
 
 ## wpml_default_language
 
@@ -1185,7 +1224,17 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WPML.php#L93](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WPML.php#L93)
+- [PluginHelper.php#L194](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/PluginHelper.php#L194)
+- [WPML.php#L93](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WPML.php#L93)
+
+## wpml_permalink
+
+**Type**: filter
+
+**Used in**:
+
+- [PluginHelper.php#L197](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/PluginHelper.php#L197)
+- [MerchantCenterService.php#L180](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/MerchantCenter/MerchantCenterService.php#L180)
 
 ## wpml_post_language_details
 
@@ -1193,7 +1242,7 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WPML.php#L110](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WPML.php#L110)
+- [WPML.php#L110](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WPML.php#L110)
 
 ## wpml_switch_language
 
@@ -1201,6 +1250,6 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 **Used in**:
 
-- [WPML.php#L73](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WPML.php#L73)
-- [WPML.php#L79](https://github.com/woocommerce/google-listings-and-ads/blob/ce7a538cba50d30c391808cac88421f2d36ba41b/src/Integration/WPML.php#L79)
+- [WPML.php#L73](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WPML.php#L73)
+- [WPML.php#L79](https://github.com/woocommerce/google-listings-and-ads/blob/b1ef1e27e2beff04a1107981b2f3892ff313bc1a/src/Integration/WPML.php#L79)
 
