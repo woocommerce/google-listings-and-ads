@@ -67,4 +67,14 @@ class MerchantApiException extends Exception implements GoogleListingsAndAdsExce
 	public function get_errors(): array {
 		return $this->errors;
 	}
+
+	/**
+	 * Whether the failure is transient (429 rate limit or 5xx) and should be retried, rather
+	 * than treated as a permanent rejection.
+	 *
+	 * @return bool
+	 */
+	public function is_retryable(): bool {
+		return 429 === $this->http_status || $this->http_status >= 500;
+	}
 }
