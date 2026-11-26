@@ -26,10 +26,13 @@ test( 'Merchant who is getting started clicks on the Marketing > GLA link, click
 
 	// the submenu is now opened, the GLA sub menu item is now visible to the user,
 	// we can call `click` now.
-	await page.getByRole( 'link', { name: 'Google for WooCommerce' } ).click();
+	await page
+		.locator( 'li#toplevel_page_woocommerce-marketing' )
+		.getByRole( 'link', { name: 'Google', exact: true } )
+		.click();
 	await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
-	await expect( page ).toHaveTitle( /Google for WooCommerce/ );
+	await expect( page ).toHaveTitle( /^Google ‹/ );
 
 	// click on the call-to-action button.
 	await page.getByText( 'Sell more on Google →' ).first().click();
