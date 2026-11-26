@@ -5,7 +5,7 @@ Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.10.1
+Stable tag: 3.11.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,27 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.11.0 - 2026-11-25 =
+* Add - Generate and edit PMax campaign images with GenAI using free-text prompt.
+* Add - Ask eligible merchants for feedback on the Google Ads sign-up offer through Marketing notifications.
+* Tweak - Remove the temporary Merchant API migration notice.
+* Fix - Prevent the daily expiring products resubmission from stalling for hours on large catalogs.
+* Fix - Apply WP Consent API consent updates when Google Analytics for WooCommerce is active but not tracking.
+* Fix - Count handling time and business days in the Google Customer Reviews estimated delivery date.
+* Fix - Fatal error when another plugin loads a newer version of Symfony Validator.
+* Fix - Get Started page crash when the store's default country cannot be loaded.
+* Fix - Cap Ads image downloads and request sizes.
+* Fix - Product sync pausing for 12 hours on WPML stores after a request in a non-default language.
+* Fix - Products in secondary markets with a fixed exchange rate are no longer skipped with "[price] This value should not be null" when WPML cannot convert the price.
+* Fix - Reduce Merchant Center data source checks during product sync, so busy stores no longer reach the daily Merchant API quota.
+* Fix - Refresh notification results in the background so admin pages load faster.
+* Fix - Retry product re-sync migrations that couldn't be scheduled during a plugin update because the store wasn't ready to sync.
+* Fix - Saving an asset group no longer fails when the same logo is re-uploaded on a campaign with Brand Guidelines enabled.
+* Fix - Schedule product updates from one request in batches, instead of one background job per product.
+* Fix - Store YouTube conversion report exports in protected folders.
+* Fix - Delete YouTube conversion report CSVs left in the uploads export folder on update. Sites that keep these files with `woocommerce_gla_youtube_orders_csv_delete_on_complete` will have the existing ones removed.
+* Dev - Opt-in `woocommerce_gla_product_update_batch_window` filter that groups product updates from separate requests into fewer sync jobs.
+
 = 3.10.1 - 2026-11-16 =
 * Add - Allow regional WPML language codes in Markets and align supported languages with Google Merchant Center.
 * Add - Offer the Google Ads credit picker when creating a campaign after onboarding, and hide it after an offer is applied.
@@ -174,18 +195,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Validate the product and coupon content language against Merchant Center supported languages, falling back to English, so unsupported locale or WPML codes no longer block syncing.
 * Fix - Translate Content API keys and drop unknown keys returned by the `woocommerce_gla_product_attribute_values` filter, so products still sync to Merchant Center.
 * Fix - Product status refresh failing with a TypeError when a variable product holds both its own and its variations' pre-sync errors.
-
-= 3.9.6 - 2026-10-12 =
-* Add - Show a dismissible Google Ads promo on the WooCommerce Analytics Overview page when product revenue or products sold decline.
-* Add - Add multilingual and multicurrency market counts in the tracker snapshot.
-* Add - Notify merchants when synced products have main images smaller than 500 x 500 pixels.
-* Tweak - Replace channel visibility select with a toggle control.
-* Tweak - Bump WooCommerce "tested up to" version 11.2.
-* Tweak - Bump WooCommerce minimum supported version to 11.0.
-* Fix - Skip ads settings fetch when no Google Ads account connected.
-* Fix - Show the notification count bubble on the correct menu item after returning from Settings.
-* Fix - Settings tabs are no longer hidden behind the WooCommerce header after editing your store address or a paid ads campaign.
-* Fix - Record campaign-management FAQ interactions with the documented event name.
-* Fix - Support Content API-style getters (e.g. `getLink()`) on the adapter passed to `woocommerce_gla_product_attribute_values`, so extensions that read them no longer break product sync.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

@@ -72,7 +72,7 @@ class ProductMetaQueryHelper implements Service {
 	 * A simple product counts by its own value. A variable product counts once when any of its
 	 * variations has a matching value; the value saved on the parent itself is ignored.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param string   $meta_key The meta key to match.
 	 * @param string[] $values   The meta values to count.

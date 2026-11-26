@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: woocommerce/woo-product-deploy
-          ref: trunk
+          ref: ci/qit-action-v2  # TEMP: use woocommerce/woo-product-deploy#13 (qit-action v2) until it merges
           path: ./.github/actions/woo-product-deploy
           token: ${{ secrets.ORG_DEPLOY_SECRET }}  # Need PAT with access to the action repository
 
