@@ -70,12 +70,12 @@ const FeedbackModal = ( { onRequestClose, onRateUsClick } ) => {
 				<AppButton
 					key="rate-us"
 					onClick={ handleRateUsOnClick }
-					isPrimary
 					target="_blank"
 					href="https://wordpress.org/support/plugin/google-listings-and-ads/reviews/#new-post"
 					icon={ <Icon icon={ externalIcon } /> }
 					iconPosition="right"
 					iconSize={ 16 }
+					isPrimary
 				>
 					{ __( 'Rate us', 'google-listings-and-ads' ) }
 				</AppButton>,

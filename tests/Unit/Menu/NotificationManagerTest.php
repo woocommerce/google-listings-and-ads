@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Menu;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\NotificationManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
@@ -91,7 +92,7 @@ class NotificationManagerTest extends UnitTest {
 		wp_set_current_user( 0 );
 
 		// Use the real service so the capability gate in get_notifications() is exercised.
-		$notification_manager = new NotificationManager( $this->assets_handler, new NotificationService( new WP() ) );
+		$notification_manager = new NotificationManager( $this->assets_handler, new NotificationService( new WP(), $this->createMock( JobRepository::class ) ) );
 
 		$this->assertEquals( 3, $notification_manager->notifications_count( 3 ) );
 	}
@@ -107,14 +108,14 @@ class NotificationManagerTest extends UnitTest {
 		];
 		$submenu = [ // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 			Dashboard::MARKETING_MENU_SLUG => [
-				[ 'Google for WooCommerce', 'manage_woocommerce', Dashboard::PATH ],
+				[ 'Google', 'manage_woocommerce', Dashboard::PATH ],
 			],
 		];
 
 		$this->notification_manager->display_aggregated_notification_pill();
 
 		$this->assertEquals( 'Marketing', $menu[0][0] );
-		$this->assertEquals( 'Google for WooCommerce', $submenu[ Dashboard::MARKETING_MENU_SLUG ][0][0] );
+		$this->assertEquals( 'Google', $submenu[ Dashboard::MARKETING_MENU_SLUG ][0][0] );
 	}
 
 	public function test_badge_moved_to_overview_when_on_marketing_child_page() {
@@ -148,14 +149,14 @@ class NotificationManagerTest extends UnitTest {
 		$submenu = [ // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 			Dashboard::MARKETING_MENU_SLUG => [
 				[ 'Overview', 'manage_woocommerce', 'admin.php?page=wc-admin&path=' . Dashboard::MARKETING_OVERVIEW_PATH ],
-				[ 'Google for WooCommerce', 'manage_woocommerce', Dashboard::PATH ],
+				[ 'Google', 'manage_woocommerce', Dashboard::PATH ],
 			],
 		];
 
 		$this->notification_manager->display_aggregated_notification_pill();
 
 		$this->assertStringContainsString( 'update-plugins', $submenu[ Dashboard::MARKETING_MENU_SLUG ][0][0] );
-		$this->assertEquals( 'Google for WooCommerce', $submenu[ Dashboard::MARKETING_MENU_SLUG ][1][0] );
+		$this->assertEquals( 'Google', $submenu[ Dashboard::MARKETING_MENU_SLUG ][1][0] );
 	}
 
 	public function test_register_only_wires_notifications_count_into_aggregation_filter() {

@@ -939,4 +939,122 @@ class MapiProductInputsServiceTest extends UnitTest {
 		$this->assertCount( 2, $result['successes'] );
 		$this->assertCount( 0, $result['failures'] );
 	}
+
+	public function test_insert_many_fails_only_the_inputs_of_a_pair_whose_data_source_is_rejected() {
+		$service = $this->service_with_rejected_pair();
+
+		$requested = [];
+		$this->client->expects( $this->once() )
+			->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( &$requested ) {
+					$requested = array_keys( $requests );
+					$results   = [];
+					foreach ( $requests as $index => $sub ) {
+						$results[ $index ] = $this->insert_ok( $sub['body']['offerId'] );
+					}
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $service->insert_many( $this->mixed_inputs() );
+
+		$this->assertSame( [ 0, 2 ], $requested );
+		$this->assert_only_rejected_pair_failed( $result );
+	}
+
+	public function test_patch_many_fails_only_the_inputs_of_a_pair_whose_data_source_is_rejected() {
+		$service = $this->service_with_rejected_pair();
+
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'request_async' )
+			->willReturnCallback(
+				function ( string $method, string $path, array $body ) {
+					return Create::promiseFor( $this->insert_ok( $body['offerId'] ) );
+				}
+			);
+
+		$mask    = [ 'productAttributes.title' ];
+		$patches = array_map(
+			static function ( ProductInput $input ) use ( $mask ): ProductInputPatch {
+				return new ProductInputPatch( $input, $mask );
+			},
+			$this->mixed_inputs()
+		);
+
+		$this->assert_only_rejected_pair_failed( $service->patch_many( $patches ) );
+	}
+
+	public function test_delete_many_fails_only_the_inputs_of_a_pair_whose_data_source_is_rejected() {
+		$service = $this->service_with_rejected_pair();
+
+		$requested = [];
+		$this->client->expects( $this->once() )
+			->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( &$requested ) {
+					$requested = array_keys( $requests );
+					$results   = [];
+					foreach ( $requests as $index => $sub ) {
+						$results[ $index ] = [
+							'status' => 200,
+							'body'   => [],
+						];
+					}
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $service->delete_many( $this->mixed_inputs() );
+
+		$this->assertSame( [ 0, 2 ], $requested );
+		$this->assert_only_rejected_pair_failed( $result );
+	}
+
+	/**
+	 * A service whose data source resolution rejects the sr/DZ pair, and expects each of the two
+	 * pairs in mixed_inputs() to be resolved exactly once.
+	 *
+	 * @return MapiProductInputsService
+	 */
+	protected function service_with_rejected_pair(): MapiProductInputsService {
+		$data_sources = $this->createMock( MapiDataSourcesService::class );
+		$data_sources->expects( $this->exactly( 2 ) )
+			->method( 'ensure_data_source_for' )
+			->willReturnCallback(
+				function ( string $language, string $feed ) {
+					if ( 'sr' === $language && 'DZ' === $feed ) {
+						throw new MerchantApiException( 400, [ 'error' => [ 'message' => 'INVALID_STATE_PRIMARY_DATA_SOURCE_UPDATE' ] ], 'post' );
+					}
+					return self::DS_EN_US;
+				}
+			);
+
+		$service = new MapiProductInputsService( $this->client, $data_sources );
+		$service->set_options_object( $this->options );
+
+		return $service;
+	}
+
+	/**
+	 * @return ProductInput[] en/US inputs at indexes 0 and 2, sr/DZ inputs at indexes 1 and 3.
+	 */
+	protected function mixed_inputs(): array {
+		return [
+			$this->make_input( 'us1', 'en', 'US' ),
+			$this->make_input( 'dz1', 'sr', 'DZ' ),
+			$this->make_input( 'us2', 'en', 'US' ),
+			$this->make_input( 'dz2', 'sr', 'DZ' ),
+		];
+	}
+
+	/**
+	 * @param array $result The batch result for mixed_inputs().
+	 */
+	protected function assert_only_rejected_pair_failed( array $result ): void {
+		$this->assertSame( [ 0, 2 ], array_keys( $result['successes'] ) );
+		$this->assertEqualsCanonicalizing( [ 1, 3 ], array_keys( $result['failures'] ) );
+		$this->assertSame( 400, $result['failures'][1]->get_http_status() );
+		$this->assertSame( 400, $result['failures'][3]->get_http_status() );
+	}
 }

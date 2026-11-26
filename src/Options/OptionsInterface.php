@@ -38,6 +38,7 @@ interface OptionsInterface {
 	public const JETPACK_CONNECTED                         = 'jetpack_connected';
 	public const JETPACK_AUTH_FAILED_AT                    = 'jetpack_auth_failed_at';
 	public const MAPI_DATA_SOURCES                         = 'mapi_data_sources';
+	public const MAPI_FAILED_DATA_SOURCES                  = 'mapi_failed_data_sources';
 	public const MAPI_RECREATED_DATA_SOURCES               = 'mapi_recreated_data_sources';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
@@ -62,11 +63,13 @@ interface OptionsInterface {
 	public const YOUTUBE_ORDER_IDS_CACHE                   = 'youtube_export_order_ids';
 	public const YOUTUBE_EXPORT_FILES                      = 'youtube_export_files';
 	public const YOUTUBE_THIRD_PARTY_LINK                  = 'youtube_third_party_link';
+	public const YOUTUBE_REPORT_CLEANUP_FILES              = 'youtube_report_cleanup_files';
 	public const ONBOARDING_COMPLETED_AT                   = 'onboarding_completed_at';
 	public const NOTIFICATIONS_SITE_STATE                  = 'notifications_site_state';
 	public const WC_INSTALL_TIMESTAMP                      = 'wc_install_timestamp';
 	public const IS_SERVICE_BASED_MERCHANT                 = 'is_service_based_merchant';
 	public const SUPPORTED_PRODUCTS_CONFIRMED              = 'supported_products_confirmed';
+	public const PLUGIN_UPDATE_PENDING_JOBS                = 'plugin_update_pending_jobs';
 
 	public const VALID_OPTIONS = [
 		self::ADS_ACCOUNT_CURRENCY                      => true,
@@ -94,6 +97,7 @@ interface OptionsInterface {
 		self::JETPACK_CONNECTED                         => true,
 		self::JETPACK_AUTH_FAILED_AT                    => true,
 		self::MAPI_DATA_SOURCES                         => true,
+		self::MAPI_FAILED_DATA_SOURCES                  => true,
 		self::MAPI_RECREATED_DATA_SOURCES               => true,
 		self::MC_SETUP_COMPLETED_AT                     => true,
 		self::MERCHANT_ACCOUNT_STATE                    => true,
@@ -119,11 +123,13 @@ interface OptionsInterface {
 		self::YOUTUBE_ORDER_IDS_CACHE                   => true,
 		self::YOUTUBE_EXPORT_FILES                      => true,
 		self::YOUTUBE_THIRD_PARTY_LINK                  => true,
+		self::YOUTUBE_REPORT_CLEANUP_FILES              => true,
 		self::ONBOARDING_COMPLETED_AT                   => true,
 		self::NOTIFICATIONS_SITE_STATE                  => true,
 		self::WC_INSTALL_TIMESTAMP                      => true,
 		self::IS_SERVICE_BASED_MERCHANT                 => true,
 		self::SUPPORTED_PRODUCTS_CONFIRMED              => true,
+		self::PLUGIN_UPDATE_PENDING_JOBS                => true,
 	];
 
 	public const OPTION_TYPES = [

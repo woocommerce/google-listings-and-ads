@@ -34,9 +34,9 @@ export default function BudgetRadioControl( {
 				className={ classnames( styles.radio, className ) }
 				checked={ selected === value }
 				options={ [ { value } ] }
-				hideLabelFromVision
 				help=""
 				aria-label={ value }
+				hideLabelFromVision
 			/>
 			<span
 				className={ classnames(

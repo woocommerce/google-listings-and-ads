@@ -914,18 +914,20 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 9 ) )
+		$this->options->expects( $this->exactly( 11 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::CONTACT_INFO_SETUP ],
 				[ OptionsInterface::MAPI_DATA_SOURCES ],
+				[ OptionsInterface::MAPI_FAILED_DATA_SOURCES ],
 				[ OptionsInterface::MAPI_RECREATED_DATA_SOURCES ],
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT ],
 				[ OptionsInterface::MERCHANT_ACCOUNT_STATE ],
 				[ OptionsInterface::MERCHANT_CENTER ],
 				[ OptionsInterface::SITE_VERIFICATION ],
 				[ OptionsInterface::MERCHANT_ID ],
-				[ OptionsInterface::CLAIMED_URL_HASH ]
+				[ OptionsInterface::CLAIMED_URL_HASH ],
+				[ OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS ]
 			);
 
 		$this->market_service->expects( $this->once() )->method( 'reset_markets' );
@@ -953,7 +955,7 @@ class AccountServiceTest extends UnitTest {
 	public function test_disconnect_never_updates_options() {
 		// GOOGLE_CUSTOMER_REVIEWS is its own dedicated option, untouched by disconnect() — it
 		// naturally survives a disconnect/reconnect cycle without any special-case preservation.
-		// (test_disconnect above already proves delete() only ever targets its exact 8 keys,
+		// (test_disconnect above already proves delete() only ever targets its exact keys,
 		// which don't include GOOGLE_CUSTOMER_REVIEWS.)
 		$this->options->expects( $this->never() )
 			->method( 'update' );

@@ -259,6 +259,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	public function disconnect() {
 		$this->options->delete( OptionsInterface::CONTACT_INFO_SETUP );
 		$this->options->delete( OptionsInterface::MAPI_DATA_SOURCES );
+		$this->options->delete( OptionsInterface::MAPI_FAILED_DATA_SOURCES );
 		$this->options->delete( OptionsInterface::MAPI_RECREATED_DATA_SOURCES );
 		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
@@ -266,6 +267,8 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 		$this->options->delete( OptionsInterface::CLAIMED_URL_HASH );
+		// Nothing synced is left to migrate, and setting up again runs a full sync.
+		$this->options->delete( OptionsInterface::PLUGIN_UPDATE_PENDING_JOBS );
 
 		$this->container->get( MarketService::class )->reset_markets();
 		$this->container->get( MerchantStatuses::class )->delete();

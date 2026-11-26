@@ -79,7 +79,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 			]
 		);
 
-		$this->assertTrue( $evaluator->should_show() );
+		$this->assertTrue( $evaluator->refresh() );
 	}
 
 	public function test_should_show_when_supported_coupon_is_on_same_page_as_unsupported_coupons() {
@@ -98,7 +98,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 			]
 		);
 
-		$this->assertTrue( $evaluator->should_show() );
+		$this->assertTrue( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_only_unsupported_coupons_exist() {
@@ -120,7 +120,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 			]
 		);
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_target_market_is_not_supported() {
@@ -129,7 +129,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 		$evaluator->expects( $this->never() )->method( 'has_synced_coupon' );
 		$evaluator->expects( $this->never() )->method( 'get_coupon_post_ids' );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_a_coupon_is_already_synced() {
@@ -137,13 +137,56 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 
 		$evaluator->expects( $this->never() )->method( 'get_coupon_post_ids' );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_merchant_has_no_coupons() {
 		$evaluator = $this->create_evaluator( true, false, [], [] );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
+	}
+
+	public function test_scan_is_bounded_to_the_computed_page_count() {
+		// A supported coupon lives on page 2, but only 1 page is reported. The scan must
+		// stay bounded by the page count and never page past it, so the coupon on the
+		// unreported page is not reached (guards against the previous unbounded loop).
+		$supported_coupon = $this->create_coupon( 2, false, [] );
+
+		$evaluator = $this->create_evaluator(
+			true,
+			false,
+			[
+				1 => [ 1 ],
+				2 => [ 2 ],
+			],
+			[
+				1 => $this->create_coupon( 1, true, [] ),
+				2 => $supported_coupon,
+			],
+			1
+		);
+
+		$this->assertFalse( $evaluator->refresh() );
+	}
+
+	public function test_scan_spans_all_reported_pages_to_find_a_supported_coupon() {
+		// Two full pages exist and the page count reports both. The only supported coupon
+		// lives on page 2, so the scan must page past page 1 to reach it.
+		$evaluator = $this->create_evaluator(
+			true,
+			false,
+			[
+				1 => [ 1 ],
+				2 => [ 2 ],
+			],
+			[
+				1 => $this->create_coupon( 1, true, [] ),
+				2 => $this->create_coupon( 2, false, [] ),
+			],
+			2
+		);
+
+		$this->assertTrue( $evaluator->refresh() );
 	}
 
 	public function test_cache_hit_skips_query() {
@@ -164,10 +207,11 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 	 * @param bool                  $has_synced       Whether at least one coupon is already synced to Google.
 	 * @param array<int, int[]>     $post_ids_by_page Coupon post IDs returned per page.
 	 * @param array<int, WC_Coupon> $coupons_by_id    Coupon objects keyed by post ID.
+	 * @param int|null              $total_pages      Page count to report; defaults to the number of pages provided.
 	 *
 	 * @return CouponsNotSyncedEvaluator|MockObject
 	 */
-	private function create_evaluator( bool $supported_market, bool $has_synced, array $post_ids_by_page, array $coupons_by_id ): CouponsNotSyncedEvaluator {
+	private function create_evaluator( bool $supported_market, bool $has_synced, array $post_ids_by_page, array $coupons_by_id, ?int $total_pages = null ): CouponsNotSyncedEvaluator {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$target_audience = $this->createMock( TargetAudience::class );
 
@@ -176,10 +220,12 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 
 		$evaluator = $this->getMockBuilder( CouponsNotSyncedEvaluator::class )
 			->setConstructorArgs( [ $merchant_center, $target_audience ] )
-			->onlyMethods( [ 'has_synced_coupon', 'get_coupon_post_ids', 'create_coupon' ] )
+			->onlyMethods( [ 'has_synced_coupon', 'get_coupon_page_count', 'get_coupon_post_ids', 'create_coupon' ] )
 			->getMock();
 
 		$evaluator->method( 'has_synced_coupon' )->willReturn( $has_synced );
+
+		$evaluator->method( 'get_coupon_page_count' )->willReturn( $total_pages ?? count( $post_ids_by_page ) );
 
 		$evaluator->method( 'get_coupon_post_ids' )
 			->willReturnCallback(

@@ -50,7 +50,7 @@ describe( 'index', () => {
 					breadcrumbs: expect.arrayContaining( [
 						[ '', 'WooCommerce' ],
 						[ '/marketing', 'Marketing' ],
-						'Google for WooCommerce',
+						'Google',
 						expect.any( String ),
 					] ),
 					container: expect.any( Function ),

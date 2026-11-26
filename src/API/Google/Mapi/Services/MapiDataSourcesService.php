@@ -9,6 +9,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiExcep
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,12 +25,15 @@ defined( 'ABSPATH' ) || exit;
  * and the cache-key prefix. Reuses an existing matching data source when one is already
  * on the merchant, otherwise creates one. Resolved names are cached in options.
  * Resolution is lazy: the first write into a given market triggers the lookup/create.
+ * A cached name is re-checked against the account at most once per VERIFY_TTL, so steady
+ * state costs a couple of dataSources.get calls per data source per day, not one per request.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services
  */
-class MapiDataSourcesService implements OptionsAwareInterface {
+class MapiDataSourcesService implements OptionsAwareInterface, TransientsAwareInterface {
 
 	use OptionsAwareTrait;
+	use TransientsAwareTrait;
 
 	/** Display name prefix used when creating the plugin's data sources. */
 	public const DATA_SOURCE_DISPLAY_NAME = 'Google for WooCommerce';
@@ -43,6 +49,9 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		// Only a primaryProductDataSource has a `destinations` field in the Merchant API,
 		// so only product creation requests online-only destinations.
 		'set_online_destinations' => true,
+		// A primary source with no contentLanguage and no feedLabel accepts products of any
+		// language and feed label, so it can stand in for a pair with no source of its own.
+		'allow_catch_all'         => true,
 	];
 
 	/** Descriptor for the promotion data source. */
@@ -97,12 +106,27 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 */
 	private const RECREATE_RATE_LIMIT = DAY_IN_SECONDS;
 
+	/**
+	 * How long a pair whose data source create was rejected by Google (a non-retryable 4xx) is
+	 * failed straight from the stored rejection rather than retried against the API, so a market
+	 * Google won't accept doesn't re-issue the same doomed create on every batch.
+	 */
+	private const FAILED_SOURCE_COOLDOWN = DAY_IN_SECONDS;
+
+	/**
+	 * How long a confirmed data source is trusted before its cached name is checked again.
+	 * A deleted or local-only source is also recovered by the product insert retry, and a
+	 * source's input type is fixed at creation, so this only bounds how long unchanged products
+	 * (skipped by hash, so never inserted) can wait for a re-resolve after a deletion.
+	 */
+	private const VERIFY_TTL = 12 * HOUR_IN_SECONDS;
+
 	/** @var MerchantApiClient */
 	protected $client;
 
 	/**
-	 * Resource names confirmed to exist on the account during this request, so repeat
-	 * resolutions of the same data source do not re-issue a dataSources.get.
+	 * Resource names this request uses without a dataSources.get: confirmed now or within
+	 * VERIFY_TTL, or kept after a non-404 check error.
 	 *
 	 * @var array<string, true>
 	 */
@@ -165,8 +189,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		if ( isset( $cache[ $cache_key ] ) && '' !== $cache[ $cache_key ] ) {
 			$name = (string) $cache[ $cache_key ];
 
-			if ( isset( $this->verified_data_sources[ $name ] ) || $this->verify_cached_source( $type, $name ) ) {
-				$this->verified_data_sources[ $name ] = true;
+			if ( $this->is_recently_verified( $name ) || $this->verify_cached_source( $type, $name ) ) {
 				return $name;
 			}
 
@@ -176,12 +199,126 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 			$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 		}
 
+		$this->throw_if_cooling_down( $cache_key );
+
+		$name     = '';
 		$existing = $this->find_existing_data_source( $type, $content_language, $match_value );
-		$name     = null !== $existing
-			? $this->adopt_data_source( $existing, $content_language, $match_value )
-			: $this->create_data_source( $type, $content_language, $match_value );
+
+		if ( null === $existing ) {
+			try {
+				$name = $this->create_data_source( $type, $content_language, $match_value );
+			} catch ( MerchantApiException $exception ) {
+				// Google rejects a create that conflicts with a source it already holds (e.g. one
+				// created by a concurrent batch), so list once more and adopt it if it's there now.
+				$existing = $this->is_failed_precondition( $exception )
+					? $this->find_existing_data_source( $type, $content_language, $match_value )
+					: null;
+
+				if ( null === $existing ) {
+					$this->record_failed_source( $cache_key, $exception );
+					throw $exception;
+				}
+			}
+		}
+
+		if ( null !== $existing ) {
+			// A catch-all source is shared by every pair without a source of its own, so it is
+			// used as-is rather than renamed after this pair.
+			$name = $this->is_catch_all_source( $type, $existing )
+				? $existing['name']
+				: $this->adopt_data_source( $existing, $content_language, $match_value );
+		}
+
+		$this->clear_failed_source( $cache_key );
 
 		return $this->cache_resolved_source( $type, $content_language, $match_value, $name );
+	}
+
+	/**
+	 * Fail a pair straight from its stored create rejection while it is within
+	 * FAILED_SOURCE_COOLDOWN, without calling the API (see record_failed_source()).
+	 *
+	 * @param string $cache_key
+	 *
+	 * @throws MerchantApiException Rebuilt from the stored rejection, while cooling down.
+	 */
+	private function throw_if_cooling_down( string $cache_key ): void {
+		$failed = (array) $this->options->get( OptionsInterface::MAPI_FAILED_DATA_SOURCES, [] );
+
+		if ( ! isset( $failed[ $cache_key ] ) ) {
+			return;
+		}
+
+		$entry = (array) $failed[ $cache_key ];
+
+		if ( ( time() - (int) ( $entry['time'] ?? 0 ) ) >= self::FAILED_SOURCE_COOLDOWN ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The body is Google's stored rejection response, passed through as data and escaped where it's displayed.
+		throw new MerchantApiException( (int) ( $entry['status'] ?? 400 ), (array) ( $entry['body'] ?? [] ), __METHOD__ );
+	}
+
+	/**
+	 * Store a rejected create so the pair cools down (see throw_if_cooling_down()), and log the
+	 * rejection. Only a non-retryable 4xx is stored: a 429 or 5xx is transient, so the next batch
+	 * retries the create as usual. While cooling down, the create isn't logged again, but each
+	 * rethrown exception still fires `woocommerce_gla_mc_client_exception`.
+	 *
+	 * @param string               $cache_key
+	 * @param MerchantApiException $exception The create rejection.
+	 */
+	private function record_failed_source( string $cache_key, MerchantApiException $exception ): void {
+		if ( $exception->is_retryable() ) {
+			return;
+		}
+
+		$failed               = (array) $this->options->get( OptionsInterface::MAPI_FAILED_DATA_SOURCES, [] );
+		$failed[ $cache_key ] = [
+			'time'   => time(),
+			'status' => $exception->get_http_status(),
+			'body'   => $exception->get_response_body(),
+		];
+		$this->options->update( OptionsInterface::MAPI_FAILED_DATA_SOURCES, $failed );
+
+		do_action(
+			'woocommerce_gla_error',
+			sprintf(
+				'Data source %s could not be created: %s. Not retrying for %d seconds.',
+				$cache_key,
+				$exception->getMessage(),
+				self::FAILED_SOURCE_COOLDOWN
+			),
+			__METHOD__
+		);
+	}
+
+	/**
+	 * Remove a pair's stored create rejection once it resolves to a data source.
+	 *
+	 * @param string $cache_key
+	 */
+	private function clear_failed_source( string $cache_key ): void {
+		$failed = (array) $this->options->get( OptionsInterface::MAPI_FAILED_DATA_SOURCES, [] );
+
+		if ( ! isset( $failed[ $cache_key ] ) ) {
+			return;
+		}
+
+		unset( $failed[ $cache_key ] );
+		$this->options->update( OptionsInterface::MAPI_FAILED_DATA_SOURCES, $failed );
+	}
+
+	/**
+	 * Whether a MAPI rejection is a FAILED_PRECONDITION, e.g. Google's
+	 * INVALID_STATE_PRIMARY_DATA_SOURCE_UPDATE when a create conflicts with an existing source.
+	 *
+	 * @param MerchantApiException $exception
+	 *
+	 * @return bool
+	 */
+	private function is_failed_precondition( MerchantApiException $exception ): bool {
+		return 'FAILED_PRECONDITION' === ( $exception->get_response_body()['error']['status'] ?? '' );
 	}
 
 	/**
@@ -290,8 +427,8 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Write a resolved data source name into the option cache and mark it verified for the rest
-	 * of this request, so a repeat resolution of the same pair does not re-issue a dataSources.get.
+	 * Write a resolved data source name into the option cache and mark it verified for VERIFY_TTL,
+	 * so a repeat resolution of the same pair does not re-issue a dataSources.get.
 	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
@@ -308,7 +445,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 
 		// Just observed on the account (discovered or created), so it exists without a further request.
-		$this->verified_data_sources[ $name ] = true;
+		$this->mark_verified( $name );
 
 		return $name;
 	}
@@ -319,7 +456,8 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 *
 	 * Only a 404 proves absence, so any other error (auth, transient 5xx) keeps the cached name:
 	 * discarding it there would force a needless list-or-create, and a genuinely missing source
-	 * still surfaces on the insert that follows.
+	 * still surfaces on the insert that follows. Such an error skips the check for the rest of
+	 * this request only; just a successful get of a usable source is recorded for VERIFY_TTL.
 	 *
 	 * @param array  $type One of the *_SOURCE descriptors.
 	 * @param string $name Data source resource name.
@@ -330,10 +468,88 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		try {
 			$source = $this->client->get( sprintf( '%s/%s', MapiPaths::DATASOURCES, $name ) );
 		} catch ( MerchantApiException $exception ) {
-			return 404 !== $exception->get_http_status();
+			if ( 404 === $exception->get_http_status() ) {
+				return false;
+			}
+
+			$this->verified_data_sources[ $name ] = true;
+			return true;
 		}
 
-		return ! $this->is_unusable_data_source( $type, $source );
+		if ( $this->is_unusable_data_source( $type, $source ) ) {
+			return false;
+		}
+
+		$this->mark_verified( $name );
+		return true;
+	}
+
+	/**
+	 * Whether a data source was confirmed to exist during this request or within VERIFY_TTL.
+	 *
+	 * @param string $name Data source resource name.
+	 *
+	 * @return bool
+	 */
+	private function is_recently_verified( string $name ): bool {
+		if ( isset( $this->verified_data_sources[ $name ] ) ) {
+			return true;
+		}
+
+		$verified_at = $this->get_verified_timestamps()[ $name ] ?? 0;
+		if ( $verified_at > time() - self::VERIFY_TTL ) {
+			$this->verified_data_sources[ $name ] = true;
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Record that a data source was just confirmed to exist, for this request and for VERIFY_TTL.
+	 * Expired entries are pruned on each write so the transient does not grow.
+	 *
+	 * @param string $name Data source resource name.
+	 */
+	private function mark_verified( string $name ): void {
+		$this->verified_data_sources[ $name ] = true;
+
+		$now        = time();
+		$timestamps = array_filter(
+			$this->get_verified_timestamps(),
+			static function ( $verified_at ) use ( $now ): bool {
+				return (int) $verified_at > $now - self::VERIFY_TTL;
+			}
+		);
+
+		$timestamps[ $name ] = $now;
+		$this->transients->set( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED, $timestamps, self::VERIFY_TTL );
+	}
+
+	/**
+	 * Drop a data source's verification, so the next cache hit checks it against the account.
+	 *
+	 * @param string $name Data source resource name.
+	 */
+	private function unmark_verified( string $name ): void {
+		unset( $this->verified_data_sources[ $name ] );
+
+		$timestamps = $this->get_verified_timestamps();
+		if ( ! isset( $timestamps[ $name ] ) ) {
+			return;
+		}
+
+		unset( $timestamps[ $name ] );
+		$this->transients->set( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED, $timestamps, self::VERIFY_TTL );
+	}
+
+	/**
+	 * When each data source was last confirmed to exist, keyed by resource name.
+	 *
+	 * @return array<string, int>
+	 */
+	private function get_verified_timestamps(): array {
+		return (array) $this->transients->get( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED, [] );
 	}
 
 	/**
@@ -458,7 +674,19 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Drop a cached data source from both the option cache and the verified-this-request set.
+	 * Drop every recorded verification, so the next cache hit of each data source is checked
+	 * against the account again. For manual diagnostics that must reflect the account's current
+	 * state, not a check up to VERIFY_TTL old. Cached names are kept.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function clear_verifications(): void {
+		$this->verified_data_sources = [];
+		$this->transients->delete( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED );
+	}
+
+	/**
+	 * Drop a cached data source from the option cache and its verification.
 	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
@@ -473,8 +701,9 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		}
 
 		$name = (string) $cache[ $cache_key ];
-		unset( $cache[ $cache_key ], $this->verified_data_sources[ $name ] );
+		unset( $cache[ $cache_key ] );
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
+		$this->unmark_verified( $name );
 	}
 
 	/**
@@ -552,6 +781,10 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * skipped rather than adopted: a new API source is created instead, and the unusable one is
 	 * left in place (cleaning it up is out of scope for this resolver).
 	 *
+	 * When no source matches exactly and the type allows it (product sources only), the first
+	 * usable catch-all source (see is_catch_all_source()) is returned instead, so a pair whose
+	 * own source can't be created still syncs into the account's existing primary source.
+	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
 	 * @param string $match_value      Secondary identity value (feed label or target country).
@@ -561,6 +794,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 */
 	private function find_existing_data_source( array $type, string $content_language, string $match_value ): ?array {
 		$page_token = '';
+		$catch_all  = null;
 
 		do {
 			$response = $this->client->get( $this->build_list_path( $page_token ) );
@@ -581,12 +815,42 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 
 					return $source;
 				}
+
+				if (
+					null === $catch_all
+					&& $this->is_catch_all_source( $type, $source )
+					&& ! $this->is_unusable_data_source( $type, $source )
+				) {
+					$catch_all = $source;
+				}
 			}
 
 			$page_token = $response['nextPageToken'] ?? '';
 		} while ( '' !== $page_token );
 
-		return null;
+		return $catch_all;
+	}
+
+	/**
+	 * Whether a data source is a catch-all for the given type: a primary product source with no
+	 * contentLanguage and no feedLabel, which accepts products of any language and feed label.
+	 * Always false for a type that doesn't allow catch-all sources (promotions).
+	 *
+	 * @param array $type   One of the *_SOURCE descriptors.
+	 * @param array $source A data source, as returned by the MAPI.
+	 *
+	 * @return bool
+	 */
+	private function is_catch_all_source( array $type, array $source ): bool {
+		if ( empty( $type['allow_catch_all'] ) ) {
+			return false;
+		}
+
+		$descriptor = $source[ $type['source_field'] ] ?? null;
+
+		return is_array( $descriptor )
+			&& '' === ( $descriptor['contentLanguage'] ?? '' )
+			&& '' === ( $descriptor[ $type['match_field'] ] ?? '' );
 	}
 
 	/**

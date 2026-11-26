@@ -1,0 +1,61 @@
+/**
+ * External dependencies
+ */
+import { TextareaControl } from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
+import classnames from 'classnames';
+
+/**
+ * Internal dependencies
+ */
+import './index.scss';
+
+export const MAX_PROMPT_LENGTH = 1500;
+
+/**
+ * A prompt textarea with a live character counter, shared by the GenAI
+ * "edit with prompt" and "generate with prompt" flows.
+ *
+ * @param {Object} props React props.
+ * @param {string} props.value The current prompt value.
+ * @param {Function} props.onChange Called with the new value on change.
+ * @param {string} [props.label] Accessible label for the field.
+ * @param {string} [props.placeholder] Placeholder text shown in the field.
+ * @param {boolean} [props.disabled] Whether the field is disabled.
+ * @param {number} [props.rows=4] Number of visible text rows.
+ * @param {string} [props.className] Additional class name(s) for the control.
+ */
+export default function GenAIPromptControl( {
+	value,
+	onChange,
+	label = __( 'Prompt', 'google-listings-and-ads' ),
+	placeholder,
+	disabled,
+	rows = 4,
+	className,
+} ) {
+	// Clamp so the counter can never exceed the limit.
+	const handleChange = ( nextValue ) => {
+		onChange( nextValue.slice( 0, MAX_PROMPT_LENGTH ) );
+	};
+
+	return (
+		<TextareaControl
+			className={ classnames( 'gla-gen-ai-prompt-control', className ) }
+			disabled={ disabled }
+			help={ sprintf(
+				// translators: %1$d: current character count, %2$d: maximum allowed characters.
+				__( '%1$d/%2$d characters', 'google-listings-and-ads' ),
+				value.length,
+				MAX_PROMPT_LENGTH
+			) }
+			label={ label }
+			onChange={ handleChange }
+			placeholder={ placeholder }
+			rows={ rows }
+			value={ value }
+			hideLabelFromVision
+			__nextHasNoMarginBottom
+		/>
+	);
+}

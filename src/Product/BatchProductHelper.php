@@ -20,7 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -318,7 +318,7 @@ class BatchProductHelper implements Service {
 				$this->maybe_report_replaced_language( $product_language );
 
 				// Stage per product so a throw discards the whole product's entries (see the catch);
-				// a per-(language, currency) validation failure skips only that one feed.
+				// a per-(language, currency) validation failure or rejected data source skips only that one feed.
 				$product_entries = [];
 
 				// Every feed label this product can attain in this pass. Carried on each
@@ -356,9 +356,9 @@ class BatchProductHelper implements Service {
 
 					// Add shipping for all countries across all markets.
 					$primary_input = $this->generate_product_input( $product, $main_feed_label, $main_feed_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language );
-					$primary_hash  = $this->product_input_hash( $primary_input );
+					$primary_hash  = $this->hash_entry_or_mark_invalid( $product, $primary_input );
 
-					if ( ! $this->can_skip_unchanged_product( $product, $primary_hash, $primary_input->get_content_language(), $primary_input->get_feed_label() ) ) {
+					if ( null !== $primary_hash && ! $this->can_skip_unchanged_product( $product, $primary_hash, $primary_input->get_content_language(), $primary_input->get_feed_label() ) ) {
 						$product_entries[] = [
 							'product' => $product,
 							'country' => $main_feed_label,
@@ -405,9 +405,9 @@ class BatchProductHelper implements Service {
 						}
 
 						$primary_currency_input = $this->generate_product_input( $product, $main_feed_label, $primary_currency_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language, $primary_currency );
-						$primary_currency_hash  = $this->product_input_hash( $primary_currency_input );
+						$primary_currency_hash  = $this->hash_entry_or_mark_invalid( $product, $primary_currency_input );
 
-						if ( $this->can_skip_unchanged_product( $product, $primary_currency_hash, $primary_currency_input->get_content_language(), $primary_currency_input->get_feed_label() ) ) {
+						if ( null === $primary_currency_hash || $this->can_skip_unchanged_product( $product, $primary_currency_hash, $primary_currency_input->get_content_language(), $primary_currency_input->get_feed_label() ) ) {
 							continue;
 						}
 
@@ -502,9 +502,20 @@ class BatchProductHelper implements Service {
 			);
 		}
 
-		// A configured exchange rate converts any product's price at sync time, so it keeps a
-		// currency's entries flowing when WPML cannot convert for this product.
+		// A configured exchange rate converts any product's price (for validation and at sync
+		// time), so it keeps a currency's entries flowing when WPML cannot convert for this product.
+		// The market stores a single rate, so it can only describe one non-store currency: with
+		// several, applying it to all of them would mislabel prices, so those entries rely on WPML.
 		$market_exchange_rate = self::extract_exchange_rate( $market );
+		if ( $market_exchange_rate > 0 && self::count_non_store_currencies( $market ) > 1 ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Ignoring the exchange rate of secondary market %s: it lists more than one non-store currency, so the rate cannot tell which one it converts to.', $market_id ),
+				__METHOD__
+			);
+
+			$market_exchange_rate = 0.0;
+		}
 
 		foreach ( $currencies as $market_currency ) {
 			if ( ! $this->product_priced_in_currency( $product, $market_currency ) && $market_exchange_rate <= 0 ) {
@@ -526,7 +537,7 @@ class BatchProductHelper implements Service {
 			$currency_override = get_woocommerce_currency() === $market_currency ? '' : $market_currency;
 
 			$validation = $this->validate_product(
-				$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $currency_override )
+				$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $currency_override, $market_exchange_rate )
 			);
 			if ( $validation instanceof BatchInvalidProductEntry ) {
 				$this->mark_as_invalid( $validation );
@@ -542,9 +553,9 @@ class BatchProductHelper implements Service {
 
 			// Secondary market shipping is scoped to the market's own country.
 			$input = $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $currency_override, $market_exchange_rate );
-			$hash  = $this->product_input_hash( $input );
+			$hash  = $this->hash_entry_or_mark_invalid( $product, $input );
 
-			if ( $this->can_skip_unchanged_product( $product, $hash, $input->get_content_language(), $input->get_feed_label() ) ) {
+			if ( null === $hash || $this->can_skip_unchanged_product( $product, $hash, $input->get_content_language(), $input->get_feed_label() ) ) {
 				continue;
 			}
 
@@ -648,6 +659,27 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
+	 * Number of distinct currencies a market lists other than the store currency.
+	 *
+	 * @param array $market
+	 *
+	 * @return int
+	 */
+	private static function count_non_store_currencies( array $market ): int {
+		$configured = is_array( $market['currency'] ?? null ) ? $market['currency'] : [ $market['currency'] ?? '' ];
+		$store      = strtoupper( get_woocommerce_currency() );
+
+		$currencies = array_filter(
+			array_unique( array_map( 'strtoupper', array_map( 'strval', $configured ) ) ),
+			static function ( string $currency ) use ( $store ): bool {
+				return '' !== $currency && $store !== $currency;
+			}
+		);
+
+		return count( $currencies );
+	}
+
+	/**
 	 * Extracts a market's fixed exchange rate from its config.
 	 *
 	 * @param array $market A market config array as returned by MarketService.
@@ -694,8 +726,7 @@ class BatchProductHelper implements Service {
 	 * @param ProductInput $input
 	 *
 	 * @return string
-	 * @throws MerchantApiException When resolving the entry's data source fails; callers
-	 *                              generating entries catch this per product.
+	 * @throws MerchantApiException When resolving the entry's data source fails.
 	 */
 	protected function product_input_hash( ProductInput $input ): string {
 		$data_source = $this->data_sources->ensure_data_source_for(
@@ -704,6 +735,36 @@ class BatchProductHelper implements Service {
 		);
 
 		return md5( $data_source . (string) wp_json_encode( $input->to_array() ) );
+	}
+
+	/**
+	 * Hash an entry, or mark the product invalid when Google rejects the entry's data source,
+	 * so only that feed is skipped and the product's other entries still sync.
+	 *
+	 * @param WC_Product   $product
+	 * @param ProductInput $input
+	 *
+	 * @return string|null The entry's hash, or null when its data source was rejected.
+	 * @throws MerchantApiException When resolving the data source fails with a 429 or 5xx, so the whole product waits for the next sync.
+	 */
+	protected function hash_entry_or_mark_invalid( WC_Product $product, ProductInput $input ): ?string {
+		try {
+			return $this->product_input_hash( $input );
+		} catch ( MerchantApiException $exception ) {
+			if ( $exception->is_retryable() ) {
+				throw $exception;
+			}
+
+			$this->mark_as_invalid( new BatchInvalidProductEntry( $product->get_id(), null, [ 'invalid' => sprintf( '%s: %s', $input->get_feed_label(), $exception->getMessage() ) ] ) );
+
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Skipping the %s entry for product (ID: %s) because its data source was rejected: %s', $input->get_feed_label(), $product->get_id(), $exception->getMessage() ),
+				__METHOD__
+			);
+
+			return null;
+		}
 	}
 
 	/**
@@ -740,7 +801,7 @@ class BatchProductHelper implements Service {
 
 		// Clamp to the expiry-resubmission window so a filtered freshness can never let an
 		// unchanged product be skipped past the point it is due for resubmission.
-		$max_freshness = ProductRepository::RESUBMIT_EXPIRY_DAYS * DAY_IN_SECONDS;
+		$max_freshness = ProductRepository::get_resubmit_expiry_days() * DAY_IN_SECONDS;
 		$freshness     = min( (int) apply_filters( 'woocommerce_gla_sync_hash_freshness', $max_freshness ), $max_freshness );
 		$synced_at     = (int) $this->meta_handler->get_synced_at( $product );
 
