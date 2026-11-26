@@ -914,7 +914,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 10 ) )
+		$this->options->expects( $this->exactly( 11 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::CONTACT_INFO_SETUP ],
