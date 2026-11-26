@@ -45,13 +45,7 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	 * @return array The account creation steps and statuses.
 	 */
 	public function get( bool $initialize_if_not_found = true ): array {
-		// Entries for steps that were removed from account_creation_steps() can
-		// linger in the stored option after a plugin update. Drop them here so no
-		// caller reports or throws on a step that no longer exists.
-		$state = array_intersect_key(
-			(array) $this->options->get( $this->option_name(), [] ),
-			array_flip( $this->account_creation_steps() )
-		);
+		$state = $this->filter_known_steps( $this->options->get( $this->option_name(), [] ) );
 
 		if ( empty( $state ) && $initialize_if_not_found ) {
 			$state = [];
@@ -69,6 +63,42 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	}
 
 	/**
+	 * Retrieve the account state option, bypassing the request caches.
+	 *
+	 * The whole state array is written back on every update, so any write must
+	 * start from the current database value rather than a copy cached earlier
+	 * in the request; otherwise steps completed by concurrent requests are
+	 * silently reverted.
+	 *
+	 * @return array The account creation steps and statuses.
+	 */
+	public function get_fresh(): array {
+		// Fall back to the cached read for options objects that can't bypass the caches.
+		$state = $this->options instanceof FreshReadOptionsInterface
+			? $this->options->get_fresh( $this->option_name(), [] )
+			: $this->options->get( $this->option_name(), [] );
+
+		return $this->filter_known_steps( $state );
+	}
+
+	/**
+	 * Drop entries for steps that are no longer in account_creation_steps().
+	 *
+	 * They can linger in the stored option after a plugin update, so no caller
+	 * should report or throw on a step that no longer exists.
+	 *
+	 * @param mixed $state The stored account state.
+	 *
+	 * @return array
+	 */
+	private function filter_known_steps( $state ): array {
+		return array_intersect_key(
+			(array) $state,
+			array_flip( $this->account_creation_steps() )
+		);
+	}
+
+	/**
 	 * Update the account state option.
 	 *
 	 * @param array $state
@@ -78,12 +108,37 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	}
 
 	/**
+	 * Write the given steps onto the stored state, leaving every other step as stored.
+	 *
+	 * Steps missing from the stored state are skipped, so a state deleted by a
+	 * concurrent disconnect is not partially recreated.
+	 *
+	 * @param array $steps Step data keyed by step name.
+	 */
+	public function update_steps( array $steps ) {
+		$state = $this->get_fresh();
+		$steps = array_intersect_key( $steps, $state );
+
+		if ( ! empty( $steps ) ) {
+			$this->update( array_merge( $state, $steps ) );
+		}
+	}
+
+	/**
 	 * Mark a step as completed.
 	 *
 	 * @param string $step Name of the completed step.
 	 */
 	public function complete_step( string $step ) {
-		$state = $this->get( false );
+		// Skip the uncached read when the step is already done, or when the stored
+		// state has no entry for it, as in states saved before the step was added.
+		// Bypassing the caches forces the autoloaded options to be reloaded.
+		$cached = $this->get( false );
+		if ( ! isset( $cached[ $step ] ) || self::STEP_DONE === $cached[ $step ]['status'] ) {
+			return;
+		}
+
+		$state = $this->get_fresh();
 
 		if ( isset( $state[ $step ] ) ) {
 			$state[ $step ]['status'] = self::STEP_DONE;

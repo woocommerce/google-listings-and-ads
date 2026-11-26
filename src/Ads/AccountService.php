@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\FreshReadOptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -22,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Exception;
+use wpdb;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -121,11 +123,28 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			return;
 		}
 
-		$this->container->get( Middleware::class )->link_ads_account( $account_id );
+		// A stored ID matching this account means it was linked already and only
+		// the recorded state was reverted afterwards, so don't link it again.
+		$already_linked = $ads_id === $account_id;
 
-		// Skip billing setup flow when using an existing account.
-		$state['set_id']['status']  = AdsAccountState::STEP_DONE;
-		$state['billing']['status'] = AdsAccountState::STEP_DONE;
+		if ( ! $already_linked ) {
+			$this->container->get( Middleware::class )->link_ads_account( $account_id );
+		}
+
+		// Concurrent requests may have completed steps while the remote call above
+		// was in flight. Starting from the current database value narrows the window
+		// in which those completions can be reverted, but doesn't close it.
+		$state = $this->state->get_fresh() ?: $state;
+
+		$state['set_id']['status'] = AdsAccountState::STEP_DONE;
+
+		// Skip billing setup flow when linking an existing account. For an account
+		// that was already linked, the reverted state no longer shows whether it was
+		// linked or created by the plugin, so setup_account() checks billing instead.
+		if ( ! $already_linked ) {
+			$state['billing']['status'] = AdsAccountState::STEP_DONE;
+		}
+
 		$this->state->update( $state );
 	}
 
@@ -165,15 +184,20 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 						break;
 
 					case 'conversion_action':
-						$this->create_conversion_action();
+						if ( ! $this->create_conversion_action() ) {
+							// Another request is creating the conversion action and records
+							// this step when it finishes. Leave the step unchanged, so a later
+							// setup retries it if that request fails.
+							continue 2;
+						}
 						break;
 
 					case 'link_merchant':
 						// Continue to next step if the MC account is not connected yet.
 						if ( ! $this->options->get_merchant_id() ) {
 							// Save step as pending and continue the foreach loop with `continue 2`.
-							$state[ $name ]['status'] = AdsAccountState::STEP_PENDING;
-							$this->state->update( $state );
+							$step['status'] = AdsAccountState::STEP_PENDING;
+							$this->state->update_steps( [ $name => $step ] );
 							continue 2;
 						}
 
@@ -192,11 +216,11 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				}
 				$step['status']  = AdsAccountState::STEP_DONE;
 				$step['message'] = '';
-				$this->state->update( $state );
+				$this->state->update_steps( [ $name => $step ] );
 			} catch ( Exception $e ) {
 				$step['status']  = AdsAccountState::STEP_ERROR;
 				$step['message'] = $e->getMessage();
-				$this->state->update( $state );
+				$this->state->update_steps( [ $name => $step ] );
 
 				if ( $e->getPrevious() instanceof BadResponseException ) {
 					/** @var BadResponseException $prev */
@@ -391,10 +415,51 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	/**
 	 * Create the generic GLA conversion action and store the details as an option.
 	 *
+	 * @return bool True when a conversion action is stored, false when another request is creating it.
 	 * @throws Exception If the conversion action can't be created.
 	 */
-	private function create_conversion_action(): void {
-		$action = $this->container->get( AdsConversionAction::class )->create_conversion_action();
-		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $action );
+	private function create_conversion_action(): bool {
+		// A conversion action can already be stored when resuming a setup whose
+		// recorded state was reverted; creating another would leave a duplicate
+		// in the Google Ads account.
+		if ( ! empty( $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION ) ) ) {
+			return true;
+		}
+
+		/** @var wpdb $wpdb */
+		$wpdb = $this->container->get( wpdb::class );
+
+		// GET_LOCK() names are shared across the database server, so scope it to this site.
+		$lock_name = 'gla_conversion_action_' . md5( $wpdb->dbname . $wpdb->prefix );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$locked = $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, 0)', $lock_name ) );
+
+		// "0" means another request is creating the conversion action and will
+		// record the outcome. NULL means locking isn't available, so carry on unlocked.
+		if ( '0' === $locked ) {
+			return false;
+		}
+
+		try {
+			// Another request may have stored one before this request got the lock.
+			$stored = $this->options instanceof FreshReadOptionsInterface
+				? $this->options->get_fresh( OptionsInterface::ADS_CONVERSION_ACTION )
+				: $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+
+			if ( ! empty( $stored ) ) {
+				return true;
+			}
+
+			$action = $this->container->get( AdsConversionAction::class )->create_conversion_action();
+			$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $action );
+
+			return true;
+		} finally {
+			if ( '1' === $locked ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $lock_name ) );
+			}
+		}
 	}
 }

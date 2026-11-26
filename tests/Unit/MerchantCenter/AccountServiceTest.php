@@ -546,6 +546,47 @@ class AccountServiceTest extends UnitTest {
 		}
 	}
 
+	public function test_setup_account_step_link_retry_response_writes_new_created_timestamp() {
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->any() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'set_id' => [
+						'status' => MerchantAccountState::STEP_DONE,
+						'data'   => [ 'created_timestamp' => 1 ],
+					],
+					'link'   => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->middleware->expects( $this->once() )
+			->method( 'link_merchant_to_mca' )
+			->willThrowException( new Exception( 'error', 401 ) );
+
+		// The set_id step is written with a new timestamp, so the next attempt waits
+		// again, and the link step is written as failed.
+		$this->state->expects( $this->once() )
+			->method( 'update_steps' )
+			->with(
+				$this->callback(
+					function ( array $steps ) {
+						return [ 'set_id', 'link' ] === array_keys( $steps )
+							&& $steps['set_id']['data']['created_timestamp'] > 1
+							&& MerchantAccountState::STEP_DONE === $steps['set_id']['status']
+							&& MerchantAccountState::STEP_ERROR === $steps['link']['status'];
+					}
+				)
+			);
+
+		$this->expectException( ApiNotReady::class );
+
+		$this->account->setup_account( self::TEST_ACCOUNT_ID );
+	}
+
 	public function test_setup_account_step_claim() {
 		$this->options->expects( $this->any() )
 			->method( 'get_merchant_id' )
@@ -607,7 +648,7 @@ class AccountServiceTest extends UnitTest {
 			->willThrowException( new Exception( 'error', 403 ) );
 
 		$this->state->expects( $this->once() )
-			->method( 'update' )
+			->method( 'update_steps' )
 			->with(
 				[
 					'claim' => [
@@ -779,7 +820,7 @@ class AccountServiceTest extends UnitTest {
 			->willReturn( $mc_account_state );
 
 		$this->state->expects( $this->once() )
-			->method( 'update' )
+			->method( 'update_steps' )
 			->with( $mc_account_state );
 
 		$this->middleware->expects( $this->never() )
