@@ -109,7 +109,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 	 *
 	 * Passing null args matches the job's actions whatever their arguments.
 	 *
-	 * @since n.e.x.t
+	 * @since 3.11.0
 	 *
 	 * @return string|null Date formatted YYYY-MM-DD, or null when the job is idle.
 	 */

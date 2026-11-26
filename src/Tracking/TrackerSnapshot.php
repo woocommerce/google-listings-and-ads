@@ -122,7 +122,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 	/**
 	 * Get the feed-blocking issue counts saved by the last completed Merchant Center status check.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param bool $is_connected Whether Merchant Center is connected.
 	 *

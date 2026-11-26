@@ -147,7 +147,6 @@ const AttributeMappingTable = () => {
 												<AppButtonModalTrigger
 													button={
 														<AppButton
-															isLink
 															text={ __(
 																'Edit',
 																'google-listings-and-ads'
@@ -157,6 +156,7 @@ const AttributeMappingTable = () => {
 																context:
 																	'attribute-mapping-manage-rule-modal',
 															} }
+															isLink
 														/>
 													}
 													modal={
@@ -182,7 +182,6 @@ const AttributeMappingTable = () => {
 												<AppButtonModalTrigger
 													button={
 														<AppButton
-															isLink
 															text={ __(
 																'Delete',
 																'google-listings-and-ads'
@@ -192,6 +191,7 @@ const AttributeMappingTable = () => {
 																context:
 																	'attribute-mapping-delete-rule-modal',
 															} }
+															isLink
 														/>
 													}
 													modal={
@@ -227,7 +227,6 @@ const AttributeMappingTable = () => {
 					<AppButtonModalTrigger
 						button={
 							<AppButton
-								isSecondary
 								text={ __(
 									'Create attribute rule',
 									'google-listings-and-ads'
@@ -237,6 +236,7 @@ const AttributeMappingTable = () => {
 									context:
 										'attribute-mapping-create-rule-modal',
 								} }
+								isSecondary
 							/>
 						}
 						modal={
