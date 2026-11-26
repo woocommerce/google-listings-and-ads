@@ -160,7 +160,7 @@ test.describe( 'Complete your campaign', () => {
 
 		await expect(
 			page.getByText(
-				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.'
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved. This won’t change your services campaign.'
 			)
 		).toBeVisible();
 	} );

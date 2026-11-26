@@ -77,19 +77,19 @@ export default function AdsCampaign( {
 		}
 	);
 
-	if ( isOnboardingFlow ) {
-		const subject =
-			context === 'setup-ads-only'
-				? __( 'services', 'google-listings-and-ads' )
-				: __( 'products', 'google-listings-and-ads' );
-
+	if ( context === 'setup-mc' ) {
+		description = __(
+			'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved. This won’t change your services campaign.',
+			'google-listings-and-ads'
+		);
+	} else if ( context === 'setup-ads-only' ) {
 		description = sprintf(
 			/* translators: %s: products or services */
 			__(
 				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your %s will be included in the campaign after they’re approved.',
 				'google-listings-and-ads'
 			),
-			subject
+			__( 'services', 'google-listings-and-ads' )
 		);
 	}
 

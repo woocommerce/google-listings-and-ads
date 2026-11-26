@@ -36,6 +36,26 @@ describe( 'AdsCampaign', () => {
 		}
 	);
 
+	it( 'shows the Merchant Center setup text for the setup-mc context', () => {
+		render( <AdsCampaign headerTitle="Title" context="setup-mc" /> );
+
+		expect(
+			screen.getByText(
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved. This won’t change your services campaign.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'keeps the services text for the setup-ads-only context', () => {
+		render( <AdsCampaign headerTitle="Title" context="setup-ads-only" /> );
+
+		expect(
+			screen.getByText(
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your services will be included in the campaign after they’re approved.'
+			)
+		).toBeInTheDocument();
+	} );
+
 	it( 'does not render the incentive picker when editing a campaign', () => {
 		render( <AdsCampaign headerTitle="Title" context="edit-ads" /> );
 
