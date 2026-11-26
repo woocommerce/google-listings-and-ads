@@ -141,8 +141,8 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 					key={ Boolean( value ) }
 					value={ value }
 					onChange={ setValue }
-					autoSelectFirstOption
 					nonInteractive={ hasGoogleAdsConnection }
+					autoSelectFirstOption
 				/>
 			}
 			actions={

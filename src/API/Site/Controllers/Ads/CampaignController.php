@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
@@ -500,6 +501,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'description' => __( 'Asset is a part of an ad which can be shared across multiple ads. It can be an image, headlines, descriptions, etc.', 'google-listings-and-ads' ),
 				'context'     => [ 'edit' ],
 				'required'    => false,
+				'maxItems'    => AdsAsset::MAX_ASSETS_PER_REQUEST,
 				'items'       => [
 					'type'       => 'object',
 					'properties' => [

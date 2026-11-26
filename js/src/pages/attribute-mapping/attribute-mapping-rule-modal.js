@@ -181,15 +181,14 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 				<AppButton
 					disabled={ saving }
 					key="cancel"
-					isLink
 					onClick={ handleClose }
+					isLink
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					disabled={ ! isValidRule || saving }
 					key="save-rule"
-					isPrimary
 					text={
 						saving
 							? __( 'Saving…', 'google-listings-and-ads' )
@@ -202,6 +201,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 							: 'attribute-mapping-create-rule-modal',
 					} }
 					onClick={ onSave }
+					isPrimary
 				/>,
 			] }
 		>

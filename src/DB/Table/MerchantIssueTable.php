@@ -110,7 +110,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	/**
 	 * Count the Merchant Center account issues with any of the given severities.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param string[] $severities Severities to count.
 	 *
@@ -134,7 +134,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	 *
 	 * A variation is counted as its parent product, so a variable product counts once.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param string   $source              Issue source, e.g. 'mc' or 'pre-sync'.
 	 * @param string[] $excluded_severities Severities to leave out of the count.
