@@ -97,10 +97,14 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->gtag_js->expects( $this->once() )
 			->method( 'is_adding_framework' )
 			->willReturn( true );
-		$this->wp->expects( $this->once() )
+		$this->wp->expects( $this->exactly( 2 ) )
 			->method( 'wp_script_is' )
-			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
-			->willReturn( false );
+			->willReturnMap(
+				[
+					[ 'woocommerce-google-analytics-integration', 'enqueued', false ],
+					[ 'google_gtagjs', 'done', false ],
+				]
+			);
 		$this->wp->expects( $this->never() )->method( 'wp_add_inline_script' );
 
 		ob_start();
@@ -144,12 +148,13 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->gtag_js->expects( $this->once() )
 			->method( 'is_adding_framework' )
 			->willReturn( true );
-		$this->wp->expects( $this->exactly( 2 ) )
+		$this->wp->expects( $this->exactly( 3 ) )
 			->method( 'wp_script_is' )
 			->willReturnMap(
 				[
 					[ 'woocommerce-google-analytics-integration', 'enqueued', true ],
 					[ 'woocommerce-google-analytics-integration', 'done', false ],
+					[ 'google_gtagjs', 'done', false ],
 				]
 			);
 		$this->wp->expects( $this->once() )
@@ -208,6 +213,102 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertStringContainsString( "gtag('config', 'test_id'", $filtered_snippet );
 	}
 
+	public function test_site_kit_gtag_is_reused_when_already_printed() {
+		$this->options->method( 'get' )->willReturnMap(
+			[ [ OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED, null, true ] ]
+		);
+		$this->wc->method( 'get_customer_details' )->willReturn( [ 'email' => 'customer@example.com' ] );
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( false );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_script_is' )
+			->with( 'google_gtagjs', 'done' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->with(
+				$this->callback(
+					function ( string $script ) {
+						$consent_position = strpos( $script, "gtag( 'consent', 'default'" );
+						$config_position  = strpos( $script, 'gtag("config", "test_id", { "groups": "GLA", "send_page_view": false });' );
+
+						$this->assertIsInt( $consent_position );
+						$this->assertIsInt( $config_position );
+						$this->assertLessThan( $config_position, $consent_position );
+						$this->assertStringContainsString( "gtag('set', 'developer_id.dOGY3NW', true);", $script );
+						$this->assertStringContainsString( 'gtag("set", "user_data"', $script );
+						$this->assertStringNotContainsString( "gtag('js'", $script );
+
+						return true;
+					}
+				)
+			);
+
+		ob_start();
+		$this->tag->activate_global_site_tag( self::TEST_CONVERSION_ID );
+		$output = ob_get_clean();
+
+		$this->assertSame( '', $output );
+	}
+
+	public function test_site_kit_gtag_is_reused_when_wcga_handle_is_not_enqueued() {
+		$this->gtag_js->ga4w_v2 = true;
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( true );
+		$this->wp->expects( $this->exactly( 2 ) )
+			->method( 'wp_script_is' )
+			->willReturnMap(
+				[
+					[ 'woocommerce-google-analytics-integration', 'enqueued', false ],
+					[ 'google_gtagjs', 'done', true ],
+				]
+			);
+		$this->wp->expects( $this->never() )->method( 'wp_add_inline_script' );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->with( $this->stringContains( 'gtag("config", "test_id"' ) );
+
+		ob_start();
+		$this->tag->activate_global_site_tag( self::TEST_CONVERSION_ID );
+		$output = ob_get_clean();
+
+		$this->assertSame( '', $output );
+	}
+
+	/**
+	 * @dataProvider site_kit_gtag_fallback_provider
+	 *
+	 * @param bool  $site_kit_printed Whether Site Kit already printed its gtag.js.
+	 * @param mixed $reuse            Value returned by the reuse filter.
+	 */
+	public function test_global_site_tag_is_printed_when_site_kit_gtag_is_not_reused( bool $site_kit_printed, $reuse ) {
+		add_filter(
+			'woocommerce_gla_reuse_site_kit_gtag',
+			function () use ( $reuse ) {
+				return $reuse;
+			}
+		);
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( false );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_script_is' )
+			->with( 'google_gtagjs', 'done' )
+			->willReturn( $site_kit_printed );
+		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
+
+		ob_start();
+		$this->tag->activate_global_site_tag( self::TEST_CONVERSION_ID );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'googletagmanager.com/gtag/js?id=test_id', $output );
+		$this->assertStringContainsString( 'gtag("config", "test_id"', $output );
+	}
+
+	public function site_kit_gtag_fallback_provider(): array {
+		return [
+			'Site Kit gtag not printed'          => [ false, true ],
+			'reuse disabled by filter'           => [ true, false ],
+			'filter returns a non-boolean value' => [ true, 'yes' ],
+		];
+	}
+
 	/**
 	 * The WP Consent API bridge is the only GLA script that lifts the consent default
 	 * printed with GLA's own tag, so GLA enqueues it whenever it prints that tag,
@@ -223,8 +324,9 @@ class GlobalSiteTagTest extends UnitTest {
 	 * @param bool $run_head             Whether the template calls wp_head.
 	 * @param bool $expect_bridge        Whether GLA prints its own tag and enqueues the WP Consent API bridge.
 	 * @param bool $override_display     Whether a subclass replaces display_global_site_tag() without calling the parent.
+	 * @param bool $site_kit_printed     Whether Site Kit already printed its gtag.js, so GLA prints only its config.
 	 */
-	public function test_wp_consent_api_bridge_follows_printed_global_site_tag( bool $wcga_active, bool $wcga_adds_framework, bool $wcga_handle_enqueued, bool $run_head, bool $expect_bridge, bool $override_display = false ) {
+	public function test_wp_consent_api_bridge_follows_printed_global_site_tag( bool $wcga_active, bool $wcga_adds_framework, bool $wcga_handle_enqueued, bool $run_head, bool $expect_bridge, bool $override_display = false, bool $site_kit_printed = false ) {
 		require_once dirname( __DIR__, 2 ) . '/data/wp-consent-api-functions.php';
 		if ( $wcga_active && ! class_exists( '\\WC_Google_Gtag_JS', false ) ) {
 			class_alias( self::class, 'WC_Google_Gtag_JS' );
@@ -249,6 +351,7 @@ class GlobalSiteTagTest extends UnitTest {
 			[
 				[ 'woocommerce-google-analytics-integration', 'enqueued', $wcga_handle_enqueued ],
 				[ 'woocommerce-google-analytics-integration', 'done', false ],
+				[ 'google_gtagjs', 'done', $site_kit_printed ],
 			]
 		);
 		$this->wp->method( 'wp_add_inline_script' )->willReturn( true );
@@ -288,7 +391,7 @@ class GlobalSiteTagTest extends UnitTest {
 			array_map( 'unlink', $stubbed_scripts );
 		}
 
-		$this->assertSame( $expect_bridge, str_contains( $output, 'Global site tag (gtag.js)' ) );
+		$this->assertSame( $expect_bridge && ! $site_kit_printed, str_contains( $output, 'Global site tag (gtag.js)' ) );
 		$this->assertContains( 'gla-gtag-events', $enqueued );
 		$this->assertSame( $expect_bridge, in_array( 'gla-wp-consent-api', $enqueued, true ) );
 	}
@@ -302,6 +405,7 @@ class GlobalSiteTagTest extends UnitTest {
 			'Woo Analytics active, no wp_head'             => [ true, false, false, false, true ],
 			'Woo Analytics carries the Ads configuration'  => [ true, true, true, true, false ],
 			'Subclass replaces display_global_site_tag()'  => [ true, false, false, true, true, true ],
+			'Site Kit printed its gtag.js'                 => [ false, false, false, true, true, false, true ],
 		];
 	}
 
