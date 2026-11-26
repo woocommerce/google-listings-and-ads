@@ -746,6 +746,212 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->assertSame( [ 101, 202 ], $repository->find_ids( [ 'status' => 'publish' ] ) );
 	}
 
+	public function test_all_languages_query_args_are_added_after_the_query_args_filter() {
+		$filtered_args = null;
+		add_filter(
+			'woocommerce_gla_product_query_args',
+			function ( $args ) use ( &$filtered_args ) {
+				$filtered_args = $args;
+				return $args;
+			}
+		);
+
+		$wp_query_args = $this->capture_wp_query_args_with_all_languages_args();
+
+		$this->assertArrayNotHasKey( 'lang', $filtered_args );
+		$this->assertArrayNotHasKey( 'suppress_wpml_where_and_join_filter', $filtered_args );
+		$this->assertSame( 'all', $wp_query_args['lang'] );
+		$this->assertTrue( $wp_query_args['suppress_wpml_where_and_join_filter'] );
+		$this->assertSame( [ 'en', 'fr' ], $wp_query_args['gla_wpml_all_languages'] );
+	}
+
+	public function test_all_languages_query_args_are_not_added_when_the_query_args_filter_sets_a_language() {
+		add_filter(
+			'woocommerce_gla_product_query_args',
+			function ( $args ) {
+				$args['lang'] = 'fr';
+				return $args;
+			}
+		);
+
+		$wp_query_args = $this->capture_wp_query_args_with_all_languages_args();
+
+		$this->assertSame( 'fr', $wp_query_args['lang'] );
+		$this->assertArrayNotHasKey( 'suppress_wpml_where_and_join_filter', $wp_query_args );
+		$this->assertArrayNotHasKey( 'gla_wpml_all_languages', $wp_query_args );
+	}
+
+	public function test_all_languages_query_returns_products_in_active_languages_only() {
+		global $wpdb;
+
+		$this->fake_wpml_languages( [ 'en', 'fr' ], [ 'product', 'product_variation' ] );
+
+		$english    = WC_Helper_Product::create_simple_product();
+		$french     = WC_Helper_Product::create_simple_product();
+		$german     = WC_Helper_Product::create_simple_product();
+		$unrecorded = WC_Helper_Product::create_simple_product();
+
+		// The test framework turns this into a temporary table. Its collation deliberately differs
+		// from the posts table's, so comparing a posts column with a translations column fails.
+		$collation_unlike_posts_table = 'utf8mb4_general_ci';
+		$wpdb->query( "CREATE TABLE {$wpdb->prefix}icl_translations ( translation_id bigint(20) NOT NULL AUTO_INCREMENT PRIMARY KEY, element_type varchar(60) NOT NULL, element_id bigint(20) DEFAULT NULL, trid bigint(20) NOT NULL, language_code varchar(7) NOT NULL ) DEFAULT CHARACTER SET utf8mb4 COLLATE {$collation_unlike_posts_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange
+
+		try {
+			$rows = [
+				[ 'post_product', $english->get_id(), 'en' ],
+				[ 'post_product', $french->get_id(), 'fr' ],
+				[ 'post_product', $german->get_id(), 'de' ],
+				// A stale row of another post type must not make the German product eligible.
+				[ 'post_product_variation', $german->get_id(), 'en' ],
+			];
+
+			foreach ( $rows as [ $element_type, $element_id, $language ] ) {
+				$wpdb->insert(
+					"{$wpdb->prefix}icl_translations",
+					[
+						'element_type'  => $element_type,
+						'element_id'    => $element_id,
+						'trid'          => 1,
+						'language_code' => $language,
+					]
+				);
+			}
+
+			$repository = new ProductRepository( $this->product_meta, $this->container->get( ProductFilter::class ), $this->create_active_wpml() );
+
+			$this->assertEqualsCanonicalizing(
+				[ $english->get_id(), $french->get_id() ],
+				$repository->find_ids( [ 'include' => [ $english->get_id(), $french->get_id(), $german->get_id(), $unrecorded->get_id() ] ] )
+			);
+		} finally {
+			$wpdb->query( "DROP TABLE {$wpdb->prefix}icl_translations" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange
+		}
+	}
+
+	public function test_all_languages_query_is_unrestricted_when_wpml_does_not_translate_products() {
+		$this->fake_wpml_languages( [ 'en', 'fr' ], [] );
+
+		$first  = WC_Helper_Product::create_simple_product();
+		$second = WC_Helper_Product::create_simple_product();
+
+		$repository = new ProductRepository( $this->product_meta, $this->container->get( ProductFilter::class ), $this->create_active_wpml() );
+
+		$this->assertEqualsCanonicalizing(
+			[ $first->get_id(), $second->get_id() ],
+			$repository->find_ids( [ 'include' => [ $first->get_id(), $second->get_id() ] ] )
+		);
+	}
+
+	/**
+	 * Runs a product query through a repository whose WPML integration returns fixed
+	 * all-languages args, and captures the args that reach WP_Query.
+	 *
+	 * @return array
+	 */
+	private function capture_wp_query_args_with_all_languages_args(): array {
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_all_languages_query_args' )->willReturn(
+			[
+				'lang'                                => 'all',
+				'suppress_wpml_where_and_join_filter' => true,
+				'gla_wpml_all_languages'              => [ 'en', 'fr' ],
+			]
+		);
+		$wpml->method( 'run_in_all_languages' )->willReturnCallback(
+			function ( callable $callback ) {
+				return $callback();
+			}
+		);
+
+		$wp_query_args = null;
+		add_action(
+			'pre_get_posts',
+			function ( $query ) use ( &$wp_query_args ) {
+				$wp_query_args = $query->query;
+			}
+		);
+
+		$repository = new ProductRepository( $this->product_meta, $this->container->get( ProductFilter::class ), $wpml );
+		$repository->find_ids( [ 'status' => 'publish' ] );
+
+		return $wp_query_args;
+	}
+
+	/**
+	 * @return WPML An integration that reports WPML as active.
+	 */
+	private function create_active_wpml(): WPML {
+		$wpml = $this->createPartialMock( WPML::class, [ 'is_active' ] );
+		$wpml->method( 'is_active' )->willReturn( true );
+
+		return $wpml;
+	}
+
+	/**
+	 * Fakes a set-up WPML: a stand-in for its global `$sitepress` with the given active
+	 * languages, English as default, and the given translated post types.
+	 *
+	 * @param string[] $active_codes          Active language codes.
+	 * @param string[] $translated_post_types Post types WPML translates.
+	 */
+	private function fake_wpml_languages( array $active_codes, array $translated_post_types ): void {
+		// phpcs:ignore Universal.Classes.RequireAnonClassParentheses.Missing
+		$sitepress = new class {
+			/**
+			 * @var array
+			 */
+			public $active_languages = [];
+
+			/**
+			 * @var bool
+			 */
+			public $setup_complete = true;
+
+			/**
+			 * @return array
+			 */
+			public function get_active_languages(): array {
+				return $this->active_languages;
+			}
+
+			/**
+			 * @param string $key WPML setting key.
+			 *
+			 * @return mixed
+			 */
+			public function get_setting( string $key ) {
+				return 'setup_complete' === $key ? $this->setup_complete : null;
+			}
+		};
+
+		$sitepress->active_languages = array_fill_keys( $active_codes, [] );
+		$GLOBALS['sitepress']        = $sitepress;
+
+		add_filter(
+			'wpml_default_language',
+			function () {
+				return 'en';
+			}
+		);
+		add_filter(
+			'wpml_is_translated_post_type',
+			function ( $translated, $post_type ) use ( $translated_post_types ) {
+				return in_array( $post_type, $translated_post_types, true );
+			},
+			10,
+			2
+		);
+	}
+
+	/**
+	 * Runs after each test is executed.
+	 */
+	public function tearDown(): void {
+		unset( $GLOBALS['sitepress'] );
+
+		parent::tearDown();
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
