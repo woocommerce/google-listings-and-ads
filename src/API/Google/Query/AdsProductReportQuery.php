@@ -36,6 +36,12 @@ class AdsProductReportQuery extends AdsReportQuery {
 			return $this;
 		}
 
+		// Google Ads requires a non-date segment used in WHERE to also be selected, so keep
+		// the product ID column even when the dimension columns are left out.
+		if ( ! $this->include_dimensions ) {
+			$this->add_columns( [ 'id' => 'segments.product_item_id' ] );
+		}
+
 		return $this->where( 'segments.product_item_id', $ids, 'IN' );
 	}
 }

@@ -79,6 +79,20 @@ trait GoogleAdsClientTrait {
 
 	use MicroTrait;
 
+	/**
+	 * Ads report queries received by the mocked search call, keyed by query type.
+	 *
+	 * @var string[]
+	 */
+	protected $ads_report_queries = [];
+
+	/**
+	 * Number of Ads report search calls received by the mocked search call.
+	 *
+	 * @var int
+	 */
+	protected $ads_report_search_count = 0;
+
 	/** @var MockObject|ConversionActionServiceClient $conversion_action_service */
 	protected $conversion_action_service;
 
@@ -647,29 +661,86 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
-	 * Generates mocked report data.
+	 * Generates mocked responses for the Ads report queries.
 	 *
-	 * @param array  $data      Report rows.
-	 * @param array  $args      Report arguments.
-	 * @param string $next_page Token for the next page.
+	 * AdsReport runs up to three queries per report (table, totals and intervals), so the
+	 * mocked search call returns the rows for whichever query it receives, based on the
+	 * columns in its SELECT clause. Every query string is recorded in $ads_report_queries.
+	 *
+	 * @param array $responses {
+	 *     Mocked responses, keyed by query type.
+	 *
+	 *     @type array  $table         Table rows (segmented by product or campaign).
+	 *     @type array  $totals        Totals rows (no product, campaign or date segment).
+	 *     @type array  $intervals     Interval rows (segmented by date only).
+	 *     @type string $next_page     Next page token for the table query.
+	 *     @type array  $total_results Total results count per query type, e.g. [ 'table' => 5 ].
+	 * }
+	 * @param array $args Report arguments.
 	 */
-	protected function generate_ads_report_query_mock( array $data, array $args = [], string $next_page = '' ) {
-		$page = $this->createMock( Page::class );
-		$page->method( 'hasNextPage' )->willReturn( ! empty( $next_page ) );
-		$page->method( 'getNextPageToken' )->willReturn( $next_page );
-		$page->method( 'getIterator' )->willReturn(
-			array_map(
-				function ( $row ) use ( $args ) {
-					return $this->generate_report_row_mock( $row, $args );
-				},
-				$data
-			)
+	protected function generate_ads_report_query_mock( array $responses, array $args = [] ) {
+		$this->ads_report_queries      = [];
+		$this->ads_report_search_count = 0;
+
+		$this->service_client->method( 'search' )->willReturnCallback(
+			function ( $request ) use ( $responses, $args ) {
+				$query = $request->getQuery();
+				$type  = $this->get_ads_report_query_type( $query );
+
+				$this->ads_report_queries[ $type ] = $query;
+				++$this->ads_report_search_count;
+
+				// Only the intervals query is segmented by date.
+				$row_args = $args;
+				if ( 'intervals' !== $type ) {
+					unset( $row_args['interval'] );
+				}
+
+				$next_page = 'table' === $type ? ( $responses['next_page'] ?? '' ) : '';
+				$response  = new SearchGoogleAdsResponse(
+					[ 'total_results_count' => $responses['total_results'][ $type ] ?? 0 ]
+				);
+
+				$page = $this->createMock( Page::class );
+				$page->method( 'hasNextPage' )->willReturn( ! empty( $next_page ) );
+				$page->method( 'getNextPageToken' )->willReturn( $next_page );
+				$page->method( 'getResponseObject' )->willReturn( $response );
+				$page->method( 'getIterator' )->willReturn(
+					array_map(
+						function ( $row ) use ( $row_args ) {
+							return $this->generate_report_row_mock( $row, $row_args );
+						},
+						$responses[ $type ] ?? []
+					)
+				);
+
+				$report = $this->createMock( PagedListResponse::class );
+				$report->method( 'getPage' )->willReturn( $page );
+
+				return $report;
+			}
 		);
+	}
 
-		$report = $this->createMock( PagedListResponse::class );
-		$report->method( 'getPage' )->willReturn( $page );
+	/**
+	 * Get the type of Ads report query (table, intervals or totals) from its SELECT clause.
+	 *
+	 * @param string $query GAQL query.
+	 *
+	 * @return string
+	 */
+	protected function get_ads_report_query_type( string $query ): string {
+		$select = strstr( $query, ' FROM ', true );
 
-		$this->service_client->method( 'search' )->willReturn( $report );
+		if ( preg_match( '/segments\.product_title|campaign\.name/', $select ) ) {
+			return 'table';
+		}
+
+		if ( preg_match( '/segments\.(date|week|month|quarter|year)\b/', $select ) ) {
+			return 'intervals';
+		}
+
+		return 'totals';
 	}
 
 	/**

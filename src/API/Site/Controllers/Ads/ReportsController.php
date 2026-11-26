@@ -247,6 +247,12 @@ class ReportsController extends BaseReportsController {
 				'description' => __( 'Token to retrieve the next page of results.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
+			'truncated' => [
+				'type'        => 'boolean',
+				'description' => __( 'Whether some of the report data could not be retrieved, so the numbers are partial.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'default'     => false,
+			],
 		];
 	}
 

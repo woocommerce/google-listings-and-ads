@@ -75,10 +75,15 @@ export function getReportQuery( category, type, query, dateReference ) {
 
 	const reportQuery = {
 		...baseQuery,
-		interval: 'day',
 		orderby,
 		order,
 	};
+
+	// Only the primary period feeds the chart. The previous period is used for its totals
+	// alone, so skip the daily breakdown and spare the extra report query.
+	if ( dateReference === 'primary' ) {
+		reportQuery.interval = 'day';
+	}
 
 	if ( category === 'programs' && query.programs ) {
 		reportQuery.ids = query.programs;

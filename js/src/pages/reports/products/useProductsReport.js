@@ -15,6 +15,7 @@ const emptyData = {
 	products: [],
 	intervals: [],
 	totals: {},
+	truncated: false,
 };
 
 /**
@@ -46,6 +47,8 @@ export default function useProductsReport( type ) {
 						secondary.data.totals,
 						primary.reportQuery.fields
 					),
+					// Only the Ads report can flag partial data.
+					truncated: Boolean( primary.data.truncated ),
 				};
 			}
 
