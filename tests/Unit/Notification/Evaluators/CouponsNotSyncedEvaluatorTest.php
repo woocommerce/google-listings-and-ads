@@ -79,7 +79,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 			]
 		);
 
-		$this->assertTrue( $evaluator->should_show() );
+		$this->assertTrue( $evaluator->refresh() );
 	}
 
 	public function test_should_show_when_supported_coupon_is_on_same_page_as_unsupported_coupons() {
@@ -98,7 +98,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 			]
 		);
 
-		$this->assertTrue( $evaluator->should_show() );
+		$this->assertTrue( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_only_unsupported_coupons_exist() {
@@ -120,7 +120,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 			]
 		);
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_target_market_is_not_supported() {
@@ -129,7 +129,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 		$evaluator->expects( $this->never() )->method( 'has_synced_coupon' );
 		$evaluator->expects( $this->never() )->method( 'get_coupon_post_ids' );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_a_coupon_is_already_synced() {
@@ -137,13 +137,13 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 
 		$evaluator->expects( $this->never() )->method( 'get_coupon_post_ids' );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_merchant_has_no_coupons() {
 		$evaluator = $this->create_evaluator( true, false, [], [] );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_cache_hit_skips_query() {

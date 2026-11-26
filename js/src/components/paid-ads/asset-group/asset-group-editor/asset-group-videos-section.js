@@ -60,7 +60,6 @@ const AssetGroupVideosSection = ( { initialValues, isSelectedFinalUrl } ) => {
 					) }
 					disabled={ ! isSelectedFinalUrl }
 					initialExpanded={ isSelectedFinalUrl }
-					markOptional
 					help={
 						<>
 							<p>
@@ -97,6 +96,7 @@ const AssetGroupVideosSection = ( { initialValues, isSelectedFinalUrl } ) => {
 							</p>
 						</>
 					}
+					markOptional
 				>
 					<YoutubeVideoSelector
 						onChange={ onChange }

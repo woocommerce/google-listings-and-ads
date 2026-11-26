@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * Handling and transit times are counted in business days, as Merchant Center defines them.
  *
- * @since n.e.x.t
+ * @since 3.11.0
  */
 class EstimatedDeliveryTime {
 

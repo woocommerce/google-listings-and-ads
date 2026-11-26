@@ -117,7 +117,7 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 			<AppModal
 				{ ...appModalProps }
 				buttons={ [
-					<AppButton key="close" isPrimary onClick={ onRequestClose }>
+					<AppButton key="close" onClick={ onRequestClose } isPrimary>
 						{ __( 'Close', 'google-listings-and-ads' ) }
 					</AppButton>,
 				] }

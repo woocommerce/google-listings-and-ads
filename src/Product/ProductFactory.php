@@ -60,6 +60,8 @@ class ProductFactory {
 	 * @param string      $feed_label        Optional feed label.
 	 * @param string      $language          Optional ISO 639-1 language code.
 	 * @param string|null $currency_override Optional ISO 4217 currency code to override the store currency.
+	 * @param float       $exchange_rate     Optional fixed market exchange rate used to convert prices into the
+	 *                                       override currency when WPML cannot convert them (since 3.11.0).
 	 *
 	 * @return WCProductAdapter
 	 *
@@ -71,7 +73,8 @@ class ProductFactory {
 		array $mapping_rules,
 		string $feed_label = '',
 		string $language = '',
-		?string $currency_override = null
+		?string $currency_override = null,
+		float $exchange_rate = 0.0
 	): WCProductAdapter {
 		// We do not support syncing the parent variable product. Each variation is synced individually instead.
 		$this->validate_not_instanceof( $product, WC_Product_Variable::class );
@@ -95,6 +98,7 @@ class ProductFactory {
 				'mapping_rules'     => $mapping_rules,
 				'wpml'              => $this->wpml,
 				'currency_override' => $currency_override ?? '',
+				'exchange_rate'     => $exchange_rate,
 			]
 		);
 
