@@ -79,7 +79,7 @@ test.describe( 'Notification Badge', () => {
 			await expect( badge ).toBeVisible();
 		} );
 
-		test( 'In Google for WooCommerce sub-menu when Marketing menu is expanded', async () => {
+		test( 'In Marketing > Overview sub-menu when Marketing menu is expanded', async () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
