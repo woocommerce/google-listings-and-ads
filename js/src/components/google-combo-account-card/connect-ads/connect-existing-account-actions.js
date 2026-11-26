@@ -54,9 +54,9 @@ const ConnectExistingAccountActions = ( {
 
 	return (
 		<AppButton
-			isTertiary
 			onClick={ handleCreateNewClick }
 			disabled={ disabledButton }
+			isTertiary
 			{ ...restProps }
 		>
 			{ __(

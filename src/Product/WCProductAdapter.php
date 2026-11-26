@@ -21,9 +21,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductShippingDimension as GoogleProductShippingDimension;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductShippingWeight as GoogleProductShippingWeight;
 use DateInterval;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Symfony\Component\Validator\Mapping\ClassMetadata;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Constraints as Assert;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Mapping\ClassMetadata;
 use WC_DateTime;
 use WC_Product;
 use WC_Product_Variable;
@@ -82,6 +82,14 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected string $currency_override = '';
 
 	/**
+	 * @var float Fixed market exchange rate used to convert prices into the override currency when
+	 *            WPML cannot convert them; 0.0 when unset.
+	 *
+	 * @since 3.11.0
+	 */
+	protected float $exchange_rate = 0.0;
+
+	/**
 	 * Initialize this object's properties from an array.
 	 *
 	 * @param array $properties Used to seed this object's properties.
@@ -110,6 +118,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$this->parent_wc_product = $properties['parent_wc_product'] ?? null;
 		$this->wpml              = $properties['wpml'] ?? null;
 		$this->currency_override = $properties['currency_override'] ?? '';
+		// A non-finite or non-positive rate converts nothing: treat it as unset.
+		$exchange_rate       = (float) ( $properties['exchange_rate'] ?? 0.0 );
+		$this->exchange_rate = is_finite( $exchange_rate ) && $exchange_rate > 0 ? $exchange_rate : 0.0;
 
 		$mapping_rules  = $properties['mapping_rules'] ?? [];
 		$gla_attributes = $properties['gla_attributes'] ?? [];
@@ -121,6 +132,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		unset( $properties['mapping_rules'] );
 		unset( $properties['wpml'] );
 		unset( $properties['currency_override'] );
+		unset( $properties['exchange_rate'] );
 
 		parent::mapTypes( $properties );
 		$this->map_woocommerce_product();
@@ -641,8 +653,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_product_price( WC_Product $product ): WCProductAdapter {
-		if ( '' !== $this->currency_override && null !== $this->wpml ) {
-			$converted = $this->wpml->get_product_price_in_currency( $product, $this->currency_override );
+		if ( $this->converts_to_override_currency() ) {
+			$converted = $this->get_converted_regular_price( $product );
 
 			// No price in the override currency: leave it unset so the NotNull constraint fails and
 			// this currency's feed is skipped, not emitted with the store-currency price mislabelled.
@@ -702,6 +714,91 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
+	 * Whether prices are converted into the override currency: an override is set and there is a
+	 * conversion source (WPML, or the market's fixed exchange rate).
+	 *
+	 * @since 3.11.0
+	 *
+	 * @return bool
+	 */
+	protected function converts_to_override_currency(): bool {
+		return '' !== $this->currency_override && ( null !== $this->wpml || $this->exchange_rate > 0 );
+	}
+
+	/**
+	 * Regular price in the override currency: the WPML conversion when available, otherwise the
+	 * regular price converted with the market's fixed exchange rate. Mirrors
+	 * WCProductInputAdapter::map_price() so validation and sync agree on whether a price exists.
+	 *
+	 * @since 3.11.0
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return float|null Null when the price cannot be converted.
+	 */
+	protected function get_converted_regular_price( WC_Product $product ): ?float {
+		$converted = null !== $this->wpml
+			? $this->wpml->get_product_price_in_currency( $product, $this->currency_override )
+			: null;
+
+		if ( null !== $converted ) {
+			return (float) $converted;
+		}
+
+		$regular_price = $product->get_regular_price();
+		if ( $this->exchange_rate > 0 && '' !== $regular_price ) {
+			return (float) $regular_price * $this->exchange_rate;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Sale price in the override currency: the WPML conversion when available, otherwise the
+	 * product's current sale price converted with the market's fixed exchange rate. Mirrors
+	 * WCProductInputAdapter::map_sale_price().
+	 *
+	 * @since 3.11.0
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return float|null Null when there is no sale price to convert.
+	 */
+	protected function get_converted_sale_price( WC_Product $product ): ?float {
+		$converted = null !== $this->wpml
+			? $this->wpml->get_product_sale_price_in_currency( $product, $this->currency_override )
+			: null;
+
+		if ( null !== $converted ) {
+			return (float) $converted;
+		}
+
+		if ( $this->exchange_rate <= 0 ) {
+			return null;
+		}
+
+		// Same active-price promotion as the store-currency path (e.g. dynamic pricing plugins
+		// filter the active price but not the sale price).
+		$regular_price = $product->get_regular_price();
+		$sale_price    = $product->get_sale_price();
+		$active_price  = $product->get_price();
+		if (
+			( empty( $sale_price ) && $active_price < $regular_price ) ||
+			( ! empty( $sale_price ) && $active_price < $sale_price )
+		) {
+			$sale_price = $active_price;
+		}
+
+		$end_date     = $product->get_date_on_sale_to();
+		$sale_expired = ! empty( $end_date ) && $end_date < new WC_DateTime();
+		if ( '' === $sale_price || $sale_expired ) {
+			return null;
+		}
+
+		return (float) $sale_price * $this->exchange_rate;
+	}
+
+	/**
 	 * Map the sale price and sale effective date for a given WooCommerce product.
 	 *
 	 * @param WC_Product $product
@@ -709,11 +806,11 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_product_sale_price( WC_Product $product ): WCProductAdapter {
-		if ( '' !== $this->currency_override && null !== $this->wpml ) {
-			$converted_regular = $this->wpml->get_product_price_in_currency( $product, $this->currency_override );
+		if ( $this->converts_to_override_currency() ) {
+			$converted_regular = $this->get_converted_regular_price( $product );
 
 			if ( null !== $converted_regular ) {
-				$converted_sale = $this->wpml->get_product_sale_price_in_currency( $product, $this->currency_override );
+				$converted_sale = $this->get_converted_sale_price( $product );
 
 				if ( null === $converted_sale ) {
 					return $this;
@@ -735,7 +832,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 					)
 				);
 
-				$effective_date = $this->wpml->get_product_sale_dates_in_currency( $product, $this->currency_override );
+				$effective_date = null !== $this->wpml
+					? $this->wpml->get_product_sale_dates_in_currency( $product, $this->currency_override )
+					: null;
 				if ( null === $effective_date ) {
 					$effective_date = $this->get_wc_product_sale_price_effective_date( $product );
 				}

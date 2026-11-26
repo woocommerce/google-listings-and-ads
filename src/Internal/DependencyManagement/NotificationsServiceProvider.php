@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\AbandonedOnboardingEvaluator;
@@ -14,6 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BadgeWid
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CollectReviewsEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CyoSurveyNoSpendEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CyoSurveySpendEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PausedCampaignEvaluator;
@@ -60,6 +63,8 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		CampaignNoSalesEvaluator::class          => true,
 		CollectReviewsEvaluator::class           => true,
 		CouponsNotSyncedEvaluator::class         => true,
+		CyoSurveyNoSpendEvaluator::class         => true,
+		CyoSurveySpendEvaluator::class           => true,
 		EnhancedConversionsOffEvaluator::class   => true,
 		NotOnboardedEvaluator::class             => true,
 		PausedCampaignEvaluator::class           => true,
@@ -77,8 +82,8 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 	 * Registers the notification services with the container.
 	 */
 	public function register(): void {
-		$this->share_with_tags( NotificationService::class, WP::class );
-		$this->share_with_tags( NotificationCacheInvalidator::class );
+		$this->share_with_tags( NotificationService::class, WP::class, JobRepository::class );
+		$this->share_with_tags( NotificationCacheInvalidator::class, JobRepository::class );
 		$this->share_with_tags( SkippedCampaignCreationEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( AbandonedOnboardingEvaluator::class, ServiceBasedMerchantState::class, OnboardingCompleted::class );
 		$this->share_with_tags( NotOnboardedEvaluator::class, OnboardingCompleted::class );
@@ -95,5 +100,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PausedCampaignEvaluator::class, AdsCampaign::class );
 		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class, AdsRecommendationsService::class );
 		$this->share_with_tags( RecommendationsAvailableEvaluator::class, AdsRecommendationsService::class, AdsCampaign::class );
+		$this->share_with_tags( CyoSurveySpendEvaluator::class, OnboardingCompleted::class, AdsReport::class );
+		$this->share_with_tags( CyoSurveyNoSpendEvaluator::class, OnboardingCompleted::class, AdsReport::class );
 	}
 }
