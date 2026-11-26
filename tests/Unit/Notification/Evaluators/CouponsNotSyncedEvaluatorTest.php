@@ -166,7 +166,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 			1
 		);
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_scan_spans_all_reported_pages_to_find_a_supported_coupon() {
@@ -186,7 +186,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 			2
 		);
 
-		$this->assertTrue( $evaluator->should_show() );
+		$this->assertTrue( $evaluator->refresh() );
 	}
 
 	public function test_cache_hit_skips_query() {
