@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\ClearableNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\SiteScopedNotificationEvaluatorInterface;
@@ -32,7 +33,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-abstract class AbstractCyoSurveyEvaluator implements SiteScopedNotificationEvaluatorInterface, AdsAwareInterface, OptionsAwareInterface, Service {
+abstract class AbstractCyoSurveyEvaluator implements SiteScopedNotificationEvaluatorInterface, ClearableNotificationEvaluatorInterface, AdsAwareInterface, OptionsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use OptionsAwareTrait;
@@ -170,6 +171,17 @@ abstract class AbstractCyoSurveyEvaluator implements SiteScopedNotificationEvalu
 		}
 
 		return false;
+	}
+
+	/**
+	 * Delete the cached spend status, so it is looked up again for the current Ads account.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return void
+	 */
+	public function clear_cached_result(): void {
+		delete_transient( NotificationCacheKeys::for_site( self::CACHE_ID ) );
 	}
 
 	/**

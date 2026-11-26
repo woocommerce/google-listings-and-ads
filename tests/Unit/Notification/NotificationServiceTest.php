@@ -6,6 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshNotificationEvaluators;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\ClearableNotificationEvaluatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PaidOrdersEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
@@ -425,6 +428,49 @@ class NotificationServiceTest extends UnitTest {
 		$this->assertSame( $reported + 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 
+	public function test_clear_cached_results_hides_cached_results_until_refreshed() {
+		$evaluator = $this->create_cached_evaluator( true );
+		$this->set_evaluators( [ $evaluator ] );
+		$evaluator->refresh();
+		$this->assertTrue( $evaluator->should_show() );
+
+		$this->service->clear_cached_results();
+
+		$this->assertFalse( $evaluator->should_show() );
+		$this->assertTrue( $evaluator->needs_refresh() );
+	}
+
+	public function test_clear_cached_results_leaves_non_cached_evaluators_alone() {
+		$this->set_evaluators( [ $this->create_mocked_evaluator( 'notification-a', 10, true ) ] );
+		set_transient( NotificationCacheKeys::for_site( 'notification-a' ), 1, HOUR_IN_SECONDS );
+
+		$this->service->clear_cached_results();
+
+		$this->assertSame( 1, get_transient( NotificationCacheKeys::for_site( 'notification-a' ) ) );
+	}
+
+	public function test_clear_cached_results_clears_evaluators_with_their_own_cache() {
+		$evaluator = $this->createMock( ClearableNotificationEvaluatorInterface::class );
+		$evaluator->method( 'get_priority' )->willReturn( 10 );
+		$this->set_evaluators( [ $evaluator ] );
+
+		$evaluator->expects( $this->once() )->method( 'clear_cached_result' );
+
+		$this->service->clear_cached_results();
+	}
+
+	public function test_clear_cached_results_runs_without_a_current_user() {
+		wp_set_current_user( 0 );
+
+		$evaluator = $this->create_cached_evaluator( true );
+		$this->set_evaluators( [ $evaluator ] );
+		$evaluator->refresh();
+
+		$this->service->clear_cached_results();
+
+		$this->assertFalse( $evaluator->should_show() );
+	}
+
 	/**
 	 * Have the mocked container return the given evaluators.
 	 *
@@ -481,6 +527,22 @@ class NotificationServiceTest extends UnitTest {
 		$evaluator->method( 'should_show' )->willReturn( $should_show );
 		$evaluator->method( 'needs_refresh' )->willReturn( $needs_refresh );
 		$evaluator->method( 'get_snooze_duration' )->willReturn( null );
+
+		return $evaluator;
+	}
+
+	/**
+	 * Create a cached evaluator that stores its result with the real trait, with its condition stubbed.
+	 *
+	 * @param bool $condition The condition result.
+	 *
+	 * @return MockObject|CachedNotificationEvaluatorInterface
+	 */
+	private function create_cached_evaluator( bool $condition ): MockObject {
+		$evaluator = $this->getMockBuilder( PaidOrdersEvaluator::class )
+			->onlyMethods( [ 'evaluate_condition' ] )
+			->getMock();
+		$evaluator->method( 'evaluate_condition' )->willReturn( $condition );
 
 		return $evaluator;
 	}

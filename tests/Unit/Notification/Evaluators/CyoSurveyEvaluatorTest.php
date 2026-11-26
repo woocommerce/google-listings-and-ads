@@ -465,4 +465,16 @@ class CyoSurveyEvaluatorTest extends UnitTest {
 		$this->assertTrue( $this->spend_evaluator( $now )->should_show() );
 		$this->assertFalse( $this->no_spend_evaluator( $now )->should_show() );
 	}
+
+	public function test_clear_cached_result_drops_the_spend_status_of_a_disconnected_account() {
+		$now = self::ts( '2026-11-16T12:00:00Z' );
+		$this->mock_onboarding( self::ts( '2026-06-01T00:00:00Z' ) );
+		set_transient( NotificationCacheKeys::for_site( 'cyo-survey' ), 'spent', HOUR_IN_SECONDS );
+		$this->ads_service->method( 'is_setup_complete' )->willReturn( false );
+
+		$this->spend_evaluator( $now )->clear_cached_result();
+
+		$this->assertFalse( get_transient( self::CACHE_KEY ) );
+		$this->assertFalse( $this->spend_evaluator( $now )->should_show() );
+	}
 }

@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationE
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\InvalidatableNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WC_Coupon;
 
@@ -21,9 +22,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class CouponsNotSyncedEvaluator
  *
- * Fires when the merchant has at least one supported WooCommerce coupon but has
- * not synced any coupons to Google, and the target market supports coupon channel
- * visibility.
+ * Fires when Merchant Center is connected, the merchant has at least one
+ * supported WooCommerce coupon but has not synced any coupons to Google, and the
+ * target market supports coupon channel visibility.
  *
  * Only coupons that can actually be synced are considered (see
  * CouponSyncer::is_coupon_supported() — excludes virtual, email-restricted, and
@@ -86,6 +87,11 @@ class CouponsNotSyncedEvaluator implements CachedNotificationEvaluatorInterface,
 	 * @return bool
 	 */
 	protected function evaluate_condition(): bool {
+		// Coupons sync through Merchant Center, so there is nothing to nudge without it.
+		if ( ! $this->merchant_center->is_connected() ) {
+			return false;
+		}
+
 		// Coupons can only be synced when the target market supports coupon channel
 		// visibility. Bail early for unsupported markets so we never nudge merchants
 		// to sync coupons that Google would reject.
@@ -124,7 +130,8 @@ class CouponsNotSyncedEvaluator implements CachedNotificationEvaluatorInterface,
 	/**
 	 * The set of unsynced coupons changes both when a coupon is created or edited (a new
 	 * supported coupon can make the notification appear) and when one is synced to Google
-	 * (which can make it disappear), so all three transitions must bust the cache.
+	 * (which can make it disappear), so all three transitions must bust the cache. Completing
+	 * the Merchant Center setup can make it appear too.
 	 *
 	 * @return string[]
 	 */
@@ -133,6 +140,7 @@ class CouponsNotSyncedEvaluator implements CachedNotificationEvaluatorInterface,
 			'woocommerce_new_coupon',
 			'woocommerce_update_coupon',
 			'woocommerce_gla_updated_coupon',
+			'woocommerce_gla_options_updated_' . OptionsInterface::MC_SETUP_COMPLETED_AT,
 		];
 	}
 

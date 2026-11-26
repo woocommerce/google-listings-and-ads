@@ -49,14 +49,16 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 		$this->assertEquals( NotificationSnoozeDurations::COUPONS_NOT_SYNCED, $this->evaluator->get_snooze_duration() );
 	}
 
-	public function test_get_invalidation_hooks_covers_create_update_and_sync() {
-		// Creating/updating a coupon can make the notification appear; syncing one can make it
-		// disappear. All three transitions must bust the cache, or a stale result sticks until TTL.
+	public function test_get_invalidation_hooks_covers_create_update_sync_and_setup() {
+		// Creating/updating a coupon or completing the Merchant Center setup can make the
+		// notification appear; syncing a coupon can make it disappear. Each must bust the cache,
+		// or a stale result sticks until it goes stale.
 		$this->assertSame(
 			[
 				'woocommerce_new_coupon',
 				'woocommerce_update_coupon',
 				'woocommerce_gla_updated_coupon',
+				'woocommerce_gla_options_updated_mc_setup_completed_at',
 			],
 			$this->evaluator->get_invalidation_hooks()
 		);
@@ -119,6 +121,22 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 				3 => $sale_excluded_coupon,
 			]
 		);
+
+		$this->assertFalse( $evaluator->refresh() );
+	}
+
+	public function test_should_not_show_when_merchant_center_is_not_connected() {
+		$evaluator = $this->create_evaluator(
+			true,
+			false,
+			[ 1 => [ 1 ] ],
+			[ 1 => $this->create_coupon( 1, false, [] ) ],
+			null,
+			false
+		);
+
+		$evaluator->expects( $this->never() )->method( 'has_synced_coupon' );
+		$evaluator->expects( $this->never() )->method( 'get_coupon_post_ids' );
 
 		$this->assertFalse( $evaluator->refresh() );
 	}
@@ -208,13 +226,15 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 	 * @param array<int, int[]>     $post_ids_by_page Coupon post IDs returned per page.
 	 * @param array<int, WC_Coupon> $coupons_by_id    Coupon objects keyed by post ID.
 	 * @param int|null              $total_pages      Page count to report; defaults to the number of pages provided.
+	 * @param bool                  $mc_connected     Whether Merchant Center is connected.
 	 *
 	 * @return CouponsNotSyncedEvaluator|MockObject
 	 */
-	private function create_evaluator( bool $supported_market, bool $has_synced, array $post_ids_by_page, array $coupons_by_id, ?int $total_pages = null ): CouponsNotSyncedEvaluator {
+	private function create_evaluator( bool $supported_market, bool $has_synced, array $post_ids_by_page, array $coupons_by_id, ?int $total_pages = null, bool $mc_connected = true ): CouponsNotSyncedEvaluator {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$target_audience = $this->createMock( TargetAudience::class );
 
+		$merchant_center->method( 'is_connected' )->willReturn( $mc_connected );
 		$target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
 		$merchant_center->method( 'is_promotion_supported_country' )->willReturn( $supported_market );
 

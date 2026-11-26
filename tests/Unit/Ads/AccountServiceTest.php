@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -61,6 +62,9 @@ class AccountServiceTest extends UnitTest {
 
 	/** @var Connection $connection */
 	protected $connection;
+
+	/** @var MockObject|NotificationService $notification_service */
+	protected $notification_service;
 
 	protected const TEST_ACCOUNT_ID        = 1234567890;
 	protected const TEST_ACCOUNT_OCID      = 9876543210;
@@ -124,6 +128,8 @@ class AccountServiceTest extends UnitTest {
 		$this->transients        = $this->createMock( TransientsInterface::class );
 		$this->connection        = $this->createMock( Connection::class );
 
+		$this->notification_service = $this->createMock( NotificationService::class );
+
 		$this->container = new Container();
 		$this->container->addShared( Ads::class, $this->ads );
 		$this->container->addShared( AdsConversionAction::class, $this->conversion_action );
@@ -132,6 +138,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->addShared( MerchantAccountState::class, $this->merchant_state );
 		$this->container->addShared( TransientsInterface::class, $this->transients );
 		$this->container->addShared( Connection::class, $this->connection );
+		$this->container->addShared( NotificationService::class, $this->notification_service );
 
 		$this->account = new AccountService( $this->state );
 		$this->account->set_container( $this->container );
@@ -804,6 +811,9 @@ class AccountServiceTest extends UnitTest {
 				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
 				[ TransientsInterface::ADS_INCENTIVE_APPLIED_CHECK ],
 			);
+
+		$this->notification_service->expects( $this->once() )
+			->method( 'clear_cached_results' );
 
 		$this->account->disconnect();
 	}

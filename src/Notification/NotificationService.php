@@ -193,6 +193,30 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	}
 
 	/**
+	 * Delete every cached result, so each notification is recalculated.
+	 *
+	 * Called when a Google account is disconnected. Invalidating would keep the stale result
+	 * visible until the background refresh runs, so the stored result is deleted instead: the
+	 * notification is hidden right away and the next get_notifications() call schedules a refresh.
+	 * Evaluators that keep their own cached data clear it too.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return void
+	 */
+	public function clear_cached_results(): void {
+		foreach ( $this->get_evaluators() as $evaluator ) {
+			if ( $evaluator instanceof CachedNotificationEvaluatorInterface ) {
+				delete_transient( NotificationCacheKeys::for_site( $evaluator->get_id() ) );
+			}
+
+			if ( $evaluator instanceof ClearableNotificationEvaluatorInterface ) {
+				$evaluator->clear_cached_result();
+			}
+		}
+	}
+
+	/**
 	 * Whether the given ID belongs to a registered notification evaluator.
 	 *
 	 * @param string $id The notification ID.

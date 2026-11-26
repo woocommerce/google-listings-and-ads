@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -93,6 +94,9 @@ class AccountServiceTest extends UnitTest {
 	/** @var MockObject|ServiceBasedMerchantState $service_based_merchant_state */
 	protected $service_based_merchant_state;
 
+	/** @var MockObject|NotificationService $notification_service */
+	protected $notification_service;
+
 	/** @var AccountService $account */
 	protected $account;
 
@@ -147,6 +151,7 @@ class AccountServiceTest extends UnitTest {
 		$this->options                      = $this->createMock( OptionsInterface::class );
 		$this->transients                   = $this->createMock( TransientsInterface::class );
 		$this->service_based_merchant_state = $this->createMock( ServiceBasedMerchantState::class );
+		$this->notification_service         = $this->createMock( NotificationService::class );
 
 		$this->container = new Container();
 		$this->container->addShared( Ads::class, $this->ads );
@@ -164,6 +169,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->addShared( ShippingTimeTable::class, $this->time_table );
 		$this->container->addShared( TransientsInterface::class, $this->transients );
 		$this->container->addShared( ServiceBasedMerchantState::class, $this->service_based_merchant_state );
+		$this->container->addShared( NotificationService::class, $this->notification_service );
 
 		$this->job_repository = new JobRepository();
 		$this->job_repository->set_container( $this->container );
@@ -948,6 +954,9 @@ class AccountServiceTest extends UnitTest {
 
 		$this->service_based_merchant_state->expects( $this->once() )
 			->method( 'reset_service_based_merchant_status' );
+
+		$this->notification_service->expects( $this->once() )
+			->method( 'clear_cached_results' );
 
 		$this->account->disconnect();
 	}
