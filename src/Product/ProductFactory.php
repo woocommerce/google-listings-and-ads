@@ -61,7 +61,7 @@ class ProductFactory {
 	 * @param string      $language          Optional ISO 639-1 language code.
 	 * @param string|null $currency_override Optional ISO 4217 currency code to override the store currency.
 	 * @param float       $exchange_rate     Optional fixed market exchange rate used to convert prices into the
-	 *                                       override currency when WPML cannot convert them (since x.x.x).
+	 *                                       override currency when WPML cannot convert them (since 3.11.0).
 	 *
 	 * @return WCProductAdapter
 	 *

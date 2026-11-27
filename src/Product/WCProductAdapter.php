@@ -85,7 +85,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @var float Fixed market exchange rate used to convert prices into the override currency when
 	 *            WPML cannot convert them; 0.0 when unset.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 */
 	protected float $exchange_rate = 0.0;
 
@@ -717,7 +717,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * Whether prices are converted into the override currency: an override is set and there is a
 	 * conversion source (WPML, or the market's fixed exchange rate).
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @return bool
 	 */
@@ -730,7 +730,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * regular price converted with the market's fixed exchange rate. Mirrors
 	 * WCProductInputAdapter::map_price() so validation and sync agree on whether a price exists.
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param WC_Product $product
 	 *
@@ -758,7 +758,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * product's current sale price converted with the market's fixed exchange rate. Mirrors
 	 * WCProductInputAdapter::map_sale_price().
 	 *
-	 * @since x.x.x
+	 * @since 3.11.0
 	 *
 	 * @param WC_Product $product
 	 *

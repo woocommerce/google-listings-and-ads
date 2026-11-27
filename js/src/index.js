@@ -94,7 +94,7 @@ const registerPluginAdminPages = () => {
 		const initialBreadcrumbs = [
 			[ '', woocommerceTranslation ],
 			[ '/marketing', __( 'Marketing', 'google-listings-and-ads' ) ],
-			__( 'Google for WooCommerce', 'google-listings-and-ads' ),
+			__( 'Google', 'google-listings-and-ads' ),
 		];
 
 		let pluginAdminPages = [
