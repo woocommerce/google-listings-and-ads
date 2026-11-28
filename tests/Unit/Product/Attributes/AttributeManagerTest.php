@@ -243,6 +243,43 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		$attribute_manager->get_attribute_types_for_product_types( [ 'simple' ] );
 	}
 
+	public function test_stage_update_changes_only_the_product_in_memory() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->attribute_manager->stage_update( $product, new Brand( 'Google' ) );
+
+		$this->assertEquals( 'Google', $this->attribute_manager->get_value( $product, Brand::get_id() ) );
+		$this->assertEmpty( get_post_meta( $product->get_id(), $this->prefix_meta_key( Brand::get_id() ), true ) );
+
+		$product->save();
+
+		$this->assertEquals( 'Google', get_post_meta( $product->get_id(), $this->prefix_meta_key( Brand::get_id() ), true ) );
+	}
+
+	public function test_stage_delete_changes_only_the_product_in_memory() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->attribute_manager->update( $product, new Brand( 'Google' ) );
+
+		$this->attribute_manager->stage_delete( $product, Brand::get_id() );
+
+		$this->assertFalse( $this->attribute_manager->exists( $product, Brand::get_id() ) );
+		$this->assertEquals( 'Google', get_post_meta( $product->get_id(), $this->prefix_meta_key( Brand::get_id() ), true ) );
+	}
+
+	public function test_stage_update_throws_exception_if_attribute_inapplicable_to_product() {
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $variable->get_children()[0] );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->attribute_manager->stage_update( $variation, new Brand( 'Google' ) );
+	}
+
+	public function test_get_product_types_for_attribute() {
+		$this->assertEqualSets( [ 'simple', 'variable' ], $this->attribute_manager->get_product_types_for_attribute( Brand::get_id() ) );
+		$this->assertEqualSets( [ 'simple', 'variation' ], $this->attribute_manager->get_product_types_for_attribute( GTIN::get_id() ) );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
