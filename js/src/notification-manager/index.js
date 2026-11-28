@@ -6,7 +6,10 @@ import { addAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
+import {
+	GLA_NOTIFICATION_DISMISSED,
+	GLA_NOTIFICATIONS_COUNT_CHANGED,
+} from '~/constants';
 
 ( function () {
 	const marketingMenu = document.getElementById(
@@ -65,7 +68,13 @@ import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
 		attributeFilter: [ 'class' ],
 	} );
 
-	function handleNotificationDismissed() {
+	/**
+	 * Adjusts the badge count by a delta rather than setting an absolute count,
+	 * since the server-rendered count can include other extensions' notifications.
+	 *
+	 * @param {number} delta The number to add to the current count.
+	 */
+	function updateCount( delta ) {
 		const countEl = badge.querySelector( '.update-count' );
 
 		if ( ! countEl ) {
@@ -78,22 +87,54 @@ import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
 			return;
 		}
 
-		const newCount = Math.max( 0, currentCount - 1 );
+		const newCount = Math.max( 0, currentCount + delta );
 
-		if ( newCount === 0 ) {
-			badge.style.display = 'none';
-		} else {
-			countEl.textContent = newCount;
-			badge.className = badge.className.replace(
-				/\bcount-\d+\b/,
-				'count-' + newCount
-			);
-		}
+		countEl.textContent = newCount;
+		badge.className = badge.className.replace(
+			/\bcount-\d+\b/,
+			'count-' + newCount
+		);
+		badge.style.display = newCount === 0 ? 'none' : '';
 	}
 
+	/**
+	 * Whether the value is a valid notifications count.
+	 *
+	 * @param {*} value The value to check.
+	 * @return {boolean} True for a non-negative integer.
+	 */
+	function isValidCount( value ) {
+		return Number.isInteger( value ) && value >= 0;
+	}
+
+	const serverCount = window.glaNotificationManagerData?.notificationsCount;
+
+	// This plugin's share of the badge count, starting from the one the server rendered.
+	let ownCount = isValidCount( serverCount ) ? serverCount : 0;
+
+	/**
+	 * Updates the badge to reflect a new number of this plugin's notifications.
+	 *
+	 * @param {number} count The number of this plugin's notifications in the inbox.
+	 */
+	function handleCountChange( count ) {
+		// The hook is public, so ignore anything that isn't a count.
+		if ( ! isValidCount( count ) || count === ownCount ) {
+			return;
+		}
+
+		updateCount( count - ownCount );
+		ownCount = count;
+	}
+
+	addAction( GLA_NOTIFICATION_DISMISSED, 'gla/notification-manager', () => {
+		ownCount = Math.max( 0, ownCount - 1 );
+		updateCount( -1 );
+	} );
+
 	addAction(
-		GLA_NOTIFICATION_DISMISSED,
+		GLA_NOTIFICATIONS_COUNT_CHANGED,
 		'gla/notification-manager',
-		handleNotificationDismissed
+		handleCountChange
 	);
 } )();

@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionProperty;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -201,6 +202,57 @@ class NotificationManagerTest extends UnitTest {
 
 		set_current_screen( 'dashboard' );
 		do_action( 'admin_enqueue_scripts' );
+	}
+
+	public function test_passes_own_notifications_count_to_badge_script() {
+		$this->notification_service->method( 'get_notifications' )
+			->willReturn(
+				[
+					[
+						'id'           => 'notification-a',
+						'triggered_at' => 1,
+					],
+					[
+						'id'           => 'notification-b',
+						'triggered_at' => 2,
+					],
+				]
+			);
+
+		$registered_asset = null;
+		$this->assets_handler->expects( $this->once() )
+			->method( 'register' )
+			->with(
+				$this->callback(
+					function ( $asset ) use ( &$registered_asset ) {
+						$registered_asset = $asset;
+						return true;
+					}
+				)
+			);
+
+		$this->notification_manager->register();
+
+		// Another contributor to the badge, which must not be included in this plugin's own count.
+		$add_other_notifications = function ( int $count ): int {
+			return $count + 3;
+		};
+		add_filter( 'google_for_woocommerce_admin_menu_notification_count', $add_other_notifications, 20 );
+
+		global $menu;
+		$menu = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$this->notification_manager->display_aggregated_notification_pill();
+
+		remove_filter( 'google_for_woocommerce_admin_menu_notification_count', $add_other_notifications, 20 );
+
+		$inline_scripts = new ReflectionProperty( $registered_asset, 'inline_scripts' );
+		$inline_scripts->setAccessible( true );
+
+		$this->assertEquals(
+			[ 'glaNotificationManagerData' => [ 'notificationsCount' => 2 ] ],
+			$inline_scripts->getValue( $registered_asset )
+		);
 	}
 
 	public function test_does_not_enqueue_assets_outside_wc_admin() {
