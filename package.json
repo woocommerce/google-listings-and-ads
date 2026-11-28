@@ -32,7 +32,7 @@
 		"@wordpress/compose": "^7.33.1",
 		"@wordpress/data": "^10.33.1",
 		"@wordpress/data-controls": "^4.33.1",
-		"@wordpress/dataviews": "^4.17.0",
+		"@wordpress/dataviews": "^14.3.0",
 		"@wordpress/date": "^5.33.1",
 		"@wordpress/dom": "^4.33.1",
 		"@wordpress/element": "^6.33.1",
@@ -196,7 +196,7 @@
 			},
 			{
 				"path": "./js/build/wp-dataviews-shim.js",
-				"maxSize": "310 kB"
+				"maxSize": "345 kB"
 			},
 			{
 				"path": "./js/build/dashboard.js",
